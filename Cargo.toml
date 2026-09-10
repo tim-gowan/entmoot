@@ -1,0 +1,13 @@
+[package]
+name = "entmoot"
+version = "0.1.0"
+edition = "2021"
+description = "Continuous-defense substrate: structural identity and provenance-preserving inventory (early placeholder)."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/tim-gowan/entmoot"
+homepage = "https://github.com/tim-gowan/entmoot"
+readme = "README.md"
+keywords = ["security", "inventory", "identity", "substrate"]
+categories = ["development-tools"]
+
+[dependencies]
