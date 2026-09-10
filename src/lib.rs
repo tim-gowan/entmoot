@@ -1,6 +1,4 @@
-//! Entmoot — continuous-defense substrate (placeholder).
-//!
-//! This crate reserves the public name; substantive APIs will follow.
+//! The Ents are still gathering. Under construction.
 
 /// Placeholder so the package is a valid library.
 pub fn version() -> &'static str {
