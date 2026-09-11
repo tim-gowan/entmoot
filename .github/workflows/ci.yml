@@ -27,6 +27,9 @@ jobs:
     container:
       # Docker Official Image — https://hub.docker.com/_/rust
       image: rust@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa # 1-bookworm
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
