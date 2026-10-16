@@ -3,8 +3,9 @@
 Use original upstream repositories in [repositories.json](../../evals/repositories.json).
 The [SQLite harness](../../evals/harness/README.md) clones exact commits into
 `.tmp/<task>/sources`, runs configured build commands and publishes with Entmoot.
-Foreign sibling trees are not modified. This configuration is local orchestration,
-not a new portable wire format.
+Campaigns clone pinned remotes into `.tmp/<task>/` and do not rewrite foreign
+history. This configuration is local orchestration, not a new portable wire
+format.
 
 ```text
 python -m evals.harness.repository_campaign run --config evals/repositories.json --run-dir .tmp/repository-probe --cli target/debug/entmoot --depth 1
@@ -29,6 +30,3 @@ typed `request` objects and reference selected `{root:id}`, `{graph:id}` and
 `{store:id}` values. `{request}` names the written request file. Unavailable
 publications leave the check unavailable. Process success is separate from the
 returned semantic outcome, limits and pagination.
-
-Grammar regeneration currently has its own machine-local checkout map. It is
-build input, not an additional product corpus or a current qualification claim.

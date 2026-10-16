@@ -8,8 +8,7 @@ needed for the task; Rust contracts and generated schemas own fields.
 - [entmoot-release](skills/entmoot-release/SKILL.md): package/docs verification,
   qualification and an authorized release handoff.
 - [Test lanes](rules/entmoot-test-lanes.mdc): existing focused test ownership.
-- [Format series](rules/entmoot-format-series.mdc), [unsigned commits](rules/commit-unsigned-end-of-turn.mdc),
-  [local checkouts](rules/local-checkouts.mdc).
+- [Format series](rules/entmoot-format-series.mdc), [unsigned commits](rules/commit-unsigned-end-of-turn.mdc).
 
 These instructions introduce no new scheduler or approval layer. Preserve user
 intent and authorization; local preparation does not imply successful publication.

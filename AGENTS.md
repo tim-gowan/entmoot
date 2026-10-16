@@ -57,9 +57,10 @@ own wire shape. [CHANGELOG](CHANGELOG.md) records delivered work.
   AGENTS, ARCHITECTURE, PLANNING, CHANGELOG, runbooks or concise rules. Keep fields
   in APIs/schema/tests, not duplicated prose. Git retains obsolete guidance.
 - Use `.tmp/<task>/` for scratch, isolated campaign checkouts/builds and useful
-  local evidence. Do not modify foreign sibling source/history. Normal source
-  scans exclude scratch and caches. Close active stores before deleting them.
-  Leave `.gitignore` unchanged during the maintenance pass.
+  local evidence. Fetch pinned remotes into that scratch; do not rewrite foreign
+  git history. Normal source scans exclude scratch and caches. Close active
+  stores before deleting them. Leave `.gitignore` unchanged during the
+  maintenance pass.
 - Use production revision/occurrence fixtures with independently authored
   expectations. Keep native unavailability honest (missing tools stay
   unknown/partial, never silent absence). Bind requires adapters for inventory

@@ -5,11 +5,12 @@ experiments. Upstream submission is deferred. A packet is not a language
 support claim. Source syntax, native target-mode qualification, and actual
 compiler/runtime behavior are independent results.
 
-Keep upstream repositories outside this directory. Keep only minimal patches or
-pinned existing proposals, independently authored fixtures, executable oracles,
-and compact receipts here. Never generate expected CSTs or binding outcomes from
-the implementation being tested. Preserve older upstream syntax, including syntax
-before the originally surveyed 2020 window.
+Keep only minimal patches or pinned existing proposals, independently authored
+fixtures, executable oracles, and compact receipts here. Do not vendor upstream
+grammar trees in this directory; pin remotes in `checkouts.json` and materialize
+under `.tmp/` when regenerating. Never generate expected CSTs or binding outcomes
+from the implementation being tested. Preserve older upstream syntax, including
+syntax before the originally surveyed 2020 window.
 
 The [Tree-sitter corpus guidance](https://tree-sitter.github.io/tree-sitter/creating-parsers/5-writing-tests.html)
 requires named nodes and fields, positive/negative cases and dialect coverage.
