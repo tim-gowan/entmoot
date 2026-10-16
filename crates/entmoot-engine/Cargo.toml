@@ -29,8 +29,8 @@ resolved-rust-analyzer = [
 resolved-oxc = ["dep:oxc"]
 
 [dependencies]
-entmoot-core = { version = "=1.0.0-alpha.1", path = "../entmoot-core" }
-entmoot-contracts = { version = "=1.0.0-alpha.1", path = "../entmoot-contracts" }
+entmoot-core = { version = "=0.0.1-alpha", path = "../entmoot-core" }
+entmoot-contracts = { version = "=0.0.1-alpha", path = "../entmoot-contracts" }
 serde = { version = "1.0.228", features = ["derive", "rc"] }
 serde_json = "1.0.148"
 thiserror = "2.0.17"
