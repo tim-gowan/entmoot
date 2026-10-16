@@ -1,7 +1,7 @@
 //! Adapter profile discovery, load/store and resolution in the workspace volume.
 //!
 //! Init refreshes the profile from host discovery. Bind/produce resolve adapters as:
-//! nonempty process/config override (exclusive) → profile path → catalog relatives.
+//! process/nonempty config override (exclusive) → profile path → catalog relatives.
 //! Entmoot never downloads toolchains.
 
 use std::cell::RefCell;
@@ -43,23 +43,25 @@ fn active_workspace_root() -> Option<PathBuf> {
 }
 
 /// Path to the adapter profile file in the workspace's selected storage volume.
-#[must_use]
-pub fn profile_path(workspace_root: &Path) -> PathBuf {
-    storage_directory(workspace_root).join(ADAPTER_PROFILE_FILE)
+pub fn profile_path(workspace_root: &Path) -> Result<PathBuf, String> {
+    Ok(storage_directory(workspace_root)
+        .map_err(|error| error.to_string())?
+        .join(ADAPTER_PROFILE_FILE))
 }
 
 /// Load an adapter profile when the file exists and parses.
 ///
 /// Refuses the obsolete pre-release `native-profile.json` in that volume (no alias).
 pub fn load_profile(workspace_root: &Path) -> Result<Option<AdapterProfile>, String> {
-    let obsolete = storage_directory(workspace_root).join(OBSOLETE_NATIVE_PROFILE_FILE);
-    if obsolete.is_file() && !profile_path(workspace_root).is_file() {
+    let dir = storage_directory(workspace_root).map_err(|error| error.to_string())?;
+    let path = dir.join(ADAPTER_PROFILE_FILE);
+    let obsolete = dir.join(OBSOLETE_NATIVE_PROFILE_FILE);
+    if obsolete.is_file() && !path.is_file() {
         return Err(format!(
             "obsolete adapter profile layout {}; remove it and re-run entmoot init (expected {ADAPTER_PROFILE_FILE})",
             obsolete.display()
         ));
     }
-    let path = profile_path(workspace_root);
     if !path.is_file() {
         return Ok(None);
     }
@@ -77,9 +79,9 @@ pub fn load_profile(workspace_root: &Path) -> Result<Option<AdapterProfile>, Str
 
 /// Persist an adapter profile in the workspace's selected storage volume.
 pub fn store_profile(workspace_root: &Path, profile: &AdapterProfile) -> Result<(), String> {
-    let dir = storage_directory(workspace_root);
+    let dir = storage_directory(workspace_root).map_err(|error| error.to_string())?;
     fs::create_dir_all(&dir).map_err(|error| format!("create {}: {error}", dir.display()))?;
-    let path = profile_path(workspace_root);
+    let path = dir.join(ADAPTER_PROFILE_FILE);
     let body = serde_json::to_vec_pretty(profile)
         .map_err(|error| format!("serialize adapter profile: {error}"))?;
     fs::write(&path, body).map_err(|error| format!("write {}: {error}", path.display()))?;
@@ -250,9 +252,15 @@ fn push_sidecar_row(
     hard: bool,
     workspace_root: &Path,
 ) {
-    let env_set = adapter_env_configured(env);
-    let resolved = if env_set {
-        std::env::var_os(env).map(PathBuf::from)
+    let selection = if std::env::var_os(env).is_some() {
+        AdapterProfileSelection::ProcessEnv
+    } else {
+        AdapterProfileSelection::Config
+    };
+    let configured = crate::workspace::resolve_entmoot_override(env, Some(workspace_root));
+    let env_set = configured.is_some();
+    let resolved = if let Some(value) = configured {
+        Some(PathBuf::from(value))
     } else if let Some(path) = profile_recorded_path(workspace_root, id) {
         Some(path)
     } else {
@@ -269,7 +277,7 @@ fn push_sidecar_row(
         Some(path) if path.is_file() => (
             AdapterFamilyAvailability::Available,
             if env_set {
-                AdapterProfileSelection::ProcessEnv
+                selection
             } else {
                 AdapterProfileSelection::Catalog
             },
@@ -279,7 +287,7 @@ fn push_sidecar_row(
         ),
         Some(path) if env_set => (
             AdapterFamilyAvailability::Invalid,
-            AdapterProfileSelection::ProcessEnv,
+            selection,
             AdapterIntegrity::Missing,
             Some(format!(
                 "invalid_environment: {env} points at missing path {}",
@@ -289,7 +297,7 @@ fn push_sidecar_row(
         ),
         _ if env_set => (
             AdapterFamilyAvailability::Invalid,
-            AdapterProfileSelection::ProcessEnv,
+            selection,
             AdapterIntegrity::Missing,
             Some(format!("invalid_environment: {env} set but path missing")),
             hard,
@@ -330,7 +338,7 @@ fn workspace_adapter_candidates(
     repo_relative: bool,
 ) -> Vec<PathBuf> {
     super::family_registry::adapter_candidate_paths_for(
-        "", // no exclusive env — checkout, home, then PATH
+        "", // no exclusive env — checkout, PATH, then home
         relatives,
         repo_relative,
         Some(workspace_root),
@@ -345,9 +353,9 @@ fn profile_recorded_path(workspace_root: &Path, family: &str) -> Option<PathBuf>
     path.is_file().then_some(path)
 }
 
-/// Resolve an adapter using process/config env → profile → checkout → home/PATH.
+/// Resolve an adapter using process/config env → profile → checkout → PATH → home.
 ///
-/// When `env_var` is nonempty (process or config slot), only that path is considered.
+/// A present process override or nonempty config slot selects only that path.
 /// Missing exclusive paths yield `None` so `available()` stays false; callers
 /// use `adapter_env_configured` for explicit invalid-environment messaging.
 pub fn resolve_with_profile(
@@ -404,9 +412,8 @@ pub fn resolve_with_profile(
 #[must_use]
 pub fn find_workspace_root(start: &Path) -> Option<PathBuf> {
     for ancestor in start.ancestors() {
-        if profile_path(ancestor).is_file()
-            || storage_directory(ancestor).join("current.json").is_file()
-        {
+        let storage = storage_directory(ancestor).ok()?;
+        if storage.join(ADAPTER_PROFILE_FILE).is_file() || storage.join("current.json").is_file() {
             return Some(ancestor.to_path_buf());
         }
     }
@@ -453,13 +460,38 @@ mod tests {
     use super::*;
     use std::io::Write;
 
-    static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    // Environment changes are confined to one exact test in a fresh process.
+    fn run_in_child(test: &str) -> bool {
+        if std::env::var("ENTMOOT_PROFILE_TEST").as_deref() == Ok(test) {
+            return false;
+        }
+        let fixture = tempfile::tempdir().unwrap();
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                &format!("native_resolver::adapter_profile::tests::{test}"),
+            ])
+            .env("ENTMOOT_PROFILE_TEST", test)
+            .env("ENTMOOT_DATA_DIR", fixture.path().join("data"))
+            .env(ADAPTERS_ROOT_ENV, fixture.path().join("adapters"))
+            .env("PATH", "")
+            .env_remove("ENTMOOT_GO_ADAPTER")
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        true
+    }
 
     #[test]
     fn discover_marks_missing_sidecar_without_download() {
-        let _lock = ENV_LOCK.lock().unwrap();
-        let prior_go = std::env::var_os("ENTMOOT_GO_ADAPTER");
-        let prior_root = std::env::var_os(ADAPTERS_ROOT_ENV);
+        if run_in_child("discover_marks_missing_sidecar_without_download") {
+            return;
+        }
         std::env::remove_var("ENTMOOT_GO_ADAPTER");
         let root = tempfile::tempdir().unwrap();
         let empty_adapters = root.path().join("adapters");
@@ -478,18 +510,13 @@ mod tests {
             .limitations
             .iter()
             .any(|row| row.contains("does_not_download")));
-        match prior_go {
-            Some(value) => std::env::set_var("ENTMOOT_GO_ADAPTER", value),
-            None => std::env::remove_var("ENTMOOT_GO_ADAPTER"),
-        }
-        match prior_root {
-            Some(value) => std::env::set_var(ADAPTERS_ROOT_ENV, value),
-            None => std::env::remove_var(ADAPTERS_ROOT_ENV),
-        }
     }
 
     #[test]
     fn store_and_load_round_trip() {
+        if run_in_child("store_and_load_round_trip") {
+            return;
+        }
         let root = tempfile::tempdir().unwrap();
         let mut profile = AdapterProfile::empty(false);
         profile.families.push(AdapterProfileFamily {
@@ -511,8 +538,11 @@ mod tests {
 
     #[test]
     fn refuses_obsolete_native_profile_filename() {
+        if run_in_child("refuses_obsolete_native_profile_filename") {
+            return;
+        }
         let root = tempfile::tempdir().unwrap();
-        let dir = root.path().join(".entmoot");
+        let dir = storage_directory(root.path()).unwrap();
         fs::create_dir_all(&dir).unwrap();
         fs::write(dir.join(OBSOLETE_NATIVE_PROFILE_FILE), b"{}").unwrap();
         let err = load_profile(root.path()).unwrap_err();
@@ -524,10 +554,11 @@ mod tests {
 
     #[test]
     fn resolve_prefers_process_env_exclusively() {
-        let _lock = ENV_LOCK.lock().unwrap();
+        if run_in_child("resolve_prefers_process_env_exclusively") {
+            return;
+        }
         let root = tempfile::tempdir().unwrap();
         let missing = root.path().join("missing-adapter");
-        let prior = std::env::var_os("ENTMOOT_GO_ADAPTER");
         std::env::set_var("ENTMOOT_GO_ADAPTER", &missing);
         let resolved =
             resolve_with_profile("ENTMOOT_GO_ADAPTER", &["go/entmoot-go-resolver"], false);
@@ -536,16 +567,13 @@ mod tests {
             "exclusive missing path must not fall through"
         );
         assert!(adapter_env_configured("ENTMOOT_GO_ADAPTER"));
-        match prior {
-            Some(value) => std::env::set_var("ENTMOOT_GO_ADAPTER", value),
-            None => std::env::remove_var("ENTMOOT_GO_ADAPTER"),
-        }
     }
 
     #[test]
     fn resolve_uses_profile_path_when_env_unset() {
-        let _lock = ENV_LOCK.lock().unwrap();
-        let prior = std::env::var_os("ENTMOOT_GO_ADAPTER");
+        if run_in_child("resolve_uses_profile_path_when_env_unset") {
+            return;
+        }
         std::env::remove_var("ENTMOOT_GO_ADAPTER");
         let root = tempfile::tempdir().unwrap();
         let adapter = root.path().join("entmoot-go-resolver");
@@ -568,9 +596,5 @@ mod tests {
             resolve_with_profile("ENTMOOT_GO_ADAPTER", &["go/nope"], false)
         });
         assert_eq!(resolved, Some(adapter));
-        match prior {
-            Some(value) => std::env::set_var("ENTMOOT_GO_ADAPTER", value),
-            None => std::env::remove_var("ENTMOOT_GO_ADAPTER"),
-        }
     }
 }

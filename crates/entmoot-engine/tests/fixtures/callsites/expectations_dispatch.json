@@ -101,7 +101,8 @@
         "unresolved"
       ],
       "closed_dispatch": false,
-      "dispatch_gap": "dynamic_dispatch"
+      "dispatch_gap": "indirect_call",
+      "dispatch_detail": "rust.dynamic_dispatch"
     }
   ],
   "rust/callback": [
@@ -121,7 +122,8 @@
         "unsupported"
       ],
       "closed_dispatch": false,
-      "dispatch_gap": "indirect_call"
+      "dispatch_gap": "indirect_call",
+      "dispatch_detail": "rust.indirect_call"
     }
   ],
   "go/free_fn": [
@@ -197,7 +199,8 @@
       ],
       "signature": true,
       "closed_dispatch": false,
-      "dispatch_gap": "dynamic_dispatch"
+      "dispatch_gap": "indirect_call",
+      "dispatch_detail": "go.dynamic_dispatch"
     }
   ],
   "go/callback": [
@@ -217,7 +220,8 @@
         "unsupported"
       ],
       "closed_dispatch": false,
-      "dispatch_gap": "indirect_call"
+      "dispatch_gap": "indirect_call",
+      "dispatch_detail": "go.indirect_call"
     }
   ],
   "java/static_call": [
@@ -348,7 +352,8 @@
         "text": "default int work() { return 7; }"
       },
       "closed_dispatch": false,
-      "dispatch_gap": "dynamic_dispatch"
+      "dispatch_gap": "indirect_call",
+      "dispatch_detail": "java.dynamic_dispatch"
     }
   ],
   "java/open_virtual": [
@@ -368,8 +373,14 @@
         "repository_symbol"
       ],
       "closed_dispatch": false,
-      "dispatch_gap": "dynamic_dispatch",
-      "allow_empty_targets": true
+      "dispatch_gap": "indirect_call",
+      "dispatch_detail": "java.dynamic_dispatch",
+      "allowed_targets": [
+        {
+          "path": "demo/Main.java",
+          "text": "int leaf() { return 1; }"
+        }
+      ]
     }
   ],
   "csharp/static_call": [
@@ -551,8 +562,14 @@
         "repository_symbol"
       ],
       "closed_dispatch": false,
-      "dispatch_gap": "dynamic_dispatch",
-      "allow_empty_targets": true
+      "dispatch_gap": "indirect_call",
+      "dispatch_detail": "csharp.dynamic_dispatch",
+      "allowed_targets": [
+        {
+          "path": "Main.cs",
+          "text": "public virtual int Leaf() { return 1; }"
+        }
+      ]
     }
   ],
   "c_family/non_virtual_c": [
@@ -599,8 +616,14 @@
         "repository_symbol"
       ],
       "closed_dispatch": false,
-      "dispatch_gap": "dynamic_dispatch",
-      "allow_empty_targets": true
+      "dispatch_gap": "indirect_call",
+      "dispatch_detail": "cxx.dynamic_dispatch",
+      "allowed_targets": [
+        {
+          "path": "main.cpp",
+          "text": "virtual int leaf() { return 1; }"
+        }
+      ]
     }
   ],
   "javascript/identifier": [
@@ -644,13 +667,12 @@
         "text": "export function caller() { return api.leaf(); }"
       },
       "outcomes": [
-        "repository_callable",
-        "unresolved",
-        "repository_symbol"
+        "unresolved"
       ],
-      "allow_empty_targets": true,
       "closed_dispatch": false,
-      "dispatch_gap": "dynamic_dispatch"
+      "dispatch_gap": "indirect_call",
+      "dispatch_detail": "javascript.dynamic_dispatch",
+      "allowed_targets": []
     }
   ],
   "javascript/arrow_const": [
@@ -748,7 +770,8 @@
         "repository_symbol"
       ],
       "closed_dispatch": false,
-      "dispatch_gap": "dynamic_dispatch"
+      "dispatch_gap": "indirect_call",
+      "dispatch_detail": "python.dynamic_dispatch"
     }
   ],
   "typescript/unique_signature": [
@@ -797,7 +820,8 @@
         "repository_symbol"
       ],
       "closed_dispatch": false,
-      "dispatch_gap": "indirect_call"
+      "dispatch_gap": "indirect_call",
+      "dispatch_detail": "javascript.indirect_call"
     }
   ]
 }

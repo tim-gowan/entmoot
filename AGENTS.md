@@ -119,8 +119,8 @@ Init is structural by default and refreshes adapter discovery; bind requires
 native support for inventory languages unless `--structural-only`.
 
 Process `ENTMOOT_*` selections must remain exclusive over config/defaults; empty
-config slots are unset. Intended discovery order is checkout → PATH → home
-adapters; see adapter setup for current behavior and known gaps. Missing/stale
+config slots are unset. Default discovery is checkout → PATH → home adapters;
+bind may reuse a recorded profile path after honoring explicit overrides. Missing/stale
 tools stay visible in the adapter profile and status. Authored
 provider data qualifies attachment; live controls qualify native semantics.
 

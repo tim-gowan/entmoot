@@ -423,10 +423,8 @@ fn pinned_repositories_build_and_publish_at_bounded_dependency_depth() {
         .iter()
         .any(|row| row["package"] == "pkg:npm/transitive@2.0.0"));
     assert!(run.join("build/root/built.txt").is_file());
-    assert!(
-        run.join("sources/root/.entmoot/current.json").exists()
-            || summary["repositories"][0]["publication"].is_object()
-    );
+    assert!(summary["repositories"][0]["publication"].is_object());
+    assert!(!run.join("sources/root/.entmoot").exists());
     let repeated = successful(invoke("1", &run));
     assert!(repeated["repositories"]
         .as_array()

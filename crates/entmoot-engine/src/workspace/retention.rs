@@ -57,13 +57,13 @@ pub fn plan_retention(
     policy: RetentionPolicy,
 ) -> Result<RetentionPlan, WorkspaceError> {
     let root = fs::canonicalize(root)?;
-    checked_path(&storage_directory(&root), &storage_directory(&root))?;
+    checked_path(&storage_directory(&root)?, &storage_directory(&root)?)?;
     checked_path(
-        &storage_directory(&root),
-        &storage_directory(&root).join("knowledge.sqlite3"),
+        &storage_directory(&root)?,
+        &storage_directory(&root)?.join("knowledge.sqlite3"),
     )?;
     let _writer = WriteGuard::acquire(&root)?;
-    let database = storage_directory(&root).join("knowledge.sqlite3");
+    let database = storage_directory(&root)?.join("knowledge.sqlite3");
     let store = crate::knowledge_db::retention::Maintenance::open(&database).map_err(failure)?;
     let _objects = object_lease(&database)?;
     build_plan(&root, policy, &store)
@@ -77,13 +77,13 @@ pub fn apply_retention(
     if plan.schema_version != "entmoot.retention_plan.v1" || root != plan.root {
         return Err(failure("retention plan schema/root mismatch"));
     }
-    checked_path(&storage_directory(&root), &storage_directory(&root))?;
+    checked_path(&storage_directory(&root)?, &storage_directory(&root)?)?;
     checked_path(
-        &storage_directory(&root),
-        &storage_directory(&root).join("knowledge.sqlite3"),
+        &storage_directory(&root)?,
+        &storage_directory(&root)?.join("knowledge.sqlite3"),
     )?;
     let _writer = WriteGuard::acquire(&root)?;
-    let database = storage_directory(&root).join("knowledge.sqlite3");
+    let database = storage_directory(&root)?.join("knowledge.sqlite3");
     let mut store =
         crate::knowledge_db::retention::Maintenance::open(&database).map_err(failure)?;
     let _objects = object_lease(&database)?;
@@ -95,7 +95,7 @@ pub fn apply_retention(
             "stale or altered retention plan; generate and review a new plan",
         ));
     }
-    let receipt_path = storage_directory(&root).join("retention-receipt.json");
+    let receipt_path = storage_directory(&root)?.join("retention-receipt.json");
     // A crash after the DB commit can leave unreachable files, never live rows
     // referring to deleted bytes. The bounded journal makes this state explicit.
     write_json(
@@ -103,15 +103,15 @@ pub fn apply_retention(
         &serde_json::json!({"schema_version":"entmoot.retention_journal.v1", "state":"applying", "plan":plan}),
     )?;
     write_json(
-        &storage_directory(&root).join("retention-policy.json"),
+        &storage_directory(&root)?.join("retention-policy.json"),
         &plan.policy,
     )?;
     store.collect(&plan.remove_views).map_err(failure)?;
     for name in &plan.remove_generations {
-        let path = storage_directory(&root).join("current").join(name);
+        let path = storage_directory(&root)?.join("current").join(name);
         // build_plan checked every entry without following links. Recheck each
         // exact target immediately before deletion, under the lifecycle lock.
-        checked_path(&storage_directory(&root).join("current"), &path)?;
+        checked_path(&storage_directory(&root)?.join("current"), &path)?;
         fs::remove_dir_all(path)?;
     }
     let objects = artifact_store_path(&database)?;
@@ -131,7 +131,7 @@ pub fn apply_retention(
         removed_views: plan.remove_views.len(),
         removed_generations: plan.remove_generations.len(),
         removed_objects: plan.remove_objects.len(),
-        file_bytes_after: tree_bytes(&storage_directory(&root))?,
+        file_bytes_after: tree_bytes(&storage_directory(&root)?)?,
     };
     write_json(&receipt_path, &receipt)?;
     Ok(receipt)
@@ -176,8 +176,8 @@ fn build_plan(
     if policy.max_workspace_bytes == Some(0) {
         return Err(failure("max_workspace_bytes must be positive"));
     }
-    let publication = read_publication(&storage_directory(root).join("current.json"))?;
-    let directory = storage_directory(root).join("current");
+    let publication = read_publication(&storage_directory(root)?.join("current.json"))?;
+    let directory = storage_directory(root)?.join("current");
     let catalog = store.catalog().map_err(failure)?;
     for view in &policy.pinned_views {
         if !catalog.views.contains(view) {
@@ -219,7 +219,7 @@ fn build_plan(
             .map_err(failure)?
             .ok_or_else(|| failure("generation has no view locator"))?;
         if fs::canonicalize(locator.database)?
-            != fs::canonicalize(storage_directory(root).join("knowledge.sqlite3"))?
+            != fs::canonicalize(storage_directory(root)?.join("knowledge.sqlite3"))?
         {
             return Err(failure("generation references another database"));
         }
@@ -314,7 +314,7 @@ fn build_plan(
     let mut dead_objects = store.artifact_digests(&remove_views).map_err(failure)?;
     // Recover a crash after row retirement but before object removal. Recompute
     // liveness from today's roots; a newly referenced object is never swept.
-    let journal_path = storage_directory(root).join("retention-receipt.json");
+    let journal_path = storage_directory(root)?.join("retention-receipt.json");
     if journal_path.exists() {
         let journal: serde_json::Value = serde_json::from_slice(&fs::read(journal_path)?)?;
         if journal.get("state").and_then(|v| v.as_str()) == Some("applying") {
@@ -331,7 +331,7 @@ fn build_plan(
             dead_objects.extend(interrupted.remove_objects);
         }
     }
-    let objects = artifact_store_path(&storage_directory(root).join("knowledge.sqlite3"))?;
+    let objects = artifact_store_path(&storage_directory(root)?.join("knowledge.sqlite3"))?;
     let mut remove_objects = Vec::new();
     let mut file_bytes_removable = 0;
     for name in &remove_generations {
@@ -348,7 +348,7 @@ fn build_plan(
             }
         }
     }
-    let policy_file = storage_directory(root).join("retention-policy.json");
+    let policy_file = storage_directory(root)?.join("retention-policy.json");
     let policy_digest = if policy_file.exists() {
         Some(blake3_hex(&fs::read(policy_file)?))
     } else {
@@ -357,7 +357,7 @@ fn build_plan(
     let fence = blake3_hex(&serde_json::to_vec(&(
         catalog.fence,
         policy_digest,
-        blake3_hex(&fs::read(storage_directory(root).join("current.json"))?),
+        blake3_hex(&fs::read(storage_directory(root)?.join("current.json"))?),
         disk_fence.finalize().to_hex().to_string(),
     ))?);
     Ok(RetentionPlan {
@@ -369,13 +369,13 @@ fn build_plan(
         remove_generations,
         remove_views,
         remove_objects,
-        file_bytes_before: tree_bytes(&storage_directory(root))?,
+        file_bytes_before: tree_bytes(&storage_directory(root)?)?,
         file_bytes_removable,
     })
 }
 
 pub fn read_retention_policy(root: &Path) -> Result<RetentionPolicy, WorkspaceError> {
-    let path = storage_directory(root).join("retention-policy.json");
+    let path = storage_directory(root)?.join("retention-policy.json");
     if path.exists() {
         Ok(serde_json::from_slice(&fs::read(path)?)?)
     } else {
@@ -386,7 +386,7 @@ pub fn read_retention_policy(root: &Path) -> Result<RetentionPolicy, WorkspaceEr
 pub(crate) fn check_admission(root: &Path) -> Result<(), WorkspaceError> {
     let policy = read_retention_policy(root)?;
     if let Some(limit) = policy.max_workspace_bytes {
-        let bytes = tree_bytes(&storage_directory(root))?;
+        let bytes = tree_bytes(&storage_directory(root)?)?;
         if bytes >= limit {
             return Err(failure(format!("storage admission refused: {bytes} workspace bytes meet/exceed high-water mark {limit}; retain/export/prune explicitly or raise the operator budget")));
         }
@@ -404,10 +404,7 @@ pub fn check_store_admission(store: &Path) -> Result<(), WorkspaceError> {
         .file_name()
         .is_some_and(|name| name == "knowledge.sqlite3")
     {
-        if let Some(directory) = database
-            .parent()
-            .filter(|p| p.file_name().is_some_and(|name| name == ".entmoot"))
-        {
+        if let Some(directory) = database.parent() {
             let policy_path = directory.join("retention-policy.json");
             if policy_path.is_file() {
                 let policy: RetentionPolicy = serde_json::from_slice(&fs::read(policy_path)?)?;
@@ -634,9 +631,16 @@ mod tests {
             .unwrap_err()
             .to_string()
             .contains("altered"));
-        let pointer = fs::read(dir.path().join(".entmoot/current.json")).unwrap();
+        let pointer = fs::read(
+            crate::workspace::storage_directory(dir.path())
+                .unwrap()
+                .join("current.json"),
+        )
+        .unwrap();
         write_json(
-            &dir.path().join(".entmoot/retention-policy.json"),
+            &crate::workspace::storage_directory(dir.path())
+                .unwrap()
+                .join("retention-policy.json"),
             &RetentionPolicy {
                 max_workspace_bytes: Some(1),
                 ..Default::default()
@@ -659,7 +663,12 @@ mod tests {
             .contains("storage admission refused"));
         assert_eq!(
             pointer,
-            fs::read(dir.path().join(".entmoot/current.json")).unwrap()
+            fs::read(
+                crate::workspace::storage_directory(dir.path())
+                    .unwrap()
+                    .join("current.json")
+            )
+            .unwrap()
         );
     }
 
@@ -724,7 +733,7 @@ mod tests {
         let plan = plan_retention(dir.path(), Default::default()).unwrap();
         assert_eq!(plan.remove_objects, vec![obsolete.to_string()]);
         // Simulate interruption immediately after committed row retirement.
-        write_json(&dir.path().join(".entmoot/retention-receipt.json"), &serde_json::json!({"schema_version":"entmoot.retention_journal.v1", "state":"applying", "plan":plan})).unwrap();
+        write_json(&crate::workspace::storage_directory(dir.path()).unwrap().join("retention-receipt.json"), &serde_json::json!({"schema_version":"entmoot.retention_journal.v1", "state":"applying", "plan":plan})).unwrap();
         let database = crate::KnowledgeViewLocator::read(&last.publication.store)
             .unwrap()
             .unwrap()
@@ -747,5 +756,52 @@ mod tests {
         .unwrap()
         .to_string()
         .contains("expired"));
+    }
+    #[test]
+    fn explicit_store_admission_honors_policy_beside_any_database_or_view() {
+        let fixture = tempfile::tempdir().unwrap();
+        for name in ["store", "relocated-volume", ".entmoot"] {
+            let volume = fixture.path().join(name);
+            fs::create_dir(&volume).unwrap();
+            let database = volume.join("knowledge.sqlite3");
+            fs::write(&database, b"budgeted bytes").unwrap();
+            assert!(
+                check_store_admission(&database).is_ok(),
+                "no policy means no configured limit"
+            );
+            fs::write(
+                volume.join("retention-policy.json"),
+                br#"{"keep_recent":2,"max_workspace_bytes":1}"#,
+            )
+            .unwrap();
+            let view = fixture.path().join(format!("{name}.view.json"));
+            super::super::write_json(
+                &view,
+                &crate::KnowledgeViewLocator {
+                    database: database.clone(),
+                    view: entmoot_contracts::blake3_hex(b"authored-view"),
+                },
+            )
+            .unwrap();
+            for store in [&database, &view] {
+                let error = check_store_admission(store).unwrap_err();
+                assert!(
+                    error.to_string().contains("storage admission refused"),
+                    "{error}"
+                );
+            }
+            fs::write(
+                volume.join("retention-policy.json"),
+                br#"{"keep_recent":2,"max_workspace_bytes":1000000}"#,
+            )
+            .unwrap();
+            assert!(check_store_admission(&view).is_ok());
+            fs::write(volume.join("retention-policy.json"), b"invalid policy").unwrap();
+            assert!(
+                check_store_admission(&database).is_err(),
+                "malformed policy must not disable admission"
+            );
+        }
+        assert!(check_store_admission(&fixture.path().join("independent.sqlite3")).is_ok());
     }
 }

@@ -16,8 +16,11 @@ downstream packages. Missing ownership widens to workspace checks.
   `crates/entmoot-engine/tests/fixtures/callsites/` (`smoke/` denominators and
   per-construct leaves). Split ownership:
   - **Product claims** — `expectations_*.json` + engine `dispatch_expectations`
-    (`qualify_*` via crate APIs). Fields: `closed_dispatch`, `dispatch_gap`,
-    `policy_id`, `assumption_contains`, site/owner/target selectors, `outcomes`.
+    (`qualify_*` via crate APIs). `dispatch_gap` is the shared category;
+    optional `dispatch_detail` is exact attributed detail. `target` requires one
+    callable; `allowed_targets` permits absence but rejects other/duplicate
+    callable targets. Select sites/owners independently and assert outcomes and
+    Closed policy/assumption fences.
     Historical/host `#[ignore]` rows stay for multi-toolchain and known
     Windows jar/VFS flakes only; Open rows must not claim Closed.
   - **Language-deep** — `callsites_*` keep producer/environment specials (canon,
@@ -172,9 +175,10 @@ remote corpus blobs.
 
 Before relying on a filtered or feature-gated run, inspect `-- --list` with the
 same package, target and feature selection; confirm the intended controls execute.
-Zero selected tests do not qualify the behavior. The current generated ownership
-commands and native CI preflight have
-[known gaps](../../PLANNING.md#current-qualification-blockers).
+Zero selected tests do not qualify the behavior. Cargo `required-features` owns
+each target's native/producer requirements; generated ownership and installed
+adapter-control commands preserve them even when a package subsumes the target.
+Native CI reads profile/publication locations from init's returned store locator.
 
 ## Coverage phases and release lane ownership
 

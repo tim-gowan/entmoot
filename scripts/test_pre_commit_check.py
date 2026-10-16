@@ -28,8 +28,28 @@ class NativeLaneTests(unittest.TestCase):
                 commands = sidecar_controls(env, ["tools/resolver-adapters/go/main.go"])
                 self.assertEqual(len(commands), 1)
                 self.assertIn("--include-ignored", commands[0][1], "ordinary controls must actually execute")
-                self.assertIn("entmoot/native-tests", commands[0][1])
+                command = commands[0][1]
+                features = set(command[command.index("--features") + 1].split(","))
+                self.assertLessEqual({"entmoot/native-tests", "entmoot/producer"}, features)
                 self.assertEqual(sidecar_controls({**env,"ENTMOOT_NATIVE_CHECK":"off"}, None), [])
+
+    def test_catalog_discovers_checkout_then_path_then_home(self):
+        from scripts.adapter_catalog import resolved_adapter
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkout = root / ".tmp/adapter-build/resolver-adapters/go/adapter.exe"
+            on_path = root / "bin/adapter.exe"
+            installed = root / "home/go/adapter.exe"
+            for path in (checkout, on_path, installed):
+                path.parent.mkdir(parents=True)
+                path.touch()
+            family = {"env":"ENTMOOT_GO_ADAPTER", "relative_artifacts":["go/adapter.exe"]}
+            environment = {"PATH":str(on_path.parent), "ENTMOOT_ADAPTERS_ROOT":str(root / "home")}
+            self.assertEqual(resolved_adapter(family, environment, root), checkout)
+            checkout.unlink()
+            self.assertEqual(resolved_adapter(family, environment, root), on_path)
+            on_path.unlink()
+            self.assertEqual(resolved_adapter(family, environment, root), installed)
     def test_native_lane_is_opt_in_or_preserves_an_existing_producer(self) -> None:
         from scripts.pre_commit_check import native_lane_enabled
         with TemporaryDirectory() as directory:

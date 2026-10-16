@@ -76,7 +76,7 @@ blake3 = "1.8.2"
 [[test]]
 name = "dispatch_expectations"
 path = "tests/dispatch_expectations.rs"
-required-features = ["native-tests"]
+required-features = ["native-tests", "resolved-rust-analyzer", "resolved-oxc"]
 
 [[test]]
 name = "callsites_c_family"
@@ -101,9 +101,9 @@ required-features = ["native-tests"]
 [[test]]
 name = "callsites_rust"
 path = "tests/callsites_rust.rs"
-required-features = ["native-tests"]
+required-features = ["native-tests", "resolved-rust-analyzer"]
 
 [[test]]
 name = "callsites_javascript"
 path = "tests/callsites_javascript.rs"
-required-features = ["native-tests"]
+required-features = ["native-tests", "resolved-oxc"]

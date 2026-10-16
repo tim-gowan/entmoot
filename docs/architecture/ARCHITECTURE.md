@@ -65,8 +65,9 @@ Frontends may prepare a missing compiler-free structural publication on first us
 existing views are reused until explicit init/bind. `-C` selects the source root.
 Optional `--data-dir` / `ENTMOOT_DATA_DIR` maps canonical roots to isolated local
 namespaces. Database paths do not enter portable queries. Remote locations must
-be rejected; mutation-side configuration validation has a
-[known gap](../../PLANNING.md#current-qualification-blockers). A future transport
+be rejected. Shared checked location helpers select the volume for publication,
+native objects, profiles, locks and retention; malformed configuration cannot
+redirect a read or write to a default volume. A future transport
 must preserve authentication, atomic publication, source verification, history
 and producer isolation.
 

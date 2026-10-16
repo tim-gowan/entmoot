@@ -1241,10 +1241,16 @@ async fn main() -> Result<()> {
     let pointer = if let Some(path) = &args.publication {
         Some(path.clone())
     } else if args.graph.is_none() {
-        discovery_start
-            .ancestors()
-            .map(|p| entmoot_engine::workspace::storage_directory(p).join("current.json"))
-            .find(|p| p.is_file())
+        let mut pointer = None;
+        for source in discovery_start.ancestors() {
+            let candidate =
+                entmoot_engine::workspace::storage_directory(source)?.join("current.json");
+            if candidate.is_file() {
+                pointer = Some(candidate);
+                break;
+            }
+        }
+        pointer
     } else {
         None
     };

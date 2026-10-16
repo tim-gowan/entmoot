@@ -133,6 +133,29 @@ class OwnershipRegistryTests(unittest.TestCase):
         commands = cargo_commands_for_targets([CargoTarget("entmoot"), CargoTarget("entmoot", "campaign_harness")])
         self.assertTrue(any("campaign_harness" in cmd and "--include-ignored" in cmd for cmd in commands))
 
+    def test_selected_native_targets_enable_their_semantic_producers(self):
+        cases = [
+            ("entmoot-engine", "callsites_rust", {"entmoot-engine/native-tests", "entmoot-engine/resolved-rust-analyzer"}),
+            ("entmoot-engine", "callsites_javascript", {"entmoot-engine/native-tests", "entmoot-engine/resolved-oxc"}),
+            ("entmoot-engine", "dispatch_expectations", {"entmoot-engine/native-tests", "entmoot-engine/resolved-rust-analyzer", "entmoot-engine/resolved-oxc"}),
+            ("entmoot", "adapter_controls", {"entmoot/native-tests", "entmoot/producer"}),
+            ("entmoot", "producer_cli", {"entmoot/producer"}),
+        ]
+        for package, name, required in cases:
+            for whole_package in (False, True):
+                with self.subTest(target=name, whole_package=whole_package):
+                    targets = [CargoTarget(package, name)]
+                    if whole_package:
+                        targets.append(CargoTarget(package))
+                    commands = cargo_commands_for_targets(targets)
+                    command = next(c for c in commands if "--test" not in c or name in c)
+                    enabled = set(command[command.index("--features") + 1].split(","))
+                    self.assertLessEqual(required, enabled)
+
+    def test_structural_package_selection_does_not_enable_native_tools(self):
+        commands = cargo_commands_for_targets([CargoTarget("entmoot-engine"), CargoTarget("entmoot")])
+        self.assertEqual(commands[0][commands[0].index("--features") + 1], "entmoot-core/full-tests")
+
     def test_registry_covers_all_declared_core_tests_and_packages(self) -> None:
         errors = validate_registry(self.registry)
         self.assertEqual(errors, [], msg="; ".join(errors))

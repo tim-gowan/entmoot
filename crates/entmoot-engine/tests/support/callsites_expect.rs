@@ -132,28 +132,82 @@ fn selected<'a>(
     covering[0]
 }
 
-fn gap_matches(dispatch: &CallDispatch, expected: &str) -> bool {
-    match dispatch {
-        CallDispatch::Open { reason } => {
-            let category = reason.category();
-            let detail = match reason {
-                DispatchGap::IndirectCall(value) | DispatchGap::UnresolvedBinding(value) => {
-                    value.as_str()
-                }
-                _ => "",
-            };
-            category == expected
-                || detail == expected
-                || detail.ends_with(&format!(".{expected}"))
-                || (expected == "dynamic_dispatch"
-                    && (category == "indirect_call" || detail.contains("dynamic_dispatch")))
-                || (expected == "indirect_call" && category == "indirect_call")
-                || (expected == "unresolved"
-                    && (category == "unresolved_binding" || detail.contains("unresolved")))
-        }
-        CallDispatch::Unassessed => expected == "unassessed",
-        CallDispatch::Closed { .. } => expected == "closed",
+fn gap_matches(dispatch: &CallDispatch, category: &str, detail: Option<&str>) -> bool {
+    let CallDispatch::Open { reason } = dispatch else {
+        return false;
+    };
+    if reason.category() != category {
+        return false;
     }
+    detail.is_none_or(|expected| match reason {
+        DispatchGap::IndirectCall(actual) | DispatchGap::UnresolvedBinding(actual) => {
+            actual == expected
+        }
+        _ => false,
+    })
+}
+
+fn target_ids_match(actual: &[&str], required: Option<&str>, allowed: &[&str]) -> bool {
+    match required {
+        Some(required) => actual == [required],
+        None => {
+            actual.iter().all(|id| allowed.contains(id))
+                && actual.iter().collect::<BTreeSet<_>>().len() == actual.len()
+        }
+    }
+}
+
+#[test]
+fn dispatch_expectations_do_not_promote_unrelated_details_to_categories() {
+    for reason in [
+        DispatchGap::IndirectCall("java.reflection".into()),
+        DispatchGap::UnresolvedBinding("java.dynamic_dispatch".into()),
+    ] {
+        assert!(!gap_matches(
+            &CallDispatch::Open { reason },
+            "indirect_call",
+            Some("java.dynamic_dispatch")
+        ));
+    }
+    let future = CallDispatch::Open {
+        reason: DispatchGap::IndirectCall("future.multiple_dispatch".into()),
+    };
+    assert!(gap_matches(&future, "indirect_call", None));
+    assert!(gap_matches(
+        &future,
+        "indirect_call",
+        Some("future.multiple_dispatch")
+    ));
+    assert!(!gap_matches(
+        &future,
+        "unresolved_binding",
+        Some("future.multiple_dispatch")
+    ));
+    assert!(!gap_matches(
+        &CallDispatch::Unassessed,
+        "indirect_call",
+        None
+    ));
+}
+
+#[test]
+fn optional_targets_permit_absence_but_reject_wrong_or_duplicate_targets() {
+    assert!(target_ids_match(&[], None, &["expected"]));
+    assert!(target_ids_match(&["expected"], None, &["expected"]));
+    assert!(!target_ids_match(&["wrong"], None, &["expected"]));
+    assert!(!target_ids_match(
+        &["expected", "wrong"],
+        None,
+        &["expected"]
+    ));
+    assert!(!target_ids_match(
+        &["expected", "expected"],
+        None,
+        &["expected"]
+    ));
+    assert!(!target_ids_match(&[], Some("expected"), &[]));
+    assert!(target_ids_match(&["expected"], Some("expected"), &[]));
+    assert!(!target_ids_match(&["wrong"], None, &[]));
 }
 
 /// Configure process env used by Go sidecar produces (matches operator defaults).
@@ -389,7 +443,11 @@ pub fn qualify_pipeline(opts: QualifyOpts<'_>) {
         }
         if let Some(expected_gap) = case["dispatch_gap"].as_str() {
             assert!(
-                gap_matches(&row.dispatch, expected_gap),
+                gap_matches(
+                    &row.dispatch,
+                    expected_gap,
+                    case["dispatch_detail"].as_str()
+                ),
                 "{}: expected dispatch_gap {expected_gap}, got {:?}",
                 case["name"],
                 row.dispatch
@@ -397,22 +455,34 @@ pub fn qualify_pipeline(opts: QualifyOpts<'_>) {
             assert!(!row.dispatch.is_closed(), "{}", case["name"]);
         }
 
-        if case.get("target").is_some() {
-            let target = selected(&graph, &root, NodeKind::Callable, &case["target"]);
+        let required = case.get("target").map(|selector| {
+            selected(&graph, &root, NodeKind::Callable, selector)
+                .id
+                .as_str()
+        });
+        let allowed: Vec<_> = case["allowed_targets"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|selector| {
+                selected(&graph, &root, NodeKind::Callable, selector)
+                    .id
+                    .as_str()
+            })
+            .collect();
+        let actual: Vec<_> = row
+            .targets
+            .iter()
+            .filter_map(|target| target.relation_target.as_ref())
+            .map(address_value)
+            .collect();
+        assert!(
+            target_ids_match(&actual, required, &allowed),
+            "{}: targets {actual:?}; required {required:?}, allowed {allowed:?}",
+            case["name"]
+        );
+        if required.is_some() {
             assert_eq!(row.targets.len(), 1, "{}", case["name"]);
-            let relation = row.targets[0]
-                .relation_target
-                .as_ref()
-                .unwrap_or_else(|| panic!("{}: missing relation_target", case["name"]));
-            assert_eq!(address_value(relation), target.id);
-        } else if case["allow_empty_targets"] != true {
-            assert!(
-                row.targets
-                    .iter()
-                    .all(|target| target.relation_target.is_none()),
-                "{}",
-                case["name"]
-            );
         }
         if case["signature"] == true {
             assert_eq!(row.targets.len(), 1);

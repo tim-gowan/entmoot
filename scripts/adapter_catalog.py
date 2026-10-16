@@ -43,15 +43,20 @@ def resolved_adapter(
     else:
         home = Path(environment.get(ADAPTERS_ROOT_ENV, str(default_adapters_root())))
         checkout_build = root / ".tmp" / "adapter-build" / "resolver-adapters"
+        relatives = family.get("relative_artifacts", [])
         if family.get("artifact_kind") == "repo_relative":
-            bases = [root / ".tmp" / "adapter-build", home, root]
+            candidates = [root / relative for relative in relatives]
+            for base in (root / ".tmp" / "adapter-build", checkout_build):
+                for relative in relatives:
+                    candidates.extend((base / relative, base / Path(relative).name))
         else:
-            bases = [checkout_build, home]
-        candidates = [
-            base / relative
-            for base in bases
-            for relative in family.get("relative_artifacts", [])
-        ]
+            candidates = [checkout_build / relative for relative in relatives]
+        # Match runtime discovery: checkout, installed PATH basenames, then home.
+        search_path = environment.get("PATH", environment.get("Path", ""))
+        for relative in relatives:
+            candidates.extend(Path(directory) / Path(relative).name
+                              for directory in search_path.split(os.pathsep) if directory)
+        candidates.extend(home / relative for relative in relatives)
     return next((path for path in candidates if path.is_file()), None)
 
 

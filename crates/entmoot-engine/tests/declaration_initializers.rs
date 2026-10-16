@@ -238,7 +238,12 @@ fn graph_fragment_membership_is_verified_before_reuse_or_publication() {
         &options,
     )
     .unwrap();
-    let pointer = std::fs::read(root.path().join(".entmoot/current.json")).unwrap();
+    let pointer = std::fs::read(
+        entmoot_engine::workspace::storage_directory(root.path())
+            .unwrap()
+            .join("current.json"),
+    )
+    .unwrap();
     let locator: entmoot_engine::KnowledgeViewLocator =
         serde_json::from_slice(&std::fs::read(&initial.publication.store).unwrap()).unwrap();
     let db = rusqlite::Connection::open(&locator.database).unwrap();
@@ -256,7 +261,7 @@ fn graph_fragment_membership_is_verified_before_reuse_or_publication() {
         db.execute(sql, []).unwrap();
         let error = initialize_workspace(root.path(), Some("cache-integrity"), &Default::default(), &options).unwrap_err();
         assert!(error.to_string().contains("membership commitment"), "{error}");
-        assert_eq!(std::fs::read(root.path().join(".entmoot/current.json")).unwrap(), pointer);
+        assert_eq!(std::fs::read(entmoot_engine::workspace::storage_directory(root.path()).unwrap().join("current.json")).unwrap(), pointer);
         db.execute("UPDATE file_syntax_cache SET parts=?1 WHERE path='first.py'", [first]).unwrap();
     }
     let restored = initialize_workspace(

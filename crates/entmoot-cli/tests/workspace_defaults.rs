@@ -7,6 +7,28 @@ use std::{
     process::Command,
 };
 
+/// Own both analyzed source and its sibling data root through one temporary lifetime.
+struct WorkspaceFixture {
+    _directory: tempfile::TempDir,
+    source: PathBuf,
+}
+
+impl WorkspaceFixture {
+    fn new() -> Self {
+        let directory = tempfile::tempdir().unwrap();
+        let source = directory.path().join("source");
+        fs::create_dir(&source).unwrap();
+        Self {
+            _directory: directory,
+            source,
+        }
+    }
+
+    fn path(&self) -> &Path {
+        &self.source
+    }
+}
+
 /// Isolated data root beside the analyzed source (never `<source>/.entmoot`).
 fn data_dir(root: &Path) -> PathBuf {
     root.parent().unwrap_or(root).join(format!(
@@ -18,7 +40,7 @@ fn data_dir(root: &Path) -> PathBuf {
 }
 
 fn storage(root: &Path) -> PathBuf {
-    entmoot_engine::workspace::storage_directory_in(root, Some(&data_dir(root)))
+    entmoot_engine::workspace::storage_directory_in(root, Some(&data_dir(root))).unwrap()
 }
 
 fn entmoot_cmd(root: &Path) -> Command {
@@ -48,7 +70,7 @@ fn json(root: &Path, args: &[&str]) -> Value {
 
 #[test]
 fn scheduler_configuration_survives_cli_restart_and_matches_shared_reads() {
-    let temp = tempfile::tempdir().unwrap();
+    let temp = WorkspaceFixture::new();
     let root = temp.path();
     let store = root.join("shared.db");
     let path = store.to_str().unwrap();
@@ -520,7 +542,7 @@ fn collaboration_producer_cli_resumes_a_sealed_result_in_a_new_process() {
 
 #[test]
 fn native_budget_defaults_to_one_hour_and_accepts_explicit_override() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     fs::write(root.path().join("api.py"), "def leaf(): return 1\n").unwrap();
     let indexed = json(root.path(), &["init", "--structural-only"]);
     assert_eq!(indexed["budget_seconds"], 3600);
@@ -536,7 +558,7 @@ fn native_budget_defaults_to_one_hour_and_accepts_explicit_override() {
 #[test]
 #[cfg(feature = "producer")]
 fn experimental_canon_is_required_and_published_only_by_explicit_bind() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     fs::write(
         root.path().join("Cargo.toml"),
         "[package]\nname='canon-cli'\nversion='0.1.0'\nedition='2021'\n",
@@ -590,7 +612,7 @@ fn init_with_summary(root: &Path, args: &[&str]) -> (Value, String) {
 
 #[test]
 fn explicit_test_validation_writes_ingestible_status_without_changing_publication() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     let output = tempfile::tempdir().unwrap();
     fs::write(root.path().join("lib.rs"), "fn value() {}\n").unwrap();
     json(root.path(), &["init", "--structural-only"]);
@@ -641,7 +663,7 @@ fn explicit_test_validation_writes_ingestible_status_without_changing_publicatio
 
 #[test]
 fn assessment_commands_are_read_only_and_refuse_unqualified_absence() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     fs::write(
         root.path().join("lib.rs"),
         "fn first(x:i32)->i32 {x+x} fn second(y:i32)->i32 {y+y}",
@@ -700,7 +722,7 @@ fn assessment_commands_are_read_only_and_refuse_unqualified_absence() {
 #[test]
 #[cfg(feature = "producer")]
 fn rust_profile_reaches_automatic_production_and_fences_planned_inputs() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     fs::create_dir(root.path().join("src")).unwrap();
     fs::write(
         root.path().join("Cargo.toml"),
@@ -777,7 +799,7 @@ fn rust_profile_reaches_automatic_production_and_fences_planned_inputs() {
 #[test]
 #[cfg(feature = "producer")]
 fn native_cache_fingerprints_are_checked_before_reuse_or_publication() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     fs::write(
         root.path().join("app.js"),
         "function leaf() { return 1; } function caller() { return leaf(); }\n",
@@ -890,7 +912,7 @@ fn native_cache_fingerprints_are_checked_before_reuse_or_publication() {
 }
 #[test]
 fn defaults_examples_and_read_discovery() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     for example in ["find-subject", "unresolved", "read-source"] {
         let request = json(root.path(), &["request", "--example", example]);
         let _: entmoot_contracts::query::QueryRequest = serde_json::from_value(request).unwrap();
@@ -957,7 +979,7 @@ fn defaults_examples_and_read_discovery() {
 
 #[test]
 fn bind_requires_native_by_default_and_structural_only_waives() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     fs::write(
         root.path().join("main.go"),
         "package main\nfunc helper() {}\nfunc main() { helper() }\n",
@@ -1029,7 +1051,7 @@ fn bind_requires_native_by_default_and_structural_only_waives() {
 
 #[test]
 fn assess_alias_and_compatibility_reads_preserve_publications() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     fs::write(
         root.path().join("lib.rs"),
         "pub fn api(x: i32) -> i32 { x }\n",
@@ -1089,7 +1111,7 @@ fn assess_alias_and_compatibility_reads_preserve_publications() {
 #[test]
 #[cfg(feature = "producer")]
 fn collapsed_impact_and_bind_need_no_graph_flags() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     fs::write(
         root.path().join("app.js"),
         "function target() { return 1; }\nfunction caller() { return target(); }\n",
@@ -1181,7 +1203,7 @@ fn impact_relay_matches_shared_service_and_is_read_only() {
         build_topology_from_repo_with_options, write_graph_json, KnowledgeRepository,
         KnowledgeStore, QueryEngine, SqliteKnowledgeRepository,
     };
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     let src = root.path().join("source");
     fs::create_dir(&src).unwrap();
     let source = "fn leaf() -> i32 { 1 }\nfn first() { leaf(); }\nfn second() { leaf(); }";
@@ -1243,7 +1265,7 @@ fn impact_relay_matches_shared_service_and_is_read_only() {
 
 #[test]
 fn java_adapter_pin_is_exclusive_in_plan_summaries() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     fs::write(
         root.path().join("Api.java"),
         "class Api { int api() { return 1; } }",
@@ -1291,7 +1313,7 @@ fn java_adapter_pin_is_exclusive_in_plan_summaries() {
 #[test]
 #[cfg(feature = "producer")]
 fn independent_families_overlap_attach_in_order_and_fail_atomically() {
-    let root = tempfile::tempdir().unwrap();
+    let root = WorkspaceFixture::new();
     let adapters = tempfile::tempdir().unwrap();
     fs::write(
         root.path().join("main.go"),
@@ -1311,7 +1333,7 @@ fn independent_families_overlap_attach_in_order_and_fail_atomically() {
             format!(
                 r#"import json, sys, pathlib, time
 request = json.load(sys.stdin)
-markers = pathlib.Path(request['root']) / '_entmoot_markers'
+markers = pathlib.Path(__file__).resolve().parent / 'markers'
 markers.mkdir(exist_ok=True)
 (markers / '{family}.started').write_text('started')
 end = time.monotonic() + 3
@@ -1351,6 +1373,11 @@ print(json.dumps({{'invalid_environment': not (markers / '{peer}.started').exist
         .as_array()
         .unwrap()
         .contains(&Value::from("attached"))));
+    assert_eq!(
+        fs::read_dir(root.path()).unwrap().count(),
+        4,
+        "adapter synchronization must stay outside analyzed source"
+    );
     let pointer = storage(root.path()).join("current.json");
     let before = fs::read(&pointer).unwrap();
     fs::write(
@@ -1360,6 +1387,11 @@ print(json.dumps({{'invalid_environment': not (markers / '{peer}.started').exist
     .unwrap();
     let failed = invoke(&["bind", "--full"]);
     assert!(!failed.status.success());
+    assert!(
+        String::from_utf8_lossy(&failed.stderr).contains("invalid_environment"),
+        "{}",
+        String::from_utf8_lossy(&failed.stderr)
+    );
     assert_eq!(fs::read(pointer).unwrap(), before);
 }
 
@@ -1402,8 +1434,9 @@ fn automatic_storage_is_reused_and_can_live_outside_source() {
     let found = invoke(&["find", "work"]);
     assert_eq!(found["result_bounds"]["total_matches"], 1);
     assert!(!source.join(".entmoot").exists());
-    let pointer =
-        entmoot_engine::workspace::storage_directory_in(&source, Some(&data)).join("current.json");
+    let pointer = entmoot_engine::workspace::storage_directory_in(&source, Some(&data))
+        .unwrap()
+        .join("current.json");
     let before = fs::read(&pointer).unwrap();
     let boundary = invoke(&[
         "boundaries",
@@ -1425,4 +1458,169 @@ fn automatic_storage_is_reused_and_can_live_outside_source() {
     assert_eq!(before, fs::read(&pointer).unwrap());
     invoke(&["init"]);
     assert_ne!(before, fs::read(&pointer).unwrap());
+}
+
+#[test]
+fn invalid_storage_configuration_rejects_reads_and_writes_without_redirecting_publication() {
+    for bad in [
+        "broken JSON",
+        r#"{"schema":"entmoot.config.v1","mode":"remote"}"#,
+        r#"{"schema":"entmoot.config.v1","mode":"local","volume":"https://example.invalid/store"}"#,
+    ] {
+        for global in [false, true] {
+            let fixture = tempfile::tempdir().unwrap();
+            let source = fixture.path().join("source");
+            fs::create_dir(&source).unwrap();
+            fs::write(source.join("a.py"), "def leaf(): return 1\n").unwrap();
+            let namespace =
+                entmoot_engine::workspace::workspace_namespace(&source, &data_dir(&source));
+            fs::create_dir_all(&namespace).unwrap();
+            fs::write(namespace.join("config.json"), serde_json::to_vec(&serde_json::json!({
+                "schema":"entmoot.config.v1", "mode":"local", "volume":fixture.path().join("custom-volume")
+            })).unwrap()).unwrap();
+            json(&source, &["init", "--structural-only"]);
+            let volume = storage(&source);
+            let pointer = volume.join("current.json");
+            let before = fs::read(&pointer).unwrap();
+            let config = if global {
+                data_dir(&source).join("config.json")
+            } else {
+                namespace.join("config.json")
+            };
+            fs::create_dir_all(config.parent().unwrap()).unwrap();
+            fs::write(&config, bad).unwrap();
+            let plan = fixture.path().join("plan.json");
+            for command in [
+                vec!["init", "--structural-only"],
+                vec!["bind", "--structural-only"],
+                vec!["find", "leaf"],
+                vec![
+                    "storage-plan",
+                    "--root",
+                    source.to_str().unwrap(),
+                    "--out",
+                    plan.to_str().unwrap(),
+                ],
+            ] {
+                let output = run(&source, &command);
+                assert!(
+                    !output.status.success(),
+                    "accepted {bad:?}, global={global}, command={command:?}"
+                );
+                let error = String::from_utf8_lossy(&output.stderr);
+                assert!(
+                    error.contains(if bad == "broken JSON" {
+                        "invalid"
+                    } else {
+                        "remote storage is not implemented"
+                    }),
+                    "{error}"
+                );
+                assert_eq!(
+                    fs::read(&pointer).unwrap(),
+                    before,
+                    "failed command replaced publication"
+                );
+                assert!(
+                    !namespace.join("store").exists(),
+                    "invalid config redirected a write to default storage"
+                );
+                assert_eq!(fs::read_to_string(&config).unwrap(), bad);
+            }
+            assert!(!source.join(".entmoot").exists());
+        }
+    }
+}
+
+#[test]
+fn native_archive_is_readable_after_restart_in_default_and_relocated_volumes() {
+    for relocated in [false, true] {
+        let fixture = tempfile::tempdir().unwrap();
+        let source = fixture.path().join("source");
+        fs::create_dir(&source).unwrap();
+        let code = "int leaf(void) { return 1; }\nint main(void) { return leaf(); }\n";
+        fs::write(source.join("main.c"), code).unwrap();
+        fs::write(source.join("compile_commands.json"), "[]").unwrap();
+        if relocated {
+            let namespace =
+                entmoot_engine::workspace::workspace_namespace(&source, &data_dir(&source));
+            fs::create_dir_all(&namespace).unwrap();
+            fs::write(
+                namespace.join("config.json"),
+                serde_json::to_vec(&serde_json::json!({
+                    "schema":"entmoot.config.v1", "mode":"local", "volume":fixture.path().join("custom-volume")
+                }))
+                .unwrap(),
+            )
+            .unwrap();
+        }
+        let adapter = fixture.path().join("authored-clang.py");
+        fs::write(&adapter, "import json,sys\njson.load(sys.stdin)\nprint(json.dumps({'compiler_version':'authored-storage-fixture'}))\n").unwrap();
+        let invoke = |args: &[&str]| {
+            let output = entmoot_cmd(&source)
+                .env("ENTMOOT_CLANG_ADAPTER", &adapter)
+                .args(args)
+                .output()
+                .unwrap();
+            assert!(
+                output.status.success(),
+                "{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            serde_json::from_slice::<Value>(&output.stdout).unwrap()
+        };
+        let first = invoke(&["init", "--require-native"]);
+        assert_eq!(first["stages"][0]["stage"], "produced");
+        // A distinct CLI process must hydrate native detail from the published store.
+        let boundaries = invoke(&["boundaries", "--detail", "export"]);
+        assert_eq!(boundaries["result"]["items"].as_array().unwrap().len(), 1);
+        assert_eq!(
+            boundaries["result"]["items"][0]["boundary"]["evaluations"]
+                .as_array()
+                .unwrap()
+                .len(),
+            1
+        );
+        assert!(
+            !boundaries
+                .to_string()
+                .contains("native_detail_not_retained"),
+            "{boundaries}"
+        );
+        assert!(storage(&source).join("knowledge.sqlite3.objects").is_dir());
+        invoke(&["bind", "--full"]);
+        let restarted = invoke(&["boundaries", "--detail", "export"]);
+        assert_eq!(
+            restarted["result"]["items"][0]["boundary"]["evaluations"]
+                .as_array()
+                .unwrap()
+                .len(),
+            1
+        );
+        assert!(
+            !restarted.to_string().contains("native_detail_not_retained"),
+            "{restarted}"
+        );
+        let request = fixture.path().join("boundaries.json");
+        fs::write(&request, br#"{"operation":"find","request":{"kind":"call_boundary","request":{}},"output":{"tier":"export"}}"#).unwrap();
+        let historical = invoke(&[
+            "request",
+            "--graph",
+            first["publication"]["graph"].as_str().unwrap(),
+            "--store",
+            first["publication"]["store"].as_str().unwrap(),
+            "--request",
+            request.to_str().unwrap(),
+        ]);
+        assert_eq!(
+            historical["result"]["items"], boundaries["result"]["items"],
+            "later bind changed historical native detail"
+        );
+        assert_eq!(fs::read_to_string(source.join("main.c")).unwrap(), code);
+        assert_eq!(
+            fs::read_dir(&source).unwrap().count(),
+            2,
+            "native writes leaked into source"
+        );
+    }
 }

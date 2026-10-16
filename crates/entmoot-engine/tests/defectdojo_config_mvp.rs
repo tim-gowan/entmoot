@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 
 use entmoot_contracts::{
     blake3_hex, resource_address, Address, ArtifactFormat, ArtifactManifest, ArtifactProducer,
@@ -71,19 +71,30 @@ fn observed_address(declared: &Address) -> Address {
     .unwrap()
 }
 
-fn address_by_name(
-    resources: &[ResourceArtifactRecord],
-) -> HashMap<String, entmoot_contracts::Address> {
-    resources
+fn resource_address_by_kind_and_name<'a>(
+    resources: &'a [ResourceArtifactRecord],
+    kind: &str,
+    name: &str,
+) -> &'a Address {
+    let matches: Vec<_> = resources
         .iter()
-        .map(|resource| {
+        .filter(|resource| {
             let Address::Resource { logical_name, .. } = &resource.logical_address else {
                 unreachable!()
             };
-            (logical_name.clone(), resource.logical_address.clone())
+            logical_name == name && resource.native_type.rsplit('/').next() == Some(kind)
         })
-        .collect()
+        .collect();
+    assert_eq!(matches.len(), 1, "fixture requires one {kind}/{name}");
+    &matches[0].logical_address
 }
+
+const PROCESSES: &[(&str, &str)] = &[
+    ("Deployment", "defectdojo-django"),
+    ("Deployment", "defectdojo-celery-worker"),
+    ("Deployment", "defectdojo-celery-beat"),
+    ("Job", "defectdojo-initializer"),
+];
 
 #[test]
 fn defectdojo_mvp_connects_every_deployed_process_to_database_and_broker() {
@@ -120,7 +131,6 @@ fn defectdojo_mvp_connects_every_deployed_process_to_database_and_broker() {
             identity_labels: BTreeMap::new(),
         })
         .collect::<Vec<_>>();
-    let observed_by_name = address_by_name(&observed_resources);
     let mut runtime_relations = graph
         .resources
         .iter()
@@ -131,18 +141,19 @@ fn defectdojo_mvp_connects_every_deployed_process_to_database_and_broker() {
             object: observed_address(&declared.logical_address),
         })
         .collect::<Vec<_>>();
-    for process in [
-        "defectdojo-django",
-        "defectdojo-celery-worker",
-        "defectdojo-celery-beat",
-        "defectdojo-initializer",
-    ] {
+    for &(kind, process) in PROCESSES {
         for endpoint in ["defectdojo-postgresql", "defectdojo-valkey"] {
             runtime_relations.push(ResourceArtifactRelation {
                 provider_pointer: format!("/relations/connectors/{process}/{endpoint}"),
-                subject: observed_by_name[process].clone(),
+                subject: resource_address_by_kind_and_name(&observed_resources, kind, process)
+                    .clone(),
                 predicate: RelationKind::ConnectsTo,
-                object: observed_by_name[endpoint].clone(),
+                object: resource_address_by_kind_and_name(
+                    &observed_resources,
+                    "StatefulSet",
+                    endpoint,
+                )
+                .clone(),
             });
         }
     }
@@ -248,14 +259,13 @@ fn defectdojo_mvp_connects_every_deployed_process_to_database_and_broker() {
     store
         .replace_all(&KnowledgeStore::extract_from_graph(&graph))
         .unwrap();
-    for process in [
-        "defectdojo-django",
-        "defectdojo-celery-worker",
-        "defectdojo-celery-beat",
-        "defectdojo-initializer",
-    ] {
+    for &(kind, process) in PROCESSES {
         let relations = store
-            .relation_edges_for_subject(&observed_by_name[process])
+            .relation_edges_for_subject(resource_address_by_kind_and_name(
+                &runtime.resources,
+                kind,
+                process,
+            ))
             .unwrap();
         assert_eq!(
             relations
@@ -362,7 +372,9 @@ fn defectdojo_mvp_connects_every_deployed_process_to_database_and_broker() {
         .expect("serialize result");
     let connected_labels: Vec<_> = observed_context["relation_neighbors"]
         .as_array()
-        .unwrap()
+        .unwrap_or_else(|| {
+            panic!("observed deployment has no relation neighbors: {observed_context}")
+        })
         .iter()
         .filter(|neighbor| neighbor["predicate"] == "connects_to")
         .flat_map(|neighbor| neighbor["subjects"].as_array().into_iter().flatten())

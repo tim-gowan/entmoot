@@ -104,21 +104,21 @@ Directories are pruned before reading; coverage records the excluded scope.
 Ancestor and machine-global ignore settings do not change an explicitly selected
 root. Ignore files remain snapshot inputs so policy edits invalidate the view.
 
-Fresh discovery during init uses the order below. Bind/produce first honor a
-nonempty explicit override, then reuse an existing profile path if its file is
-present, before searching the default candidates. Re-run init to refresh discovery.
+Discovery first honors process or nonempty config overrides, then a recorded
+profile path if its file is present, before searching the default candidates below.
+Init refreshes readiness; it does not download or qualify an adapter.
 
 | Step | Behavior |
 |------|----------|
-| Nonempty process `ENTMOOT_*` | Exclusive path (canonicalize; relative → CWD); missing → hard `invalid_environment` (no fallthrough) |
+| Process `ENTMOOT_*` when set | Exclusive path (canonicalize; relative → CWD); empty/missing → `invalid_environment` (no fallthrough) |
 | else workspace/global `config.json` `env` slot | Same exclusive rules when non-empty |
+| else recorded profile | Existing adapter path for this workspace |
 | else analyzed checkout | Conventional `.tmp/adapter-build/...` under the checkout |
-| else `ENTMOOT_ADAPTERS_ROOT` / `~/.entmoot/adapters/` | Catalog relatives for sidecars and programs |
 | else PATH basename | Installed CLI names when present |
+| else `ENTMOOT_ADAPTERS_ROOT` / `~/.entmoot/adapters/` | Catalog relatives for sidecars and programs |
 
-This is the current discovery order. Empty process overrides currently fall
-through, and home adapters precede PATH; both differ from the intended contract.
-Track repairs in [PLANNING](../../PLANNING.md#current-qualification-blockers).
+Readiness distinguishes process and configuration selections. Both use the same
+exclusive path as runtime resolution, including invalid choices.
 
 When multiple host tool versions exist, selection follows ecosystem priority
 (`JAVA_HOME`, `DOTNET_ROOT`, active venv, rustup default, then PATH).
@@ -160,8 +160,9 @@ entmoot status
 ```
 
 Durable state defaults to `~/.entmoot/workspaces/<source-key>/` with `config.json`
-(volume + empty `ENTMOOT_*` slots) and a `store/` volume. Structural initialization
-uses this volume; native artifact placement still has the known gap linked above.
+(volume + empty `ENTMOOT_*` slots) and a `store/` volume. Publications, native
+objects and readiness profiles use this selected volume, including when relocated.
+Explicit index/attach writes honor its retention budget through database and view locators.
 
 ## Rust (in-process)
 

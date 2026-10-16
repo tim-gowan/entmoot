@@ -26,42 +26,17 @@ follow-up if large-source operator feedback warrants asynchronous preparation.
 
 ## Current qualification blockers
 
-The 2026-10-16 audit at `e64558f8929d626e951491e4af99592b8ce1d1e4`
-reproduced these gaps. Earlier local success reports do not qualify this revision.
-Keep the AGENTS invariants; repair their implementations and controls together.
+The storage, configuration/admission, obsolete fixture paths, process isolation,
+native-feature selection and permissive assertion defects from the 2026-10-16
+audit are repaired with regression controls. Adapter default precedence now
+matches checkout → PATH → home; process overrides remain exclusive, and readiness
+uses workspace config selections consistently with runtime resolution.
 
-- **Storage ownership:** native production archives objects under the source-local
-  `.entmoot` while readers use the publication's store locator. Native detail can
-  become unreadable. Use the selected volume for both and test init/bind → restart
-  → boundary detail with an unchanged source tree.
-- **Configuration and admission:** `storage_directory_in` suppresses config and
-  volume errors; init can publish to a fallback store although reads reject the
-  configuration. `check_store_admission` recognizes only a parent named `.entmoot`,
-  bypassing budgets on home/custom volumes. Test invalid/remote config and budget
-  enforcement through every affected write entry point.
-- **Obsolete storage controls:** workspace/retention/declaration tests still read
-  source-local paths (six exercised failures). Native CI also reads source-local
-  profile/publication paths before its controls. Migrate fixtures and CI to the
-  shared location owner; preserve the original lock, rollback and corruption claims.
-  Workspace formatting also fails on three existing `artifact_cli.rs` differences.
-- **Test isolation:** the location environment test removes a caller's
-  `ENTMOOT_DATA_DIR` and races parallel tests. Isolate process-global changes and
-  keep every fixture's store inside its owned temporary lifetime.
-- **Native test selection:** generated ownership commands enable `native-tests`
-  without the matching producer features; Rust/JavaScript targets can execute
-  zero tests. Verify discovered test names and the executed controls in each lane.
-- **Assertion specificity:** `callsites_expect` accepts unrelated categories through
-  generic dynamic-dispatch matching; `allow_empty_targets` skips all target checks.
-  Keep category/detail assertions distinct and validate targets even when empty
-  results are permitted. Include near-miss category/detail cases.
-- **Discovery contract:** the implementation probes checkout → home adapters →
-  PATH, differing from the intended checkout → PATH → home order. Empty process
-  overrides also fall through. Reconcile precedence in the shared owner with
-  explicit competing-candidate and empty/invalid-override controls.
-
-Audit probes remain optional scratch under `.tmp/coverage-audit/`; regression
-fixtures belong with the production owners. Re-run the exact structural/native
-and packaging gates after repairs; do not infer qualification from test totals.
+Release still requires the exact candidate's structural/native CI and extracted
+package gates on both supported operating systems. The repair checkout has no
+installed sidecar/Program adapters; authored attachment/discovery controls do not
+qualify those native semantics. Provision the pinned adapters before running the
+complete dispatch cohort. Historical alpha receipts are not a substitute.
 
 ## Active scope
 

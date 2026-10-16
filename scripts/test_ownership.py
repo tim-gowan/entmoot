@@ -207,12 +207,14 @@ class OwnershipRegistry:
         targets: dict[str, dict[str, Any]] = {}
         for path in sorted(set(paths)):
             for cargo in self.targets_for_path(path):
-                target = targets.setdefault(cargo.key(), {
-                    "id": cargo.key(), "runner": "cargo",
-                    "command": cargo_commands_for_targets([cargo])[0],
-                    "owners": [], "fixtures": [], "occurrences": [],
-                })
-                target["owners"].append(path)
+                key = cargo.key()
+                if key not in targets:
+                    targets[key] = {
+                        "id": key, "runner": "cargo",
+                        "command": cargo_commands_for_targets([cargo], self.path.parents[1])[0],
+                        "owners": [], "fixtures": [], "occurrences": [],
+                    }
+                targets[key]["owners"].append(path)
         return {"targets": [targets[key] for key in sorted(targets)]}
 
     def owner_paths_for_target(self, cargo: CargoTarget) -> list[str]:
@@ -427,7 +429,7 @@ def integration_targets(root: Path, package: str, manifest: dict[str, Any]) -> d
     return targets
 
 
-def cargo_commands_for_targets(targets: list[CargoTarget]) -> list[list[str]]:
+def cargo_commands_for_targets(targets: list[CargoTarget], root: Path = DEFAULT_REGISTRY.parent.parent) -> list[list[str]]:
     """Batch whole packages; keep named targets scoped to their Cargo package."""
     full = sorted({t.package for t in targets if t.test is None and t.kind == "package"})
     def prefix_for(packages: list[str]) -> list[str]:
@@ -454,12 +456,18 @@ def cargo_commands_for_targets(targets: list[CargoTarget]) -> list[list[str]]:
             commands.append(command)
         if any(t.kind == "doc" for t in selected):
             commands.append(prefix + ["-p", package, "--doc"])
+    # Cargo owns target requirements. Preserve them even when a named target is
+    # subsumed into a package-wide invocation; otherwise cfg gates can run zero tests.
+    manifests = workspace_manifests(root)
+    requirements = {(package, test["name"]): test.get("required-features", [])
+                    for package, manifest in manifests.items() for test in manifest.get("test", [])}
     for command in commands:
-        features = []
-        if any(name in command for name in ("dispatch_expectations", "callsites_c_family", "callsites_csharp", "callsites_go", "callsites_java", "callsites_rust", "callsites_javascript")):
-            features.append("entmoot-engine/native-tests")
-        if any(name in command for name in ("adapter_controls", "program_adapters")):
-            features.append("entmoot/native-tests")
+        packages = {command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "-p"}
+        names = {command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "--test"}
+        selected = [t for t in targets if t.package in packages and t.test
+                    and (not names or t.test in names)]
+        features = sorted({f"{t.package}/{feature}" for t in selected
+                           for feature in requirements.get((t.package, t.test), [])})
         if features:
             feature = ",".join(features)
             if "--features" in command:

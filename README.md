@@ -29,9 +29,9 @@ protected release workflow succeeds; local tests do not establish publication.
 
 Run inside the source repository or select it with `-C`. First use automatically
 creates a structural inventory and private local storage under `~/.entmoot`
-(override with `--data-dir` / `ENTMOOT_DATA_DIR`). Structural initialization keeps
-its state outside the checkout. Native artifact placement and configuration
-validation still have [known gaps](PLANNING.md#current-qualification-blockers).
+(override with `--data-dir` / `ENTMOOT_DATA_DIR`). Structural publications and
+native artifacts share the selected storage volume outside the checkout. Invalid
+or remote configuration fails visibly before selecting storage.
 Later reads reuse the current immutable publication.
 No database setup is required. Remote storage is not implemented.
 
@@ -107,16 +107,16 @@ exhaustive language semantics or runtime/security proof.
 
 The [recorded alpha sample](docs/runbooks/local-alpha.md#fresh-alpha-evidence-2026-10-16)
 covers 5,407 call sites across four pinned publications and 47 verified source
-digests/spans, with build and native-scope limitations kept explicit. The current
-audit found [qualification blockers](PLANNING.md#current-qualification-blockers);
-that sample does not establish current release readiness.
+digests/spans, with build and native-scope limitations kept explicit. That historical
+sample does not establish current release readiness; the repaired controls still
+require [release qualification](PLANNING.md#current-qualification-blockers).
 
 | Capability | Maturity | Utility and limit / verification owner |
 |---|---|---|
 | Structural inventory and identities | Alpha candidate | Compiler-free source/revision navigation; parsing is not compiler qualification. [Revision controls](crates/entmoot-core/tests/revision_pairs.rs) |
-| Automatic local storage and recovery | Partial | Home storage is the default; native artifacts, config validation, budgets and migrated controls need repair. [Blockers](PLANNING.md#current-qualification-blockers); [workspace controls](crates/entmoot-cli/tests/workspace_defaults.rs) |
+| Automatic local storage and recovery | Alpha candidate | Shared home/custom volumes, fail-closed config and budget admission; restart/history and source preservation in [workspace controls](crates/entmoot-cli/tests/workspace_defaults.rs) and [explicit-write controls](crates/entmoot-cli/tests/artifact_cli.rs). |
 | CLI/MCP navigation and source | Alpha candidate | Shared bounded operations and digest-verified reads; first inventory has a startup cost. [Transport controls](crates/entmoot-mcp/tests/stdio_e2e.rs) |
-| Source/native call boundaries | Partial | Distinct-site counts and explicit closure scopes; native detail retrieval has a storage-path gap. [Boundary controls](crates/entmoot-engine/tests/call_boundaries.rs) |
+| Source/native call boundaries | Partial | Distinct-site counts and retained native detail; repository/dependency/native-library completeness remains separately unestablished. [Boundary controls](crates/entmoot-engine/tests/call_boundaries.rs) |
 | Native binding/dispatch | Partial, per configuration | Repository/external/intrinsic/unknown observations; no universal closed-world claim. [Native qualification](.github/workflows/native.yml) |
 | Revision impact and scoped overlay | Alpha candidate | Scope/signature/multiplicity-aware presence deltas; not API compatibility. [Overlay owner](crates/entmoot-engine/src/overlay.rs) |
 | Consumer/provider compatibility | Partial | Authored positive/negative controls; missing import/export scope remains incomplete. [Controls](crates/entmoot-engine/tests/package_compatibility.rs) |

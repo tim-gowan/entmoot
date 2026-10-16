@@ -7,6 +7,10 @@ use entmoot_engine::native_resolver::{
 };
 use entmoot_engine::{NodeKind, TopologyGraph, TopologyNode};
 
+// Qualification assertions themselves must reject near misses without live tools.
+#[path = "support/callsites_expect.rs"]
+mod callsites_expect;
+
 // Raw provider facts below are authored test inputs, not compiler qualification.
 // Structural occurrence identities always come from production visitors.
 mod revision_fixture {

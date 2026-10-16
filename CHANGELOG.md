@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-16: Storage and test-qualification repairs
+
+- Archive native evidence in the publication's selected volume and retain readable
+  detail after restart/rebind, including historical views and relocated storage.
+- Make storage selection return configuration errors; reject malformed/remote
+  global and workspace config without fallback publication. Apply retention
+  budgets to explicit database/view writes regardless of volume directory name.
+- Restore selected-volume syntax-cache lookup; migrate obsolete path controls and
+  native CI discovery, preserving lock, corruption, recovery and source fences.
+- Isolate environment-sensitive location/profile tests in child processes and
+  keep CLI source/data fixtures in one cleanup lifetime. Keep mock-adapter
+  synchronization outside analyzed source and assert the intended failure reason.
+- Select Kubernetes fixture resources by kind and name so same-named Services
+  cannot replace Deployments or StatefulSets through hash-dependent ordering.
+- Derive native test features from Cargo target requirements, including installed
+  sidecar controls. Match dispatch categories and details exactly; optional target
+  expectations reject unexpected or duplicate callees.
+- Align checkout/PATH/home precedence in runtime and maintainer discovery. Empty
+  process overrides stay exclusive; profiles honor config-selected adapters and
+  distinguish them from process selections. Live sidecar qualification remains
+  an explicit native CI requirement.
+
 ## 2026-10-16: Maintainer guidance and documentation audit
 
 - Map changes to identity, storage, publication, frontend and test-lane checks in

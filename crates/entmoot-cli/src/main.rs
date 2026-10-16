@@ -1567,7 +1567,7 @@ fn run() -> Result<()> {
                         let root =
                             entmoot_engine::workspace::workspace_root(&std::env::current_dir()?)?;
                         let parent =
-                            entmoot_engine::workspace::storage_directory(&root).join("impact");
+                            entmoot_engine::workspace::storage_directory(&root)?.join("impact");
                         fs::create_dir_all(&parent)?;
                         tempfile::Builder::new()
                             .prefix("transition-")
@@ -1647,7 +1647,7 @@ fn run() -> Result<()> {
                 "version": version, "source": from.display().to_string(),
             });
             let dest = entmoot_engine::materialize::materialize(
-                &entmoot_engine::workspace::storage_directory(&root).join("deps"),
+                &entmoot_engine::workspace::storage_directory(&root)?.join("deps"),
                 &subject,
                 &version,
                 &from,
