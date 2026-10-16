@@ -44,23 +44,11 @@ htmlcov/
 *$py.class
 *.egg-info/
 
-# Reproducible evaluation outputs. Keep policies, harnesses, fixtures, pins, and
-# generalized conclusions; regenerate machine/run-specific observations locally.
-/evals/topology/commit_update/*.json
-/evals/topology/ecosystem_scale/
-/evals/topology/resolver_spike/report/
-/evals/topology/scip_poc/JUICE_SHOP_ANALYSIS.md
-/evals/topology/scip_poc/Cargo.lock
-/evals/real_world/*/QUERY_MEASUREMENTS.json
-/evals/retrieval/results/
-
-# Maintainer-local grammar packets and campaign runbooks (personal skill owns the
-# workflow; production uses crates/entmoot-core/generated/grammars and evals/harness).
+# Maintainer-local grammar packets and corpora runbooks live outside this tree
+# (backup: G:/GitHub/temp/entmoot-bkp). Personal skill: entmoot-grammar-corpora.
 /tools/tree-sitter-upstream/
 /docs/runbooks/corpora.md
 /docs/runbooks/corpus-builds.md
-
-
 
 # Coverage reports
 lcov.info
