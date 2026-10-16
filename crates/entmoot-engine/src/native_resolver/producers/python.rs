@@ -39,9 +39,8 @@ pub const CANDIDATES: &[&str] = &[
 ];
 
 /// Optional explicit interpreter/import-root configuration; otherwise probe the selected interpreter.
-const ENVIRONMENT_CANDIDATES: &[&str] = &[
-    ".tmp/adapter-build/pyright-program/python_environment.json",
-];
+const ENVIRONMENT_CANDIDATES: &[&str] =
+    &[".tmp/adapter-build/pyright-program/python_environment.json"];
 
 const MISSING_MESSAGE: &str = "missing build or dependency: Python requires ENTMOOT_PYRIGHT_ADAPTER or pyright-program under ~/.entmoot/adapters (build with scripts/build_pyright_program.py). The installed interpreter is selected automatically unless an explicit Python environment is configured";
 

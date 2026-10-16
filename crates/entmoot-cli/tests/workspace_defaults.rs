@@ -9,14 +9,12 @@ use std::{
 
 /// Isolated data root beside the analyzed source (never `<source>/.entmoot`).
 fn data_dir(root: &Path) -> PathBuf {
-    root.parent()
-        .unwrap_or(root)
-        .join(format!(
-            ".entmoot-home-{}",
-            root.file_name()
-                .and_then(|name| name.to_str())
-                .unwrap_or("workspace")
-        ))
+    root.parent().unwrap_or(root).join(format!(
+        ".entmoot-home-{}",
+        root.file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("workspace")
+    ))
 }
 
 fn storage(root: &Path) -> PathBuf {

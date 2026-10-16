@@ -73,14 +73,7 @@ pub fn collect_clang_observation(
         "{}; compile_commands.json required",
         super::super::family_registry::missing_adapter_message("clang", ENV_VAR)
     );
-    let mut raw = collect_via_sidecar(
-        source_root,
-        ENV_VAR,
-        CANDIDATES,
-        &missing,
-        wall,
-        canon,
-    );
+    let mut raw = collect_via_sidecar(source_root, ENV_VAR, CANDIDATES, &missing, wall, canon);
     if !raw.diagnostics.is_empty() && !raw.invalid_environment {
         raw.build_context.insert("partial".into(), true.into());
     }

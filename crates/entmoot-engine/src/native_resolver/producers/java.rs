@@ -40,14 +40,7 @@ pub fn collect_java_observation(
     canon: bool,
 ) -> NativeRawObservation {
     let missing = super::super::family_registry::missing_adapter_message("java", ENV_VAR);
-    let mut raw = collect_via_sidecar(
-        source_root,
-        ENV_VAR,
-        CANDIDATES,
-        &missing,
-        wall,
-        canon,
-    );
+    let mut raw = collect_via_sidecar(source_root, ENV_VAR, CANDIDATES, &missing, wall, canon);
     // Preserve the native classpath mode (explicit jars, no-classpath, or the
     // selected javac materialization). A prepared compiler program still does
     // not establish complete project-build or runtime-dispatch coverage.

@@ -17,8 +17,8 @@ use entmoot_contracts::{
 use crate::workspace::storage_directory;
 
 use super::family_registry::{
-    adapter_env_configured, adapters_root_hint, resolve_adapter_binary,
-    resolve_adapter_binary_for, sidecar_family, ADAPTERS_ROOT_ENV, SIDECAR_FAMILIES,
+    adapter_env_configured, adapters_root_hint, resolve_adapter_binary, resolve_adapter_binary_for,
+    sidecar_family, ADAPTERS_ROOT_ENV, SIDECAR_FAMILIES,
 };
 use super::producers::{clang, go, java, oxc, python, roslyn, typescript};
 
@@ -392,7 +392,12 @@ pub fn resolve_with_profile(
             }
         }
     }
-    resolve_adapter_binary_for(env_var, relative_artifacts, repo_relative, source.as_deref())
+    resolve_adapter_binary_for(
+        env_var,
+        relative_artifacts,
+        repo_relative,
+        source.as_deref(),
+    )
 }
 
 /// Walk ancestors for `.entmoot/adapter-profile.json` or `.entmoot/current.json`.

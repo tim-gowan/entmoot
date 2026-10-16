@@ -40,14 +40,7 @@ pub fn collect_roslyn_observation(
     canon: bool,
 ) -> NativeRawObservation {
     let missing = super::super::family_registry::missing_adapter_message("roslyn", ENV_VAR);
-    let mut raw = collect_via_sidecar(
-        source_root,
-        ENV_VAR,
-        CANDIDATES,
-        &missing,
-        wall,
-        canon,
-    );
+    let mut raw = collect_via_sidecar(source_root, ENV_VAR, CANDIDATES, &missing, wall, canon);
     if !raw.invalid_environment
         && (!raw.diagnostics.is_empty()
             || raw
