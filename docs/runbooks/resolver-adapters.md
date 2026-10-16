@@ -21,13 +21,12 @@ syntax acceptance, including TypeScript 7's lack of a compiler API.
 Catalog (paths + env): [`tools/resolver-adapters/catalog.toml`](../../tools/resolver-adapters/catalog.toml).
 Native floors (pins + language surfaces): [`tools/resolver-adapters/floors.toml`](../../tools/resolver-adapters/floors.toml).
 Readiness: `entmoot status` (home-scoped adapter profile after `init`).
-Optional host probe: `python scripts/check_native_env.py` (script name kept; SSOT is
-the adapter profile). Maintainer terms: [AGENTS glossary](../../AGENTS.md#maintainer-glossary).
+Maintainer terms: [AGENTS glossary](../../AGENTS.md#maintainer-glossary).
 Bind ranking: [`RESOLVER_WORKFLOW.md`](../architecture/ARCHITECTURE.md) §5–§6.
 
 Java family id is `java` / `ENTMOOT_JAVA_ADAPTER` (javac Trees only).
 Operators use `entmoot init`; the hidden `index` command is a low-level structural write.
-Workstation corpora: [`docs/runbooks/corpus-builds.md`](corpus-builds.md).
+Native build context: [`docs/runbooks/corpus-builds.md`](corpus-builds.md).
 
 ## Entmoot native floors
 
@@ -148,7 +147,6 @@ python scripts/build_resolver_adapters.py
 # $env:ENTMOOT_ADAPTERS_ROOT = "<that-out-dir>"   # or install under ~/.entmoot/adapters
 entmoot init
 entmoot status
-# optional host probe (not CLI SSOT): python scripts/check_native_env.py
 ```
 
 Durable state defaults to `~/.entmoot/workspaces/<source-key>/` with `config.json`
@@ -321,8 +319,8 @@ is reported in the workspace summary and used for production. Rebuild the CLI
 with `--features producer` after updating it: an old executable cannot implement
 new adapter discovery (pre-commit may land under `target/commit-check/release/`).
 Set `JAVA_HOME` to the intended JDK or select `ENTMOOT_JAVA` explicitly. Never solve a stale pin by falling back to a sibling
-checkout. After an engine or receipt-field rename (`adapter_pin`), wipe local
-`.entmoot` generations before re-`init`—stale pre-javac receipts are not
+checkout. After an engine or receipt-field rename (`adapter_pin`), wipe the
+home-scoped workspace store before re-`init`—stale pre-javac receipts are not
 forward-compatible. Impact pairs need a stable shared `--repo` /
 `repository_id` across pins. Open-virtual Java getters stay candidate call
 edges; empty `resolved_only` callers are not absence.
@@ -331,12 +329,12 @@ edges; empty `resolved_only` callers are not absence.
 
 | | |
 |--|--|
-| Host | Python + libclang (`LIBCLANG_PATH`); real CompDB required |
+| Host | Python + libclang (`LIBCLANG_PATH`); operator-supplied CompDB required |
 | Env | `ENTMOOT_CLANG_ADAPTER`; optional `ENTMOOT_CLANG_VFS`, `ENTMOOT_CLANG_COMPDB` (explicit database file) |
 | Build | `python scripts/build_resolver_adapters.py --families clang` |
 | Artifact | `.tmp/adapter-build/resolver-adapters/clang/entmoot-clang-resolver.py` |
 | Source | [`tools/resolver-adapters/clang/`](../../tools/resolver-adapters/clang) |
-| Limitations | CompDB required; one build configuration per artifact; C++ experimental for release claims |
+| Limitations | Existing `compile_commands.json` required (Entmoot does not generate CompDBs); one build configuration per artifact; C++ experimental for release claims |
 
 Call vs indirect vs macro gaps follow the OOTB
 [classification discipline](../../tools/resolver-adapters/clang/README.md#classification-discipline-ootb)

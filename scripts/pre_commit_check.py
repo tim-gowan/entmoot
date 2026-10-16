@@ -357,7 +357,7 @@ def run(cmd: list[str], label: str) -> int:
 
 
 def sidecar_controls(environment: dict[str, str], paths: list[str] | None) -> list[tuple[str, list[str]]]:
-    from scripts.check_native_env import load_catalog, resolved_adapter, control_runtime_available
+    from scripts.adapter_catalog import load_catalog, resolved_adapter, control_runtime_available
     if environment.get("ENTMOOT_NATIVE_CHECK") == "off":
         return []
     shared = ("crates/entmoot-engine/src/native_resolver/producers/sidecar.rs",

@@ -11,7 +11,7 @@ from scripts.pre_commit_check import check_crate_boundaries, check_local_markdow
 
 class NativeLaneTests(unittest.TestCase):
     def test_catalog_controls_respect_owners_and_exclusive_overrides(self):
-        from scripts.check_native_env import resolved_adapter
+        from scripts.adapter_catalog import resolved_adapter
         from scripts.pre_commit_check import sidecar_controls
         with TemporaryDirectory() as directory:
             root = Path(directory)
@@ -22,7 +22,7 @@ class NativeLaneTests(unittest.TestCase):
             self.assertEqual(resolved_adapter(family, {}, root), binary)
             self.assertIsNone(resolved_adapter(family, {"ENTMOOT_GO_ADAPTER":""}, root))
             self.assertIsNone(resolved_adapter(family, {"ENTMOOT_GO_ADAPTER":str(root/'missing')}, root))
-            with patch("scripts.check_native_env.load_catalog", return_value=[family]), patch("scripts.check_native_env.control_runtime_available", return_value=True):
+            with patch("scripts.adapter_catalog.load_catalog", return_value=[family]), patch("scripts.adapter_catalog.control_runtime_available", return_value=True):
                 env={"ENTMOOT_GO_ADAPTER":str(binary)}
                 self.assertEqual(sidecar_controls(env, ["unrelated.rs"]), [])
                 commands = sidecar_controls(env, ["tools/resolver-adapters/go/main.go"])

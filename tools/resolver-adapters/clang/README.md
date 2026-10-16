@@ -26,10 +26,11 @@ success does not establish a successful native bind.
 
 ## Build context and qualification
 
-The engine requires `compile_commands.json` at the source root or a supported
-build directory. Missing build context fails before launching a compiler. The
-worker's direct empty-argument fallback is partial and does not qualify this
-engine profile. One artifact represents one build configuration.
+The engine requires an operator-supplied `compile_commands.json` at the source
+root or a supported build directory. Entmoot does not generate CompDBs. Missing
+build context fails before launching a compiler. The worker's direct
+empty-argument fallback is partial and does not qualify this engine profile.
+One artifact represents one build configuration.
 
 With the adapter and runtime configured, run:
 
