@@ -37,17 +37,11 @@ htmlcov/
 .vscode/
 .semgrep/
 .trivycache/
-.endorlabs/
 
 # Python
 *.py[cod]
 *$py.class
 *.egg-info/
-
-# Pruned maintainer packets (personal skill entmoot-grammar-corpora)
-/tools/tree-sitter-upstream/
-/docs/runbooks/corpora.md
-/docs/runbooks/corpus-builds.md
 
 # Coverage reports
 lcov.info
