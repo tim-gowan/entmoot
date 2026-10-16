@@ -125,10 +125,6 @@
         {
           "kind": "file_prefix",
           "path": "crates/entmoot-core/build_support.rs"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "tools/tree-sitter-upstream/bundle_grammars.py"
         }
       ],
       "extensions": []

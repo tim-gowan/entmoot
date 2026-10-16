@@ -54,9 +54,13 @@ htmlcov/
 /evals/real_world/*/QUERY_MEASUREMENTS.json
 /evals/retrieval/results/
 
-# Non-taint Opengrep rules live in G:\GitHub\opengrep-experiments\non-taint-rules
-# (do not keep a duplicate pack here).
-/non-taint-rules/
+# Maintainer-local grammar packets and campaign runbooks (personal skill owns the
+# workflow; production uses crates/entmoot-core/generated/grammars and evals/harness).
+/tools/tree-sitter-upstream/
+/docs/runbooks/corpora.md
+/docs/runbooks/corpus-builds.md
+
+
 
 # Coverage reports
 lcov.info

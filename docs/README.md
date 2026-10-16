@@ -16,7 +16,7 @@ surfaces.
   [generated schemas](../crates/entmoot-contracts/generated/README.md): wire shape.
 - [Campaign harness](../evals/harness/README.md): SQLite integration runs.
 - [Local alpha](runbooks/local-alpha.md): release gates and historical corpus sample.
-- [Grammar bundle](../tools/tree-sitter-upstream/README.md): production inputs.
+- Generated grammar inputs: `crates/entmoot-core/generated/grammars/`.
 
 ## Compare and assess
 

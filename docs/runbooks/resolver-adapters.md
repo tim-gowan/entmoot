@@ -9,12 +9,11 @@ Durable family execution uses the same pipelines through a matching
 `entmoot-producer` helper; see [agent runtimes](agent-runtimes.md) for host isolation,
 environment assertions, lease controls and restart boundaries.
 
-The default structural build uses the verified generated grammar bundle and its
-existing C build toolchain. It does not invoke Node, upstream grammar generators,
-or language-specific SDKs. See the
-[grammar maintainer recipe](../../tools/tree-sitter-upstream/README.md#production-grammar-bundle)
-for regeneration. Adapter target-mode qualification remains separate from grammar
-syntax acceptance, including TypeScript 7's lack of a compiler API.
+The default structural build uses the verified generated grammar bundle under
+`crates/entmoot-core/generated/grammars/` and its existing C build toolchain. It
+does not invoke Node, upstream grammar generators, or language-specific SDKs.
+Adapter target-mode qualification remains separate from grammar syntax acceptance,
+including TypeScript 7's lack of a compiler API.
 
 **Product name:** Resolver adapters (ONTOLOGY). **Env shorthand:** `ENTMOOT_<FAMILY>_ADAPTER`.
 
@@ -26,7 +25,9 @@ Bind ranking: [`RESOLVER_WORKFLOW.md`](../architecture/ARCHITECTURE.md) §5–§
 
 Java family id is `java` / `ENTMOOT_JAVA_ADAPTER` (javac Trees only).
 Operators use `entmoot init`; the hidden `index` command is a low-level structural write.
-Native build context: [`docs/runbooks/corpus-builds.md`](corpus-builds.md).
+Keep virtual environments, generated code and native build logs under `.tmp/<task>/`.
+For C/C++ native (clang), supply an existing `compile_commands.json`; Entmoot does
+not generate CompDBs. C++ remains experimental.
 
 ## Entmoot native floors
 
