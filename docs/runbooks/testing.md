@@ -166,10 +166,13 @@ remote corpus blobs.
 | Repo | `ci.yml` → `repo` | Scripts/utilities unit tests | Remote corpus correctness |
 | Resolved + integration | `native.yml` → `resolved` | Pinned adapters + producer/bind/dispatch | All corpora green |
 | Demo | `demo.yml` (dispatch only) | One pinned upstream SHA structural pub | Release gate / native maturity |
+| Docs (CI) | `docs.yml` → `.tmp/staging` | Site build + staging artifact | Pages production deploy |
+| Docs (CD) | `docs.yml` after publish | `.tmp/site` + Pages when enabled | Pre-publish gate |
 
 Gates must not clone remote corpora. Pre-commit and `pr-gate-decision.yml` are
 accelerators, not substitutes for full `ci.yml`. Never path-skip correctness in
-`ci.yml`.
+`ci.yml`. Workflows share parameterized env/inputs; CD docs run only after a
+successful release publish.
 
 The CLI `adapter_controls` and `program_adapters` targets and engine
 `dispatch_expectations` / `callsites_*` require `native-tests`. They must not run in the clean

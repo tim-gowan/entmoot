@@ -1,5 +1,6 @@
-# Sole CD path: tag v* → CI/native/docs → GitHub Release → crates.io Trusted Publishing.
+# Sole CD path: tag v* → CI + native → GitHub Release + crates.io → docs (shared with CI).
 # Configure crates.io Trusted Publishing against this workflow and environment `crates-io`.
+# Docs run after successful publish; CI docs use .tmp/staging via docs.yml defaults.
 name: Release
 on:
   push:
@@ -9,16 +10,20 @@ permissions:
 concurrency:
   group: release
   cancel-in-progress: false
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_BUILD_JOBS: 2
+  PYTHONUTF8: '1'
+  PYTHON_VERSION: '3.13'
+  RUST_CACHE_KEY: release-ubuntu
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
   native:
     uses: ./.github/workflows/native.yml
-  docs:
-    uses: ./.github/workflows/docs.yml
   publish:
     name: GitHub Release and crates.io
-    needs: [ci, native, docs]
+    needs: [ci, native]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: crates-io
@@ -26,9 +31,6 @@ jobs:
       contents: write
       id-token: write
     env:
-      CARGO_TERM_COLOR: always
-      CARGO_BUILD_JOBS: 2
-      PYTHONUTF8: '1'
       RELEASE_TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -36,11 +38,11 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          python-version: '3.13'
+          python-version: ${{ env.PYTHON_VERSION }}
       - run: rustup show
       - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
         with:
-          shared-key: release-ubuntu
+          shared-key: ${{ env.RUST_CACHE_KEY }}
           cache-targets: true
       - run: python3 scripts/check_release.py --tag "$RELEASE_TAG"
       - name: Refuse if any crate version already on crates.io
@@ -92,3 +94,17 @@ jobs:
         run: python3 scripts/publish_release.py
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token || secrets.CARGO_REGISTRY_TOKEN }}
+  docs:
+    name: Documentation (post-publish)
+    needs: [publish]
+    uses: ./.github/workflows/docs.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    with:
+      out_dir: .tmp/site
+      upload_pages: true
+      deploy: true
+      staging_artifact: false
+      rust_cache_key: docs-release-ubuntu

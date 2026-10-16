@@ -93,7 +93,7 @@ failures and unsupported constructs remain different observations.
    success below is not a release gate. Do not remove unknowns to obtain green CI.
 5. Build docs with `cargo doc --workspace --locked --no-deps`, install
    `docs/requirements.txt`, then `python scripts/build_docs.py --cli
-   target/debug/entmoot --mcp target/debug/entmoot-mcp --out .tmp/site` (add `.exe`
+   target/debug/entmoot --mcp target/debug/entmoot-mcp --out .tmp/staging` (add `.exe`
    on Windows). Existing Markdown owners, actual CLI help, actual MCP input schemas
    and Rust JSON Schema form versioned docs; executable examples run on clean roots.
 6. Copy only the clean export payload to the sibling repository, commit and push.
@@ -146,16 +146,17 @@ tag CD creates the GitHub Release and publishes to crates.io.
   producer CLI artifact on success.
 - `demo.yml`: dispatch-only structural corpus (`evals/demo/`); reuses CI CLI
   artifact. Not a release gate.
-- `docs.yml`: every PR builds docs and runs examples; main deploys only when
-  repository variable `PAGES_ENABLED=true`. Enable Pages with GitHub Actions as
-  its source and ensure the account supports Pages for this private repository.
-  Source artifacts are generated even while hosting is disabled. Versioned docs
-  match the package build; a GitHub Wiki is not a second source of truth.
-- `release.yml` (**sole CD**): on tag `v*`, runs ci/native/docs on that SHA,
-  asserts tag↔version, creates the GitHub Release with `.crate` assets, then
-  Trusted Publishing to crates.io. Bounded timeouts, minimal permissions,
-  verified immutable action pins. Do not edit Trusted Publisher binding away
-  from this workflow.
+- `docs.yml` (shared, parameterized): CI/PR builds into `.tmp/staging` and
+  uploads a staging artifact (no Pages deploy). After successful tag publish,
+  `release.yml` calls the same workflow with `.tmp/site` + Pages upload/deploy
+  when `PAGES_ENABLED=true`. Enable Pages with GitHub Actions as its source.
+  Versioned docs match the package build; a GitHub Wiki is not a second source
+  of truth.
+- `release.yml` (**sole CD**): on tag `v*`, runs ci/native on that SHA, asserts
+  tag↔version, creates the GitHub Release with `.crate` assets, Trusted
+  Publishing to crates.io, then docs. Bounded timeouts, minimal permissions,
+  verified immutable action pins. Trusted Publisher binding stays on this
+  workflow filename + `crates-io`.
 - `publish.yml`: manual dry-run / bootstrap gate only (`publish=false` by
   default). Tags go through `release.yml`; do not use `publish.yml` as the
   primary release path.

@@ -138,8 +138,9 @@ The [local alpha guide](docs/runbooks/local-alpha.md) covers the prior corpus
 sample, validation, upgrade/rebuild policy, private-repository Pages setup and
 handoff to `tim-gowan/entmoot`. Local pre-commit is ownership-scoped and fast;
 CI is authoritative: structural + repo + policy (`ci.yml`), resolved native
-(`native.yml`), optional corpus demo (`demo.yml` dispatch). Tag CD
-(`release.yml`) creates the GitHub Release and publishes to crates.io. Publish
-only the exact revision that passes structural and resolved gates.
+(`native.yml`), docs staging under `.tmp/staging` (`docs.yml`), optional corpus
+demo (`demo.yml` dispatch). Tag CD (`release.yml`) publishes crates then runs
+the shared docs workflow for Pages. Publish only the exact revision that passes
+structural and resolved gates.
 
 MIT OR Apache-2.0. Bundled grammar sources retain their upstream licenses.
