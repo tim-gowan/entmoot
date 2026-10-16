@@ -37,18 +37,12 @@ htmlcov/
 .vscode/
 .semgrep/
 .trivycache/
-.endorlabs/
 
 # Python
 *.py[cod]
 *$py.class
 *.egg-info/
 
-# Maintainer-local grammar packets and corpora runbooks live outside this tree
-# (backup: G:/GitHub/temp/entmoot-bkp). Personal skill: entmoot-grammar-corpora.
-/tools/tree-sitter-upstream/
-/docs/runbooks/corpora.md
-/docs/runbooks/corpus-builds.md
 
 # Coverage reports
 lcov.info
