@@ -33,33 +33,42 @@ fn fingerprint_command_emits_the_rust_reader_contract_without_creating_a_store()
 
 #[test]
 fn retention_cli_plans_without_deleting_then_applies_a_fenced_plan() {
+    // Durable state is home-scoped (`--data-dir`), never `<source>/.entmoot`.
+    let home = tempfile::tempdir().unwrap();
     let directory = tempfile::tempdir().unwrap();
+    let storage =
+        entmoot_engine::workspace::storage_directory_in(directory.path(), Some(home.path()));
+    let retention = |args: &[&str]| {
+        let mut cmd = cli();
+        cmd.args(["--data-dir"]).arg(home.path()).args(args);
+        cmd.output().unwrap()
+    };
     for value in 0..4 {
         std::fs::write(
             directory.path().join("a.py"),
             format!("VALUE = {value}\ndef get():\n    return VALUE\n"),
         )
         .unwrap();
-        let output = cli()
-            .args(["init", "--root"])
-            .arg(directory.path())
-            .arg("--structural-only")
-            .output()
-            .unwrap();
+        let output = retention(&[
+            "init",
+            "--root",
+            directory.path().to_str().unwrap(),
+            "--structural-only",
+        ]);
         assert!(
             output.status.success(),
             "{}",
             String::from_utf8_lossy(&output.stderr)
         );
     }
-    let plan = directory.path().join(".entmoot/plan.json");
-    let output = cli()
-        .args(["storage-plan", "--root"])
-        .arg(directory.path())
-        .arg("--out")
-        .arg(&plan)
-        .output()
-        .unwrap();
+    let plan = home.path().join("plan.json");
+    let output = retention(&[
+        "storage-plan",
+        "--root",
+        directory.path().to_str().unwrap(),
+        "--out",
+        plan.to_str().unwrap(),
+    ]);
     assert!(
         output.status.success(),
         "{}",
@@ -67,37 +76,27 @@ fn retention_cli_plans_without_deleting_then_applies_a_fenced_plan() {
     );
     let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(value["remove_views"].as_array().unwrap().len(), 2);
-    assert_eq!(
-        std::fs::read_dir(directory.path().join(".entmoot/current"))
-            .unwrap()
-            .count(),
-        4
-    );
-    let output = cli()
-        .args(["storage-apply", "--root"])
-        .arg(directory.path())
-        .arg("--plan")
-        .arg(&plan)
-        .output()
-        .unwrap();
+    assert_eq!(std::fs::read_dir(storage.join("current")).unwrap().count(), 4);
+    let output = retention(&[
+        "storage-apply",
+        "--root",
+        directory.path().to_str().unwrap(),
+        "--plan",
+        plan.to_str().unwrap(),
+    ]);
     assert!(
         output.status.success(),
         "{}",
         String::from_utf8_lossy(&output.stderr)
     );
-    assert_eq!(
-        std::fs::read_dir(directory.path().join(".entmoot/current"))
-            .unwrap()
-            .count(),
-        2
-    );
-    let output = cli()
-        .args(["storage-apply", "--root"])
-        .arg(directory.path())
-        .arg("--plan")
-        .arg(&plan)
-        .output()
-        .unwrap();
+    assert_eq!(std::fs::read_dir(storage.join("current")).unwrap().count(), 2);
+    let output = retention(&[
+        "storage-apply",
+        "--root",
+        directory.path().to_str().unwrap(),
+        "--plan",
+        plan.to_str().unwrap(),
+    ]);
     assert!(!output.status.success());
     assert!(String::from_utf8_lossy(&output.stderr).contains("stale"));
 }
