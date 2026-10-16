@@ -1,14 +1,14 @@
-# Publish entmoot to crates.io via Trusted Publishing (OIDC).
+# Publish all five workspace crates to crates.io via Trusted Publishing (OIDC).
 #
 # Auth: rust-lang/crates-io-auth-action (official crates.io token exchange).
-# Toolchain: Docker Official Image `rust`, pinned by digest.
-# No long-lived CARGO_REGISTRY_TOKEN secret.
+# No long-lived CARGO_REGISTRY_TOKEN secret required when Trusted Publishing is set.
 #
 # Prerequisites (one-time):
-#   1. GitHub Environment `crates-io` (created in this repo).
-#   2. crates.io → entmoot → Settings → Trusted Publishing:
+#   1. GitHub Environment `crates-io`.
+#   2. crates.io Trusted Publishing (or pending publisher) for each crate:
 #        owner=tim-gowan  repo=entmoot  workflow=publish.yml  environment=crates-io
-#   See docs/publishing.md
+#      Crates: entmoot-contracts, entmoot-core, entmoot-engine, entmoot, entmoot-mcp
+#   See docs/runbooks/local-alpha.md
 
 name: Publish to crates.io
 
@@ -16,17 +16,14 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Expected Cargo.toml version (e.g. 0.0.2)"
+        description: "Expected workspace.package.version (e.g. 0.0.1-alpha)"
         required: true
         type: string
       publish:
-        description: "Upload to crates.io (false = gate + dry-run only)"
+        description: "Upload to crates.io (false = gate only)"
         required: false
         default: false
         type: boolean
-  push:
-    tags:
-      - "v*"
 
 permissions:
   contents: read
@@ -37,8 +34,8 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: -D warnings
-  RUST_IMAGE: rust@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa # 1-bookworm
+  CARGO_BUILD_JOBS: 2
+  PYTHONUTF8: '1'
 
 jobs:
   classify:
@@ -52,14 +49,8 @@ jobs:
         id: out
         run: |
           set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ inputs.version }}"
-            PUBLISH="${{ inputs.publish }}"
-          else
-            TAG="${GITHUB_REF_NAME}"
-            VERSION="${TAG#v}"
-            PUBLISH="true"
-          fi
+          VERSION="${{ inputs.version }}"
+          PUBLISH="${{ inputs.publish }}"
           if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-].*)?$ ]]; then
             echo "Refusing non-semver version: ${VERSION}"
             exit 1
@@ -69,60 +60,52 @@ jobs:
           echo "version=${VERSION} publish=${PUBLISH}"
 
   gate:
-    name: Validate and dry-run
+    name: Validate packaging
     runs-on: ubuntu-latest
     needs: classify
-    container:
-      image: rust@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa # 1-bookworm
-    defaults:
-      run:
-        shell: bash
+    timeout-minutes: 45
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-
-      - name: Assert Cargo.toml version
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - run: rustup show
+      - name: Assert workspace version
         run: |
           set -euo pipefail
-          TOML_VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)"
-          echo "Cargo.toml version=${TOML_VERSION}"
-          echo "expected version=${{ needs.classify.outputs.version }}"
-          test "$TOML_VERSION" = "${{ needs.classify.outputs.version }}"
-
-      - name: Ensure rustfmt and clippy
-        run: rustup component add rustfmt clippy
-
-      - name: cargo fmt
-        run: cargo fmt --all -- --check
-
-      - name: cargo clippy
-        run: cargo clippy --all-targets -- -D warnings
-
-      - name: cargo test
-        run: cargo test
-
-      - name: cargo publish --dry-run
-        run: cargo publish --dry-run
-
-      - name: Refuse if version already on crates.io
+          VERSION="$(python3 - <<'PY'
+          import tomllib
+          from pathlib import Path
+          print(tomllib.loads(Path("Cargo.toml").read_text(encoding="utf-8"))["workspace"]["package"]["version"])
+          PY
+          )"
+          echo "workspace version=${VERSION}"
+          test "$VERSION" = "${{ needs.classify.outputs.version }}"
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --locked --all-targets --features entmoot-core/full-tests -- -D warnings
+      - run: python3 scripts/check_release.py
+      - run: python3 scripts/package_smoke.py
+      - name: Refuse if any crate version already on crates.io
         if: needs.classify.outputs.publish == 'true'
         run: |
           set -euo pipefail
           VERSION="${{ needs.classify.outputs.version }}"
-          CODE="$(curl -sS -o /dev/null -w '%{http_code}' \
-            -H 'User-Agent: entmoot-publish-ci' \
-            "https://crates.io/api/v1/crates/entmoot/${VERSION}")"
-          echo "crates.io status for entmoot@${VERSION}: ${CODE}"
-          if [ "$CODE" = "200" ]; then
-            echo "Version already published; refusing duplicate upload"
-            exit 1
-          fi
-          if [ "$CODE" != "404" ]; then
-            echo "Unexpected crates.io response; refusing to continue"
-            exit 1
-          fi
+          for name in entmoot-contracts entmoot-core entmoot-engine entmoot entmoot-mcp; do
+            CODE="$(curl -sS -o /dev/null -w '%{http_code}' \
+              -H 'User-Agent: entmoot-publish-ci (github.com/tim-gowan/entmoot)' \
+              "https://crates.io/api/v1/crates/${name}/${VERSION}")"
+            echo "crates.io status for ${name}@${VERSION}: ${CODE}"
+            if [ "$CODE" = "200" ]; then
+              echo "Version already published; refusing duplicate upload"
+              exit 1
+            fi
+            if [ "$CODE" != "404" ]; then
+              echo "Unexpected crates.io response; refusing to continue"
+              exit 1
+            fi
+          done
 
   publish:
     name: Trusted publish (OIDC)
@@ -130,54 +113,23 @@ jobs:
     needs: [classify, gate]
     if: needs.classify.outputs.publish == 'true'
     environment: crates-io
+    timeout-minutes: 60
     # Stay on the host VM for OIDC (job containers can break id-token exchange).
-    # Gate already verified the crate inside the pinned rust container.
     permissions:
       id-token: write
       contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-
-      - name: Install Rust (official rustup)
-        run: |
-          set -euo pipefail
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-            | sh -s -- -y --default-toolchain stable --profile minimal
-          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
-
-      - name: Re-assert Cargo.toml version
-        run: |
-          set -euo pipefail
-          TOML_VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)"
-          test "$TOML_VERSION" = "${{ needs.classify.outputs.version }}"
-
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - run: rustup show
       - name: Authenticate to crates.io (OIDC)
         id: auth
-        uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
-
-      - name: cargo publish
-        run: cargo publish --no-verify
+        uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1
+      - name: Publish in dependency order and verify registry installation
+        run: python3 scripts/publish_release.py
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
-
-      - name: Verify published version
-        run: |
-          set -euo pipefail
-          VERSION="${{ needs.classify.outputs.version }}"
-          for i in 1 2 3 4 5 6 7 8 9 10; do
-            CODE="$(curl -sS -o /tmp/crate.json -w '%{http_code}' \
-              -H 'User-Agent: entmoot-publish-ci' \
-              "https://crates.io/api/v1/crates/entmoot/${VERSION}")"
-            if [ "$CODE" = "200" ]; then
-              echo "Verified entmoot@${VERSION} on crates.io"
-              cat /tmp/crate.json
-              exit 0
-            fi
-            echo "waiting for index (${i}/10) status=${CODE}"
-            sleep 6
-          done
-          echo "Published but could not verify within timeout"
-          exit 1

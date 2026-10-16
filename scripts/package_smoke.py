@@ -23,12 +23,18 @@ def read(binary, args, cwd, env=None):
 
 def fingerprint(binary, directory):
     directory.mkdir()
+    # Keep durable state outside the analyzed source tree.
+    data_dir = directory.parent / f"{directory.name}-data"
+    data_dir.mkdir(exist_ok=True)
     (directory / "app.py").write_text("def work(object):\n    object.toString()\n", encoding="utf-8")
-    found = read(binary, ["-C", str(directory), "find", "work"], directory)
+    common = ["--data-dir", str(data_dir), "-C", str(directory)]
+    found = read(binary, [*common, "find", "work"], directory)
     assert found["result_bounds"]["total_matches"] == 1, found
-    result = read(binary, ["-C", str(directory), "boundaries", "--callee", "*.toString()"], directory)
+    result = read(binary, [*common, "boundaries", "--callee", "*.toString()"], directory)
     assert result["result_bounds"]["total_matches"] == 1, result
-    publication = json.loads((directory / ".entmoot/current.json").read_text(encoding="utf-8"))
+    currents = list(data_dir.glob("workspaces/*/store/current.json"))
+    assert len(currents) == 1, currents
+    publication = json.loads(currents[0].read_text(encoding="utf-8"))
     graph = json.loads(Path(publication["current"]["graph"]).read_text(encoding="utf-8"))
     return graph["implementation"]
 
@@ -72,7 +78,14 @@ def main():
         # explicit TypeScript Program override (qualified in its own native lane).
         native_env = os.environ.copy()
         native_env.pop("ENTMOOT_TYPESCRIPT_ADAPTER", None)
-        result = read(target / "debug" / ("entmoot" + suffix), ["-C", str(native), "bind"], native, env=native_env)
+        native_data = stage / "native-data"
+        native_data.mkdir(exist_ok=True)
+        result = read(
+            target / "debug" / ("entmoot" + suffix),
+            ["--data-dir", str(native_data), "-C", str(native), "bind"],
+            native,
+            env=native_env,
+        )
         assert any((s.get("attachment") or {}).get("resolver_targets", 0) > 0 for s in result["stages"]), result
         helper = read(target / "debug" / ("entmoot-producer" + suffix), ["fingerprint"], stage)
         assert helper == actual, (helper, actual)
