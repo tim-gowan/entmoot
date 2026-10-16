@@ -23,3 +23,8 @@ cargo test -p entmoot-engine --test revision_receipts campaign_accounting -- --i
 Tests author local Git sources and expectations independently. Real upstream
 builds and native language qualification are separate, opt-in operations. Keep
 scratch under `.tmp/<task>/`; use a fresh run after input/layout changes.
+
+For a single pinned upstream structural demo (no adapters), use
+[`../demo/getrandom-structural.json`](../demo/getrandom-structural.json) with
+`repository_campaign run --depth 0 --structural-only`, or the dispatch workflow
+`demo.yml`.

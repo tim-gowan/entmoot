@@ -1,0 +1,26 @@
+{
+  "timeout_seconds": 1800,
+  "roots": ["getrandom-0.1.16"],
+  "repositories": {
+    "getrandom-0.1.16": {
+      "url": "https://github.com/rust-random/getrandom",
+      "revision": "bd14b7a243c7cda78f698742a84d1a0bbfcba972",
+      "build": [],
+      "lock": null,
+      "subject": "pkg:cargo/getrandom"
+    }
+  },
+  "packages": {},
+  "checks": [
+    {
+      "name": "getrandom-inventory",
+      "arguments": [
+        "inventory",
+        "--graph",
+        "{graph:getrandom-0.1.16}",
+        "--limit",
+        "20"
+      ]
+    }
+  ]
+}

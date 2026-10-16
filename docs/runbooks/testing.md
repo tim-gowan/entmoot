@@ -157,11 +157,23 @@ and `adapter_controls` in the CLI crate, plus engine `dispatch_expectations` /
 Authored selectors live under `fixtures/callsites/`. Precommit never fetches
 remote corpus blobs.
 
-## Release lane ownership
+## Coverage phases and release lane ownership
+
+| Phase | Workflow / job | May claim | Must not claim |
+|-------|----------------|-----------|----------------|
+| Structural + unit | `ci.yml` → `structural` | Compiler-free inventory, crate tests without adapters, packaging smoke | Native bind readiness |
+| Policy | `ci.yml` → `policy` | fmt/clippy/deny | Product coverage |
+| Repo | `ci.yml` → `repo` | Scripts/utilities unit tests | Remote corpus correctness |
+| Resolved + integration | `native.yml` → `resolved` | Pinned adapters + producer/bind/dispatch | All corpora green |
+| Demo | `demo.yml` (dispatch only) | One pinned upstream SHA structural pub | Release gate / native maturity |
+
+Gates must not clone remote corpora. Pre-commit and `pr-gate-decision.yml` are
+accelerators, not substitutes for full `ci.yml`. Never path-skip correctness in
+`ci.yml`.
 
 The CLI `adapter_controls` and `program_adapters` targets and engine
 `dispatch_expectations` / `callsites_*` require `native-tests`. They must not run in the clean
-compiler-free lane or silently pass when tools are missing. The native workflow
+compiler-free lane or silently pass when tools are missing. The resolved workflow
 provisions adapters and enables the feature explicitly; producer controls also
 require `producer` on the CLI / the matching engine features. Known Windows VFS
 and jar-classpath limitations remain named; Linux runs those explicit controls.
@@ -174,5 +186,6 @@ data directories, explicit refresh and restart behavior. Release packaging uses
 metadata by `scripts/check_release.py`.
 
 The ignored revision-campaign execution control requires the CLI `producer`
-feature (in-process Oxc). Native CI invokes it explicitly; the other Python/Git
-campaign accounting controls run in structural CI.
+feature (in-process Oxc). Resolved CI invokes it explicitly; the other Python/Git
+campaign accounting controls run in structural CI. Opt-in corpus demo:
+[`evals/demo/`](../../evals/demo/) via `demo.yml` (structural-only; not a release gate).

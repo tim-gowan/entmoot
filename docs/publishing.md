@@ -42,9 +42,11 @@ Docs: https://crates.io/docs/trusted-publishing
 
 1. Bump `workspace.package.version` in `Cargo.toml` on `main` and land CI green.
 2. Tag and push `v<version>` (must match `Cargo.toml`, e.g. `v0.0.1-alpha`).
-3. `release.yml` runs ci / native / docs on that SHA, packages crates, creates the
-   GitHub Release with `.crate` assets, then publishes to crates.io in dependency
-   order and verifies a clean registry install.
+3. `release.yml` runs ci / native / docs on that SHA (structural+repo+policy,
+   resolved, docs), packages crates, creates the GitHub Release with `.crate`
+   assets, then publishes to crates.io in dependency order and verifies a clean
+   registry install. `demo.yml` is opt-in corpus dispatch and is not part of
+   Trusted Publishing or tag CD.
 4. Approve the **`crates-io`** environment if reviewers are required.
 
 ## Manual dry-run / emergency bootstrap
@@ -70,6 +72,7 @@ push tag v*
         │
         ▼
    ci.yml + native.yml + docs.yml (workflow_call)
+   (demo.yml is dispatch-only; not on this path)
         │
         ▼
    release.yml publish job (environment crates-io):

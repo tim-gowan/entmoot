@@ -1,3 +1,6 @@
+# Resolved coverage: pinned adapters + producer/bind/dispatch controls.
+# Structural CI (ci.yml) stays compiler-free. release.yml calls this file by path; do not rename.
+# Does not claim remote corpora green (see demo.yml for opt-in structural corpus).
 name: Native qualification
 on:
   push:
@@ -14,7 +17,7 @@ env:
   CARGO_BUILD_JOBS: 2
   PYTHONUTF8: '1'
 jobs:
-  native:
+  resolved:
     strategy:
       fail-fast: false
       matrix:
@@ -39,6 +42,10 @@ jobs:
           node-version: '22'
       - run: rustup show
       - run: rustup component add rust-src
+      - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
+        with:
+          shared-key: resolved-${{ matrix.os }}
+          cache-targets: true
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: '1.26.0'
@@ -133,3 +140,23 @@ jobs:
           cargo test --locked -p entmoot --features native-tests --test adapter_controls javac_binary_authority_requires_the_declared_classpath -- --ignored --exact
       - name: Rehearse extracted native-enabled packages
         run: python scripts/package_smoke.py --producer
+      - name: Build producer release CLI
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo build --release --locked -p entmoot --features producer
+          mkdir -p .tmp/cli-artifact
+          if [ -f target/release/entmoot.exe ]; then
+            cp target/release/entmoot.exe .tmp/cli-artifact/entmoot.exe
+          else
+            cp target/release/entmoot .tmp/cli-artifact/entmoot
+          fi
+      - name: Upload producer release CLI
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: entmoot-cli-producer-${{ runner.os }}-${{ github.sha }}
+          path: .tmp/cli-artifact/*
+          if-no-files-found: error
+          retention-days: 14

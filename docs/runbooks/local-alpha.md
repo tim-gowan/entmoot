@@ -137,12 +137,15 @@ tag CD creates the GitHub Release and publishes to crates.io.
 - **Pre-commit** (`scripts/pre_commit_check.py`): developer accelerator—policy,
   fmt, ownership-scoped clippy/test. Not a substitute for CI; never teach
   `ci.yml` path-based correctness skips.
-- `ci.yml`: Linux/Windows structural tests, packaging rehearsal, Python controls;
-  Linux formatting/Clippy, schemas, Dylint, licenses/advisories. Cargo build
-  cache via Actions; ubuntu uploads `.crate` workflow artifacts. No path-based
-  correctness skips.
-- `native.yml`: explicitly provisioned Windows/Linux adapters, pinned Pyright and
-  TypeScript, Rust/Oxc producer/helper, dispatch and compatibility semantics.
+- `ci.yml`: `structural` (compiler-free tests, packaging, release CLI artifact),
+  `policy` (fmt/Clippy/deny), `repo` (scripts unit tests). Cargo/pip caches;
+  ubuntu uploads `.crate` artifacts. No path-based correctness skips; no remote
+  corpus clones.
+- `native.yml` (`resolved` job): provisioned Windows/Linux adapters, pinned
+  Pyright/TypeScript, Rust/Oxc producer, dispatch/compatibility; rust-cache;
+  producer CLI artifact on success.
+- `demo.yml`: dispatch-only structural corpus (`evals/demo/`); reuses CI CLI
+  artifact. Not a release gate.
 - `docs.yml`: every PR builds docs and runs examples; main deploys only when
   repository variable `PAGES_ENABLED=true`. Enable Pages with GitHub Actions as
   its source and ensure the account supports Pages for this private repository.
@@ -151,7 +154,8 @@ tag CD creates the GitHub Release and publishes to crates.io.
 - `release.yml` (**sole CD**): on tag `v*`, runs ci/native/docs on that SHA,
   asserts tag↔version, creates the GitHub Release with `.crate` assets, then
   Trusted Publishing to crates.io. Bounded timeouts, minimal permissions,
-  verified immutable action pins.
+  verified immutable action pins. Do not edit Trusted Publisher binding away
+  from this workflow.
 - `publish.yml`: manual dry-run / bootstrap gate only (`publish=false` by
   default). Tags go through `release.yml`; do not use `publish.yml` as the
   primary release path.

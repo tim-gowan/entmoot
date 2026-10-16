@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-16: Phased CI coverage and corpus demo
+
+- Split `ci.yml` into structural, policy, and repo jobs with explicit coverage
+  claims; upload release CLI artifacts from structural builds.
+- Rename native job to `resolved`, add rust-cache, upload producer CLI artifacts.
+- Add dispatch-only `demo.yml` plus `evals/demo/getrandom-structural.json`
+  (pinned `getrandom-0.1.16`, structural-only). `release.yml` unchanged.
+
 ## 1.0.0-alpha.1 — local candidate (2026-10-16)
 
 - Default durable state to `~/.entmoot` (workspaces, `config.json` volume +
