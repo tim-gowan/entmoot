@@ -1,0 +1,1694 @@
+{
+  "schema_version": "entmoot.test_ownership.v1",
+  "notes": "Cargo targets declare File/RepoPath owners (path prefixes). Changed source bytes require owned tests; structural equality never waives them.",
+  "skip_prefixes": [
+    "docs/",
+    "evals/",
+    "docs/architecture/ARCHITECTURE.md",
+    "PLANNING.md",
+    "README.md",
+    "AGENTS.md",
+    ".pre-commit-config.yaml",
+    "scripts/install_git_hooks.py",
+    "scripts/pre_commit_check.py",
+    "scripts/test_pre_commit_check.py",
+    "scripts/test_ownership.json",
+    "scripts/test_ownership.py",
+    "scripts/pr_structural_diff.py",
+    "scripts/test_pr_structural_diff.py",
+    "scripts/test_test_ownership.py",
+    "scripts/propose_test_ownership.py",
+    "scripts/test_propose_test_ownership.py",
+    "scripts/__init__.py"
+  ],
+  "shared_core_owners": [
+    "crates/entmoot-core/src/declaration_syntax.rs",
+    "crates/entmoot-core/src/call_ports.rs",
+    "crates/entmoot-core/src/hasher.rs",
+    "crates/entmoot-core/src/sound_cst.rs",
+    "crates/entmoot-core/src/visitor.rs",
+    "crates/entmoot-core/src/languages/ecmascript.rs",
+    "crates/entmoot-core/src/serialization.rs",
+    "crates/entmoot-core/src/scope_analyzer.rs",
+    "crates/entmoot-core/src/normalizer.rs",
+    "crates/entmoot-core/src/literals.rs",
+    "crates/entmoot-core/src/string_escape.rs",
+    "crates/entmoot-core/src/granular.rs",
+    "crates/entmoot-core/src/registry.rs",
+    "crates/entmoot-contracts/src/normalization.rs",
+    "crates/entmoot-core/src/hash.rs",
+    "crates/entmoot-core/src/lib.rs",
+    "crates/entmoot-core/src/callable_context.rs",
+    "crates/entmoot-core/src/logic_address.rs",
+    "crates/entmoot-core/src/scan.rs",
+    "crates/entmoot-core/src/index.rs",
+    "crates/entmoot-core/src/resolve/",
+    "crates/entmoot-core/src/analysis/",
+    "crates/entmoot-core/src/ground_truth/",
+    "crates/entmoot-core/Cargo.toml",
+    "crates/entmoot-core/src/grammars.rs",
+    "crates/entmoot-core/build.rs",
+    "crates/entmoot-core/build_support.rs",
+    "crates/entmoot-core/generated/grammars/",
+    "crates/entmoot-core/src/code_contracts.rs",
+    "crates/entmoot-contracts/src/code_contract.rs"
+  ],
+  "shared_core_tests": [
+    "visitor_depth",
+    "declaration_initializers",
+    "test_call_ports",
+    "python_inventory",
+    "test_python",
+    "test_javascript",
+    "test_typescript",
+    "test_java",
+    "test_go",
+    "test_csharp",
+    "test_rust",
+    "test_granular",
+    "test_analysis",
+    "test_config_comparison",
+    "test_logic_address",
+    "test_index",
+    "c_family_inventory",
+    "test_callable_parity",
+    "revision_pairs",
+    "grammar_bundle",
+    "code_contracts",
+    "code_similarity",
+    "file_revision_pairs"
+  ],
+  "targets": [
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "declaration_initializers"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/declaration_initializers.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/lib.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/workspace.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/inventory_stitch.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/resolve_edges"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db/syntax_cache.rs"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "grammar_bundle"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/grammar_bundle.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/build_support.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "tools/tree-sitter-upstream/bundle_grammars.py"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "visitor_depth"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/visitor_depth.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/languages/"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "revision_pairs"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/revision_pairs.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/languages/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/support/revision_pairs.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/fixtures/revision_pairs.json"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "resolved_identity_pyright_parity"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "joins_soundness"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "declaration_initializers"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/declaration_initializers.rs"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_call_ports"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_call_ports.rs"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_python"
+      },
+      "owners": [
+        {
+          "kind": "language_plugin",
+          "path": "crates/entmoot-core/src/languages/python/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_python.rs"
+        }
+      ],
+      "extensions": [
+        ".py"
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_javascript"
+      },
+      "owners": [
+        {
+          "kind": "language_plugin",
+          "path": "crates/entmoot-core/src/languages/javascript/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_javascript.rs"
+        }
+      ],
+      "extensions": [
+        ".js",
+        ".jsx",
+        ".mjs",
+        ".cjs"
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_typescript"
+      },
+      "owners": [
+        {
+          "kind": "language_plugin",
+          "path": "crates/entmoot-core/src/languages/typescript/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_typescript.rs"
+        }
+      ],
+      "extensions": [
+        ".ts",
+        ".tsx"
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_java"
+      },
+      "owners": [
+        {
+          "kind": "language_plugin",
+          "path": "crates/entmoot-core/src/languages/java/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_java.rs"
+        }
+      ],
+      "extensions": [
+        ".java"
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_go"
+      },
+      "owners": [
+        {
+          "kind": "language_plugin",
+          "path": "crates/entmoot-core/src/languages/go/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_go.rs"
+        }
+      ],
+      "extensions": [
+        ".go"
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_csharp"
+      },
+      "owners": [
+        {
+          "kind": "language_plugin",
+          "path": "crates/entmoot-core/src/languages/csharp/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_csharp.rs"
+        }
+      ],
+      "extensions": [
+        ".cs"
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_rust"
+      },
+      "owners": [
+        {
+          "kind": "language_plugin",
+          "path": "crates/entmoot-core/src/languages/rust/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_rust.rs"
+        }
+      ],
+      "extensions": [
+        ".rs"
+      ],
+      "notes": "Extension match is limited to non-crate paths; crate .rs uses crate/plugin/shared owners."
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "c_family_inventory"
+      },
+      "owners": [
+        {
+          "kind": "language_plugin",
+          "path": "crates/entmoot-core/src/languages/c_family.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/c_family_inventory.rs"
+        }
+      ],
+      "extensions": [
+        ".c",
+        ".h",
+        ".cc",
+        ".cpp",
+        ".hpp",
+        ".cxx",
+        ".hxx"
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "python_inventory"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/python_inventory.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/languages/python/"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_granular"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_granular.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/granular.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_analysis"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_analysis.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/analysis/"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_config_comparison"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_config_comparison.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/normalization.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/support/revision_pairs.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/fixtures/revision_pairs.json"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_logic_address"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_logic_address.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/logic_address.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_index"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_index.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/index.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "test_callable_parity"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/test_callable_parity.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/callable_context.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "file_revision_pairs"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/file_revision_pairs.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/normalization_validation.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/ground_truth/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/fixtures/file_revision_pairs.json"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-contracts"
+      },
+      "owners": [
+        {
+          "kind": "crate",
+          "path": "crates/entmoot-contracts/"
+        }
+      ],
+      "also_select": [
+        {
+          "package": "entmoot-core",
+          "test": "test_index"
+        },
+        {
+          "package": "entmoot-core",
+          "test": "test_logic_address"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine"
+      },
+      "owners": [
+        {
+          "kind": "crate",
+          "path": "crates/entmoot-engine/"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot"
+      },
+      "owners": [
+        {
+          "kind": "crate",
+          "path": "crates/entmoot-cli/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/tests/campaign_harness.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/tests/program_adapters.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-mcp"
+      },
+      "owners": [
+        {
+          "kind": "crate",
+          "path": "crates/entmoot-mcp/"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "_workspace_root"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "Cargo.toml"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "Cargo.lock"
+        },
+        {
+          "kind": "file_prefix",
+          "path": ".gitignore"
+        },
+        {
+          "kind": "file_prefix",
+          "path": ".github/"
+        }
+      ],
+      "notes": "Synthetic target: expands to shared_core_tests + all workspace packages via selector.",
+      "workspace_expand": true
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "code_contracts"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/code_contracts.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [],
+      "workspace_expand": false
+    },
+    {
+      "cargo": {
+        "package": "entmoot-core",
+        "test": "code_similarity"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/clones.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/clones/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/tests/code_similarity.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/code_similarity.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/canon.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-core/src/traversal.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/canon.rs"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot",
+        "test": "campaign_harness"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/revision_campaign.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/repository_campaign.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/run_revision_campaign.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/contracts.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/impact.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/revision_accounting.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/report_revision_pair.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/knowledge_sql.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/wire_schema.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/npm_lock_inventory.py"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "assessments"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/assessments.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/query/assessments.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/artifact/assessment.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/test_validation.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/process.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/query/relationships.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/assessments.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/impact.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/overlay.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/compatibility.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/source_subject.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/query/overlay.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/src/subject_args.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "package_compatibility"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-contracts",
+        "test": "canon_contract"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/canon.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/tests/canon_contract.rs"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot-mcp",
+        "test": "http_e2e"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/src/backend.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/query/continuation.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/workspace/open.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-mcp/tests/http_e2e.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "local_operations"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/local_operations.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/operations"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/sqlite_startup.rs"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "revalidation_operations"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/revalidation_operations.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/revalidation"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/collaboration.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/operations"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/revalidation.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "joins_soundness"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "resource_inventory_artifact"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "integration_operations"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/integration_operations.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/integration_operations.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/collaboration"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db/operations"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/operations"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "branch_conflicts"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/branch_conflicts.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/branch_conflicts/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db/layout.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db/inventory.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db/operations/git_capture.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/collaboration"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/operations"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "producer_operations"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/producer_operations.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/producer_operations.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/inventory_stitch.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/extractor.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/resolve_edges.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/resolve_edges/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db/syntax_cache.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/canon.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db/operations.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db/inventory.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/operations"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db/operations/"
+        }
+      ],
+      "extensions": []
+    },
+    {
+      "cargo": {
+        "package": "entmoot",
+        "test": "binding_operations_cli"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/tests/binding_operations_cli.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/src/bin/entmoot_producer.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/src/collaborate.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/binding_operations.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge_db/operations/binding.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/process.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/operations"
+        }
+      ],
+      "extensions": [],
+      "notes": "Native feature is enabled by the existing producer ownership lane."
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "dispatch_expectations"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/dispatch_expectations.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/fixtures/callsites/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/support/callsites_expect.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_rust"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_javascript"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_go"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_java"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_csharp"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_c_family"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "joins_soundness"
+        },
+        {
+          "package": "entmoot",
+          "test": "adapter_controls"
+        },
+        {
+          "package": "entmoot",
+          "test": "program_adapters"
+        }
+      ],
+      "notes": "Claim/deep/joins/adapters cohort: any member or shared fixture/support path co-selects the suite."
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "callsites_rust"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/callsites_rust.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/fixtures/callsites/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/support/callsites_expect.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "dispatch_expectations"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_javascript"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_go"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_java"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_csharp"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_c_family"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "joins_soundness"
+        },
+        {
+          "package": "entmoot",
+          "test": "adapter_controls"
+        },
+        {
+          "package": "entmoot",
+          "test": "program_adapters"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "callsites_javascript"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/callsites_javascript.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/fixtures/callsites/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/support/callsites_expect.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "dispatch_expectations"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_rust"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_go"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_java"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_csharp"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_c_family"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "joins_soundness"
+        },
+        {
+          "package": "entmoot",
+          "test": "adapter_controls"
+        },
+        {
+          "package": "entmoot",
+          "test": "program_adapters"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "callsites_go"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/callsites_go.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/fixtures/callsites/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/support/callsites_expect.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "dispatch_expectations"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_rust"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_javascript"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_java"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_csharp"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_c_family"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "joins_soundness"
+        },
+        {
+          "package": "entmoot",
+          "test": "adapter_controls"
+        },
+        {
+          "package": "entmoot",
+          "test": "program_adapters"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "callsites_java"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/callsites_java.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/fixtures/callsites/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/support/callsites_expect.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "dispatch_expectations"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_rust"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_javascript"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_go"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_csharp"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_c_family"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "joins_soundness"
+        },
+        {
+          "package": "entmoot",
+          "test": "adapter_controls"
+        },
+        {
+          "package": "entmoot",
+          "test": "program_adapters"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "callsites_csharp"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/callsites_csharp.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/fixtures/callsites/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/support/callsites_expect.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "dispatch_expectations"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_rust"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_javascript"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_go"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_java"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_c_family"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "joins_soundness"
+        },
+        {
+          "package": "entmoot",
+          "test": "adapter_controls"
+        },
+        {
+          "package": "entmoot",
+          "test": "program_adapters"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "callsites_c_family"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/callsites_c_family.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/fixtures/callsites/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/support/callsites_expect.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "dispatch_expectations"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_rust"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_javascript"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_go"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_java"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_csharp"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "joins_soundness"
+        },
+        {
+          "package": "entmoot",
+          "test": "adapter_controls"
+        },
+        {
+          "package": "entmoot",
+          "test": "program_adapters"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "joins_soundness"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/joins_soundness.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/fixtures/callsites/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/support/callsites_expect.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "dispatch_expectations"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_rust"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_javascript"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_go"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_java"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_csharp"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_c_family"
+        },
+        {
+          "package": "entmoot",
+          "test": "adapter_controls"
+        },
+        {
+          "package": "entmoot",
+          "test": "program_adapters"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot",
+        "test": "adapter_controls"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/tests/adapter_controls.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/fixtures/callsites/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/support/callsites_expect.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "dispatch_expectations"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_rust"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_javascript"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_go"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_java"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_csharp"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_c_family"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "joins_soundness"
+        },
+        {
+          "package": "entmoot",
+          "test": "program_adapters"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot",
+        "test": "program_adapters"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/tests/program_adapters.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/fixtures/callsites/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/support/callsites_expect.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-engine",
+          "test": "dispatch_expectations"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_rust"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_javascript"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_go"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_java"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_csharp"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "callsites_c_family"
+        },
+        {
+          "package": "entmoot-engine",
+          "test": "joins_soundness"
+        },
+        {
+          "package": "entmoot",
+          "test": "adapter_controls"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "call_boundaries"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/call_boundaries.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/query/boundaries.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/query/boundaries.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-mcp"
+        },
+        {
+          "package": "entmoot",
+          "test": "workspace_defaults"
+        }
+      ]
+    }
+  ],
+  "resolver_owners": [
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "crates/entmoot-contracts/src/",
+    "crates/entmoot-core/src/",
+    "crates/entmoot-core/tests/fixtures/",
+    "crates/entmoot-engine/src/",
+    "crates/entmoot-engine/tests/callsites_",
+    "crates/entmoot-engine/tests/dispatch_expectations.rs",
+    "crates/entmoot-engine/tests/support/",
+    "crates/entmoot-engine/tests/joins_soundness.rs",
+    "crates/entmoot-engine/tests/fixtures/callsites/",
+    "crates/entmoot-cli/src/",
+    "crates/entmoot-cli/tests/adapter_controls.rs",
+    "crates/entmoot-cli/tests/program_adapters.rs",
+    "crates/entmoot-cli/tests/producer_cli.rs",
+    "crates/entmoot-cli/tests/support/",
+    "crates/entmoot-cli/tests/binding_operations_cli.rs",
+    "tools/resolver-adapters/"
+  ]
+}

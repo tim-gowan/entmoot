@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "columnKind": "unicodeCodePoints",
+      "tool": {
+        "driver": {
+          "name": "SyntheticCallableParity",
+          "version": "1.0.0-test"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "test/LambdaBodySink",
+          "level": "error",
+          "message": { "text": "use inside assigned lambda" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "routes/handler.py" },
+                "region": { "startLine": 1, "startColumn": 22, "endLine": 1, "endColumn": 27 }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

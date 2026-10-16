@@ -1,0 +1,10 @@
+---
+description: Entmoot format naming and compatibility
+alwaysApply: true
+---
+
+Entmoot-owned format, policy and storage series stay `v1` until the repository
+move. Fingerprints distinguish incompatible implementations at storage and
+artifact boundaries; do not silently read an incompatible layout or reset data.
+Remove obsolete modes instead of aliasing them. External tool/standard versions
+keep their actual names. See [AGENTS](../../AGENTS.md).

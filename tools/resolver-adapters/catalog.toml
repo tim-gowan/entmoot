@@ -1,0 +1,102 @@
+# Resolver-adapter catalog (operator + engine discovery).
+# Relative artifact paths are under ENTMOOT_ADAPTERS_ROOT when set,
+# otherwise ~/.entmoot/adapters/ (checkout .tmp/adapter-build/ is probed first).
+# Qualified pins and language floors: floors.toml
+
+[[family]]
+id = "go"
+control = { target = "adapter_controls", filter = "go_named_types_tags_source_fences_and_test_scope", owners = ["tools/resolver-adapters/go/", "crates/entmoot-engine/src/native_resolver/producers/go"] }
+languages = ["go"]
+env = "ENTMOOT_GO_ADAPTER"
+isolation = "go_sidecar_process"
+relative_artifacts = [
+  "go/entmoot-go-resolver.exe",
+  "go/entmoot-go-resolver",
+]
+limitations = [
+  "one_build_configuration_per_run",
+  "reflection_unsafe_cgo_boundaries",
+]
+
+[[family]]
+id = "roslyn"
+control = { target = "adapter_controls", filter = "roslyn_virtual_base_and_implicit_constructor_targets", owners = ["tools/resolver-adapters/roslyn/", "crates/entmoot-engine/src/native_resolver/producers/roslyn"] }
+languages = ["csharp"]
+env = "ENTMOOT_ROSLYN_ADAPTER"
+isolation = "dotnet_process"
+relative_artifacts = [
+  "roslyn/bin/Release/net9.0/Entmoot.RoslynSolver.dll",
+  "roslyn/bin/Release/net9.0/Entmoot.RoslynSolver.exe",
+  "roslyn/bin/Debug/net9.0/Entmoot.RoslynSolver.dll",
+  "roslyn/bin/Debug/net9.0/Entmoot.RoslynSolver.exe",
+]
+limitations = [
+  "candidate_symbols_are_static_not_runtime_dispatch",
+  "msbuild_workspace_failures_are_coverage_signals",
+]
+
+[[family]]
+id = "java"
+control = { target = "adapter_controls", filter = "java_dispatch_default_scope_and_unsupported_engine", owners = ["tools/resolver-adapters/java/", "crates/entmoot-engine/src/native_resolver/producers/java"] }
+languages = ["java"]
+env = "ENTMOOT_JAVA_ADAPTER"
+isolation = "jvm_process"
+relative_artifacts = [
+  "java/entmoot-java-resolver.jar",
+  "java/target/entmoot-java-resolver.jar",
+  "java/build/libs/entmoot-java-resolver.jar",
+]
+limitations = [
+  "selected_compiler_materialization_only",
+  "compile_time_targets_only",
+]
+
+[[family]]
+id = "clang"
+control = { target = "adapter_controls", filter = "clang_template_body_layout_target_and_missing_compdb", owners = ["tools/resolver-adapters/clang/", "crates/entmoot-engine/src/native_resolver/producers/clang"] }
+languages = ["c", "cxx"]
+env = "ENTMOOT_CLANG_ADAPTER"
+isolation = "pinned_clang_process"
+relative_artifacts = [
+  "clang/entmoot-clang-resolver.exe",
+  "clang/entmoot-clang-resolver",
+  "clang/entmoot-clang-resolver.py",
+]
+limitations = [
+  "requires_compile_commands_json",
+  "one_build_configuration_per_artifact",
+]
+
+# Program adapters: checkout .tmp/adapter-build/<name>/ then ~/.entmoot/adapters/.
+
+[[family]]
+id = "typescript"
+control = { target = "program_adapters", filter = "typescript_routes_offsets_types_and_body_independent_contracts", owners = ["tools/resolver-adapters/typescript/", "crates/entmoot-engine/src/native_resolver/producers/typescript"] }
+languages = ["javascript", "typescript"]
+env = "ENTMOOT_TYPESCRIPT_ADAPTER"
+isolation = "pinned_program_batch_process"
+artifact_kind = "repo_relative"
+relative_artifacts = [
+  "typescript-program/entmoot-typescript.cjs",
+  ".tmp/adapter-build/typescript-program/entmoot-typescript.cjs",
+]
+limitations = [
+  "requires_tsconfig",
+  "distinct_from_oxc_lexical_tier",
+]
+
+[[family]]
+id = "pyright"
+control = { target = "program_adapters", filter = "pyright_unicode_offsets_header_identity_and_version_modes", owners = ["tools/resolver-adapters/python/", "crates/entmoot-engine/src/native_resolver/producers/python"] }
+languages = ["python"]
+env = "ENTMOOT_PYRIGHT_ADAPTER"
+isolation = "pinned_program_batch_process"
+artifact_kind = "repo_relative"
+relative_artifacts = [
+  "pyright-program/entmoot-pyright.cjs",
+  ".tmp/adapter-build/pyright-program/entmoot-pyright.cjs",
+]
+limitations = [
+  "explicit_environment_required",
+  "stub_and_dynamic_bindings_remain_open",
+]

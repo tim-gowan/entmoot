@@ -1,0 +1,115 @@
+--- a/common/scanner.h
++++ b/common/scanner.h
+@@ -44,35 +44,41 @@
+     }
+ }
+ 
+-static bool scan_whitespace_and_comments(TSLexer *lexer, bool *scanned_comment) {
++static bool scan_asi_trivia(TSLexer *lexer, bool allow_inline_comment, bool *newline, bool *scanned_comment) {
+     for (;;) {
+-        while (iswspace(lexer->lookahead)) {
+-            skip(lexer);
+-        }
+-
+-        if (lexer->lookahead == '/') {
+-            skip(lexer);
+-
++        int32_t c = lexer->lookahead;
++        bool line_end = c == '\n' || c == '\r' || c == 0x2028 || c == 0x2029;
++        if (line_end || iswspace(c) || c == 0xfeff) {
++            *newline |= line_end;
++            skip(lexer);
++        } else if (c == '/') {
++            skip(lexer);
+             if (lexer->lookahead == '/') {
++                // Let an inline line-comment remain inside its existing statement.
++                // Its terminating newline will be scanned after the extra token.
++                if (!*newline && !allow_inline_comment) return false;
++                *scanned_comment = true;
++                do {
++                    skip(lexer);
++                    c = lexer->lookahead;
++                } while (c && c != '\n' && c != '\r' && c != 0x2028 && c != 0x2029);
++            } else if (lexer->lookahead == '*') {
++                *scanned_comment = true;
+                 skip(lexer);
+-                while (lexer->lookahead != 0 && lexer->lookahead != '\n') {
++                bool closed = false;
++                while (lexer->lookahead) {
++                    c = lexer->lookahead;
++                    *newline |= c == '\n' || c == '\r' || c == 0x2028 || c == 0x2029;
+                     skip(lexer);
+-                }
+-                *scanned_comment = true;
+-            } else if (lexer->lookahead == '*') {
+-                skip(lexer);
+-                while (lexer->lookahead != 0) {
+-                    if (lexer->lookahead == '*') {
++                    if (c == '*' && lexer->lookahead == '/') {
+                         skip(lexer);
+-                        if (lexer->lookahead == '/') {
+-                            skip(lexer);
+-                            break;
+-                        }
+-                    } else {
+-                        skip(lexer);
++                        closed = true;
++                        break;
+                     }
+                 }
++                if (!closed) return false;
+             } else {
++                // A division operator cannot start an automatically separated statement.
+                 return false;
+             }
+         } else {
+@@ -84,38 +90,17 @@
+ static bool scan_automatic_semicolon(TSLexer *lexer, const bool *valid_symbols, bool *scanned_comment) {
+     lexer->result_symbol = AUTOMATIC_SEMICOLON;
+     lexer->mark_end(lexer);
+-
+-    for (;;) {
+-        if (lexer->lookahead == 0) {
+-            return true;
+-        }
+-        if (lexer->lookahead == '}') {
+-            // Automatic semicolon insertion breaks detection of object patterns
+-            // in a typed context:
+-            //   type F = ({a}: {a: number}) => number;
+-            // Therefore, disable automatic semicolons when followed by typing
+-            do {
+-                skip(lexer);
+-            } while (iswspace(lexer->lookahead));
+-            if (lexer->lookahead == ':') {
+-                return valid_symbols[LOGICAL_OR]; // Don't return false if we're in a ternary by checking if || is valid
+-            }
+-            return true;
+-        }
+-        if (!iswspace(lexer->lookahead)) {
+-            return false;
+-        }
+-        if (lexer->lookahead == '\n') {
+-            break;
+-        }
+-        skip(lexer);
+-    }
+-
+-    skip(lexer);
+-
+-    if (!scan_whitespace_and_comments(lexer, scanned_comment)) {
+-        return false;
+-    }
++    bool newline = false;
++    if (!scan_asi_trivia(lexer, false, &newline, scanned_comment)) return false;
++    if (!newline && *scanned_comment) return false;
++    if (lexer->lookahead == 0) return true;
++    if (lexer->lookahead == '}') {
++        // Preserve the existing typed-object-pattern ambiguity control.
++        do { skip(lexer); } while (iswspace(lexer->lookahead));
++        if (lexer->lookahead == ':') return valid_symbols[LOGICAL_OR];
++        return true;
++    }
++    if (!newline) return false;
+ 
+     switch (lexer->lookahead) {
+         case '`':

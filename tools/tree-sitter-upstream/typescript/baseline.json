@@ -1,0 +1,15 @@
+{
+  "format": "entmoot.grammar_baseline_profile.v1",
+  "cutoff": "2026-10-10",
+  "source": {
+    "checkout_id": "tree-sitter-typescript",
+    "commit": "75b3874edb2dc714fb1fd77a32013d0f8699989f",
+    "upstream": "https://github.com/tree-sitter/tree-sitter-typescript",
+    "license": "MIT"
+  },
+  "generator": "0.24.4",
+  "abi": 14,
+  "exports": {"typescript": "typescript", "tsx": "tsx"},
+  "npm_install": true,
+  "scope": "Both dialects inherit locked JavaScript 0.23.1. TypeScript 7 CLI is separate from the 6.0.3 Program adapter."
+}

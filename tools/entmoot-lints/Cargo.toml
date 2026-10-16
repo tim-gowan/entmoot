@@ -1,0 +1,19 @@
+[package]
+name = "entmoot_lints"
+version = "0.1.0"
+description = "Entmoot project-policy Dylint lints (identity digests, Sync hacks, anyhow surface, contracts vendor)"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+clippy_utils = { git = "https://github.com/rust-lang/rust-clippy", rev = "21baba9c10c5d179915cae82e6247bc2337872fb" }
+dylint_linting = "6.1.1"
+
+[dev-dependencies]
+dylint_testing = "6.1.1"
+
+[package.metadata.rust-analyzer]
+rustc_private = true

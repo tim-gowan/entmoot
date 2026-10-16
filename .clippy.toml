@@ -1,0 +1,7 @@
+# Match Python's complexity rules (max-complexity = 10)
+cognitive-complexity-threshold = 10
+
+# Restriction lints (unwrap_used / expect_used) apply to production paths only.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests = true

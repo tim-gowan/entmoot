@@ -1,0 +1,4 @@
+# Validator pin qualified by the local receipt lane; not a latest-version claim.
+blake3>=1.0,<2
+jsonschema==4.23.0
+psutil==7.0.0

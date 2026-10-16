@@ -1,0 +1,5 @@
+# Built sidecars / Docker proxies (rebuild locally)
+entmoot-go-resolver
+entmoot-go-resolver.exe
+entmoot-go-resolver-docker
+entmoot-go-resolver-docker.exe

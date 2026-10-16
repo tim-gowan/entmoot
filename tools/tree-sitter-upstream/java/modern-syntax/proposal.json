@@ -1,0 +1,27 @@
+{
+  "format": "entmoot.grammar_proposal.v1",
+  "cutoff": "2026-10-10",
+  "baseline": {
+    "checkout_id": "tree-sitter-java",
+    "commit": "e10607b45ff745f5f876bfa3e94fbcc6b44bdc11",
+    "generator": "0.24.4",
+    "abi": 14,
+    "export": "java"
+  },
+  "candidate": {
+    "checkout_id": "tree-sitter-java-orchard",
+    "commit": "7dc7faa53d68c9455c6f35f0d0f7583332127452",
+    "release": "0.5.22",
+    "generator": "0.26.12",
+    "abi": 14,
+    "export": "java_orchard",
+    "generated_file_policy": "Generate bindings with init and parser with generate; never commit generated files to Orchard source."
+  },
+  "workflow": {
+    "checkout_id": "grammar-orchard-profile",
+    "commit": "475b73262c919f0b46da0a71f803345c4cd188ce",
+    "path": ".forgejo/workflows/ci.yml"
+  },
+  "adoption": "Not adopted into production by this packet. Any adoption is temporary and qualified; reassess at dependency updates and repository move.",
+  "external_outcome": "No submission or maintainer acceptance claimed."
+}

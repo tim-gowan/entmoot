@@ -1,0 +1,19 @@
+--- a/grammar.js
++++ b/grammar.js
+@@ -612,6 +612,7 @@
+       $.enum_specifier,
+       $.typeof_specifier,
+       $.bit_int_specifier,
++      $.atomic_type_specifier,
+       $.macro_type_specifier,
+       $.sized_type_specifier,
+       $.primitive_type,
+@@ -625,6 +626,8 @@
+       choice($.type_descriptor, $.expression),
+       ')',
+     ),
++
++    atomic_type_specifier: $ => seq('_Atomic', '(', field('type', $.type_descriptor), ')'),
+ 
+     // C23 bit-precise integers: _BitInt(N), unsigned _BitInt(N)
+     bit_int_specifier: $ => seq('_BitInt', '(', $.expression, ')'),

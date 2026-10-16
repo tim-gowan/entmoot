@@ -1,0 +1,69 @@
+================================================================================
+Unpacked comprehension bodies
+================================================================================
+
+[*chunk for chunk in chunks]
+{*chunk for chunk in chunks}
+{**chunk for chunk in chunks}
+(*chunk for chunk in chunks)
+
+--------------------------------------------------------------------------------
+
+(module
+  (list_comprehension
+    (list_splat (identifier))
+    (for_in_clause (identifier) (identifier)))
+  (set_comprehension
+    (list_splat (identifier))
+    (for_in_clause (identifier) (identifier)))
+  (dictionary_comprehension
+    (dictionary_splat (identifier))
+    (for_in_clause (identifier) (identifier)))
+  (generator_expression
+    (list_splat (identifier))
+    (for_in_clause (identifier) (identifier))))
+
+================================================================================
+Nested unpacking and filters
+================================================================================
+
+[*[*value for value in chunk] for chunk in chunks if chunk]
+
+--------------------------------------------------------------------------------
+
+(module
+  (list_comprehension
+    (list_splat
+      (list_comprehension
+        (list_splat (identifier))
+        (for_in_clause (identifier) (identifier))))
+    (for_in_clause (identifier) (identifier))
+    (if_clause (identifier))))
+
+================================================================================
+Async unpacked call and following declaration
+================================================================================
+
+async def collect(chunks):
+    return [*chunk.values() async for chunk in chunks]
+def after():
+    return 17
+
+--------------------------------------------------------------------------------
+
+(module
+  (function_definition
+    (identifier)
+    (parameters (identifier))
+    (block
+      (return_statement
+        (list_comprehension
+          (list_splat
+            (call
+              (attribute (identifier) (identifier))
+              (argument_list)))
+          (for_in_clause (identifier) (identifier))))))
+  (function_definition
+    (identifier)
+    (parameters)
+    (block (return_statement (integer)))))

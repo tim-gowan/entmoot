@@ -1,0 +1,24 @@
+---
+description: End-of-turn commits in this repo are unsigned; do not wait to be asked
+alwaysApply: true
+---
+
+# Commit unsigned at end of turn
+
+For **this repository** (Entmoot):
+
+1. **When:** At the end of a turn, if there are durable intentional changes worth
+   keeping (code, contracts, tests, docs that belong in git), create a commit.
+   Do not leave finished work uncommitted waiting for an explicit “please commit.”
+2. **How:** Use `git commit --no-gpg-sign` (or
+   `git -c commit.gpgsign=false commit …`). Global `commit.gpgsign=true` must not
+   block agent commits here. Do **not** change git config; do **not** use
+   `--no-verify`.
+3. **Hygiene:** Follow the usual commit protocol (status/diff/log, focused
+   message, stage only relevant files, no secrets, no force push, no amend unless
+   the amend rules already allow it).
+4. **Skip:** Do not commit scratch under `.tmp/`, secrets, or unrelated dirty
+   worktree noise. If nothing durable changed, do not create an empty commit.
+
+This project rule overrides the general “only commit when asked” preference for
+this repo only.

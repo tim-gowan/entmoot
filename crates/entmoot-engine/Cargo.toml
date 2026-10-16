@@ -1,0 +1,109 @@
+[package]
+name = "entmoot-engine"
+version.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+readme = "README.md"
+edition = "2021"
+description = "Attributable structural knowledge, publication and query engine for Entmoot"
+license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+# Explicit opt-in: CI provisions all required native adapters before this target.
+native-tests = []
+# Optional in-process rust-analyzer solver for explicit init/bind and entmoot-producer.
+# Keep aligned versions in sync via scripts/update_ra_ap_pins.py.
+resolved-rust-analyzer = [
+    "dep:ra_ap_base_db",
+    "dep:ra_ap_intern",
+    "dep:ra_ap_hir",
+    "dep:ra_ap_ide_db",
+    "dep:ra_ap_load_cargo",
+    "dep:ra_ap_paths",
+    "dep:ra_ap_project_model",
+    "dep:ra_ap_syntax",
+    "dep:ra_ap_vfs",
+]
+# Optional in-process Oxc JS/TS lexical solver (pinned for rustc 1.95).
+resolved-oxc = ["dep:oxc"]
+
+[dependencies]
+entmoot-core = { version = "=1.0.0-alpha.1", path = "../entmoot-core" }
+entmoot-contracts = { version = "=1.0.0-alpha.1", path = "../entmoot-contracts" }
+serde = { version = "1.0.228", features = ["derive", "rc"] }
+serde_json = "1.0.148"
+thiserror = "2.0.17"
+tempfile = "3.10.1"
+cap-std = "4.0.3"
+gix = "0.87.1"
+rusqlite = { version = "0.40.1", features = ["bundled"] }
+tree-sitter = "0.26.13"
+tree-sitter-yaml = "=0.7.2"
+tree-sitter-hcl = "=1.1.0"
+tree-sitter-json = "=0.24.8"
+rayon = "1.11.0"
+process-wrap = { version = "=10.0.0", default-features = false, features = ["std", "job-object", "process-group", "creation-flags"] }
+blake3 = "1.8.2"
+packageurl = "=0.7.0"
+tracing = "0.1.41"
+oxc = { version = "=0.153.0", optional = true, features = ["semantic", "ast_visit"] }
+
+# Pinned, aligned rust-analyzer application crates (bind solver substrate).
+# Keep aligned with rust-toolchain.toml (1.98.0) and tools/resolver-adapters/floors.toml.
+ra_ap_base_db = { version = "=0.0.358", optional = true }
+ra_ap_intern = { version = "=0.0.358", optional = true }
+ra_ap_hir = { version = "=0.0.358", optional = true }
+ra_ap_ide_db = { version = "=0.0.358", optional = true }
+ra_ap_load_cargo = { package = "ra_ap_load-cargo", version = "=0.0.358", optional = true }
+ra_ap_paths = { version = "=0.0.358", optional = true }
+ra_ap_project_model = { version = "=0.0.358", optional = true }
+ra_ap_syntax = { version = "=0.0.358", optional = true }
+ra_ap_vfs = { version = "=0.0.358", optional = true }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62.2", features = ["Win32_System_Threading"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[lints]
+workspace = true
+
+[build-dependencies]
+blake3 = "1.8.2"
+
+[[test]]
+name = "dispatch_expectations"
+path = "tests/dispatch_expectations.rs"
+required-features = ["native-tests"]
+
+[[test]]
+name = "callsites_c_family"
+path = "tests/callsites_c_family.rs"
+required-features = ["native-tests"]
+
+[[test]]
+name = "callsites_csharp"
+path = "tests/callsites_csharp.rs"
+required-features = ["native-tests"]
+
+[[test]]
+name = "callsites_go"
+path = "tests/callsites_go.rs"
+required-features = ["native-tests"]
+
+[[test]]
+name = "callsites_java"
+path = "tests/callsites_java.rs"
+required-features = ["native-tests"]
+
+[[test]]
+name = "callsites_rust"
+path = "tests/callsites_rust.rs"
+required-features = ["native-tests"]
+
+[[test]]
+name = "callsites_javascript"
+path = "tests/callsites_javascript.rs"
+required-features = ["native-tests"]

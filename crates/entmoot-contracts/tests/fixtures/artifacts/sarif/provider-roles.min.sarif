@@ -1,0 +1,59 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "SyntheticRoleProducer",
+          "version": "1.0.0-test"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "test/ProviderSink",
+          "level": "error",
+          "message": { "text": "provider-stated sink step" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "routes/login.ts" },
+                "region": { "startLine": 4, "startColumn": 3, "endLine": 4, "endColumn": 14 }
+              }
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "kinds": ["source"],
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": { "uri": "routes/login.ts" },
+                          "region": { "startLine": 2, "startColumn": 3 }
+                        },
+                        "message": { "text": "input" }
+                      }
+                    },
+                    {
+                      "kinds": ["sink"],
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": { "uri": "routes/login.ts" },
+                          "region": { "startLine": 4, "startColumn": 3 }
+                        },
+                        "message": { "text": "sink" }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+--- a/grammar.js
++++ b/grammar.js
+@@ -93,6 +93,7 @@
+     [$.type_parameter_declaration, $._simple_type, $._expression],
+     [$.type_parameter_declaration, $._expression],
+     [$.type_parameter_declaration, $._simple_type, $.generic_type, $._expression],
++    [$._builtin_callee, $._expression],
+   ],
+ 
+   reserved: {
+@@ -689,12 +690,14 @@
+       ')',
+     ),
+ 
++    _builtin_callee: $ => alias(choice('new', 'make'), $.identifier),
++
+     call_expression: $ => prec(PREC.primary, choice(
+-      seq(
+-        field('function', alias(choice('new', 'make'), $.identifier)),
++      prec.dynamic(2, seq(
++        field('function', $._builtin_callee),
+         field('type_arguments', optional($.type_arguments)),
+         field('arguments', alias($.special_argument_list, $.argument_list)),
+-      ),
++      )),
+       seq(
+         field('function', $._expression),
+         field('type_arguments', optional($.type_arguments)),

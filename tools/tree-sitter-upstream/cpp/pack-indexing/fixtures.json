@@ -1,0 +1,14 @@
+{
+  "format": "entmoot.grammar_fixture_selection.v1",
+  "language": "cpp",
+  "fixture_owner": "../cases.py",
+  "case_ids": [
+    "cpp26-pack-index",
+    "cpp26-pack-index-comment",
+    "cpp26-pack-type-index",
+    "cpp11-variadic-template",
+    "cpp17-fold"
+  ],
+  "oracle": "../../c/qualify_features.py",
+  "qualification_receipt": "../../c/qualification_2026-10-10.json"
+}

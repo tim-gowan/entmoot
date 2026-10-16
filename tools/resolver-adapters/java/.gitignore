@@ -1,0 +1,7 @@
+target/
+entmoot-java-resolver.jar
+.idea/
+*.iml
+.classpath
+.project
+.settings/

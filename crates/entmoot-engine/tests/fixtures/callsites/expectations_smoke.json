@@ -1,0 +1,446 @@
+{
+  "go": [
+    {
+      "name": "sibling",
+      "site": {
+        "path": "caller.go",
+        "text": "func Caller(value string) string { return sibling.Help(value) }",
+        "within": "sibling.Help(value)"
+      },
+      "owner": {
+        "path": "caller.go",
+        "text": "func Caller(value string) string { return sibling.Help(value) }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "sibling/helper.go",
+        "text": "func Help(value string) string { return strings.TrimSpace(value) }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.go.direct-function.v1",
+      "assumption_contains": [
+        "build tags",
+        "GOOS",
+        "unsafe"
+      ]
+    },
+    {
+      "name": "callback",
+      "site": {
+        "path": "caller.go",
+        "text": "func Indirect(callback func(string) string, value string) string { return callback(value) }",
+        "within": "callback(value)"
+      },
+      "owner": {
+        "path": "caller.go",
+        "text": "func Indirect(callback func(string) string, value string) string { return callback(value) }"
+      },
+      "outcomes": [
+        "unresolved",
+        "unsupported"
+      ]
+    },
+    {
+      "name": "literal-owner",
+      "site": {
+        "path": "caller.go",
+        "text": "func() string { return sibling.Help(value) }",
+        "within": "sibling.Help(value)"
+      },
+      "owner": {
+        "path": "caller.go",
+        "text": "func() string { return sibling.Help(value) }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "sibling/helper.go",
+        "text": "func Help(value string) string { return strings.TrimSpace(value) }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.go.direct-function.v1",
+      "assumption_contains": [
+        "build tags",
+        "GOOS",
+        "unsafe"
+      ]
+    },
+    {
+      "name": "interface",
+      "site": {
+        "path": "caller.go",
+        "text": "func Virtual(worker Worker, value string) string { return worker.Help(value) }",
+        "within": "worker.Help(value)"
+      },
+      "owner": {
+        "path": "caller.go",
+        "text": "func Virtual(worker Worker, value string) string { return worker.Help(value) }"
+      },
+      "outcomes": [
+        "repository_symbol"
+      ],
+      "signature": true
+    },
+    {
+      "name": "stdlib",
+      "site": {
+        "path": "sibling/helper.go",
+        "text": "func Help(value string) string { return strings.TrimSpace(value) }",
+        "within": "strings.TrimSpace(value)"
+      },
+      "owner": {
+        "path": "sibling/helper.go",
+        "text": "func Help(value string) string { return strings.TrimSpace(value) }"
+      },
+      "outcomes": [
+        "external_symbol"
+      ]
+    }
+  ],
+  "java": [
+    {
+      "name": "overload-string",
+      "site": {
+        "path": "demo/Caller.java",
+        "text": "public static String run(String value) { return Sibling.help(value); }",
+        "within": "Sibling.help(value)"
+      },
+      "owner": {
+        "path": "demo/Caller.java",
+        "text": "public static String run(String value) { return Sibling.help(value); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "closed_dispatch": true,
+      "policy_id": "entmoot.java.direct-static.v1",
+      "assumption_contains": [
+        "javac",
+        "static"
+      ],
+      "target": {
+        "path": "demo/Sibling.java",
+        "text": "public static String help(String value) { return value.trim(); }"
+      }
+    },
+    {
+      "name": "interface",
+      "site": {
+        "path": "demo/Caller.java",
+        "text": "public static String virtual(Worker worker, String value) { return worker.help(value); }",
+        "within": "worker.help(value)"
+      },
+      "owner": {
+        "path": "demo/Caller.java",
+        "text": "public static String virtual(Worker worker, String value) { return worker.help(value); }"
+      },
+      "outcomes": [
+        "repository_symbol"
+      ],
+      "signature": true
+    },
+    {
+      "name": "stdlib",
+      "site": {
+        "path": "demo/Sibling.java",
+        "text": "public static String help(String value) { return value.trim(); }",
+        "within": "value.trim()"
+      },
+      "owner": {
+        "path": "demo/Sibling.java",
+        "text": "public static String help(String value) { return value.trim(); }"
+      },
+      "outcomes": [
+        "external_symbol"
+      ]
+    },
+    {
+      "name": "abstract-declaration",
+      "site": {
+        "path": "demo/Declarations.java",
+        "text": "static int abstractCall(AbstractWorker worker) { return worker.work(); }",
+        "within": "worker.work()"
+      },
+      "owner": {
+        "path": "demo/Declarations.java",
+        "text": "static int abstractCall(AbstractWorker worker) { return worker.work(); }"
+      },
+      "outcomes": [
+        "repository_symbol"
+      ],
+      "signature": true
+    },
+    {
+      "name": "native-declaration",
+      "site": {
+        "path": "demo/Declarations.java",
+        "text": "static int nativeCall(AbstractWorker worker) { return worker.nativeWork(); }",
+        "within": "worker.nativeWork()"
+      },
+      "owner": {
+        "path": "demo/Declarations.java",
+        "text": "static int nativeCall(AbstractWorker worker) { return worker.nativeWork(); }"
+      },
+      "outcomes": [
+        "repository_symbol"
+      ],
+      "signature": true
+    },
+    {
+      "name": "default-interface-body",
+      "site": {
+        "path": "demo/Declarations.java",
+        "text": "static int defaultCall(DefaultWorker worker) { return worker.work(); }",
+        "within": "worker.work()"
+      },
+      "owner": {
+        "path": "demo/Declarations.java",
+        "text": "static int defaultCall(DefaultWorker worker) { return worker.work(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "demo/Declarations.java",
+        "text": "default int work() { return 7; }"
+      }
+    }
+  ],
+  "csharp": [
+    {
+      "name": "overload-string",
+      "site": {
+        "path": "Caller.cs",
+        "text": "public static string Run(string value) { return Sibling.Help(value); }",
+        "within": "Sibling.Help(value)"
+      },
+      "owner": {
+        "path": "Caller.cs",
+        "text": "public static string Run(string value) { return Sibling.Help(value); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "closed_dispatch": true,
+      "policy_id": "entmoot.csharp.direct-static.v1",
+      "assumption_contains": [
+        "MSBuild",
+        "static"
+      ],
+      "target": {
+        "path": "Sibling.cs",
+        "text": "public static string Help(string value) { return value.Trim(); }"
+      }
+    },
+    {
+      "name": "delegate",
+      "site": {
+        "path": "Caller.cs",
+        "text": "public static string Indirect(System.Func<string,string> callback, string value) { return callback(value); }",
+        "within": "callback(value)"
+      },
+      "owner": {
+        "path": "Caller.cs",
+        "text": "public static string Indirect(System.Func<string,string> callback, string value) { return callback(value); }"
+      },
+      "outcomes": [
+        "unresolved",
+        "unsupported"
+      ]
+    },
+    {
+      "name": "interface",
+      "site": {
+        "path": "Caller.cs",
+        "text": "public static string Virtual(IWorker worker, string value) { return worker.Help(value); }",
+        "within": "worker.Help(value)"
+      },
+      "owner": {
+        "path": "Caller.cs",
+        "text": "public static string Virtual(IWorker worker, string value) { return worker.Help(value); }"
+      },
+      "outcomes": [
+        "repository_symbol"
+      ],
+      "signature": true
+    },
+    {
+      "name": "stdlib",
+      "site": {
+        "path": "Sibling.cs",
+        "text": "public static string Help(string value) { return value.Trim(); }",
+        "within": "value.Trim()"
+      },
+      "owner": {
+        "path": "Sibling.cs",
+        "text": "public static string Help(string value) { return value.Trim(); }"
+      },
+      "outcomes": [
+        "external_symbol"
+      ]
+    },
+    {
+      "name": "abstract-declaration",
+      "site": {
+        "path": "Declarations.cs",
+        "text": "public static int AbstractCall(AbstractWorker worker) { return worker.Work(); }",
+        "within": "worker.Work()"
+      },
+      "owner": {
+        "path": "Declarations.cs",
+        "text": "public static int AbstractCall(AbstractWorker worker) { return worker.Work(); }"
+      },
+      "outcomes": [
+        "repository_symbol"
+      ],
+      "signature": true
+    },
+    {
+      "name": "extern-declaration",
+      "site": {
+        "path": "Declarations.cs",
+        "text": "public static int NativeCall() { return AbstractWorker.Native(); }",
+        "within": "AbstractWorker.Native()"
+      },
+      "owner": {
+        "path": "Declarations.cs",
+        "text": "public static int NativeCall() { return AbstractWorker.Native(); }"
+      },
+      "outcomes": [
+        "repository_symbol"
+      ],
+      "signature": true
+    },
+    {
+      "name": "default-interface-body",
+      "site": {
+        "path": "Declarations.cs",
+        "text": "public static int DefaultCall(IDefaultWorker worker) { return worker.Work(); }",
+        "within": "worker.Work()"
+      },
+      "owner": {
+        "path": "Declarations.cs",
+        "text": "public static int DefaultCall(IDefaultWorker worker) { return worker.Work(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "Declarations.cs",
+        "text": "int Work() { return 7; }"
+      }
+    },
+    {
+      "name": "partial-implementation",
+      "site": {
+        "path": "Declarations.cs",
+        "text": "public static int PartialCall() { return Compute(7); }",
+        "within": "Compute(7)"
+      },
+      "owner": {
+        "path": "Declarations.cs",
+        "text": "public static int PartialCall() { return Compute(7); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "closed_dispatch": true,
+      "policy_id": "entmoot.csharp.direct-partial.v1",
+      "assumption_contains": [
+        "MSBuild",
+        "partial"
+      ],
+      "target": {
+        "path": "Implementation.cs",
+        "text": "public static partial int Compute(int value) { return value; }"
+      }
+    },
+    {
+      "name": "expression-body",
+      "site": {
+        "path": "Declarations.cs",
+        "text": "public static int ExpressionCall() { return Expression(); }",
+        "within": "Expression()"
+      },
+      "owner": {
+        "path": "Declarations.cs",
+        "text": "public static int ExpressionCall() { return Expression(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "closed_dispatch": true,
+      "policy_id": "entmoot.csharp.direct-static.v1",
+      "assumption_contains": [
+        "MSBuild",
+        "static"
+      ],
+      "target": {
+        "path": "Declarations.cs",
+        "text": "public static int Expression() => 7;"
+      }
+    }
+  ],
+  "rust": [
+    {
+      "name": "sibling",
+      "site": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller(value: &str) -> &str { sibling::help(value) }",
+        "within": "sibling::help(value)"
+      },
+      "owner": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller(value: &str) -> &str { sibling::help(value) }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "src/sibling.rs",
+        "text": "pub fn help(value: &str) -> &str { value.trim() }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.rust.direct-function.v1",
+      "assumption_contains": [
+        "cargo",
+        "free-function",
+        "foreign"
+      ]
+    },
+    {
+      "name": "function-pointer",
+      "site": {
+        "path": "src/lib.rs",
+        "text": "pub fn indirect(callback: fn(&str) -> &str, value: &str) -> &str { callback(value) }",
+        "within": "callback(value)"
+      },
+      "owner": {
+        "path": "src/lib.rs",
+        "text": "pub fn indirect(callback: fn(&str) -> &str, value: &str) -> &str { callback(value) }"
+      },
+      "outcomes": [
+        "unresolved",
+        "unsupported"
+      ]
+    },
+    {
+      "name": "stdlib",
+      "site": {
+        "path": "src/sibling.rs",
+        "text": "pub fn help(value: &str) -> &str { value.trim() }",
+        "within": "value.trim()"
+      },
+      "owner": {
+        "path": "src/sibling.rs",
+        "text": "pub fn help(value: &str) -> &str { value.trim() }"
+      },
+      "outcomes": [
+        "external_symbol"
+      ]
+    }
+  ]
+}

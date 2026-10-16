@@ -1,0 +1,30 @@
+{
+  "format": "entmoot.grammar_fixture_selection.v1",
+  "language": "c",
+  "fixture_owner": "../cases.py",
+  "case_ids": [
+    "c17-contextual-identifiers",
+    "c17-identifier-constexpr",
+    "c23-keyword-negative-constexpr",
+    "c17-function-constexpr",
+    "c17-field-constexpr",
+    "c17-typedef-constexpr",
+    "c17-identifier-thread_local",
+    "c23-keyword-negative-thread_local",
+    "c17-function-thread_local",
+    "c17-field-thread_local",
+    "c17-typedef-thread_local",
+    "c17-identifier-alignas",
+    "c23-keyword-negative-alignas",
+    "c17-function-alignas",
+    "c17-field-alignas",
+    "c17-typedef-alignas",
+    "c17-identifier-alignof",
+    "c23-keyword-negative-alignof",
+    "c17-function-alignof",
+    "c17-field-alignof",
+    "c17-typedef-alignof"
+  ],
+  "oracle": "../qualify_features.py",
+  "qualification_receipt": "../qualification_2026-10-10.json"
+}

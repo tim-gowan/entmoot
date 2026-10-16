@@ -1,0 +1,13 @@
+{
+  "format": "entmoot.grammar_fixture_selection.v1",
+  "language": "c",
+  "fixture_owner": "../cases.py",
+  "case_ids": [
+    "c11-atomic",
+    "c11-atomic-pointer",
+    "c11-atomic-qualifier",
+    "c11-atomic-qualified-negative"
+  ],
+  "oracle": "../qualify_features.py",
+  "qualification_receipt": "../qualification_2026-10-10.json"
+}

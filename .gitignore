@@ -1,4 +1,81 @@
-/target
+# Rust backup files (build trees are under the shared skip block below)
+**/*.rs.bk
 
-Cargo.lock
-scripts/*.log
+# env files
+.env
+.env.*
+!.env.example
+
+# Local scratch / analysis outputs (inventory + Pyright fence skip these)
+/.tmp/
+.tmp/
+*.log
+*.sqlite3
+*.sqlite3-*
+
+# ADR-0007 Glean spike harness (decision lives in docs/architecture/adrs/0007-*)
+evals/glean_substrate/
+
+# Build / tool trees skipped by structural scan and native Python freeze.
+# Keep in sync with crates/entmoot-core scan skip dirs and pyright_program.ts.
+target/
+node_modules/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.uv/
+.cache/
+.eggs/
+dist/
+build/
+htmlcov/
+.coverage
+.idea/
+.vscode/
+.semgrep/
+.trivycache/
+.endorlabs/
+
+# Python
+*.py[cod]
+*$py.class
+*.egg-info/
+
+# Reproducible evaluation outputs. Keep policies, harnesses, fixtures, pins, and
+# generalized conclusions; regenerate machine/run-specific observations locally.
+/evals/topology/commit_update/*.json
+/evals/topology/ecosystem_scale/
+/evals/topology/resolver_spike/report/
+/evals/topology/scip_poc/JUICE_SHOP_ANALYSIS.md
+/evals/topology/scip_poc/Cargo.lock
+/evals/real_world/*/QUERY_MEASUREMENTS.json
+/evals/retrieval/results/
+
+# Non-taint Opengrep rules live in G:\GitHub\opengrep-experiments\non-taint-rules
+# (do not keep a duplicate pack here).
+/non-taint-rules/
+
+# Coverage reports
+lcov.info
+*.profraw
+coverage/
+
+# Editor swap files
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local Entmoot publications and immutable producer artifacts
+.entmoot/
+
+# IDE / agent trees (canonical content lives under .agents/; symlink locally)
+.cursor/
+.codex/
+.claude/

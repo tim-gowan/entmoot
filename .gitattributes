@@ -1,0 +1,51 @@
+# Rust sources must stay LF so rustfmt (newline_style=Unix) matches on Windows.
+*.rs text eol=lf
+
+# Versioned campaign receipts have byte digests; preserve bytes on every OS.
+evals/real_world/breadth_2026-09-21.json text eol=lf
+evals/topology/horizon_cases/*.json text eol=lf
+evals/topology/horizon_cases/golden/*.json text eol=lf
+evals/real_world/residual_2026-09-21.json text eol=lf
+evals/topology/horizon_cases/v2/*.json text eol=lf
+evals/topology/horizon_cases/v2/golden/*.json text eol=lf
+
+# Versioned default-workflow and signal receipts use stable bytes.
+evals/topology/impact_cases/defaults_*.json text eol=lf
+evals/topology/impact_cases/working_tree_default_*.json text eol=lf
+evals/topology/impact_cases/golden/*.json text eol=lf
+
+# Generated contract schemas are compared via include_str!; keep LF on Windows.
+crates/entmoot-contracts/generated/*.json text eol=lf
+crates/entmoot-core/generated/grammars/** -text
+evals/topology/compatibility_cases/grammar_adoption_*.json -text
+evals/topology/compatibility_cases/location_coordinates_*.json -text
+evals/topology/compatibility_cases/buffered_coordinates_*.json -text
+evals/topology/compatibility_cases/go_occurrences_*.json -text
+evals/topology/compatibility_cases/native_consolidation_*.json -text
+evals/topology/compatibility_cases/native_contracts_*.json -text
+
+# Grammar packet inputs commit exact bytes, including intentional source newlines.
+evals/real_world/local_checkout_index.json -text
+tools/tree-sitter-upstream/**/*.py -text
+tools/tree-sitter-upstream/*.json -text
+tools/tree-sitter-upstream/**/fixtures/*.txt -text
+tools/tree-sitter-upstream/**/*.patch -text whitespace=-blank-at-eol
+tools/tree-sitter-upstream/python/requirements.txt -text
+tools/tree-sitter-upstream/python/lazy-imports/proposal.json -text
+tools/tree-sitter-upstream/python/qualification_2026-10-10.json -text
+tools/tree-sitter-upstream/python/parser_cache_2026-10-10.json -text
+tools/tree-sitter-upstream/python/positive-patterns/*.json -text
+tools/tree-sitter-upstream/go/**/*.json -text
+tools/tree-sitter-upstream/go/**/*.go -text
+tools/tree-sitter-upstream/java/**/*.json -text
+tools/tree-sitter-upstream/java/**/*.java -text
+tools/tree-sitter-upstream/java/modern-syntax/build-locks/** -text
+tools/tree-sitter-upstream/csharp/**/*.json -text
+tools/tree-sitter-upstream/csharp/**/*.cs -text
+tools/tree-sitter-upstream/csharp/file-based-directives/build-locks/** -text
+tools/tree-sitter-upstream/rust/**/*.json -text
+tools/tree-sitter-upstream/rust/**/*.rs -text
+tools/tree-sitter-upstream/rust/build-locks/** -text
+evals/topology/compatibility_cases/revision_accounting_*.json -text
+evals/topology/compatibility_cases/revision_campaign_*.json -text
+docs/archive/test_lane_prune_*.json -text

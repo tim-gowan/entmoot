@@ -1,11 +1,106 @@
-[package]
-name = "entmoot"
-version = "0.0.1"
-edition = "2024"
-description = "The Ents are still gathering. Under construction."
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/tim-gowan/entmoot"
-homepage = "https://github.com/tim-gowan/entmoot"
-readme = "README.md"
+[workspace]
+members = ["crates/entmoot-contracts", "crates/entmoot-core", "crates/entmoot-cli", "crates/entmoot-engine", "crates/entmoot-mcp"]
+exclude = ["tools/entmoot-lints", ".tmp"]
+resolver = "2"
 
-[dependencies]
+[workspace.package]
+repository = "https://github.com/tim-gowan/entmoot"
+rust-version = "1.98"
+version = "1.0.0-alpha.1"
+
+# Sound production constraints (tests allowed via .clippy.toml allow-*-in-tests).
+# Cargo.toml sha2/sha256 bans stay in scripts/pre_commit_check.py; AST policy is Dylint
+# (tools/entmoot-lints). Licenses: cargo-deny --exclude-dev (deny.toml).
+# Deny unused/dead private code and Clippy unwrap/expect; warn on hygiene/unsafe/pedantic.
+[workspace.lints.rust]
+# `unused` is a group; lower priority so individual members (e.g. dead_code) can override.
+unused = { level = "deny", priority = -1 }
+dead_code = "deny"
+unsafe_code = "warn"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+# Pedantic style noise (unsafe/hygiene stay warn).
+doc_markdown = "allow"
+too_many_lines = "allow"
+return_self_not_must_use = "allow"
+struct_excessive_bools = "allow"
+similar_names = "allow"
+semicolon_if_nothing_returned = "allow"
+default_trait_access = "allow"
+match_wildcard_for_single_variants = "allow"
+ref_option = "allow"
+unnecessary_wraps = "allow"
+unused_self = "allow"
+match_same_arms = "allow"
+needless_continue = "allow"
+implicit_hasher = "allow"
+items_after_statements = "allow"
+self_only_used_in_recursion = "allow"
+struct_field_names = "allow"
+assigning_clones = "allow"
+format_push_string = "allow"
+format_collect = "allow"
+needless_pass_by_value = "allow"
+trivially_copy_pass_by_ref = "allow"
+case_sensitive_file_extension_comparisons = "allow"
+manual_let_else = "allow"
+redundant_field_names = "allow"
+map_unwrap_or = "allow"
+used_underscore_binding = "allow"
+needless_raw_string_hashes = "allow"
+cast_precision_loss = "allow"
+stable_sort_primitive = "allow"
+fn_params_excessive_bools = "allow"
+unused_async_trait_impl = "allow"
+single_match_else = "allow"
+wildcard_imports = "allow"
+redundant_closure_for_method_calls = "allow"
+uninlined_format_args = "allow"
+elidable_lifetime_names = "allow"
+if_not_else = "allow"
+manual_string_new = "allow"
+cast_lossless = "allow"
+explicit_iter_loop = "allow"
+checked_conversions = "allow"
+enum_glob_use = "allow"
+implicit_clone = "allow"
+single_char_pattern = "allow"
+unchecked_time_subtraction = "allow"
+unnested_or_patterns = "allow"
+manual_assert_eq = "allow"
+zero_sized_map_values = "allow"
+# Byte sizes / digests in manifests and generated grammar tables.
+unreadable_literal = "allow"
+
+undocumented_unsafe_blocks = "warn"
+ptr_as_ptr = "warn"
+cast_possible_truncation = "warn"
+cast_possible_wrap = "warn"
+cast_sign_loss = "warn"
+redundant_clone = "warn"
+
+dbg_macro = "warn"
+todo = "warn"
+unimplemented = "warn"
+
+[workspace.metadata.dylint]
+libraries = [{ path = "tools/entmoot-lints" }]
+
+[profile.dev]
+debug = true
+
+[profile.test]
+opt-level = 1
+debug = true
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

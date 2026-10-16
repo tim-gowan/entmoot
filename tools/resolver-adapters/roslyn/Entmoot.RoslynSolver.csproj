@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>Entmoot.RoslynSolver</RootNamespace>
+    <AssemblyName>Entmoot.RoslynSolver</AssemblyName>
+    <!-- MSBuildWorkspace/hostfxr need full globalization; invariant breaks SDK resolve. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <MSBuildApiVersion>17.14.28</MSBuildApiVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blake3" Version="2.2.1" />
+    <PackageReference Include="Basic.Reference.Assemblies.Net90" Version="1.8.3" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.7.8" />
+    <!-- Compile against the API; Locator supplies the installed SDK at runtime. -->
+    <PackageReference Include="Microsoft.Build" Version="$(MSBuildApiVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MSBuildApiVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MSBuildApiVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MSBuildApiVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0" />
+  </ItemGroup>
+
+  <!-- Fixtures are analysis inputs, not part of the worker assembly. -->
+  <ItemGroup>
+    <Compile Remove="fixtures/**/*.cs" />
+    <None Include="fixtures/**/*.cs" />
+  </ItemGroup>
+</Project>

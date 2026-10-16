@@ -1,0 +1,56 @@
+--- a/grammar.js
++++ b/grammar.js
+@@ -63,6 +63,13 @@
+   ],
+ 
+   conflicts: $ => [
++    [$.type_specifier, $.optional_type_parameter_declaration],
++    [$.type_specifier, $.template_type],
++    [$.type_specifier, $.pack_index_expression],
++    [$.expression, $.pack_index_expression, $.identifier_parameter_pack_expansion],
++    [$.type_specifier, $.expression, $.pack_index_expression],
++    [$.expression, $.pack_index_expression],
++    [$.type_specifier, $._top_level_expression_statement],
+     // C
+     [$.type_specifier, $._declarator],
+     [$.type_specifier, $.expression],
+@@ -195,16 +202,17 @@
+       $.enum_specifier,
+       $.class_specifier,
+       $.sized_type_specifier,
++      alias($.pack_index_expression, $.pack_index_type),
+       $.primitive_type,
+       $.template_type,
+       $.dependent_type,
+       $.splice_type_specifier,
+       $.placeholder_type_specifier,
+       $.decltype,
+-      prec.right(choice(
++      choice(
+         alias($.qualified_type_identifier, $.qualified_identifier),
+         $._type_identifier,
+-      )),
++      ),
+     ),
+ 
+     type_qualifier: (_, original) => choice(
+@@ -1050,6 +1058,7 @@
+       $.delete_expression,
+       $.lambda_expression,
+       $.parameter_pack_expansion,
++      $.pack_index_expression,
+       $.this,
+       $.user_defined_literal,
+       $.fold_expression,
+@@ -1332,6 +1341,11 @@
+       field('pattern', $.expression),
+       '...',
+     )),
++
++    pack_index_expression: $ => seq(
++      field('pack', $.identifier),
++      '...', '[', field('index', $.expression), ']',
++    ),
+ 
+     type_parameter_pack_expansion: $ => seq(
+       field('pattern', $.type_descriptor),

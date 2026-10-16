@@ -1,0 +1,443 @@
+{
+  "timeout_seconds": 3600,
+  "roots": [
+    "flask",
+    "jinja-3.1.6",
+    "jinja-2.11.3",
+    "pydantic",
+    "annotated-types-0.7.0",
+    "annotated-types-0.6.0",
+    "express",
+    "qs-6.13.0",
+    "qs-6.9.7",
+    "uuid",
+    "getrandom-0.2.15",
+    "getrandom-0.1.16",
+    "chi",
+    "chi-5.0.0",
+    "yaml-3.0.1",
+    "yaml-3.0.0",
+    "guava",
+    "guava-30.1.1",
+    "newtonsoft",
+    "newtonsoft-12.0.3",
+    "curl",
+    "curl-8.5.0"
+  ],
+  "repositories": {
+    "flask": {
+      "url": "https://github.com/pallets/flask",
+      "revision": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+      "build": [
+        [
+          "{python}",
+          "-m",
+          "pip",
+          "wheel",
+          "--no-deps",
+          "--wheel-dir",
+          "{build}",
+          "{checkout}"
+        ]
+      ],
+      "lock": "uv.lock",
+      "subject": "pkg:pypi/flask"
+    },
+    "jinja-3.1.6": {
+      "url": "https://github.com/pallets/jinja",
+      "revision": "15206881c006c79667fe5154fe80c01c65410679",
+      "build": [
+        [
+          "{python}",
+          "-m",
+          "pip",
+          "wheel",
+          "--no-deps",
+          "--wheel-dir",
+          "{build}",
+          "{checkout}"
+        ]
+      ],
+      "lock": null,
+      "subject": "pkg:pypi/jinja2"
+    },
+    "jinja-2.11.3": {
+      "url": "https://github.com/pallets/jinja",
+      "revision": "cf215390d4a4d6f0a4de27e2687eed176878f13d",
+      "build": [
+        [
+          "{python}",
+          "-m",
+          "pip",
+          "wheel",
+          "--no-deps",
+          "--wheel-dir",
+          "{build}",
+          "{checkout}"
+        ]
+      ],
+      "lock": null,
+      "subject": "pkg:pypi/jinja2"
+    },
+    "pydantic": {
+      "url": "https://github.com/pydantic/pydantic",
+      "revision": "68a839f0712c367f17be497b6850ebcb6825d76c",
+      "build": [
+        [
+          "{python}",
+          "-m",
+          "pip",
+          "wheel",
+          "--no-deps",
+          "--wheel-dir",
+          "{build}",
+          "{checkout}"
+        ]
+      ],
+      "lock": "uv.lock",
+      "subject": "pkg:pypi/pydantic"
+    },
+    "annotated-types-0.7.0": {
+      "url": "https://github.com/annotated-types/annotated-types",
+      "revision": "0735cd3d4c272b88405b6b04009716b691115210",
+      "build": [
+        [
+          "{python}",
+          "-m",
+          "pip",
+          "wheel",
+          "--no-deps",
+          "--wheel-dir",
+          "{build}",
+          "{checkout}"
+        ]
+      ],
+      "lock": null,
+      "subject": "pkg:pypi/annotated-types"
+    },
+    "annotated-types-0.6.0": {
+      "url": "https://github.com/annotated-types/annotated-types",
+      "revision": "18584dffd31a845c25b92857b73ea76d10ea3d0d",
+      "build": [
+        [
+          "{python}",
+          "-m",
+          "pip",
+          "wheel",
+          "--no-deps",
+          "--wheel-dir",
+          "{build}",
+          "{checkout}"
+        ]
+      ],
+      "lock": null,
+      "subject": "pkg:pypi/annotated-types"
+    },
+    "express": {
+      "url": "https://github.com/expressjs/express",
+      "revision": "e90e68fb32d36716571724dd8c9ac5b31b14bf50",
+      "build": [
+        [
+          "npm",
+          "pack",
+          "--pack-destination",
+          "{build}"
+        ]
+      ],
+      "lock": null,
+      "subject": "pkg:npm/express"
+    },
+    "qs-6.13.0": {
+      "url": "https://github.com/ljharb/qs",
+      "revision": "5cf516c0dd557d85d5f18d4a916c96cd9cfc2305",
+      "build": [
+        [
+          "npm",
+          "pack",
+          "--pack-destination",
+          "{build}"
+        ]
+      ],
+      "lock": null,
+      "subject": "pkg:npm/qs"
+    },
+    "qs-6.9.7": {
+      "url": "https://github.com/ljharb/qs",
+      "revision": "4cd003291fe3b347884f797e548b58a12150a0e3",
+      "build": [
+        [
+          "npm",
+          "pack",
+          "--pack-destination",
+          "{build}"
+        ]
+      ],
+      "lock": null,
+      "subject": "pkg:npm/qs"
+    },
+    "uuid": {
+      "url": "https://github.com/uuid-rs/uuid",
+      "revision": "4473398413f7e3f4103374559b8d038b4801329a",
+      "build": [
+        [
+          "cargo",
+          "fetch",
+          "--locked"
+        ]
+      ],
+      "lock": "Cargo.lock",
+      "subject": "pkg:cargo/uuid"
+    },
+    "getrandom-0.2.15": {
+      "url": "https://github.com/rust-random/getrandom",
+      "revision": "cf65e83f9df8954df101320de86f80dccfc6b68a",
+      "build": [
+        [
+          "cargo",
+          "fetch",
+          "--locked"
+        ]
+      ],
+      "lock": "Cargo.lock",
+      "subject": "pkg:cargo/getrandom"
+    },
+    "getrandom-0.1.16": {
+      "url": "https://github.com/rust-random/getrandom",
+      "revision": "bd14b7a243c7cda78f698742a84d1a0bbfcba972",
+      "build": [],
+      "lock": null,
+      "subject": "pkg:cargo/getrandom"
+    },
+    "chi": {
+      "url": "https://github.com/go-chi/chi",
+      "revision": "67be7d9cafdaeb4e04e887ff78d09e030ee43b00",
+      "build": [
+        [
+          "go",
+          "mod",
+          "download"
+        ]
+      ],
+      "lock": "go.mod",
+      "subject": "pkg:golang/github.com/go-chi/chi/v5"
+    },
+    "chi-5.0.0": {
+      "url": "https://github.com/go-chi/chi",
+      "revision": "fe3708ee6c7bf30623c33ca1b8005182c392ff3f",
+      "build": [
+        [
+          "go",
+          "mod",
+          "download"
+        ]
+      ],
+      "lock": "go.mod",
+      "subject": "pkg:golang/github.com/go-chi/chi/v5"
+    },
+    "yaml-3.0.1": {
+      "url": "https://github.com/go-yaml/yaml",
+      "revision": "f6f7691b1fdeb513f56608cd2c32c51f8194bf51",
+      "build": [
+        [
+          "go",
+          "mod",
+          "download"
+        ]
+      ],
+      "lock": "go.mod",
+      "subject": "pkg:golang/gopkg.in/yaml.v3"
+    },
+    "yaml-3.0.0": {
+      "url": "https://github.com/go-yaml/yaml",
+      "revision": "00bbc0947ae889b9e480044dbc3bc3e3216a6a89",
+      "build": [
+        [
+          "go",
+          "mod",
+          "download"
+        ]
+      ],
+      "lock": "go.mod",
+      "subject": "pkg:golang/gopkg.in/yaml.v3"
+    },
+    "guava": {
+      "url": "https://github.com/google/guava",
+      "revision": "df9602b6f1dd36414464229e0a441469d06e4575",
+      "build": [],
+      "lock": null,
+      "subject": "pkg:maven/com.google.guava/guava"
+    },
+    "guava-30.1.1": {
+      "url": "https://github.com/google/guava",
+      "revision": "43a53bc0328c7efd1da152f3b56b1fd241c88d4c",
+      "build": [],
+      "lock": null,
+      "subject": "pkg:maven/com.google.guava/guava"
+    },
+    "newtonsoft": {
+      "url": "https://github.com/JamesNK/Newtonsoft.Json",
+      "revision": "0a2e291c0d9c0c7675d445703e51750363a549ef",
+      "build": [],
+      "lock": null,
+      "subject": "pkg:nuget/newtonsoft.json"
+    },
+    "newtonsoft-12.0.3": {
+      "url": "https://github.com/JamesNK/Newtonsoft.Json",
+      "revision": "7c3d7f8da7e35dde8fa74188b0decff70f8f10e3",
+      "build": [],
+      "lock": null,
+      "subject": "pkg:nuget/newtonsoft.json"
+    },
+    "curl": {
+      "url": "https://github.com/curl/curl",
+      "revision": "b1ef0e1a01c0bb6ee5367bd9c186a603bde3615a",
+      "build": [],
+      "lock": null,
+      "subject": "pkg:generic/curl"
+    },
+    "curl-8.5.0": {
+      "url": "https://github.com/curl/curl",
+      "revision": "7161cb17c01dcff1dc5bf89a18437d9d729f1ecd",
+      "build": [],
+      "lock": null,
+      "subject": "pkg:generic/curl"
+    }
+  },
+  "packages": {
+    "pkg:pypi/jinja2@3.1.6": "jinja-3.1.6",
+    "pkg:pypi/annotated-types@0.7.0": "annotated-types-0.7.0",
+    "pkg:npm/qs@6.13.0": "qs-6.13.0",
+    "pkg:cargo/getrandom@0.2.15": "getrandom-0.2.15",
+    "pkg:golang/gopkg.in/yaml.v3@v3.0.1": "yaml-3.0.1"
+  },
+  "checks": [
+    {
+      "name": "flask-jinja-compat-pin",
+      "arguments": [
+        "assess",
+        "compatibility",
+        "--consumer",
+        "{root:flask}",
+        "--provider",
+        "{root:jinja-3.1.6}"
+      ]
+    },
+    {
+      "name": "jinja-overlay-pin-vs-downgrade",
+      "arguments": [
+        "assess",
+        "overlay",
+        "--base-graph",
+        "{graph:jinja-3.1.6}",
+        "--head-graph",
+        "{graph:jinja-2.11.3}"
+      ]
+    },
+    {
+      "name": "annotated-types-overlay-pin-vs-downgrade",
+      "arguments": [
+        "assess",
+        "overlay",
+        "--base-graph",
+        "{graph:annotated-types-0.7.0}",
+        "--head-graph",
+        "{graph:annotated-types-0.6.0}"
+      ]
+    },
+    {
+      "name": "qs-overlay-pin-vs-downgrade",
+      "arguments": [
+        "assess",
+        "overlay",
+        "--base-graph",
+        "{graph:qs-6.13.0}",
+        "--head-graph",
+        "{graph:qs-6.9.7}"
+      ]
+    },
+    {
+      "name": "getrandom-overlay-pin-vs-downgrade",
+      "arguments": [
+        "assess",
+        "overlay",
+        "--base-graph",
+        "{graph:getrandom-0.2.15}",
+        "--head-graph",
+        "{graph:getrandom-0.1.16}"
+      ]
+    },
+    {
+      "name": "chi-overlay-pin-vs-downgrade",
+      "arguments": [
+        "assess",
+        "overlay",
+        "--base-graph",
+        "{graph:chi}",
+        "--head-graph",
+        "{graph:chi-5.0.0}"
+      ]
+    },
+    {
+      "name": "yaml-overlay-pin-vs-downgrade",
+      "arguments": [
+        "assess",
+        "overlay",
+        "--base-graph",
+        "{graph:yaml-3.0.1}",
+        "--head-graph",
+        "{graph:yaml-3.0.0}"
+      ]
+    },
+    {
+      "name": "guava-overlay-pin-vs-downgrade",
+      "arguments": [
+        "assess",
+        "overlay",
+        "--base-graph",
+        "{graph:guava}",
+        "--head-graph",
+        "{graph:guava-30.1.1}"
+      ]
+    },
+    {
+      "name": "newtonsoft-overlay-pin-vs-downgrade",
+      "arguments": [
+        "assess",
+        "overlay",
+        "--base-graph",
+        "{graph:newtonsoft}",
+        "--head-graph",
+        "{graph:newtonsoft-12.0.3}"
+      ]
+    },
+    {
+      "name": "curl-overlay-pin-vs-downgrade",
+      "arguments": [
+        "assess",
+        "overlay",
+        "--base-graph",
+        "{graph:curl}",
+        "--head-graph",
+        "{graph:curl-8.5.0}"
+      ]
+    },
+    {
+      "name": "flask-status",
+      "arguments": [
+        "status",
+        "--graph",
+        "{graph:flask}"
+      ]
+    },
+    {
+      "name": "flask-inventory",
+      "arguments": [
+        "inventory",
+        "--graph",
+        "{graph:flask}",
+        "--limit",
+        "20"
+      ]
+    }
+  ]
+}

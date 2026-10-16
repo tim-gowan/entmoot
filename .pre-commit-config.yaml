@@ -1,0 +1,25 @@
+# Optional: `pre-commit install` (same gates as scripts/install_git_hooks.py).
+# Primary install path: python scripts/install_git_hooks.py
+# (that hook runs scripts/pre_commit_check.py end-to-end with path-preflight).
+#
+# Do not list bare `cargo build --release …` hooks here: they always_run and
+# recompile even when path-preflight would skip. Delegate to pre_commit_check.py.
+repos:
+  - repo: local
+    hooks:
+      - id: banned-patterns
+        name: banned identity / Sync patterns
+        entry: python scripts/pre_commit_check.py --banned-only
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: entmoot-pre-commit
+        name: entmoot pre-commit (path-preflight accelerated)
+        entry: python scripts/pre_commit_check.py
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      # Native controls and matched producer builds follow ENTMOOT_NATIVE_CHECK.
+      # Publication remains an explicit entmoot init/bind operation.

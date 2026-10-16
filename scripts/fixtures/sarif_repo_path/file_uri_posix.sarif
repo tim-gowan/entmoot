@@ -1,0 +1,24 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {"driver": {"name": "fixture"}},
+      "results": [
+        {
+          "ruleId": "r1",
+          "message": {"text": "x"},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "PLACEHOLDER_FILE_URI"
+                },
+                "region": {"startLine": 1}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

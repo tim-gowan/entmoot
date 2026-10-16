@@ -1,0 +1,12 @@
+{
+  "url": "https://github.com/tree-sitter/tree-sitter-go/pull/193",
+  "head": "5a6af13a0a5b45bc76cac289c783b315b2b74e13",
+  "base": "2346a3ab1bb3857b48b29d779a1ef9799a248cd7",
+  "state": "open",
+  "merged": false,
+  "cutoff": "2026-10-10",
+  "overlap": [
+    "https://github.com/tree-sitter/tree-sitter-go/pull/190",
+    "https://github.com/tree-sitter/tree-sitter-go/pull/199"
+  ]
+}

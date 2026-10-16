@@ -1,0 +1,147 @@
+name: PR gate decision (acceleration)
+
+# Scoped skip/run for cargo build/tests. Not a merge oracle.
+# Full ci.yml remains the correctness backstop.
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Base commit SHA (defaults to PR base or HEAD~1)
+        required: false
+        type: string
+      head:
+        description: Head commit SHA (defaults to PR head or HEAD)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+concurrency:
+  group: pr-gate-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  gate-decision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Resolve base and head SHAs
+        id: shas
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          INPUT_BASE: ${{ inputs.base }}
+          INPUT_HEAD: ${{ inputs.head }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE="$PR_BASE"
+            HEAD="$PR_HEAD"
+          else
+            BASE="$INPUT_BASE"
+            HEAD="$INPUT_HEAD"
+            if [ -z "$BASE" ]; then BASE="$(git rev-parse HEAD~1)"; fi
+            if [ -z "$HEAD" ]; then HEAD="$(git rev-parse HEAD)"; fi
+          fi
+          [[ "$BASE" =~ ^[0-9a-fA-F]{40}$ ]] || { echo 'base must be a full commit SHA'; exit 2; }
+          [[ "$HEAD" =~ ^[0-9a-fA-F]{40}$ ]] || { echo 'head must be a full commit SHA'; exit 2; }
+          git cat-file -e "$BASE^{commit}"
+          git cat-file -e "$HEAD^{commit}"
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+          echo "head=$HEAD" >> "$GITHUB_OUTPUT"
+          echo "Comparing $BASE...$HEAD"
+
+      - name: Path preflight (no CLI)
+        id: preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/pr_structural_diff.py \
+            --path-preflight \
+            --base "${{ steps.shas.outputs.base }}" \
+            --head "${{ steps.shas.outputs.head }}" \
+            --json-out pr_gate_decision.json \
+            --summary-out pr_gate_decision.md
+          SKIP=$(python3 -c "import json; print('true' if json.load(open('pr_gate_decision.json'))['skip_cli_build'] else 'false')")
+          echo "skip_cli_build=$SKIP" >> "$GITHUB_OUTPUT"
+          cat pr_gate_decision.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload gate decision (preflight skip)
+        if: steps.preflight.outputs.skip_cli_build == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pr-gate-decision
+          path: |
+            pr_gate_decision.json
+            pr_gate_decision.md
+
+      - name: Install Rust toolchain
+        if: steps.preflight.outputs.skip_cli_build != 'true'
+        run: rustup show
+
+      - name: Build entmoot-cli
+        if: steps.preflight.outputs.skip_cli_build != 'true'
+        run: cargo build --release -p entmoot
+
+      - name: Validate PR gate decision selector
+        if: steps.preflight.outputs.skip_cli_build != 'true'
+        run: python3 -m unittest scripts.test_pr_structural_diff
+
+      - name: Structural classification + gate decisions
+        if: steps.preflight.outputs.skip_cli_build != 'true'
+        id: diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI=./target/release/entmoot
+          python3 scripts/pr_structural_diff.py \
+            --base "${{ steps.shas.outputs.base }}" \
+            --head "${{ steps.shas.outputs.head }}" \
+            --cli "$CLI" \
+            --config standard \
+            --json-out pr_gate_decision.json \
+            --summary-out pr_gate_decision.md
+          cat pr_gate_decision.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload gate decision artifact
+        if: steps.preflight.outputs.skip_cli_build != 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pr-gate-decision
+          path: |
+            pr_gate_decision.json
+            pr_gate_decision.md
+
+      - name: Run selected cargo tests
+        if: steps.preflight.outputs.skip_cli_build != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import subprocess
+          import shlex
+          import sys
+          from pathlib import Path
+
+          data = json.loads(Path("pr_gate_decision.json").read_text(encoding="utf-8"))
+          cmds = data.get("cargo_commands") or []
+          if not cmds:
+              print("No cargo tests selected (structural noops / docs-only).")
+              sys.exit(0)
+          for line in cmds:
+              print("+", line, flush=True)
+              completed = subprocess.run(shlex.split(line), shell=False)
+              if completed.returncode != 0:
+                  sys.exit(completed.returncode)
+          print("Selected tests passed.")
+          PY

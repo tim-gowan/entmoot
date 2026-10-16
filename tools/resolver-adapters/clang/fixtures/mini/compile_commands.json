@@ -1,0 +1,12 @@
+[
+  {
+    "directory": ".",
+    "command": "clang -c caller.c -o caller.o",
+    "file": "caller.c"
+  },
+  {
+    "directory": ".",
+    "command": "clang -c sibling.c -o sibling.o",
+    "file": "sibling.c"
+  }
+]

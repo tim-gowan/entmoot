@@ -1,0 +1,39 @@
+--- a/common/define-grammar.js
++++ b/common/define-grammar.js
+@@ -273,7 +273,7 @@
+         previous,
+       ),
+ 
+-      _import_identifier: $ => choice($.identifier, alias('type', $.identifier)),
++      _import_identifier: $ => choice($.identifier, alias('type', $.identifier), alias('defer', $.identifier)),
+ 
+       import_specifier: $ => seq(
+         optional(choice('type', 'typeof')),
+@@ -309,20 +309,25 @@
+         optional(choice('type', 'typeof')),
+         choice(
+           seq($.import_clause, $._from_clause),
++          seq(field('phase', 'defer'), alias($.deferred_import_clause, $.import_clause), $._from_clause),
+           $.import_require_clause,
+           field('source', $.string),
+         ),
+         optional($.import_attribute),
+         $._semicolon,
+       ),
++
++      deferred_import_clause: $ => $.namespace_import,
+ 
+       export_statement: ($, previous) => choice(
+         previous,
+         seq(
+           'export',
+           'type',
+-          $.export_clause,
+-          optional($._from_clause),
++          choice(
++            seq($.export_clause, optional($._from_clause)),
++            seq('*', optional(seq('as', $._module_export_name)), $._from_clause),
++          ),
+           $._semicolon,
+         ),
+         seq('export', '=', $.expression, $._semicolon),

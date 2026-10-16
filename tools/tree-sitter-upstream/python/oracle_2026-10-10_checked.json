@@ -1,0 +1,221 @@
+{
+  "format": "entmoot.grammar_oracle.v1",
+  "release_cutoff": "2026-10-10",
+  "driver_digest": "blake3:86bf5d65def414b5b5b23fc0c5a7cd88dd352b1a3177d715633f10e783ff9c72",
+  "interpreter": {
+    "version": "3.15.0 (tags/v3.15.0:d220409, Oct  9 2026, 11:55:56) [MSC v.1951 64 bit (AMD64)]",
+    "version_info": [
+      3,
+      15,
+      0
+    ],
+    "executable": "G:\\GitHub\\entmoot\\.tmp\\tools\\python-3.15.0\\python.exe"
+  },
+  "interpreter_digest": "blake3:de6527ef6771adcbbf5a233a9c61466311ff1bf79d02355e4709010920b63422",
+  "interpreter_top_level_files": {
+    "_asyncio.pyd": "blake3:1a4a5aaf6a2c8180e57a55678a8b7ca5ebde643ddf2ab9e95fcf4bae99b143e7",
+    "_bz2.pyd": "blake3:799af90ae61e1a195e32188937cb23d0080f61b8af827f59003bf6770c509361",
+    "_ctypes.pyd": "blake3:b7500c7e88adcd5aee0d4c7d26d34c07e41e99a97e45973a0362dd960e1791f4",
+    "_decimal.pyd": "blake3:16ce5614104ac633978a4068279539c6613a6b465d63162e12f4c7df9a712f18",
+    "_elementtree.pyd": "blake3:795ca10eb81bd72e75ccdf3bec828f95f36ee0e3c83dab29a095c78554c250fe",
+    "_hashlib.pyd": "blake3:755c43529598ca10d37dc8ea523b717e55e12c05b79f88a1e8fb137409387a27",
+    "_lzma.pyd": "blake3:f248eb4364a920ad3b9c86b24bc4037ab80152fafe3b462eb93ccd7557330a1a",
+    "_multiprocessing.pyd": "blake3:c5fe74a75702a166d3ae3f1ac0f25c6c7053b39cac9ad305ed6c5b026a2551e8",
+    "_overlapped.pyd": "blake3:39369553c7c0a2f31786fe085a0b86f8c00434fadf7c5bca81e963f525ce7887",
+    "_queue.pyd": "blake3:0b6e474e2a225aae5f0ecdea1167ca6a370c07df0297255f32f117eeff1dbc7f",
+    "_remote_debugging.pyd": "blake3:b919c3072b2f90e1d3385252821d9abfa0e9767f28b1100286b5b10d712ae931",
+    "_socket.pyd": "blake3:52fcc7add94debb9f9ac4364b26c08562a434594aaae5c70d2188c664bb4c9fb",
+    "_sqlite3.pyd": "blake3:13b9bb42132ce0c2869fa4c93f7a1279758b7d6bc7a6a47a1c2e35ecb6891f50",
+    "_ssl.pyd": "blake3:3d15c5f6d21bd8771568d703d2c8859969cf4caec132e25820a91f552064dce6",
+    "_uuid.pyd": "blake3:2b18a5a8539e3cc37416cc5d0be991990540992b94f174c78d83ae2b4fa5a21b",
+    "_wmi.pyd": "blake3:d9154e7732e31f29263d34b6088746c4e6706b78a6f2a8f92334dae6801ba98e",
+    "_zoneinfo.pyd": "blake3:07ee56765a7e58f2ada863d376413310d3856c251c687394b6d140135b8c007d",
+    "_zstd.pyd": "blake3:b9861c75aa94d4a40be24f1402509a13c7e353748ddc3256ac9da35f68dd5a5e",
+    "libcrypto-3.dll": "blake3:f3ac628c202a2d789d82f04fb6cf8d4b3e6e2d7a21ca6952a79e232afffe14ab",
+    "libffi-8.dll": "blake3:fc217fe0825f16d92289851a1de56eee466d60ad58dc246be71f77d3c197bb4d",
+    "libssl-3.dll": "blake3:c943b067d96501b8630365183b10f5e58e7856ca10aa130889912dd3b8acebe4",
+    "libtommath.dll": "blake3:ab2c069d1c8f5ee195f918d97b1904506d86f2274f5ee406952e5d6efba73274",
+    "pyexpat.pyd": "blake3:5ca720a4df5f3ab8dd025a1706f97e30ca9ff89001418854d98ed0552b3faabe",
+    "python.exe": "blake3:de6527ef6771adcbbf5a233a9c61466311ff1bf79d02355e4709010920b63422",
+    "python3.dll": "blake3:335365b772ec4120657215127fffdffe22aca4ab97ab36b32f91a9be3529f9f7",
+    "python315._pth": "blake3:025127d3abcdf1e02282886aaf4e52cc346b9b4afc9718ba02697c727b41edba",
+    "python315.dll": "blake3:7b45d45e02b1a82736a62261ee2d323cf6cd5db2aaa5b28d1eb4a875ad1987de",
+    "python315.zip": "blake3:0eb06f741e3fb4cb0398ba6d95998efb969e66d999284b26f30e5537a3f226be",
+    "python3t.dll": "blake3:58aa869c69b74726bcaa8c4dfb2406845e58db5c0f0e6faf4105aa95e47e5b76",
+    "pythonw.exe": "blake3:c3a8d8274a14642b272aaf13a68e860d98e19dbfe9f9c95f59862ee63d740202",
+    "select.pyd": "blake3:4a18e2233bda30f7797edc657d403ba97754ba7ed1087560ded29b271e921648",
+    "sqlite3.dll": "blake3:bfcd19a2969131560275ade185d37addaa78ae5a45dd56a8564b8ad52346a365",
+    "unicodedata.pyd": "blake3:6049d7dc32e1b0f52f83eaed6ffea12f5da85461c53ca88a846e84c45adefe99",
+    "vcruntime140.dll": "blake3:2404c2b90ebfb77398e254778af535ddbe615ad89b69a71353a9bdd2d828d10f",
+    "vcruntime140_1.dll": "blake3:1e68b4531a60e34f393542ace17fa307bbc8cf0dab3088a34c5a168f14fe8f6d",
+    "winsound.pyd": "blake3:8aec0a6eac8588260f27c2d9cf0fcc3fdf6e7dcf21861ddc04bf252ad2abdfe4"
+  },
+  "platform": "windows",
+  "historical_runtime_matrix": "not_run",
+  "cases": [
+    {
+      "id": "lazy-imports",
+      "source_path": "tools/tree-sitter-upstream/python/lazy-imports/fixtures/positive.py",
+      "source_digest": "blake3:81239f146b3ea958ca2a0773fb3838651d90b8aae7662ad55e1f9a7b8d06ec73",
+      "source_hex": null,
+      "expected": "passed",
+      "compiler_runtime": {
+        "outcome": "passed"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    },
+    {
+      "id": "comprehension-unpacking",
+      "source_path": "tools/tree-sitter-upstream/python/comprehension-unpacking/fixtures/positive.py",
+      "source_digest": "blake3:d6675f9f37d0e24ed1efd486344c8d4b8e4fdf0c596c65d34148a4119c2e400c",
+      "source_hex": null,
+      "expected": "passed",
+      "compiler_runtime": {
+        "outcome": "passed"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    },
+    {
+      "id": "lazy-function",
+      "source_path": null,
+      "source_digest": "blake3:80a62422862c3a3f5135cebb5dd59f727050998239b24687e5c51a62d85fb2d4",
+      "source_hex": "646566206628293a0a202020206c617a7920696d706f7274206a736f6e0a",
+      "expected": "syntax_error",
+      "compiler_runtime": {
+        "outcome": "syntax_error",
+        "message": "lazy import not allowed inside functions (lazy-function, line 2)"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    },
+    {
+      "id": "lazy-class",
+      "source_path": null,
+      "source_digest": "blake3:58e1d3433fba1a82a571dd85e4bb6e405475abc952d1e9e259dfe063d02b14a7",
+      "source_hex": "636c61737320433a0a202020206c617a7920696d706f7274206a736f6e0a",
+      "expected": "syntax_error",
+      "compiler_runtime": {
+        "outcome": "syntax_error",
+        "message": "lazy import not allowed inside classes (lazy-class, line 2)"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    },
+    {
+      "id": "lazy-try",
+      "source_path": null,
+      "source_digest": "blake3:d35bdb2078ff68d9e9c1ab09b2c23a93274b1835683e4805614c39585929905f",
+      "source_hex": "7472793a0a202020206c617a7920696d706f7274206a736f6e0a65786365707420496d706f72744572726f723a0a20202020706173730a",
+      "expected": "syntax_error",
+      "compiler_runtime": {
+        "outcome": "syntax_error",
+        "message": "lazy import not allowed inside try/except blocks (lazy-try, line 2)"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    },
+    {
+      "id": "lazy-star",
+      "source_path": null,
+      "source_digest": "blake3:372462e87d3ae9bdce9e9ab56b078d442e83d2847b8f24ebf34213f19d8a4776",
+      "source_hex": "6c617a792066726f6d206d61746820696d706f7274202a0a",
+      "expected": "syntax_error",
+      "compiler_runtime": {
+        "outcome": "syntax_error",
+        "message": "lazy from ... import * is not allowed (lazy-star, line 1)"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    },
+    {
+      "id": "lazy-future",
+      "source_path": null,
+      "source_digest": "blake3:f404ba1bc9e13880ac99e3fffdbf7246b658b6d0b70a09879578105e2e27bd47",
+      "source_hex": "6c617a792066726f6d205f5f6675747572655f5f20696d706f727420616e6e6f746174696f6e730a",
+      "expected": "syntax_error",
+      "compiler_runtime": {
+        "outcome": "syntax_error",
+        "message": "lazy from __future__ import is not allowed (lazy-future, line 1)"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    },
+    {
+      "id": "list-double-unpack",
+      "source_path": null,
+      "source_digest": "blake3:eedafffeab8e2881d9dbc09784cd7f5d40f286c170d95228d63eb7fd714c868c",
+      "source_hex": "5b2a2a6420666f72206420696e205b7b7d5d5d0a",
+      "expected": "syntax_error",
+      "compiler_runtime": {
+        "outcome": "syntax_error",
+        "message": "cannot use dict unpacking in list comprehension (list-double-unpack, line 1)"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    },
+    {
+      "id": "generator-double-unpack",
+      "source_path": null,
+      "source_digest": "blake3:74b7f2ac03ff6d20f90ebcf765d1cd6549494cd88511d1323e8dc39af0f12309",
+      "source_hex": "282a2a6420666f72206420696e205b7b7d5d290a",
+      "expected": "syntax_error",
+      "compiler_runtime": {
+        "outcome": "syntax_error",
+        "message": "cannot use dict unpacking in generator expression (generator-double-unpack, line 1)"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    },
+    {
+      "id": "historical-identifiers",
+      "source_path": null,
+      "source_digest": "blake3:37cbdf67f0841de8e09720263206495a668f51169a433a7ddbacbab7b66c303b",
+      "source_hex": "6c617a79203d20370a66726f7a656e64696374203d206c616d626461202a2a6b773a206b770a73656e74696e656c203d206c616d626461206e616d653a206e616d650a6173736572742066726f7a656e6469637428613d6c617a7929203d3d207b2761273a20377d0a6173736572742073656e74696e656c28276c6f63616c2729203d3d20276c6f63616c270a",
+      "expected": "passed",
+      "compiler_runtime": {
+        "outcome": "passed"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    },
+    {
+      "id": "encoding-cookie",
+      "source_path": null,
+      "source_digest": "blake3:5e25bf908c2eec7c8caf5527b376780918817b09e2157730d28d8439912184f6",
+      "source_hex": "2320636f64696e673a206c6174696e2d310a76616c7565203d2027636166e9270a617373657274206c656e2876616c756529203d3d20340a",
+      "expected": "passed",
+      "compiler_runtime": {
+        "outcome": "passed"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    },
+    {
+      "id": "utf8-default",
+      "source_path": null,
+      "source_digest": "blake3:8595a89dca373955e5fec61d8171fa412bbea2636fa6d9017e8c431a4f55e8a5",
+      "source_hex": "696d706f7274207379730a617373657274207379732e666c6167732e757466385f6d6f6465203d3d20310a",
+      "expected": "passed",
+      "compiler_runtime": {
+        "outcome": "passed"
+      },
+      "passed": true,
+      "structural": "not_run",
+      "native_target_mode": "not_run"
+    }
+  ],
+  "passed": true
+}

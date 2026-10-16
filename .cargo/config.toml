@@ -1,0 +1,6 @@
+# Repo-local Cargo defaults. Do not force RUSTC_WRAPPER here — machines without
+# sccache would break. Optional: install sccache and export RUSTC_WRAPPER=sccache
+# (pre_commit_check sets it when `sccache` is on PATH).
+
+[build]
+# Shared incremental defaults stay with Cargo; no hard-required wrappers.

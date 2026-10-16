@@ -1,0 +1,11 @@
+---
+description: Isolated campaign sources and builds
+globs: evals/**
+alwaysApply: false
+---
+
+Use pinned original upstream repositories. Read sibling checkouts without
+rewriting foreign source or history. Campaign preparation may fetch sources and
+build isolated checkouts under `.tmp/<task>/`. Keep useful configuration tracked,
+not checkout copies. Report unavailable sources/tools explicitly. Analysis depth
+does not imply that every build prerequisite was analyzed.

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Opengrep OSS",
+          "version": "1.0.0-test"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "python.lang.security.audit.tainted-sql",
+          "level": "warning",
+          "message": { "text": "tainted SQL" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "sample.py" },
+                "region": { "startLine": 3, "startColumn": 12 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "python.lang.security.audit.tainted-html",
+          "level": "error",
+          "message": { "text": "tainted HTML" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "app/views.py" },
+                "region": { "startLine": 42, "startColumn": 8 }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2985 @@
+{
+  "format": "entmoot.positive_patterns_packet.v1",
+  "release_cutoff": "2026-10-10",
+  "source_commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea",
+  "production_adoption": false,
+  "upstream_submission": false,
+  "inputs": [
+    {
+      "path": "G:/GitHub/entmoot/tools/tree-sitter-upstream/python/positive-patterns/grammar.patch",
+      "bytes": 2293,
+      "digest": "blake3:29982da660364c4fb334449eee5b000cb38f23ab051621a629a453ee3a18ce64",
+      "retention": "git_blob_in_packet_commit",
+      "git_blob": "5e93fb917f8af9bbb3721023f9d48779eff4fa9a"
+    },
+    {
+      "path": "G:/GitHub/entmoot/tools/tree-sitter-upstream/python/positive-patterns/fixtures/corpus.txt",
+      "bytes": 1669,
+      "digest": "blake3:f23e05fdc0d4478135309964c35d6ef503286c58389d8da3d39f2c4c8eeecdd7",
+      "retention": "git_blob_in_packet_commit",
+      "git_blob": "9bb3911432d709e8f9fc8b6fd921beeef985da9c"
+    },
+    {
+      "path": "G:/GitHub/entmoot/tools/tree-sitter-upstream/python/positive-patterns/run_oracles.py",
+      "bytes": 7475,
+      "digest": "blake3:9bf824f1c3629050b48298ff3a25d5ab1bcaad0975d844362f177fd70ea00783",
+      "retention": "git_blob_in_packet_commit",
+      "git_blob": "5b68435553dad4e51d025cbf0921dbd1595ce489"
+    },
+    {
+      "path": "G:/GitHub/entmoot/tools/tree-sitter-upstream/python/qualify_cst.py",
+      "bytes": 16528,
+      "digest": "blake3:42334c45d4382d0c7cd581f7c06681281011a9bfa3c15a3bf3da9dc737d25744",
+      "retention": "git_blob_in_packet_commit",
+      "git_blob": "89b03f4010d4ad2dbbb2f4e757617495435ba748"
+    },
+    {
+      "path": "G:/GitHub/entmoot/tools/tree-sitter-upstream/python/qualify_bindings.py",
+      "bytes": 4959,
+      "digest": "blake3:076f2cbf889faf6926ec03fc75e6c4458a36a92c9871677bd5edb83ee336801c",
+      "retention": "git_blob_in_packet_commit",
+      "git_blob": "303fadd2858755fcb65e254760652ffa46ea5f76"
+    },
+    {
+      "path": "G:/GitHub/entmoot/tools/tree-sitter-upstream/python/qualify_linux.py",
+      "bytes": 6906,
+      "digest": "blake3:ee9107fa283585415750f366024dd36d09a383f821ec69395eacf22856da5902",
+      "retention": "git_blob_in_packet_commit",
+      "git_blob": "956e89155aaa4ec7a4d1a23bd2ef8aaecb0c8329"
+    },
+    {
+      "path": "G:/GitHub/entmoot/tools/tree-sitter-upstream/python/qualify_examples.py",
+      "bytes": 10028,
+      "digest": "blake3:0a44891cde1b2b4882e8dbfafbffd8f941f08f5b012c74b4f41503628c1eb568",
+      "retention": "git_blob_in_packet_commit",
+      "git_blob": "8b54964993473a8305dc2fc902b21714c4cf5c80"
+    },
+    {
+      "path": "G:/GitHub/entmoot/tools/tree-sitter-upstream/python/measure_parser.py",
+      "bytes": 4726,
+      "digest": "blake3:f361b990a5a0024c5e2bdbf3c61a0710f17467431adc7737181800721d3705eb",
+      "retention": "git_blob_in_packet_commit",
+      "git_blob": "51623df7f198d1892de788c884569fa55c840899"
+    }
+  ],
+  "oracles": [
+    {
+      "format": "entmoot.positive_pattern_oracles.v1",
+      "driver_digest": "blake3:9bf824f1c3629050b48298ff3a25d5ab1bcaad0975d844362f177fd70ea00783",
+      "interpreters": [
+        {
+          "path": "G:\\GitHub\\entmoot\\.tmp\\tools\\python-3.15.0\\python.exe",
+          "digest": "blake3:de6527ef6771adcbbf5a233a9c61466311ff1bf79d02355e4709010920b63422",
+          "version": "3.15.0 (tags/v3.15.0:d220409, Oct  9 2026, 11:55:56) [MSC v.1951 64 bit (AMD64)]"
+        },
+        {
+          "path": "C:\\Program Files\\Python313\\python.exe",
+          "digest": "blake3:5596381e71548e8e42df02eea40edfe2b8c4d28c523b3112d73dbf96b9322def",
+          "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+        }
+      ],
+      "libraries": [
+        {
+          "path": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\baseline-fields-logs\\python.dll",
+          "digest": "blake3:f54f1e26a4c3bd4bc5a003cd082582b75e3504d9801a057514b831ec9b32377e"
+        },
+        {
+          "path": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline.dll",
+          "digest": "blake3:d2e0b3ff4a7bb649b49e414559e5dd2d0e9607b72bc669a42edda601f9c45047"
+        }
+      ],
+      "cases": [
+        {
+          "pattern": "+0",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +0:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+0) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:71b57c3fe38d67aeb254d2fc4c311dc6eb5605f66b334a9d1392522594f429bd",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+0.0",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +0.0:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+0.0) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:70195eb7dee126605de182e10d1c15e0c02866a358420e85fce5121fdf7812e4",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+0j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +0j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+0j) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:6bc759c4bcd0de0bd433cd6d5afde8e2250e9937ef080dbcd4e9f0c74a62291e",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+1) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:b106901f5c1bb3030d1b01f15a32772c79c531f80a70c848faff6f463137c9e2",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1.5",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1.5:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+1.5) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:c779c6f5f272ddc8520223c3c44bfcbd9896df4599ed6f3e3b6c67140a3921db",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+1j) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:bc41649f5505f2f071a41dfa7bd43c66425b283919d45374b52da3fcff8393a8",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+0.25+1.75j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +0.25+1.75j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+0.25+1.75j) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:4e47aa695f38a688143fea20f981c9d92b90a4633f39e30777dd9e4303edfdd0",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1e1000",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1e1000:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+1e1000) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:fdd5f39e5db1d21f927c63c7864025eb3af408c69e686fbcf84b058f572d3bcd",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "{+1: [+2, item]}",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case {+1: [+2, item]}:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select({1: [2, 'nested']}) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:685c96a9323008a6e602501e7abdd907093549db4f0cc6e55ba2b6b8796bb44a",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "[+1, item]",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case [+1, item]:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select([1, 'nested']) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:20d59410783d8197752ccac5f21663911239d7a8222ba6def08cdce0534a1c50",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "-1",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case -1:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(-1) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:cd8bbe533a77ad5a1631c9d7904b870fd77c42fc175998b05650f8b98a0fc978",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "-0.25-1.75j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case -0.25-1.75j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(-0.25-1.75j) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:a37270219a43b0e415f2958af3fdcfd2ee9307bfff3ef3c4ec461a78c2c5bec8",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "0",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case 0:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(0) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:5c2b2722c068844225789833e606cf615833dacc1d981da83cecb364938909eb",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "++1",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case ++1:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:1046a9d818fae995e2e7f86b53298e16994da38d239d842ad0bfbe7a4f259598",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+-1",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +-1:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:7b13ffd9528d39fb17f21e28c563bc23d8c514ee4700dbe712d95ce9e71d45b7",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+name",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +name:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:ead6c521efe1332f1d6398368aeb6072de8fba6dc08f99371a9a39d1217f9853",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+True",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +True:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:c03fbfd118fac196b2f1fa9b9a80bb61e8130190433c14c8d7dba94c849faa99",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+\"value\"",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +\"value\":\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:2d61cdf114a1db2006217326f7d91129f64d717637ab28a8e97aa4afa55902c2",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1+2",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1+2:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:c0576402df6bddd2495b3d2ebaa792e37312a5c2ea9b1c116e458dd27d79ad3c",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "imaginary number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1j+2j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1j+2j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:2e112e2adf590ddbfb9329e8e692da306c00bee6fa27aea22b005374b89f7702",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "real number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "-1+2",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case -1+2:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:c4c484730690fe367948debd30ddfe6f886612b813606525f0742894737d91dc",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "imaginary number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "imaginary number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "-1j+2j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case -1j+2j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:e415649706320fadf8d063b32048c0f843f263402c616122030a00d0dfd2f5db",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "real number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "real number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        }
+      ],
+      "passed": true,
+      "limits": [
+        "Actual compiler/runtime controls cover 3.15.0 and 3.13 only; no exhaustive historical runtime matrix",
+        "Native semantic target-mode qualification and Entmoot visitor adoption are separate, unrun lanes",
+        "Numeric compiler restrictions remain distinct from structural grammar acceptance"
+      ]
+    },
+    {
+      "format": "entmoot.positive_pattern_oracles.v1",
+      "driver_digest": "blake3:9bf824f1c3629050b48298ff3a25d5ab1bcaad0975d844362f177fd70ea00783",
+      "interpreters": [
+        {
+          "path": "G:\\GitHub\\entmoot\\.tmp\\tools\\python-3.15.0\\python.exe",
+          "digest": "blake3:de6527ef6771adcbbf5a233a9c61466311ff1bf79d02355e4709010920b63422",
+          "version": "3.15.0 (tags/v3.15.0:d220409, Oct  9 2026, 11:55:56) [MSC v.1951 64 bit (AMD64)]"
+        },
+        {
+          "path": "C:\\Program Files\\Python313\\python.exe",
+          "digest": "blake3:5596381e71548e8e42df02eea40edfe2b8c4d28c523b3112d73dbf96b9322def",
+          "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+        }
+      ],
+      "libraries": [
+        {
+          "path": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\combined-fields-logs\\python.dll",
+          "digest": "blake3:ff9eacb02900947fd68c0dd8b0abcbb4314e0ea415083cb0292669bc161a35ba"
+        },
+        {
+          "path": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined.dll",
+          "digest": "blake3:c4945873adfae5579c91592fc90b17bc41fe03a8206e32c62ce6d9d89ccb3bf8"
+        }
+      ],
+      "cases": [
+        {
+          "pattern": "+0",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +0:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+0) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:71b57c3fe38d67aeb254d2fc4c311dc6eb5605f66b334a9d1392522594f429bd",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+0.0",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +0.0:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+0.0) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:70195eb7dee126605de182e10d1c15e0c02866a358420e85fce5121fdf7812e4",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+0j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +0j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+0j) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:6bc759c4bcd0de0bd433cd6d5afde8e2250e9937ef080dbcd4e9f0c74a62291e",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+1) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:b106901f5c1bb3030d1b01f15a32772c79c531f80a70c848faff6f463137c9e2",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1.5",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1.5:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+1.5) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:c779c6f5f272ddc8520223c3c44bfcbd9896df4599ed6f3e3b6c67140a3921db",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+1j) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:bc41649f5505f2f071a41dfa7bd43c66425b283919d45374b52da3fcff8393a8",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+0.25+1.75j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +0.25+1.75j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+0.25+1.75j) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:4e47aa695f38a688143fea20f981c9d92b90a4633f39e30777dd9e4303edfdd0",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1e1000",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1e1000:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(+1e1000) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:fdd5f39e5db1d21f927c63c7864025eb3af408c69e686fbcf84b058f572d3bcd",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "{+1: [+2, item]}",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case {+1: [+2, item]}:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select({1: [2, 'nested']}) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:685c96a9323008a6e602501e7abdd907093549db4f0cc6e55ba2b6b8796bb44a",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "[+1, item]",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case [+1, item]:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select([1, 'nested']) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:20d59410783d8197752ccac5f21663911239d7a8222ba6def08cdce0534a1c50",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "-1",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case -1:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(-1) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:cd8bbe533a77ad5a1631c9d7904b870fd77c42fc175998b05650f8b98a0fc978",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "-0.25-1.75j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case -0.25-1.75j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(-0.25-1.75j) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:a37270219a43b0e415f2958af3fdcfd2ee9307bfff3ef3c4ec461a78c2c5bec8",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "0",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case 0:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\nassert select(0) is True\r\nassert select(object()) is False\r\nassert after() == 17\r\n",
+          "source_digest": "blake3:5c2b2722c068844225789833e606cf615833dacc1d981da83cecb364938909eb",
+          "compiler": [
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": true,
+              "actual": {
+                "accepted": true,
+                "runtime": "passed"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "++1",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case ++1:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:1046a9d818fae995e2e7f86b53298e16994da38d239d842ad0bfbe7a4f259598",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+-1",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +-1:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:7b13ffd9528d39fb17f21e28c563bc23d8c514ee4700dbe712d95ce9e71d45b7",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+name",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +name:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:ead6c521efe1332f1d6398368aeb6072de8fba6dc08f99371a9a39d1217f9853",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+True",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +True:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:c03fbfd118fac196b2f1fa9b9a80bb61e8130190433c14c8d7dba94c849faa99",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+\"value\"",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +\"value\":\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:2d61cdf114a1db2006217326f7d91129f64d717637ab28a8e97aa4afa55902c2",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": true,
+            "expected_cst_met": true,
+            "incremental_recovery": null
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1+2",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1+2:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:c0576402df6bddd2495b3d2ebaa792e37312a5c2ea9b1c116e458dd27d79ad3c",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "imaginary number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "+1j+2j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case +1j+2j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:2e112e2adf590ddbfb9329e8e692da306c00bee6fa27aea22b005374b89f7702",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "real number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "invalid syntax (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": true,
+            "expected_cst_met": false,
+            "incremental_recovery": null
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "-1+2",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case -1+2:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:c4c484730690fe367948debd30ddfe6f886612b813606525f0742894737d91dc",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "imaginary number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "imaginary number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        },
+        {
+          "pattern": "-1j+2j",
+          "source": "# \u03c0\r\ndef select(value):\r\n    match value:\r\n        case -1j+2j:\r\n            return True\r\n        case _:\r\n            return False\r\ndef after():\r\n    return 17\r\n",
+          "source_digest": "blake3:e415649706320fadf8d063b32048c0f843f263402c616122030a00d0dfd2f5db",
+          "compiler": [
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "real number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            },
+            {
+              "expected_acceptance": false,
+              "actual": {
+                "accepted": false,
+                "reason": "real number required in complex literal (positive-pattern-control, line 4)",
+                "runtime": "not_run"
+              },
+              "passed": true
+            }
+          ],
+          "baseline": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "candidate": {
+            "has_error": false,
+            "expected_cst_met": true,
+            "incremental_recovery": true
+          },
+          "native_target_mode": "not_run"
+        }
+      ],
+      "passed": true,
+      "limits": [
+        "Actual compiler/runtime controls cover 3.15.0 and 3.13 only; no exhaustive historical runtime matrix",
+        "Native semantic target-mode qualification and Entmoot visitor adoption are separate, unrun lanes",
+        "Numeric compiler restrictions remain distinct from structural grammar acceptance"
+      ]
+    }
+  ],
+  "forced_corpus": [
+    {
+      "variant": "signed-baseline",
+      "platform": "windows",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe",
+        "test",
+        "--rebuild",
+        "--stat",
+        "total-only"
+      ],
+      "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+      "exit_code": 0,
+      "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6",
+      "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\forced_corpus\\signed-baseline.log",
+      "log_digest": "blake3:f54a1025a970d9277ad5ee532dc1fdd1cfca9157ab7b069baf7d645e15ff3a66",
+      "corpus_cases": 119
+    },
+    {
+      "variant": "signed-combined",
+      "platform": "windows",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe",
+        "test",
+        "--rebuild",
+        "--stat",
+        "total-only"
+      ],
+      "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+      "exit_code": 0,
+      "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8",
+      "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\forced_corpus\\signed-combined.log",
+      "log_digest": "blake3:faa21d73745f1f692c49c6b625a28dc3f63abd92b460934068b060037cf58510",
+      "corpus_cases": 123
+    }
+  ],
+  "previous_feature_controls": {
+    "receipt": {
+      "path": "G:/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/signed-pattern-probe/combined_cst.json",
+      "bytes": 67899,
+      "digest": "blake3:7dd9bb0e90bec7e29d56ca9f718c5446f51ba4fe94b4c4f45b8182b774a323d2",
+      "retention": "local_bytes"
+    },
+    "authored_cst_controls": 32,
+    "compiler_controls_passed": 32,
+    "runtime_fixtures": [
+      {
+        "path": "lazy-imports/fixtures/positive.py",
+        "source_digest": "blake3:81239f146b3ea958ca2a0773fb3838651d90b8aae7662ad55e1f9a7b8d06ec73",
+        "runtime_passed": true,
+        "structural_has_error": false,
+        "native_target_mode": "not_run"
+      },
+      {
+        "path": "comprehension-unpacking/fixtures/positive.py",
+        "source_digest": "blake3:d6675f9f37d0e24ed1efd486344c8d4b8e4fdf0c596c65d34148a4119c2e400c",
+        "runtime_passed": true,
+        "structural_has_error": false,
+        "native_target_mode": "not_run"
+      },
+      {
+        "path": "comprehension-unpacking/fixtures/call_bodies.py",
+        "source_digest": "blake3:3a74b982c60e608ca6ee078ff43b62186e846bcaadb0b0de843f824d7b4ce3b9",
+        "runtime_passed": true,
+        "structural_has_error": false,
+        "native_target_mode": "not_run"
+      },
+      {
+        "path": "comprehension-unpacking/fixtures/historical_unpacking.py",
+        "source_digest": "blake3:8e9b609e9e420f7fd690bf28727217a7a7c1060aef937aac94254cf0f18bfea5",
+        "runtime_passed": true,
+        "structural_has_error": false,
+        "native_target_mode": "not_run"
+      }
+    ],
+    "generated_files": {
+      "src/parser.c": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8",
+      "src/grammar.json": "blake3:097e476028a1f598068ee5137577cc9be5bdf5a0dbeff8a58725e775fa85dea8",
+      "src/node-types.json": "blake3:c4fe685d96b83c29f7a69fba91fe9cd83099e370d65294800b4b5be1631bf7a6"
+    },
+    "parser": {
+      "abi": 15,
+      "states": 2722,
+      "node_kinds": 278,
+      "c_bytes": 3340151,
+      "library_bytes": 452096,
+      "library_digest": "blake3:134005b57b91545c90d87ac6fe320522dee1083d8c3e0cea489e662d863523c2"
+    }
+  },
+  "windows_bindings": [
+    {
+      "format": "entmoot.grammar_bindings.v1",
+      "grammar": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+      "driver_digest": "blake3:076f2cbf889faf6926ec03fc75e6c4458a36a92c9871677bd5edb83ee336801c",
+      "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6",
+      "inputs": {
+        "grammar.js": "blake3:48838ee7864ff4ce94260bfeff641408946dff2fd096850efdd1e858cbcf425d",
+        "src/scanner.c": "blake3:bd21fc1378399d38ef4600db8b272c797264dc04bcb65c18948684976e16283f",
+        "Cargo.toml": "blake3:53830ad4e9565ec2ec11bb194a5639acd454b4ad806ad9d44bd3cbbf1fceff71",
+        "Cargo.lock": "blake3:015e08f30403e4980c4b78f0e2a75de70e9cdb986529bc3f54a8eb362cf9c1bf",
+        "package-lock.json": "blake3:98923e458959b6f5910a8efe9c5865ba109a28701cc0714be22341f48ae59d4b"
+      },
+      "environment": {
+        "NODE_PATH": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules",
+        "PYTHONPATH": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline\\bindings\\python",
+        "CARGO_TARGET_DIR": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\rust-target"
+      },
+      "rows": [
+        {
+          "lane": "node-version",
+          "command": [
+            "node",
+            "--version"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 0.019987699924968183,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\node-version.log",
+          "log_digest": "blake3:adf2b21a71c95f282f53845bb7b245014994148d8de04da33ce865a6ec466c96",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "rust-version",
+          "command": [
+            "rustc",
+            "-Vv"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 0.053774099913425744,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\rust-version.log",
+          "log_digest": "blake3:7d2d7658b468a0b2cd4935605b499ff154fe5ef5ba15b48c7eb30c78d8d2a427",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "cargo-version",
+          "command": [
+            "cargo",
+            "--version"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 0.0817490000044927,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\cargo-version.log",
+          "log_digest": "blake3:f8965c39e195525eda64ee0d239a9f3775d0915ced4d79105ae736e7e92f7f8a",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "python-version",
+          "command": [
+            "C:\\Program Files\\Python313\\python.exe",
+            "--version"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 0.008739599958062172,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\python-version.log",
+          "log_digest": "blake3:a88e047a3ae324864f995086814777920305b7f479e73a94cde6dfd07f00bace",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "generator-version",
+          "command": [
+            "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe",
+            "--version"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 0.013509800075553358,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\generator-version.log",
+          "log_digest": "blake3:f12a2c1466f97312a57e272c4f0af38517ebd0dde4bc2483cdf2f24a17bfda7d",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "cmake-version",
+          "command": [
+            "cmake",
+            "--version"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 0.0722623000619933,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\cmake-version.log",
+          "log_digest": "blake3:293a013082563ea5553fd7e9e2f91cd39f9d5840a7685ea40c1976ad1e51802a",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "rust",
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "--quiet"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 2.315581100061536,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\rust.log",
+          "log_digest": "blake3:86d37dc5d7c365c336296c4e32c2c154a0542b84e358e6a1b7a0ab909b954561",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "python-build",
+          "command": [
+            "C:\\Program Files\\Python313\\python.exe",
+            "setup.py",
+            "build_ext",
+            "--force",
+            "--inplace"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 4.0712812000419945,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\python-build.log",
+          "log_digest": "blake3:b5138591af9162dc54ee7bc4533e0b5a3b3232a37a6810502ea20304e7e27035",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "python-test",
+          "command": [
+            "C:\\Program Files\\Python313\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "bindings/python/tests",
+            "-v"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 0.10803220001980662,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\python-test.log",
+          "log_digest": "blake3:2194e1525cc606263249a25a570bfa66f409c300c1901fd90f1fb225e2be3a62",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "node-build",
+          "command": [
+            "node",
+            "C:\\Program Files\\nodejs\\node_modules\\npm\\node_modules\\node-gyp\\bin\\node-gyp.js",
+            "rebuild"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 6.711534100002609,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\node-build.log",
+          "log_digest": "blake3:2ed25a9327bba6c3b6ee53361453c8c678c77e7aeeed6081f545286bca75b597",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "node-test",
+          "command": [
+            "node",
+            "--test",
+            "bindings/node/binding_test.js"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 0.1648581000044942,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\node-test.log",
+          "log_digest": "blake3:5308a90374ce2b9c702e62ca32ae2e2b8a6a1238477034e889de2a8b4f7e31d9",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "lint",
+          "command": [
+            "node",
+            "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline\\node_modules\\eslint\\bin\\eslint.js",
+            "grammar.js"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 0.7945109000429511,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\lint.log",
+          "log_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "c-configure",
+          "command": [
+            "cmake",
+            "-S",
+            ".",
+            "-B",
+            "cmake-build",
+            "-D",
+            "TREE_SITTER_CLI=G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 2.08586390002165,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\c-configure.log",
+          "log_digest": "blake3:9c60b95ac1b956d73cab6221d17e75eec0480359dfab63b354231666759a1f59",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        },
+        {
+          "lane": "c-build",
+          "command": [
+            "cmake",
+            "--build",
+            "cmake-build",
+            "--config",
+            "Release",
+            "--clean-first"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+          "exit_code": 0,
+          "wall_seconds": 1.7521309000439942,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-baseline-bindings\\c-build.log",
+          "log_digest": "blake3:335e3e346fb9a1c4f20ec66484eff32dfd86f51d65892bc72407dcaa96683883",
+          "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6"
+        }
+      ],
+      "requested_commands_passed": true,
+      "limits": [
+        "Only Windows upstream smoke tests; no Entmoot semantic binding qualification",
+        "Go is unrun unless explicitly supplied; missing CGo compiler is a failed lane",
+        "Swift and Linux/macOS lanes are not exercised by this driver",
+        "Prepared Node runtime peer and tool installation are separately recorded build inputs"
+      ]
+    },
+    {
+      "format": "entmoot.grammar_bindings.v1",
+      "grammar": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+      "driver_digest": "blake3:076f2cbf889faf6926ec03fc75e6c4458a36a92c9871677bd5edb83ee336801c",
+      "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8",
+      "inputs": {
+        "grammar.js": "blake3:0437ade2a968dc35fa17eb222ba3d8a6b21a1f1773de619e0d1ca6517c3357da",
+        "src/scanner.c": "blake3:bd21fc1378399d38ef4600db8b272c797264dc04bcb65c18948684976e16283f",
+        "Cargo.toml": "blake3:53830ad4e9565ec2ec11bb194a5639acd454b4ad806ad9d44bd3cbbf1fceff71",
+        "Cargo.lock": "blake3:015e08f30403e4980c4b78f0e2a75de70e9cdb986529bc3f54a8eb362cf9c1bf",
+        "package-lock.json": "blake3:c4533c9e11bbdbe037205176ba9f5d7d15aa313f7920ee0c0cd83d2642b1699b"
+      },
+      "environment": {
+        "NODE_PATH": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules",
+        "PYTHONPATH": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined\\bindings\\python",
+        "CARGO_TARGET_DIR": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\rust-target"
+      },
+      "rows": [
+        {
+          "lane": "node-version",
+          "command": [
+            "node",
+            "--version"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 0.02101370005402714,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\node-version.log",
+          "log_digest": "blake3:adf2b21a71c95f282f53845bb7b245014994148d8de04da33ce865a6ec466c96",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "rust-version",
+          "command": [
+            "rustc",
+            "-Vv"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 0.0572563000023365,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\rust-version.log",
+          "log_digest": "blake3:7d2d7658b468a0b2cd4935605b499ff154fe5ef5ba15b48c7eb30c78d8d2a427",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "cargo-version",
+          "command": [
+            "cargo",
+            "--version"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 0.050540999975055456,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\cargo-version.log",
+          "log_digest": "blake3:f8965c39e195525eda64ee0d239a9f3775d0915ced4d79105ae736e7e92f7f8a",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "python-version",
+          "command": [
+            "C:\\Program Files\\Python313\\python.exe",
+            "--version"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 0.009519799961708486,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\python-version.log",
+          "log_digest": "blake3:a88e047a3ae324864f995086814777920305b7f479e73a94cde6dfd07f00bace",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "generator-version",
+          "command": [
+            "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe",
+            "--version"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 0.06369580002501607,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\generator-version.log",
+          "log_digest": "blake3:f12a2c1466f97312a57e272c4f0af38517ebd0dde4bc2483cdf2f24a17bfda7d",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "cmake-version",
+          "command": [
+            "cmake",
+            "--version"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 0.03375709999818355,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\cmake-version.log",
+          "log_digest": "blake3:293a013082563ea5553fd7e9e2f91cd39f9d5840a7685ea40c1976ad1e51802a",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "rust",
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "--quiet"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 0.4976621000096202,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\rust.log",
+          "log_digest": "blake3:98335debe80b28d5c8c5ff56cb6b9384cb881d942b7b19393880d880cee0fddf",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "python-build",
+          "command": [
+            "C:\\Program Files\\Python313\\python.exe",
+            "setup.py",
+            "build_ext",
+            "--force",
+            "--inplace"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 3.195364599931054,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\python-build.log",
+          "log_digest": "blake3:8ae156f439aab09d2309535d51aa682d4ed32aff96a5f2cfe9826244b6d237ab",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "python-test",
+          "command": [
+            "C:\\Program Files\\Python313\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "bindings/python/tests",
+            "-v"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 0.09717760002240539,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\python-test.log",
+          "log_digest": "blake3:2194e1525cc606263249a25a570bfa66f409c300c1901fd90f1fb225e2be3a62",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "node-build",
+          "command": [
+            "node",
+            "C:\\Program Files\\nodejs\\node_modules\\npm\\node_modules\\node-gyp\\bin\\node-gyp.js",
+            "rebuild"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 5.004115799907595,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\node-build.log",
+          "log_digest": "blake3:83550ae8302e484626f466996381de8b954e26b761ddc4b6ec4857c810672680",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "node-test",
+          "command": [
+            "node",
+            "--test",
+            "bindings/node/binding_test.js"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 0.10201510007027537,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\node-test.log",
+          "log_digest": "blake3:bf70d154640c59fa58f1ac380605db03803737200fcb687a616639dab4229354",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "lint",
+          "command": [
+            "node",
+            "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined\\node_modules\\eslint\\bin\\eslint.js",
+            "grammar.js"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 0.8042804000433534,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\lint.log",
+          "log_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "c-configure",
+          "command": [
+            "cmake",
+            "-S",
+            ".",
+            "-B",
+            "cmake-build",
+            "-D",
+            "TREE_SITTER_CLI=G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 1.4102073999820277,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\c-configure.log",
+          "log_digest": "blake3:b781f67e354c2d5e0e2c013409c6619da814cc84d5325fe90d1a82b596193110",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        },
+        {
+          "lane": "c-build",
+          "command": [
+            "cmake",
+            "--build",
+            "cmake-build",
+            "--config",
+            "Release",
+            "--clean-first"
+          ],
+          "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+          "exit_code": 0,
+          "wall_seconds": 1.7484098999993876,
+          "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined-bindings\\c-build.log",
+          "log_digest": "blake3:45fdf8e809525667417816a17d428938fb5c25bb816cdb223722a695fd2e28ac",
+          "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8"
+        }
+      ],
+      "requested_commands_passed": true,
+      "limits": [
+        "Only Windows upstream smoke tests; no Entmoot semantic binding qualification",
+        "Go is unrun unless explicitly supplied; missing CGo compiler is a failed lane",
+        "Swift and Linux/macOS lanes are not exercised by this driver",
+        "Prepared Node runtime peer and tool installation are separately recorded build inputs"
+      ]
+    }
+  ],
+  "linux": {
+    "format": "entmoot.grammar_linux.v1",
+    "grammar": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+    "driver_digest": "blake3:ee9107fa283585415750f366024dd36d09a383f821ec69395eacf22856da5902",
+    "generated_files": {
+      "src/parser.c": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8",
+      "src/grammar.json": "blake3:097e476028a1f598068ee5137577cc9be5bdf5a0dbeff8a58725e775fa85dea8",
+      "src/node-types.json": "blake3:c4fe685d96b83c29f7a69fba91fe9cd83099e370d65294800b4b5be1631bf7a6"
+    },
+    "grammar_digest": "blake3:0437ade2a968dc35fa17eb222ba3d8a6b21a1f1773de619e0d1ca6517c3357da",
+    "inputs": {
+      "src/scanner.c": "blake3:bd21fc1378399d38ef4600db8b272c797264dc04bcb65c18948684976e16283f",
+      "go.mod": "blake3:778413b7d5779e47f8a912fd20305d55cbd50d4131601e11aa5276b25b5685be",
+      "go.sum": "blake3:a88f69101939b83b4ca125ac219c8174ee046d5253622613dafb7d98a0458be3",
+      "package-lock.json": "blake3:c4533c9e11bbdbe037205176ba9f5d7d15aa313f7920ee0c0cd83d2642b1699b"
+    },
+    "rows": [
+      {
+        "lane": "platform",
+        "command": [
+          "uname",
+          "-srmo"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 0.00828821602044627,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/platform.log",
+        "log_digest": "blake3:4fa0f84a51687f823b0eb3846426d22e2b53bc8bc5c3291b18e5add0c5070e91",
+        "build_overrides": {}
+      },
+      {
+        "lane": "generator-version",
+        "command": [
+          "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/linux-tools/tree-sitter",
+          "--version"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 0.025390029011759907,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/generator-version.log",
+        "log_digest": "blake3:f12a2c1466f97312a57e272c4f0af38517ebd0dde4bc2483cdf2f24a17bfda7d",
+        "build_overrides": {}
+      },
+      {
+        "lane": "node-version",
+        "command": [
+          "node",
+          "--version"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 0.10450995399150997,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/node-version.log",
+        "log_digest": "blake3:c5d444017316e29e422c471888c7909da874663598437ffc8cfc8f193b43a162",
+        "build_overrides": {}
+      },
+      {
+        "lane": "go-version",
+        "command": [
+          "go",
+          "version"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 0.0947252800106071,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/go-version.log",
+        "log_digest": "blake3:ccffc6eb4e43c2526ae4a01b8fa87748bc76cb570edf6f8de84d7c426220f455",
+        "build_overrides": {}
+      },
+      {
+        "lane": "cc-version",
+        "command": [
+          "gcc",
+          "--version"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 0.009957486006896943,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/cc-version.log",
+        "log_digest": "blake3:939c6721d9e321df68ecc6df6c0a508410d35eb0641050a22cbb023b62078fb6",
+        "build_overrides": {}
+      },
+      {
+        "lane": "python-version",
+        "command": [
+          "/usr/bin/python3",
+          "--version"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 0.004934999975375831,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/python-version.log",
+        "log_digest": "blake3:a9f9813b3f86f428ee4cc7b72a5430b38c59c26b626a121d0fe5da60c8bed6ee",
+        "build_overrides": {}
+      },
+      {
+        "lane": "generate-1",
+        "command": [
+          "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/linux-tools/tree-sitter",
+          "generate",
+          "--abi",
+          "15"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 0.7277933629811741,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/generate-1.log",
+        "log_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+        "build_overrides": {}
+      },
+      {
+        "lane": "generate-2",
+        "command": [
+          "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/linux-tools/tree-sitter",
+          "generate",
+          "--abi",
+          "15"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 0.5973963449941948,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/generate-2.log",
+        "log_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+        "build_overrides": {}
+      },
+      {
+        "lane": "corpus",
+        "command": [
+          "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/linux-tools/tree-sitter",
+          "test",
+          "--rebuild",
+          "--stat",
+          "total-only"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 0.5696060089976527,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/corpus.log",
+        "log_digest": "blake3:b9ffd4c0944553fab6bb36ea8ab4353bce4e649902c604d0cfedb741d7504139",
+        "build_overrides": {}
+      },
+      {
+        "lane": "go",
+        "command": [
+          "go",
+          "test",
+          "./bindings/go"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 7.3411937080090865,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/go.log",
+        "log_digest": "blake3:a3083b3aa48ae98edca4df938288b7109a8cf9efb7a4f97e723ec06012cfd20c",
+        "build_overrides": {}
+      },
+      {
+        "lane": "python-build",
+        "command": [
+          "/usr/bin/python3",
+          "setup.py",
+          "build_ext",
+          "--force",
+          "--inplace"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 2.2141100540175103,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/python-build.log",
+        "log_digest": "blake3:a330cdd45c859bccf5d5c8b4bbbe565a474073376b6e6b04cdb6734c867de384",
+        "build_overrides": {}
+      },
+      {
+        "lane": "python-test",
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "bindings/python/tests",
+          "-v"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 0.23463570204330608,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/python-test.log",
+        "log_digest": "blake3:d3fc0384d922aadb8795679ce6b685dd227b6187d1cc3feedb041f14c4b7f553",
+        "build_overrides": {}
+      },
+      {
+        "lane": "npm-locked-install",
+        "command": [
+          "node",
+          "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/linux-tools/node-v25.1.0-linux-x64/lib/node_modules/npm/bin/npm-cli.js",
+          "ci",
+          "--ignore-scripts"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 28.028481952962466,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/npm-locked-install.log",
+        "log_digest": "blake3:932a423eca43335f56fa036ae8fe919a66c306af49a9cc9bab3070b65f66edde",
+        "build_overrides": {}
+      },
+      {
+        "lane": "node-peer-test",
+        "command": [
+          "node",
+          "-e",
+          "require('tree-sitter')"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/linux-tools/node-peer",
+        "exit_code": 0,
+        "wall_seconds": 0.2654093779856339,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/node-peer-test.log",
+        "log_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+        "build_overrides": {}
+      },
+      {
+        "lane": "node-build",
+        "command": [
+          "node",
+          "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/linux-tools/node-v25.1.0-linux-x64/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+          "rebuild"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 13.686349795025308,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/node-build.log",
+        "log_digest": "blake3:a7a8bbfd4d52d0b9fa064f38e0d5eeaf26e8e24e7fd044d706145920aea28e62",
+        "build_overrides": {}
+      },
+      {
+        "lane": "node-test",
+        "command": [
+          "node",
+          "--test",
+          "bindings/node/binding_test.js"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 0.4100449079996906,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/node-test.log",
+        "log_digest": "blake3:994990816e707d4eb69c2d2f561a7d2d5bcb9c14496d481e56c301f1f978bc2f",
+        "build_overrides": {}
+      },
+      {
+        "lane": "lint",
+        "command": [
+          "node",
+          "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined/node_modules/eslint/bin/eslint.js",
+          "grammar.js"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 9.206038708041888,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/lint.log",
+        "log_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+        "build_overrides": {}
+      },
+      {
+        "lane": "c-configure",
+        "command": [
+          "cmake",
+          "-S",
+          ".",
+          "-B",
+          "cmake-build",
+          "-D",
+          "TREE_SITTER_CLI=/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/linux-tools/tree-sitter"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 1.0369255080004223,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/c-configure.log",
+        "log_digest": "blake3:fd30c3d164ed93b0c21d585091e0bf4e9aa008a047d6a0b11fbb4ecfefe6c649",
+        "build_overrides": {}
+      },
+      {
+        "lane": "c-build",
+        "command": [
+          "cmake",
+          "--build",
+          "cmake-build",
+          "--clean-first"
+        ],
+        "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-signed-combined",
+        "exit_code": 0,
+        "wall_seconds": 1.11319954902865,
+        "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/linux-signed-combined/c-build.log",
+        "log_digest": "blake3:5b566881f3eac768e2c2d303bfe605951b8cc8fe665a55d640617057633ebbdf",
+        "build_overrides": {}
+      }
+    ],
+    "requested_commands_passed": true,
+    "limits": [
+      "Linux/WSL GCC upstream corpus and smoke tests, not a macOS or native adapter qualification",
+      "Rust and Swift unrun; no Linux historical runtime matrix or pipeline performance measurement",
+      "Compiler oracles, feature CST controls, examples and recovery are separate receipts"
+    ]
+  },
+  "examples": {
+    "format": "entmoot.grammar_examples.v1",
+    "source_index_digest": "blake3:686202d4e18d23a728e59dc178a8ab7ebdd441f11d0afa01e91e18df80955ebe",
+    "driver_digest": "blake3:0a44891cde1b2b4882e8dbfafbffd8f941f08f5b012c74b4f41503628c1eb568",
+    "release_cutoff": "2026-10-10",
+    "libraries": {
+      "baseline": {
+        "path": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\combined-fields-logs\\python.dll",
+        "digest": "blake3:ff9eacb02900947fd68c0dd8b0abcbb4314e0ea415083cb0292669bc161a35ba"
+      },
+      "candidate": {
+        "path": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined.dll",
+        "digest": "blake3:c4945873adfae5579c91592fc90b17bc41fe03a8206e32c62ce6d9d89ccb3bf8"
+      }
+    },
+    "compiler": {
+      "path": "G:\\GitHub\\entmoot\\.tmp\\tools\\python-3.15.0\\python.exe",
+      "digest": "blake3:de6527ef6771adcbbf5a233a9c61466311ff1bf79d02355e4709010920b63422"
+    },
+    "sources": [
+      {
+        "id": "tree-sitter-python",
+        "path": "G:\\GitHub\\tree-sitter-python",
+        "commit": "26855eabccb19c6abf499fbc5b8dc7cc9ab8bc64",
+        "upstream": "https://github.com/tree-sitter/tree-sitter-python",
+        "selector": "examples/**/*.py",
+        "counts": {
+          "selected_python_paths": 12,
+          "parsed": 12,
+          "source_bytes": 177365,
+          "baseline_errors": 0,
+          "candidate_errors": 0,
+          "compiler_rejected": 9,
+          "accepted_source_regressions": 0,
+          "upstream_historical_regressions": 0,
+          "recovered_parse": 0,
+          "cst_changes": 0,
+          "upstream_invalid_missed": 0
+        }
+      },
+      {
+        "id": "cpython",
+        "path": "G:\\GitHub\\cpython",
+        "commit": "230917f5072c5c6b9373374a84d52935d7afa3b5",
+        "upstream": "https://github.com/python/cpython",
+        "selector": "**/*.py",
+        "counts": {
+          "selected_python_paths": 2379,
+          "parsed": 2374,
+          "source_bytes": 43142978,
+          "baseline_errors": 2,
+          "candidate_errors": 1,
+          "compiler_rejected": 13,
+          "accepted_source_regressions": 0,
+          "upstream_historical_regressions": 0,
+          "recovered_parse": 1,
+          "cst_changes": 1,
+          "upstream_invalid_missed": 0,
+          "upstream_exclusions": 3,
+          "excluded_nonregular": 2
+        }
+      },
+      {
+        "id": "numpy",
+        "path": "G:\\GitHub\\numpy",
+        "commit": "70fa99843c75ae12434805bb4b1b07b94598c5c9",
+        "upstream": "https://github.com/numpy/numpy",
+        "selector": "**/*.py",
+        "counts": {
+          "selected_python_paths": 496,
+          "parsed": 496,
+          "source_bytes": 9450373,
+          "baseline_errors": 0,
+          "candidate_errors": 0,
+          "compiler_rejected": 0,
+          "accepted_source_regressions": 0,
+          "upstream_historical_regressions": 0,
+          "recovered_parse": 0,
+          "cst_changes": 0,
+          "upstream_invalid_missed": 0
+        }
+      },
+      {
+        "id": "django",
+        "path": "G:\\GitHub\\django",
+        "commit": "dab0a5c47f159eb58472110dcbc10bd4a9b01adb",
+        "upstream": "https://github.com/django/django",
+        "selector": "**/*.py",
+        "counts": {
+          "selected_python_paths": 2933,
+          "parsed": 2933,
+          "source_bytes": 19468466,
+          "baseline_errors": 1,
+          "candidate_errors": 1,
+          "compiler_rejected": 1,
+          "accepted_source_regressions": 0,
+          "upstream_historical_regressions": 0,
+          "recovered_parse": 0,
+          "cst_changes": 0,
+          "upstream_invalid_missed": 0
+        }
+      },
+      {
+        "id": "flask",
+        "path": "G:\\GitHub\\flask",
+        "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+        "upstream": "https://github.com/pallets/flask",
+        "selector": "**/*.py",
+        "counts": {
+          "selected_python_paths": 83,
+          "parsed": 83,
+          "source_bytes": 589437,
+          "baseline_errors": 0,
+          "candidate_errors": 0,
+          "compiler_rejected": 0,
+          "accepted_source_regressions": 0,
+          "upstream_historical_regressions": 0,
+          "recovered_parse": 0,
+          "cst_changes": 0,
+          "upstream_invalid_missed": 0
+        }
+      }
+    ],
+    "counts": {
+      "selected_python_paths": 5903,
+      "parsed": 5898,
+      "source_bytes": 72828619,
+      "baseline_errors": 3,
+      "candidate_errors": 2,
+      "compiler_rejected": 23,
+      "accepted_source_regressions": 0,
+      "upstream_historical_regressions": 0,
+      "recovered_parse": 1,
+      "cst_changes": 1,
+      "upstream_invalid_missed": 0,
+      "upstream_exclusions": 3,
+      "excluded_nonregular": 2
+    },
+    "regressions": [],
+    "files_receipt": {
+      "path": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\example_comparison_signed_patterns\\files.jsonl",
+      "digest": "blake3:ff0a695e8b2a41b480db691a6ab2b826fd434b5e7b9f5ddaba1bd98596a875ed"
+    },
+    "limits": [
+      "All tracked regular .py objects in the four example clones and upstream examples/ at indexed pins; three exact exclusions retained",
+      "Upstream Python 2 examples have a separate no-new-grammar-error gate; Python 3.15 rejection is not historical runtime evidence",
+      "No working-tree, untracked, directory-link, .pyi or runtime execution coverage",
+      "Compiler rejection is distinct from a grammar error; corpus contains intentional invalid programs",
+      "Single-pass per-file times are diagnostic and not a cold/warm performance qualification",
+      "Zero regressions does not qualify remaining parse errors, native bindings or Entmoot visitors"
+    ],
+    "remaining_errors": [
+      {
+        "corpus": "cpython",
+        "commit": "230917f5072c5c6b9373374a84d52935d7afa3b5",
+        "path": "Lib/test/tokenizedata/badsyntax_3131.py",
+        "git_object": "901d3744ca05fe9f9c6522d183f287a903f8d997",
+        "source_digest": "blake3:8dda5e46047979484287a3799c829473c15611807784685a0f1898b72af295ff",
+        "bytes": 32,
+        "baseline": {
+          "has_error": true,
+          "parse_ns": 14700,
+          "cst_digest": "blake3:4304ae15e763676e44b7ecdec66c7850cf5f638ded8a725212ee493918b996e9"
+        },
+        "candidate": {
+          "has_error": true,
+          "parse_ns": 8400,
+          "cst_digest": "blake3:4304ae15e763676e44b7ecdec66c7850cf5f638ded8a725212ee493918b996e9"
+        },
+        "compiler": {
+          "outcome": "rejected",
+          "reason": "invalid character '\u20ac' (U+20AC) (Lib/test/tokenizedata/badsyntax_3131.py, line 2)"
+        },
+        "upstream_known_invalid": true,
+        "accepted_source_regression": false,
+        "upstream_historical_regression": false
+      },
+      {
+        "corpus": "django",
+        "commit": "dab0a5c47f159eb58472110dcbc10bd4a9b01adb",
+        "path": "tests/test_runner_apps/tagged/tests_syntax_error.py",
+        "git_object": "2714768a308548270c46c7d92954db2e23de5663",
+        "source_digest": "blake3:30e2b3e3e573476b13be9809e6b9e4b0f8966479c92986dc57e5a710ea842ec0",
+        "bytes": 152,
+        "baseline": {
+          "has_error": true,
+          "parse_ns": 49100,
+          "cst_digest": "blake3:b2184b5c7570b1d7c0f1e952c2fdb87154bed31e83b8561062bf315e277bb835"
+        },
+        "candidate": {
+          "has_error": true,
+          "parse_ns": 54100,
+          "cst_digest": "blake3:b2184b5c7570b1d7c0f1e952c2fdb87154bed31e83b8561062bf315e277bb835"
+        },
+        "compiler": {
+          "outcome": "rejected",
+          "reason": "invalid decimal literal (tests/test_runner_apps/tagged/tests_syntax_error.py, line 11)"
+        },
+        "upstream_known_invalid": false,
+        "accepted_source_regression": false,
+        "upstream_historical_regression": false
+      }
+    ]
+  },
+  "parser_measurement": {
+    "format": "entmoot.parser_measurement.v1",
+    "driver_digest": "blake3:f361b990a5a0024c5e2bdbf3c61a0710f17467431adc7737181800721d3705eb",
+    "libraries": [
+      {
+        "path": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\combined-fields-logs\\python.dll",
+        "digest": "blake3:ff9eacb02900947fd68c0dd8b0abcbb4314e0ea415083cb0292669bc161a35ba"
+      },
+      {
+        "path": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\signed-pattern-probe\\signed-combined.dll",
+        "digest": "blake3:c4945873adfae5579c91592fc90b17bc41fe03a8206e32c62ce6d9d89ccb3bf8"
+      }
+    ],
+    "samples_per_mode": 5,
+    "parses_per_sample": 25,
+    "sources": [
+      {
+        "corpus": "cpython",
+        "commit": "230917f5072c5c6b9373374a84d52935d7afa3b5",
+        "path": "Lib/asyncio/base_events.py",
+        "bytes": 82461,
+        "source_digest": "blake3:1cb58309693855120c88c59b13e780be7b30f623679811ce454a06b5ec9168eb",
+        "measurements": [
+          {
+            "mode": "fresh_parser",
+            "samples_ns_per_parse": {
+              "baseline": [
+                5368584.0,
+                5300576.0,
+                5305876.0,
+                5564028.0,
+                5661636.0
+              ],
+              "candidate": [
+                5260916.0,
+                5317616.0,
+                5485208.0,
+                5619892.0,
+                5630308.0
+              ]
+            },
+            "candidate_to_baseline_median": 1.0217234190617117,
+            "sample_ranges_overlap": true
+          },
+          {
+            "mode": "unchanged_tree",
+            "samples_ns_per_parse": {
+              "baseline": [
+                83988.0,
+                81448.0,
+                80320.0,
+                88020.0,
+                86568.0
+              ],
+              "candidate": [
+                80292.0,
+                78172.0,
+                82056.0,
+                89476.0,
+                81216.0
+              ]
+            },
+            "candidate_to_baseline_median": 0.9669952850407201,
+            "sample_ranges_overlap": true
+          }
+        ]
+      },
+      {
+        "corpus": "django",
+        "commit": "dab0a5c47f159eb58472110dcbc10bd4a9b01adb",
+        "path": "django/db/models/base.py",
+        "bytes": 100029,
+        "source_digest": "blake3:6b19a257b0c0431469e60137b13cd69bf00e23cb7c586214e86e8728c13f1ef8",
+        "measurements": [
+          {
+            "mode": "fresh_parser",
+            "samples_ns_per_parse": {
+              "baseline": [
+                6915372.0,
+                7133896.0,
+                6702108.0,
+                7535812.0,
+                7973476.0
+              ],
+              "candidate": [
+                6506012.0,
+                7263396.0,
+                7249440.0,
+                7653820.0,
+                7556532.0
+              ]
+            },
+            "candidate_to_baseline_median": 1.018152773743828,
+            "sample_ranges_overlap": true
+          },
+          {
+            "mode": "unchanged_tree",
+            "samples_ns_per_parse": {
+              "baseline": [
+                79556.0,
+                95784.0,
+                81804.0,
+                87584.0,
+                80684.0
+              ],
+              "candidate": [
+                86496.0,
+                86872.0,
+                90492.0,
+                81028.0,
+                98788.0
+              ]
+            },
+            "candidate_to_baseline_median": 1.0619529607354163,
+            "sample_ranges_overlap": true
+          }
+        ]
+      },
+      {
+        "corpus": "numpy",
+        "commit": "70fa99843c75ae12434805bb4b1b07b94598c5c9",
+        "path": "numpy/_core/_methods.py",
+        "bytes": 9393,
+        "source_digest": "blake3:6793ff1b66b3b742c95a521d86c887048d1d38ac3d25b58a95132ec303424197",
+        "measurements": [
+          {
+            "mode": "fresh_parser",
+            "samples_ns_per_parse": {
+              "baseline": [
+                959740.0,
+                936452.0,
+                950048.0,
+                933812.0,
+                922472.0
+              ],
+              "candidate": [
+                925204.0,
+                976452.0,
+                927472.0,
+                932796.0,
+                989856.0
+              ]
+            },
+            "candidate_to_baseline_median": 0.996095902406103,
+            "sample_ranges_overlap": true
+          },
+          {
+            "mode": "unchanged_tree",
+            "samples_ns_per_parse": {
+              "baseline": [
+                30352.0,
+                29236.0,
+                27920.0,
+                31816.0,
+                34060.0
+              ],
+              "candidate": [
+                30780.0,
+                25148.0,
+                35304.0,
+                24572.0,
+                25376.0
+              ]
+            },
+            "candidate_to_baseline_median": 0.8360569319978914,
+            "sample_ranges_overlap": true
+          }
+        ]
+      },
+      {
+        "corpus": "flask",
+        "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+        "path": "src/flask/app.py",
+        "bytes": 65472,
+        "source_digest": "blake3:53e983f2b4373f7d06945ac31011188a00c33b544ff82b4aac62d6048080a4d4",
+        "measurements": [
+          {
+            "mode": "fresh_parser",
+            "samples_ns_per_parse": {
+              "baseline": [
+                2818316.0,
+                2841560.0,
+                3003388.0,
+                3013216.0,
+                3331460.0
+              ],
+              "candidate": [
+                2971716.0,
+                2891576.0,
+                2863836.0,
+                2846888.0,
+                4033356.0
+              ]
+            },
+            "candidate_to_baseline_median": 0.9627713768584012,
+            "sample_ranges_overlap": true
+          },
+          {
+            "mode": "unchanged_tree",
+            "samples_ns_per_parse": {
+              "baseline": [
+                66884.0,
+                56980.0,
+                55892.0,
+                62076.0,
+                64232.0
+              ],
+              "candidate": [
+                60940.0,
+                62648.0,
+                59820.0,
+                63648.0,
+                59372.0
+              ]
+            },
+            "candidate_to_baseline_median": 0.9816998517945744,
+            "sample_ranges_overlap": true
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "Fresh parser does not mean OS cold cache; unchanged-tree samples reuse an identical immutable source",
+      "Single-process Windows microbenchmark; no pipeline, storage, process-tree memory or capacity claim",
+      "Error-free unchanged CST parity is required; syntax correction costs are excluded from this comparison",
+      "Sample range overlap is descriptive, not a statistical confidence bound or broad performance gate"
+    ]
+  },
+  "open_gates": [
+    "Entmoot visitor/occurrence and Python 3.15 native-provider qualification",
+    "macOS all lanes; Windows CGo compiler and Swift; Linux Rust and Swift",
+    "Human review, upstream submission and acceptance; not an adopted production grammar"
+  ],
+  "limits": [
+    "Two actual compiler/runtime versions; no claim of an exhaustive historical interpreter matrix",
+    "Semantic numeric constraints remain compiler decisions even where grammar accepts their shape",
+    "Historical three-patch combination is compared to the previous combined candidate, not to the original baseline in its example and timing lanes",
+    "Detailed logs and per-file observations remain local; receipt embeds compact outcomes and identifiers, not all source bytes",
+    "Parser microbenchmark does not establish pipeline performance or a statistically significant improvement"
+  ]
+}

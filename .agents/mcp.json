@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "entmoot": {
+      "type": "stdio",
+      "command": "python",
+      "args": [
+        "${workspaceFolder}/scripts/run_entmoot_mcp.py",
+        "-C",
+        "${workspaceFolder}"
+      ]
+    }
+  }
+}

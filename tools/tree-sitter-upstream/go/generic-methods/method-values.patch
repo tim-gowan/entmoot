@@ -1,0 +1,19 @@
+--- a/grammar.js
++++ b/grammar.js
+@@ -85,6 +85,7 @@
+   word: $ => $.identifier,
+ 
+   conflicts: $ => [
++    [$._expression, $.type_instantiation_expression],
+     [$._simple_type, $._expression],
+     [$._simple_type, $.generic_type, $._expression],
+     [$.qualified_type, $._expression],
+@@ -778,7 +779,7 @@
+     )),
+ 
+     type_instantiation_expression: $ => prec.dynamic(-1, seq(
+-      field('type', $._type),
++      field('type', choice($._type, $.selector_expression, $.parenthesized_expression)),
+       '[',
+       commaSep1($._type),
+       optional(','),

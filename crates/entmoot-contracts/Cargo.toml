@@ -1,0 +1,38 @@
+[package]
+name = "entmoot-contracts"
+version.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+readme = "README.md"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Engine-independent Entmoot interchange and query contracts"
+
+[dependencies]
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.148"
+blake3 = "1.8.2"
+thiserror = "2.0.17"
+schemars = "1.0.4"
+packageurl = "=0.7.0"
+
+[dev-dependencies]
+
+[[example]]
+name = "regen_fixtures"
+path = "examples/regen_fixtures.rs"
+
+[[example]]
+name = "emit_json_schema"
+path = "examples/emit_json_schema.rs"
+
+[[example]]
+name = "emit_query_json_schema"
+path = "examples/emit_query_json_schema.rs"
+
+[lints]
+workspace = true
+
+
+[build-dependencies]
+blake3 = "1.8.2"

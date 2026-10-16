@@ -1,0 +1,30 @@
+--- a/common/define-grammar.js
++++ b/common/define-grammar.js
+@@ -71,6 +71,18 @@
+     ]),
+ 
+     conflicts: ($, previous) => previous.concat([
++      ...(dialect === 'tsx' ? [
++        [$.jsx_keyword_identifier, $.type_parameter],
++        [$.jsx_keyword_identifier, $.variance],
++        [$.jsx_keyword_identifier, $.constraint],
++        [$.jsx_keyword_identifier, $.type_query],
++        [$.jsx_keyword_identifier, $.primary_type],
++        [$.jsx_keyword_identifier, $.false],
++        [$.jsx_keyword_identifier, $.true],
++        [$.jsx_keyword_identifier, $.null],
++        [$.jsx_keyword_identifier, $.this],
++        [$.jsx_keyword_identifier, $.predefined_type],
++      ] : []),
+       [$.call_expression, $.instantiation_expression, $.binary_expression],
+       [$.call_expression, $.instantiation_expression, $.binary_expression, $.unary_expression],
+       [$.call_expression, $.instantiation_expression, $.binary_expression, $.update_expression],
+@@ -246,7 +258,7 @@
+               seq(
+                 field('name', choice(
+                   $.identifier,
+-                  alias($.nested_identifier, $.member_expression),
++                  alias($.jsx_member_expression, $.member_expression),
+                 )),
+                 field('type_arguments', optional($.type_arguments)),
+               ),

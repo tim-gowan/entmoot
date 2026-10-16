@@ -1,0 +1,1108 @@
+{
+  "evaluation_only": true,
+  "method_id": "entmoot.local-artifact-retention-cleanup.v1",
+  "date_utc": "2026-09-28T03:35:14.0270352Z",
+  "policy": "Explicit user-requested cleanup of inspected superseded local projections and edit scratch; no blanket scratch deletion.",
+  "roots": [
+    ".tmp"
+  ],
+  "retained": [
+    "current .entmoot publications",
+    "juice-workflows-20260927 and its provider/source/lock evidence",
+    "native final qualification evidence",
+    "raw provider artifacts and source-object stores",
+    "pinned checkouts and toolchains",
+    "scripts, patches, fixtures, summaries and current validation receipts"
+  ],
+  "measurement": "Logical file lengths before deletion; no allocated-disk or deduplication claim. Historical benchmark measurements are unchanged; deleted paths are no longer available for replay.",
+  "deleted_files": 181,
+  "deleted_logical_bytes": 74997245801.0,
+  "files": [
+    {
+      "path": ".tmp/crate-rename-check.log",
+      "bytes": 661,
+      "reason": "superseded_edit_or_validation_scratch",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-after/source/.entmoot/current/generation-a5NMS7/graph.json.knowledge.sqlite3",
+      "bytes": 7610368,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-after/source/.entmoot/current/generation-PUkadC/graph.json.knowledge.sqlite3",
+      "bytes": 7610368,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-after/source/.entmoot/current/generation-QE3EJh/graph.json.knowledge.sqlite3",
+      "bytes": 7610368,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-after/source/.entmoot/current/generation-UZblp7/graph.json.knowledge.sqlite3",
+      "bytes": 7610368,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-before/source/.entmoot/current/generation-0kzqMU/graph.json.knowledge.sqlite3",
+      "bytes": 7655424,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-before/source/.entmoot/current/generation-0oTvLj/graph.json.knowledge.sqlite3",
+      "bytes": 7655424,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-before/source/.entmoot/current/generation-IcRhDn/graph.json.knowledge.sqlite3",
+      "bytes": 7655424,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-before/source/.entmoot/current/generation-maqERn/graph.json.knowledge.sqlite3",
+      "bytes": 7655424,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-before/source/.entmoot/current/generation-RPCEjk/graph.json.knowledge.sqlite3",
+      "bytes": 7655424,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-before/source/.entmoot/current/generation-WUw72Q/graph.json.knowledge.sqlite3",
+      "bytes": 7655424,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-before/source/.entmoot/current/generation-wvmFvi/graph.json.knowledge.sqlite3",
+      "bytes": 7655424,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defaults-perf-before/source/.entmoot/current/generation-yk7Dfm/graph.json.knowledge.sqlite3",
+      "bytes": 7655424,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/defectdojo-wave-a/topo.json.knowledge.sqlite3",
+      "bytes": 1051168768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/anyio.graph.json",
+      "bytes": 13619876,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/anyio.graph.json.knowledge.sqlite3",
+      "bytes": 60182528,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/anyio.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/anyio.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/flask.graph.json",
+      "bytes": 6142237,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/flask.graph.json.knowledge.sqlite3",
+      "bytes": 26689536,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/flask.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/flask.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/h11.graph.json",
+      "bytes": 8642836,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/h11.graph.json.knowledge.sqlite3",
+      "bytes": 39759872,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/httpcore.graph.json",
+      "bytes": 7175247,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/httpcore.graph.json.knowledge.sqlite3",
+      "bytes": 31739904,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/httpcore.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/httpcore.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/httpx.graph.json",
+      "bytes": 7772477,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/httpx.graph.json.knowledge.sqlite3",
+      "bytes": 34308096,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/httpx.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/httpx.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/idna.graph.json",
+      "bytes": 966292,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/idna.graph.json.knowledge.sqlite3",
+      "bytes": 4296704,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/jinja2.graph.json",
+      "bytes": 15007269,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/jinja2.graph.json.knowledge.sqlite3",
+      "bytes": 67203072,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/jinja2.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/jinja2.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/markupsafe.graph.json",
+      "bytes": 728902,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/markupsafe.graph.json.knowledge.sqlite3",
+      "bytes": 3198976,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/sdk.graph.json",
+      "bytes": 69898346,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/sdk.graph.json.knowledge.sqlite3",
+      "bytes": 308211712,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/sdk.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/sdk.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/sniffio.graph.json",
+      "bytes": 194510,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/sniffio.graph.json.knowledge.sqlite3",
+      "bytes": 929792,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/werkzeug.graph.json",
+      "bytes": 20538389,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/werkzeug.graph.json.knowledge.sqlite3",
+      "bytes": 90714112,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/werkzeug.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/dependency-stitch-2026-09-23/werkzeug.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/diff-check.err",
+      "bytes": 27434,
+      "reason": "superseded_edit_or_validation_scratch",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/diff-check2.err",
+      "bytes": 27434,
+      "reason": "superseded_edit_or_validation_scratch",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/diff-check3.err",
+      "bytes": 27434,
+      "reason": "superseded_edit_or_validation_scratch",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/.tmpZvA28P",
+      "bytes": 481410772,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/ansible.graph.json",
+      "bytes": 156999210,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/ansible.knowledge.sqlite3",
+      "bytes": 200245248,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/ansible.optimized.graph.json",
+      "bytes": 135321259,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/ansible.optimized.knowledge.sqlite3",
+      "bytes": 391692288,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/ansible.optimized.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/ansible.optimized.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/node-lib.graph.json",
+      "bytes": 72385209,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/node-lib.sqlite3",
+      "bytes": 194465792,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/node.graph.json",
+      "bytes": 1454586674,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/node.knowledge.sqlite3",
+      "bytes": 1868644352,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/node.optimized.graph.json",
+      "bytes": 1264676109,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/node.optimized.knowledge.sqlite3",
+      "bytes": 3734585344,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/node.optimized.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/node.optimized.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/roslyn.graph.json",
+      "bytes": 2520413261,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/roslyn.knowledge.sqlite3",
+      "bytes": 7131230208,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/roslyn.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/roslyn.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/rust.final.graph.json",
+      "bytes": 1601041451,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/rust.final.knowledge.sqlite3",
+      "bytes": 4401360896,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/rust.final.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/rust.final.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/rust.graph.json",
+      "bytes": 1345246195,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/rust.knowledge.sqlite3",
+      "bytes": 3636838400,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/rust.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/rust.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/spring-framework.final.graph.json",
+      "bytes": 1002465583,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/spring-framework.final.knowledge.sqlite3",
+      "bytes": 2636709888,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/spring-framework.final.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/spring-framework.final.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/spring-framework.graph.json",
+      "bytes": 994761966,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/spring-framework.knowledge.sqlite3",
+      "bytes": 2615263232,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/spring-framework.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/spring-framework.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/vscode.knowledge.sqlite3",
+      "bytes": 3964182528,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/vscode.knowledge.sqlite3-shm",
+      "bytes": 7766016,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/vscode.knowledge.sqlite3-wal",
+      "bytes": 3987451392,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/vscode.optimized.graph.json",
+      "bytes": 2262129870,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/vscode.optimized.knowledge.sqlite3",
+      "bytes": 6443929600,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/vscode.optimized.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/ecosystem-scale/vscode.optimized.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/entmoot-rename-precommit.log",
+      "bytes": 95458,
+      "reason": "superseded_edit_or_validation_scratch",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/evidence-exercise/base.graph.json",
+      "bytes": 83235968,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/evidence-exercise/base.graph.json.knowledge.sqlite3",
+      "bytes": 281755648,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/evidence-exercise/head.graph.json",
+      "bytes": 83208815,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/evidence-exercise/head.graph.json.knowledge.sqlite3",
+      "bytes": 281583616,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/juice-shop-wave-b/topo.graph.json",
+      "bytes": 121187512,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/juice-shop-wave-b/topo.html",
+      "bytes": 123778,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/juice-shop-wave-b/topo.json",
+      "bytes": 108867702,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/juice-shop-wave-b/topo.json.knowledge.sqlite3",
+      "bytes": 463138816,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-project-benchmark-1/BenchmarkJava/graph.json.knowledge.sqlite3",
+      "bytes": 655872000,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-project-benchmark-1/damn-vulnerable-golang/graph.json.knowledge.sqlite3",
+      "bytes": 1433600,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-project-benchmark-1/dvcsharp-api/graph.json.knowledge.sqlite3",
+      "bytes": 3006464,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-project-benchmark-2/BenchmarkJava/graph.json.knowledge.sqlite3",
+      "bytes": 2224410624,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-project-benchmark-2/damn-vulnerable-golang/graph.json.knowledge.sqlite3",
+      "bytes": 1597440,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-project-benchmark-2/dvcsharp-api/graph.json.knowledge.sqlite3",
+      "bytes": 5304320,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-1/go/graph.json.knowledge.sqlite3",
+      "bytes": 90112,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-2/csharp/graph.json.knowledge.sqlite3",
+      "bytes": 172032,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-2/go/graph.json.knowledge.sqlite3",
+      "bytes": 147456,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-2/java/graph.json.knowledge.sqlite3",
+      "bytes": 126976,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-5/csharp/graph.json.knowledge.sqlite3",
+      "bytes": 172032,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-5/go/graph.json.knowledge.sqlite3",
+      "bytes": 172032,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-5/java/graph.json.knowledge.sqlite3",
+      "bytes": 147456,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-5/rust/graph.json.knowledge.sqlite3",
+      "bytes": 139264,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-6/csharp/graph.json.knowledge.sqlite3",
+      "bytes": 172032,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-6/go/graph.json.knowledge.sqlite3",
+      "bytes": 172032,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-6/java/graph.json.knowledge.sqlite3",
+      "bytes": 147456,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-6/rust/graph.json.knowledge.sqlite3",
+      "bytes": 139264,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-rust-3/rust/graph.json.knowledge.sqlite3",
+      "bytes": 90112,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/native-qualification-rust-4/rust/graph.json.knowledge.sqlite3",
+      "bytes": 139264,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/angular.graph.json",
+      "bytes": 568652104,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/angular.graph.json.knowledge.sqlite3",
+      "bytes": 1956859904,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/angular.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/angular.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/express.graph.json",
+      "bytes": 17003099,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/express.graph.json.knowledge.sqlite3",
+      "bytes": 68825088,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/express.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/express.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/flask.graph.json",
+      "bytes": 8783314,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/flask.graph.json.knowledge.sqlite3",
+      "bytes": 28266496,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/flask.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/flask.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/nest.graph.json",
+      "bytes": 59316414,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/nest.graph.json.knowledge.sqlite3",
+      "bytes": 196833280,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/nest.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/nest.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/numpy.graph.json",
+      "bytes": 170419573,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/numpy.graph.json.knowledge.sqlite3",
+      "bytes": 626999296,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/numpy.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/numpy.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/open-webui.graph.json",
+      "bytes": 60180454,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/open-webui.graph.json.knowledge.sqlite3",
+      "bytes": 200282112,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/open-webui.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/open-webui.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/pandas.graph.json",
+      "bytes": 405118186,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/pandas.graph.json.knowledge.sqlite3",
+      "bytes": 1469034496,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/pandas.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/pandas.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/playwright.graph.json",
+      "bytes": 291732683,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/playwright.graph.json.knowledge.sqlite3",
+      "bytes": 1038712832,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/playwright.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/playwright.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/railguard-skill.graph.json",
+      "bytes": 1378566,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/railguard-skill.graph.json.knowledge.sqlite3",
+      "bytes": 4833280,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/railguard-skill.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/railguard-skill.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/react.graph.json",
+      "bytes": 290758289,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/react.graph.json.knowledge.sqlite3",
+      "bytes": 903839744,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/react.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/react.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/scikit-learn.graph.json",
+      "bytes": 205958295,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/scikit-learn.graph.json.knowledge.sqlite3",
+      "bytes": 754728960,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/scikit-learn.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/scikit-learn.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/vue.graph.json",
+      "bytes": 45369551,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/vue.graph.json.knowledge.sqlite3",
+      "bytes": 160817152,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/vue.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/oasis-corpus/vue.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/planning-before-convergence.md",
+      "bytes": 43826,
+      "reason": "superseded_edit_or_validation_scratch",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/planning-ir-before.md",
+      "bytes": 20305,
+      "reason": "superseded_edit_or_validation_scratch",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/rename-banned.log",
+      "bytes": 41,
+      "reason": "superseded_edit_or_validation_scratch",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/scale/cockroach.graph.json",
+      "bytes": 1932655647,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/scale/cockroach.graph.json.knowledge.sqlite3",
+      "bytes": 2721136640,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/scale/cockroach.graph.json.knowledge.sqlite3-shm",
+      "bytes": 32768,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/scale/cockroach.graph.json.knowledge.sqlite3-wal",
+      "bytes": 0,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/topology-scratch/vendor-graph/topo.graph.json",
+      "bytes": 7570815,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    },
+    {
+      "path": ".tmp/topology-scratch/workspace/topo.graph.json",
+      "bytes": 16688551,
+      "reason": "superseded_disposable_projection",
+      "outcome": "deleted"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+---
+description: Focused test ownership and honest qualification
+alwaysApply: true
+---
+
+# Test lanes
+
+- Structural fixtures exercise production visitors and explicit occurrence
+  selectors without compilers. Expected correspondence is independently authored.
+- Authored provider fixtures qualify joins, not native semantics. Live native
+  controls are opt-in; missing tools remain unavailable, never a passing result.
+- Storage/application tests own transactions, restart, producer isolation and
+  CLI/MCP behavior. Campaign measurements do not replace correctness tests.
+- Keep focused fixtures together; remove obsolete tests and consumers together.
+  Raw outputs and exact receipts are optional when they offer no practical value.
+- Maintain [test ownership](../../scripts/test_ownership.json); shared changes run
+  representative families and full workspace checks. C++ remains experimental.
+- Scratch belongs in `.tmp/<task>/`. Test-only temporary directories are disposable.
+  Details: [testing runbook](../../docs/runbooks/testing.md).

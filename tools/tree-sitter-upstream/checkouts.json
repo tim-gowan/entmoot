@@ -1,0 +1,225 @@
+{
+  "schema": "entmoot.local_checkout_index.v1",
+  "authority": "Machine-local pinned grammar sources and example inputs only. Product campaigns use evals/repositories.json. No checkouts are vendored here.",
+  "roots": {
+    "siblings_parent": "G:/GitHub"
+  },
+  "checkouts": [
+    {
+      "id": "flask",
+      "path": "G:/GitHub/flask",
+      "upstream": "https://github.com/pallets/flask",
+      "commit_sha": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35"
+    },
+    {
+      "id": "tree-sitter-python",
+      "path": "G:/GitHub/tree-sitter-python",
+      "upstream": "https://github.com/tree-sitter/tree-sitter-python",
+      "commit_sha": "26855eabccb19c6abf499fbc5b8dc7cc9ab8bc64"
+    },
+    {
+      "id": "cpython",
+      "path": "G:/GitHub/cpython",
+      "upstream": "https://github.com/python/cpython",
+      "commit_sha": "230917f5072c5c6b9373374a84d52935d7afa3b5"
+    },
+    {
+      "id": "numpy",
+      "path": "G:/GitHub/numpy",
+      "upstream": "https://github.com/numpy/numpy",
+      "commit_sha": "70fa99843c75ae12434805bb4b1b07b94598c5c9"
+    },
+    {
+      "id": "django",
+      "path": "G:/GitHub/django",
+      "upstream": "https://github.com/django/django",
+      "commit_sha": "dab0a5c47f159eb58472110dcbc10bd4a9b01adb"
+    },
+    {
+      "id": "tree-sitter-go",
+      "path": "G:\\GitHub\\tree-sitter-go",
+      "upstream": "https://github.com/tree-sitter/tree-sitter-go",
+      "commit_sha": "2346a3ab1bb3857b48b29d779a1ef9799a248cd7"
+    },
+    {
+      "id": "go",
+      "path": "G:\\GitHub\\go",
+      "upstream": "https://github.com/golang/go",
+      "commit_sha": "ea0fa54dc5048902083c3364bdbdbfb12770a613"
+    },
+    {
+      "id": "moby",
+      "path": "G:\\GitHub\\moby",
+      "upstream": "https://github.com/moby/moby",
+      "commit_sha": "9fabd6dfbb926381278c436a866bc8d6ac222274"
+    },
+    {
+      "id": "tree-sitter-java",
+      "path": "G:/GitHub/tree-sitter-java",
+      "upstream": "https://github.com/tree-sitter/tree-sitter-java",
+      "commit_sha": "e10607b45ff745f5f876bfa3e94fbcc6b44bdc11"
+    },
+    {
+      "id": "tree-sitter-java-orchard",
+      "path": "G:/GitHub/tree-sitter-java-orchard",
+      "upstream": "https://codeberg.org/grammar-orchard/tree-sitter-java-orchard",
+      "commit_sha": "7dc7faa53d68c9455c6f35f0d0f7583332127452"
+    },
+    {
+      "id": "grammar-orchard-profile",
+      "path": "G:/GitHub/grammar-orchard-profile",
+      "upstream": "https://codeberg.org/grammar-orchard/.profile",
+      "commit_sha": "475b73262c919f0b46da0a71f803345c4cd188ce"
+    },
+    {
+      "id": "elasticsearch",
+      "path": "G:/GitHub/elasticsearch",
+      "upstream": "https://github.com/elastic/elasticsearch",
+      "commit_sha": "d86975cb51e70d60171a8991153fe9c54c023d6b"
+    },
+    {
+      "id": "guava",
+      "path": "G:/GitHub/guava",
+      "upstream": "https://github.com/google/guava",
+      "commit_sha": "6b3a8d7498a7fde122967ba37a023ba3dcb47792"
+    },
+    {
+      "id": "RxJava",
+      "path": "G:/GitHub/RxJava",
+      "upstream": "https://github.com/ReactiveX/RxJava",
+      "commit_sha": "846acd6921acf906b1cc0e42c6cebf75b474744e"
+    },
+    {
+      "id": "flink",
+      "path": "G:/GitHub/flink",
+      "upstream": "https://github.com/apache/flink",
+      "commit_sha": "fed133939df542016dbbb0e892a11eacbf9b93ae"
+    },
+    {
+      "id": "log4j2",
+      "path": "G:/GitHub/log4j2",
+      "upstream": "https://github.com/apache/logging-log4j2",
+      "commit_sha": "c0de1b86282065b597cc6e4b911389c8d9ea03fd"
+    },
+    {
+      "id": "cassandra",
+      "path": "G:/GitHub/cassandra",
+      "upstream": "https://github.com/apache/cassandra",
+      "commit_sha": "ec2c276be145bb25085c5c35ac0da69113b676ff"
+    },
+    {
+      "id": "tree-sitter-c-sharp",
+      "path": "G:/GitHub/tree-sitter-c-sharp",
+      "upstream": "https://github.com/tree-sitter/tree-sitter-c-sharp",
+      "commit_sha": "8c0abe0b84a3681d3e6852ce2e2a1eecb4f731c5"
+    },
+    {
+      "id": "Newtonsoft.Json",
+      "path": "G:/GitHub/Newtonsoft.Json",
+      "upstream": "https://github.com/JamesNK/Newtonsoft.Json",
+      "commit_sha": "52fa3aef1f2cadcd3a3f874251eddc98d3efbbaa"
+    },
+    {
+      "id": "nunit",
+      "path": "G:/GitHub/nunit",
+      "upstream": "https://github.com/nunit/nunit",
+      "commit_sha": "17f2acd3744234c77082bd8c3987023f9d1e37b1"
+    },
+    {
+      "id": "orchard",
+      "path": "G:/GitHub/orchard",
+      "upstream": "https://github.com/OrchardCMS/orchard",
+      "commit_sha": "8c47962e3c1ae025fc65d585f41d0ad9897d90b2"
+    },
+    {
+      "id": "PowerToys",
+      "path": "G:/GitHub/PowerToys",
+      "upstream": "https://github.com/microsoft/PowerToys",
+      "commit_sha": "ccdd9b19ca980e9d383a42c235fa313a595ac712"
+    },
+    {
+      "id": "tree-sitter-rust",
+      "path": "G:/GitHub/tree-sitter-rust",
+      "upstream": "https://github.com/tree-sitter/tree-sitter-rust",
+      "commit_sha": "77a3747266f4d621d0757825e6b11edcbf991ca5"
+    },
+    {
+      "id": "bitflags",
+      "path": "G:/GitHub/bitflags",
+      "upstream": "https://github.com/bitflags/bitflags",
+      "commit_sha": "8df4d4ebb26fc35d49515972ede9dc77e5b43599"
+    },
+    {
+      "id": "libc",
+      "path": "G:/GitHub/libc",
+      "upstream": "https://github.com/rust-lang/libc",
+      "commit_sha": "50aeadf6140ce9fbb0226719d73c188e1dde8bca"
+    },
+    {
+      "id": "regex",
+      "path": "G:/GitHub/regex",
+      "upstream": "https://github.com/rust-lang/regex",
+      "commit_sha": "72d650cb0a880a01ab6dc2137c0888e8f89740f7"
+    },
+    {
+      "id": "serde",
+      "path": "G:/GitHub/serde",
+      "upstream": "https://github.com/serde-rs/serde",
+      "commit_sha": "6693a89cca77e0151437da1c7f890090b9ebf04c"
+    },
+    {
+      "id": "tokio",
+      "path": "G:/GitHub/tokio",
+      "upstream": "https://github.com/tokio-rs/tokio",
+      "commit_sha": "09a57c27ea64bb546fe16822b9d2e65c599f0fb4"
+    },
+    {
+      "id": "tree-sitter-javascript",
+      "path": "G:/GitHub/tree-sitter-javascript",
+      "upstream": "https://github.com/tree-sitter/tree-sitter-javascript",
+      "commit_sha": "58404d8cf191d69f2674a8fd507bd5776f46cb11"
+    },
+    {
+      "id": "tree-sitter-typescript",
+      "path": "G:/GitHub/tree-sitter-typescript",
+      "upstream": "https://github.com/tree-sitter/tree-sitter-typescript",
+      "commit_sha": "75b3874edb2dc714fb1fd77a32013d0f8699989f"
+    },
+    {
+      "id": "npm-cli",
+      "path": "G:/GitHub/npm-cli",
+      "upstream": "https://github.com/npm/cli",
+      "commit_sha": "83ea1a1c19648a6b4f5e52a498d8a6aaaf60e52b"
+    },
+    {
+      "id": "redux",
+      "path": "G:/GitHub/redux",
+      "upstream": "https://github.com/reduxjs/redux",
+      "commit_sha": "56abca4749921d68f40cda20afd2043af9751f72"
+    },
+    {
+      "id": "desktop",
+      "path": "G:/GitHub/desktop",
+      "upstream": "https://github.com/desktop/desktop",
+      "commit_sha": "c37f28a9a561547778a0edbb93e8d0eea47f036a"
+    },
+    {
+      "id": "vscode",
+      "path": "G:/GitHub/vscode",
+      "upstream": "https://github.com/microsoft/vscode",
+      "commit_sha": "186b59be7f753505d0e583e0e3d0034897400224"
+    },
+    {
+      "id": "tree-sitter-c",
+      "path": "G:/GitHub/tree-sitter-c",
+      "upstream": "https://github.com/tree-sitter/tree-sitter-c",
+      "commit_sha": "b780e47fc780ddc8da13afa35a3f4ed5c157823d"
+    },
+    {
+      "id": "tree-sitter-cpp",
+      "path": "G:/GitHub/tree-sitter-cpp",
+      "upstream": "https://github.com/tree-sitter/tree-sitter-cpp",
+      "commit_sha": "c009222808634c1014f82438d4883753516a2c24"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "format": "entmoot.grammar_oracle.v1",
+  "release_cutoff": "2026-10-10",
+  "tool": "go version go1.27.2 windows/amd64",
+  "tool_digest": "blake3:0ed101bc464463d1e93a8bbc0a695bfa07c01539aa73e4befefc8edcd39ccb37",
+  "compile_tool_digest": "blake3:61d17290de690599fc377e7ea193a0abfc27aefee8da30a34632a26093810c09",
+  "driver_digest": "blake3:61cb0b9f8af8161a18e73537b9a01d0a61999b2a920612948dac2365e0b81b77",
+  "cases": [
+    {
+      "id": "generic-methods",
+      "source_hex": "7061636b616765206d61696e0a0a696d706f72742022666d74220a0a7479706520426f785b5420616e795d20737472756374207b2056616c75652054207d0a0a66756e6320286220426f785b545d29204d61705b5520616e795d28662066756e6328542920552920426f785b555d207b0a2020202072657475726e20426f785b555d7b56616c75653a206628622e56616c7565297d0a7d0a0a66756e6320286220426f785b545d29204d6170536c6963655b53207e5b5d552c205520616e795d28662066756e632854292053292053207b0a2020202072657475726e206628622e56616c7565290a7d0a0a2f2f2041206465636c61726174696f6e20616674657220612067656e65726963206d6574686f64206d7573742072656d61696e2061207369626c696e6720696e20746865204353542e0a66756e63204166746572282920696e74207b2072657475726e2037207d0a0a66756e63206d61696e2829207b0a202020206d6170706564203a3d20426f785b696e745d7b56616c75653a20337d2e4d61702866756e63287820696e742920737472696e67207b2072657475726e20666d742e537072696e74287829207d290a2020202076616c756573203a3d20426f785b696e745d7b56616c75653a20337d2e4d6170536c6963655b5b5d737472696e672c20737472696e675d2866756e63287820696e7429205b5d737472696e67207b2072657475726e205b5d737472696e677b666d742e537072696e742878297d207d290a202020206966206c656e2876616c7565732920213d2031207c7c2076616c7565735b305d20213d20223322207b2070616e69632822636f6e73747261696e742062696e64696e67206368616e6765642229207d0a202020206966206d61707065642e56616c756520213d20223322207c7c204166746572282920213d2037207b2070616e6963282267656e65726963206d6574686f64206f72207369626c696e67206c6f73742229207d0a20202020666d742e5072696e746c6e282267656e657269632d6d6574686f642d616e642d666f6c6c6f77696e672d6465636c61726174696f6e3a6f6b22290a7d0a",
+      "source_digest": "blake3:0eb2a77e611b3854b3f167586ad9f3670391c8ceadf75fe381b38a91d227e926",
+      "target_mode": "go1.27",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\go1.27.2\\go\\bin\\go.exe",
+        "run",
+        "-gcflags=-lang=go1.27",
+        "C:\\Users\\Tim\\AppData\\Local\\Temp\\entmoot-go-oracle-8w_c33le\\generic-methods.go"
+      ],
+      "exit_code": 0,
+      "stdout": "generic-method-and-following-declaration:ok\n",
+      "stderr": "",
+      "expected_success": true,
+      "expected_output": "generic-method-and-following-declaration:ok",
+      "passed": true,
+      "structural": "not_run",
+      "native_resolver": "not_run"
+    },
+    {
+      "id": "historical-method",
+      "source_hex": "7061636b616765206d61696e0a696d706f72742022666d74220a7479706520426f7820737472756374207b2056616c756520696e74207d0a66756e6320286220426f782920476574282920696e74207b2072657475726e20622e56616c7565207d0a66756e63204166746572282920696e74207b2072657475726e2037207d0a66756e63206d61696e2829207b2069662028426f787b337d292e4765742829213d33207c7c2041667465722829213d37207b2070616e696328226261642229207d3b20666d742e5072696e746c6e2822686973746f726963616c3a6f6b2229207d0a",
+      "source_digest": "blake3:602ac77681b13b0f9be6cd7c5ed3e3571528d456f0f4dc52c8f130fb279c4834",
+      "target_mode": "go1.14",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\go1.27.2\\go\\bin\\go.exe",
+        "run",
+        "-gcflags=-lang=go1.14",
+        "C:\\Users\\Tim\\AppData\\Local\\Temp\\entmoot-go-oracle-8w_c33le\\historical-method.go"
+      ],
+      "exit_code": 0,
+      "stdout": "historical:ok\n",
+      "stderr": "",
+      "expected_success": true,
+      "expected_output": "historical:ok",
+      "passed": true,
+      "structural": "not_run",
+      "native_resolver": "not_run"
+    },
+    {
+      "id": "interface-generic-method",
+      "source_hex": "7061636b616765206d61696e0a7479706520496e76616c696420696e74657266616365207b204d61705b5420616e795d2854292054207d0a66756e63206d61696e2829207b7d0a",
+      "source_digest": "blake3:1d32ea400078e5f58a4251142f64a64091409c972102898a6fd4247dc0788aa2",
+      "target_mode": "go1.27",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\go1.27.2\\go\\bin\\go.exe",
+        "run",
+        "-gcflags=-lang=go1.27",
+        "C:\\Users\\Tim\\AppData\\Local\\Temp\\entmoot-go-oracle-8w_c33le\\interface-generic-method.go"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "# command-line-arguments\nC:\\Users\\Tim\\AppData\\Local\\Temp\\entmoot-go-oracle-8w_c33le\\interface-generic-method.go:2:29: interface method must have no type parameters\nC:\\Users\\Tim\\AppData\\Local\\Temp\\entmoot-go-oracle-8w_c33le\\interface-generic-method.go:2:37: undefined: T\n",
+      "expected_success": false,
+      "expected_output": "type parameters",
+      "passed": true,
+      "structural": "not_run",
+      "native_resolver": "not_run"
+    },
+    {
+      "id": "unsatisfied-constraint",
+      "source_hex": "7061636b616765206d61696e0a7479706520426f78207374727563747b7d0a66756e632028426f7829204d61705b54207e696e745d28782054292054207b2072657475726e2078207d0a66756e63206d61696e2829207b20426f787b7d2e4d6170282277726f6e672229207d0a",
+      "source_digest": "blake3:93c633163cf138ec91b534de248612da7f605c1faee41ebf6f344ff8356539e7",
+      "target_mode": "go1.27",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\go1.27.2\\go\\bin\\go.exe",
+        "run",
+        "-gcflags=-lang=go1.27",
+        "C:\\Users\\Tim\\AppData\\Local\\Temp\\entmoot-go-oracle-8w_c33le\\unsatisfied-constraint.go"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "# command-line-arguments\nC:\\Users\\Tim\\AppData\\Local\\Temp\\entmoot-go-oracle-8w_c33le\\unsatisfied-constraint.go:4:24: string does not satisfy ~int (string missing in ~int)\n",
+      "expected_success": false,
+      "expected_output": "does not satisfy",
+      "passed": true,
+      "structural": "not_run",
+      "native_resolver": "not_run"
+    }
+  ],
+  "historical_runtime_matrix": "not_run",
+  "passed": true
+}

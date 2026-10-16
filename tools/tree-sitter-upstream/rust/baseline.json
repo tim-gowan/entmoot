@@ -1,0 +1,14 @@
+{
+  "format": "entmoot.grammar_baseline_profile.v1",
+  "cutoff": "2026-10-10",
+  "source": {
+    "checkout_id": "tree-sitter-rust",
+    "commit": "77a3747266f4d621d0757825e6b11edcbf991ca5",
+    "upstream": "https://github.com/tree-sitter/tree-sitter-rust",
+    "license": "MIT"
+  },
+  "generator": "0.26.7",
+  "abi": 15,
+  "export": "rust",
+  "scope": "Qualification of existing grammar behavior; no proposed grammar patch."
+}

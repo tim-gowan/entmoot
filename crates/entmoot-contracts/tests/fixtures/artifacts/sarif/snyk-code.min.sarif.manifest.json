@@ -1,0 +1,32 @@
+{
+  "schema_version": "logic.artifact.v1",
+  "identity_schema_version": "logic.identity.v1",
+  "artifact_id": "8a913722e580047479a7683877df9b2a869c122710d1b5ea2985121b5d5fb734",
+  "artifact_series_id": "a8f9574f45647388cff13b6eae1f08e48ca2242a8b0d472aedc6596038914445",
+  "format": "sarif21",
+  "producer": {
+    "name": "SnykCode",
+    "version": "1.0.0-test"
+  },
+  "snapshot": {
+    "repository_id": "github.com/acme/app",
+    "revision": "f356a09207c7a9550eb6fc4c3945e081922cf998",
+    "source_state": "committed"
+  },
+  "scope": {
+    "scope_universe_id": "3747a6a850301a2bb2e4feafec354ff46ca7450f696e3313c5f4da48b10d01cf",
+    "selector_language_version": "logic.path_glob.v1",
+    "profile": "review",
+    "languages": [
+      "python",
+      "typescript"
+    ],
+    "included_paths": [],
+    "excluded_paths": [
+      "target/**"
+    ],
+    "completeness": "partial"
+  },
+  "content_digest": "blake3:94533218fc625d9a1aaf3f731429db09a5a5332cec17a204f20f1fb709daf62b",
+  "artifact_path": "snyk-code.min.sarif"
+}

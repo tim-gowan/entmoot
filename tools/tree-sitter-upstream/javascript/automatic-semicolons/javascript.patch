@@ -1,0 +1,147 @@
+--- a/src/scanner.c
++++ b/src/scanner.c
+@@ -51,60 +51,45 @@
+     }
+ }
+ 
+-typedef enum {
+-    REJECT,     // Semicolon is illegal, ie a syntax error occurred
+-    NO_NEWLINE, // Unclear if semicolon will be legal, continue
+-    ACCEPT,     // Semicolon is legal, assuming a comment was encountered
+-} WhitespaceResult;
+-
+-/**
+- * @param consume If false, only consume enough to check if comment indicates semicolon-legality
+- */
+-static WhitespaceResult scan_whitespace_and_comments(TSLexer *lexer, bool *scanned_comment, bool consume) {
+-    bool saw_block_newline = false;
+-
++static bool scan_asi_trivia(TSLexer *lexer, bool allow_inline_comment, bool *newline, bool *scanned_comment) {
+     for (;;) {
+-        while (iswspace(lexer->lookahead)) {
+-            skip(lexer);
+-        }
+-
+-        if (lexer->lookahead == '/') {
+-            skip(lexer);
+-
++        int32_t c = lexer->lookahead;
++        bool line_end = c == '\n' || c == '\r' || c == 0x2028 || c == 0x2029;
++        if (line_end || iswspace(c) || c == 0xfeff) {
++            *newline |= line_end;
++            skip(lexer);
++        } else if (c == '/') {
++            skip(lexer);
+             if (lexer->lookahead == '/') {
++                // Let an inline line-comment remain inside its existing statement.
++                // Its terminating newline will be scanned after the extra token.
++                if (!*newline && !allow_inline_comment) return false;
++                *scanned_comment = true;
++                do {
++                    skip(lexer);
++                    c = lexer->lookahead;
++                } while (c && c != '\n' && c != '\r' && c != 0x2028 && c != 0x2029);
++            } else if (lexer->lookahead == '*') {
++                *scanned_comment = true;
+                 skip(lexer);
+-                while (lexer->lookahead != 0 && lexer->lookahead != '\n' && lexer->lookahead != 0x2028 &&
+-                       lexer->lookahead != 0x2029) {
++                bool closed = false;
++                while (lexer->lookahead) {
++                    c = lexer->lookahead;
++                    *newline |= c == '\n' || c == '\r' || c == 0x2028 || c == 0x2029;
+                     skip(lexer);
+-                }
+-                *scanned_comment = true;
+-            } else if (lexer->lookahead == '*') {
+-                skip(lexer);
+-                while (lexer->lookahead != 0) {
+-                    if (lexer->lookahead == '*') {
++                    if (c == '*' && lexer->lookahead == '/') {
+                         skip(lexer);
+-                        if (lexer->lookahead == '/') {
+-                            skip(lexer);
+-                            *scanned_comment = true;
+-
+-                            if (lexer->lookahead != '/' && !consume) {
+-                                return saw_block_newline ? ACCEPT : NO_NEWLINE;
+-                            }
+-
+-                            break;
+-                        }
+-                    } else if (lexer->lookahead == '\n' || lexer->lookahead == 0x2028 || lexer->lookahead == 0x2029) {
+-                        saw_block_newline = true;
+-                        skip(lexer);
+-                    } else {
+-                        skip(lexer);
++                        closed = true;
++                        break;
+                     }
+                 }
++                if (!closed) return false;
+             } else {
+-                return REJECT;
++                // A division operator cannot start an automatically separated statement.
++                return false;
+             }
+         } else {
+-            return ACCEPT;
++            return true;
+         }
+     }
+ }
+@@ -112,47 +97,13 @@
+ static bool scan_automatic_semicolon(TSLexer *lexer, bool comment_condition, bool *scanned_comment) {
+     lexer->result_symbol = AUTOMATIC_SEMICOLON;
+     lexer->mark_end(lexer);
+-
+-    for (;;) {
+-        if (lexer->lookahead == 0) {
+-            return true;
+-        }
+-
+-        if (lexer->lookahead == '/') {
+-            WhitespaceResult result = scan_whitespace_and_comments(lexer, scanned_comment, false);
+-            if (result == REJECT) {
+-                return false;
+-            }
+-
+-            if (result == ACCEPT && comment_condition && lexer->lookahead != ',' && lexer->lookahead != '=') {
+-                return true;
+-            }
+-        }
+-
+-        if (lexer->lookahead == '}') {
+-            return true;
+-        }
+-
+-        if (lexer->is_at_included_range_start(lexer)) {
+-            return true;
+-        }
+-
+-        if (lexer->lookahead == '\n' || lexer->lookahead == 0x2028 || lexer->lookahead == 0x2029) {
+-            break;
+-        }
+-
+-        if (!iswspace(lexer->lookahead)) {
+-            return false;
+-        }
+-
+-        skip(lexer);
+-    }
+-
+-    skip(lexer);
+-
+-    if (scan_whitespace_and_comments(lexer, scanned_comment, true) == REJECT) {
+-        return false;
+-    }
++    if (lexer->is_at_included_range_start(lexer)) return true;
++    bool newline = false;
++    if (!scan_asi_trivia(lexer, comment_condition, &newline, scanned_comment)) return false;
++    if (!newline && *scanned_comment) return false;
++    if (lexer->lookahead == 0) return true;
++    if (lexer->lookahead == '}') return true;
++    if (!newline) return false;
+ 
+     switch (lexer->lookahead) {
+         case '`':

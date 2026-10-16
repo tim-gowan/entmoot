@@ -1,0 +1,3866 @@
+{
+  "format": "entmoot.visitor_revision_pairs.v1",
+  "repository": "visitor-fixtures",
+  "pairs": [
+    {
+      "id": "python-decorated-endpoint-relocation",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/endpoint.py",
+        "source": "# é🍃\r\nclass Box:\r\n    @staticmethod\r\n    def leaf():\r\n        return 1\r\n\r\ndef caller():\r\n    return Box.leaf()\r\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 45, "end": 74}, "scope": ["Box"]},
+          {"key": "caller", "name": "caller", "span": {"start": 78, "end": 114}, "scope": []}
+        ],
+        "calls": [{"callee": "Box.leaf", "span": {"start": 104, "end": 114}, "owner": "caller"}]
+      },
+      "head": {
+        "path": "moved/endpoint.py",
+        "source": "\r\n# é🍃\r\nclass Box:\r\n    @staticmethod\r\n    def leaf():\r\n        return 1\r\n\r\ndef caller():\r\n    return Box.leaf()\r\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 47, "end": 76}, "scope": ["Box"]},
+          {"key": "caller", "name": "caller", "span": {"start": 80, "end": 116}, "scope": []}
+        ],
+        "calls": [{"callee": "Box.leaf", "span": {"start": 106, "end": 116}, "owner": "caller"}]
+      },
+      "correspondence": [
+        {"base": "leaf", "head": "leaf", "structure": "same", "address": "different"},
+        {"base": "caller", "head": "caller", "structure": "same", "address": "different"}
+      ]
+    },
+    {
+      "id": "python-unchanged",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "python-body",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 2\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "python-rename",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def renamed(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "renamed", "span": {"start": 0, "end": 32}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 34, "end": 61}}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "python-relocation",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "moved/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "different"}
+      ]
+    },
+    {
+      "id": "python-malformed",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "head": {"path": "src/example.py", "source": "def broken(:\n    pass\n", "parse": "rejected", "occurrences": [], "calls": []},
+      "correspondence": []
+    },
+    {
+      "id": "rust-unchanged",
+      "language": "rust",
+      "profile": "2021",
+      "base": {
+        "path": "src/example.rs",
+        "source": "fn f(x: i32) -> i32 { x + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 29}}, {"key": "sibling", "name": "sibling", "span": {"start": 30, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.rs",
+        "source": "fn f(x: i32) -> i32 { x + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 29}}, {"key": "sibling", "name": "sibling", "span": {"start": 30, "end": 55}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "rust-body",
+      "language": "rust",
+      "profile": "2021",
+      "base": {
+        "path": "src/example.rs",
+        "source": "fn f(x: i32) -> i32 { x + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 29}}, {"key": "sibling", "name": "sibling", "span": {"start": 30, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.rs",
+        "source": "fn f(x: i32) -> i32 { x + 2 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 29}}, {"key": "sibling", "name": "sibling", "span": {"start": 30, "end": 55}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "rust-rename",
+      "language": "rust",
+      "profile": "2021",
+      "base": {
+        "path": "src/example.rs",
+        "source": "fn f(x: i32) -> i32 { x + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 29}}, {"key": "sibling", "name": "sibling", "span": {"start": 30, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.rs",
+        "source": "fn renamed(x: i32) -> i32 { x + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "renamed", "span": {"start": 0, "end": 35}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 36, "end": 61}}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "rust-relocation",
+      "language": "rust",
+      "profile": "2021",
+      "base": {
+        "path": "src/example.rs",
+        "source": "fn f(x: i32) -> i32 { x + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 29}}, {"key": "sibling", "name": "sibling", "span": {"start": 30, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "moved/example.rs",
+        "source": "fn f(x: i32) -> i32 { x + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 29}}, {"key": "sibling", "name": "sibling", "span": {"start": 30, "end": 55}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "different"}
+      ]
+    },
+    {
+      "id": "rust-malformed",
+      "language": "rust",
+      "profile": "2021",
+      "base": {
+        "path": "src/example.rs",
+        "source": "fn f(x: i32) -> i32 { x + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 29}}, {"key": "sibling", "name": "sibling", "span": {"start": 30, "end": 55}}],
+        "calls": []
+      },
+      "head": {"path": "src/example.rs", "source": "fn f(x: i32) -> i32 { x + 1 ", "parse": "rejected", "occurrences": [], "calls": []},
+      "correspondence": []
+    },
+    {
+      "id": "javascript-unchanged",
+      "language": "javascript",
+      "profile": "es2020",
+      "base": {
+        "path": "src/example.js",
+        "source": "function f(x) { return x + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 31}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 64}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.js",
+        "source": "function f(x) { return x + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 31}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 64}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "javascript-body",
+      "language": "javascript",
+      "profile": "es2020",
+      "base": {
+        "path": "src/example.js",
+        "source": "function f(x) { return x + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 31}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 64}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.js",
+        "source": "function f(x) { return x + 2; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 31}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 64}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "javascript-rename",
+      "language": "javascript",
+      "profile": "es2020",
+      "base": {
+        "path": "src/example.js",
+        "source": "function f(x) { return x + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 31}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 64}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.js",
+        "source": "function renamed(x) { return x + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "renamed", "span": {"start": 0, "end": 37}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 38, "end": 70}}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "javascript-relocation",
+      "language": "javascript",
+      "profile": "es2020",
+      "base": {
+        "path": "src/example.js",
+        "source": "function f(x) { return x + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 31}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 64}}],
+        "calls": []
+      },
+      "head": {
+        "path": "moved/example.js",
+        "source": "function f(x) { return x + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 31}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 64}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "different"}
+      ]
+    },
+    {
+      "id": "javascript-malformed",
+      "language": "javascript",
+      "profile": "es2020",
+      "base": {
+        "path": "src/example.js",
+        "source": "function f(x) { return x + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 31}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 64}}],
+        "calls": []
+      },
+      "head": {"path": "src/example.js", "source": "function f(x) { return x + 1; ", "parse": "rejected", "occurrences": [], "calls": []},
+      "correspondence": []
+    },
+    {
+      "id": "typescript-unchanged",
+      "language": "typescript",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.ts",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.ts",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "typescript-body",
+      "language": "typescript",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.ts",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.ts",
+        "source": "function f(x: number): number { return x + 2; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "typescript-rename",
+      "language": "typescript",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.ts",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.ts",
+        "source": "function renamed(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "renamed", "span": {"start": 0, "end": 53}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 54, "end": 94}}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "typescript-relocation",
+      "language": "typescript",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.ts",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "moved/example.ts",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "different"}
+      ]
+    },
+    {
+      "id": "typescript-malformed",
+      "language": "typescript",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.ts",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {"path": "src/example.ts", "source": "function f(x: number): number { return x + 1; ", "parse": "rejected", "occurrences": [], "calls": []},
+      "correspondence": []
+    },
+    {
+      "id": "tsx-unchanged",
+      "language": "tsx",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.tsx",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.tsx",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "tsx-body",
+      "language": "tsx",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.tsx",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.tsx",
+        "source": "function f(x: number): number { return x + 2; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "tsx-rename",
+      "language": "tsx",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.tsx",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.tsx",
+        "source": "function renamed(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "renamed", "span": {"start": 0, "end": 53}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 54, "end": 94}}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "tsx-relocation",
+      "language": "tsx",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.tsx",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "moved/example.tsx",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "different"}
+      ]
+    },
+    {
+      "id": "tsx-malformed",
+      "language": "tsx",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.tsx",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {"path": "src/example.tsx", "source": "function f(x: number): number { return x + 1; ", "parse": "rejected", "occurrences": [], "calls": []},
+      "correspondence": []
+    },
+    {
+      "id": "go-unchanged",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(x int) int { return x + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 76}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(x int) int { return x + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 76}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "go-body",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(x int) int { return x + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 76}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(x int) int { return x + 2 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 76}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "go-rename",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(x int) int { return x + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 76}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.go",
+        "source": "package p\nfunc renamed(x int) int { return x + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "renamed", "span": {"start": 10, "end": 50}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 51, "end": 82}}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "go-relocation",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(x int) int { return x + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 76}}],
+        "calls": []
+      },
+      "head": {
+        "path": "moved/example.go",
+        "source": "package p\nfunc f(x int) int { return x + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 76}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "different"}
+      ]
+    },
+    {
+      "id": "go-malformed",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(x int) int { return x + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 76}}],
+        "calls": []
+      },
+      "head": {"path": "src/example.go", "source": "package p\nfunc f(x int) int { return x + 1 ", "parse": "rejected", "occurrences": [], "calls": []},
+      "correspondence": []
+    },
+    {
+      "id": "java-unchanged",
+      "language": "java",
+      "profile": "14",
+      "base": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "java-body",
+      "language": "java",
+      "profile": "14",
+      "base": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int x) { return x + 2; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "java-rename",
+      "language": "java",
+      "profile": "14",
+      "base": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.java",
+        "source": "class T {\nint renamed(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "renamed", "span": {"start": 10, "end": 46}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 47, "end": 74}}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "java-relocation",
+      "language": "java",
+      "profile": "14",
+      "base": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "moved/example.java",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "different"}
+      ]
+    },
+    {
+      "id": "java-malformed",
+      "language": "java",
+      "profile": "14",
+      "base": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {"path": "src/example.java", "source": "class T {\nint f(int x) { return x + 1; ", "parse": "rejected", "occurrences": [], "calls": []},
+      "correspondence": []
+    },
+    {
+      "id": "csharp-unchanged",
+      "language": "csharp",
+      "profile": "8.0",
+      "base": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "csharp-body",
+      "language": "csharp",
+      "profile": "8.0",
+      "base": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int x) { return x + 2; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "csharp-rename",
+      "language": "csharp",
+      "profile": "8.0",
+      "base": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.cs",
+        "source": "class T {\nint renamed(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "renamed", "span": {"start": 10, "end": 46}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 47, "end": 74}}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "csharp-relocation",
+      "language": "csharp",
+      "profile": "8.0",
+      "base": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "moved/example.cs",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "different"}
+      ]
+    },
+    {
+      "id": "csharp-malformed",
+      "language": "csharp",
+      "profile": "8.0",
+      "base": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {"path": "src/example.cs", "source": "class T {\nint f(int x) { return x + 1; ", "parse": "rejected", "occurrences": [], "calls": []},
+      "correspondence": []
+    },
+    {
+      "id": "c-unchanged",
+      "language": "c",
+      "profile": "c99",
+      "base": {
+        "path": "src/example.c",
+        "source": "int f(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.c",
+        "source": "int f(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "c-body",
+      "language": "c",
+      "profile": "c99",
+      "base": {
+        "path": "src/example.c",
+        "source": "int f(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.c",
+        "source": "int f(int x) { return x + 2; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "c-rename",
+      "language": "c",
+      "profile": "c99",
+      "base": {
+        "path": "src/example.c",
+        "source": "int f(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.c",
+        "source": "int renamed(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "renamed", "span": {"start": 0, "end": 36}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 37, "end": 68}}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "c-relocation",
+      "language": "c",
+      "profile": "c99",
+      "base": {
+        "path": "src/example.c",
+        "source": "int f(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "head": {
+        "path": "moved/example.c",
+        "source": "int f(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "different"}
+      ]
+    },
+    {
+      "id": "c-malformed",
+      "language": "c",
+      "profile": "c99",
+      "base": {
+        "path": "src/example.c",
+        "source": "int f(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "head": {"path": "src/example.c", "source": "int f(int x) { return x + 1; ", "parse": "rejected", "occurrences": [], "calls": []},
+      "correspondence": []
+    },
+    {
+      "id": "python-duplicates",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "duplicates.py",
+        "source": "def same():\n    return 1\n\ndef same():\n    return 1\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "first", "name": "same", "span": {"start": 0, "end": 24}}, {"key": "second", "name": "same", "span": {"start": 26, "end": 50}}],
+        "calls": []
+      },
+      "head": {
+        "path": "duplicates.py",
+        "source": "def same():\n    return 2\n\ndef same():\n    return 1\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "first", "name": "same", "span": {"start": 0, "end": 24}}, {"key": "second", "name": "same", "span": {"start": 26, "end": 50}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "first", "head": "first", "structure": "different", "address": "same"},
+        {"base": "second", "head": "second", "structure": "same", "address": "same"},
+        {"base": "first", "head": "second", "structure": "same", "address": "different"}
+      ]
+    },
+    {
+      "id": "python-nested-unicode",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "unicode.py",
+        "source": "def outer():\n    label = \"café\"\n    def inner():\n        return helper()\n    return inner()\n\ndef helper():\n    return 1\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "outer", "name": "outer", "span": {"start": 0, "end": 92}},
+          {"key": "inner", "name": "inner", "span": {"start": 37, "end": 73}},
+          {"key": "helper", "name": "helper", "span": {"start": 94, "end": 120}}
+        ],
+        "calls": [
+          {"callee": "helper", "span": {"start": 65, "end": 73}, "owner": "inner"},
+          {"callee": "inner", "span": {"start": 85, "end": 92}, "owner": "outer"}
+        ]
+      },
+      "head": {
+        "path": "unicode.py",
+        "source": "def outer():\n    label = \"café\"\n    def inner():\n        return helper()\n    return inner()\n\ndef helper():\n    return 1\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "outer", "name": "outer", "span": {"start": 0, "end": 92}},
+          {"key": "inner", "name": "inner", "span": {"start": 37, "end": 73}},
+          {"key": "helper", "name": "helper", "span": {"start": 94, "end": 120}}
+        ],
+        "calls": [
+          {"callee": "helper", "span": {"start": 65, "end": 73}, "owner": "inner"},
+          {"callee": "inner", "span": {"start": 85, "end": 92}, "owner": "outer"}
+        ]
+      },
+      "correspondence": [
+        {"base": "outer", "head": "outer", "structure": "same", "address": "same"},
+        {"base": "inner", "head": "inner", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "python-import-binding",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "bindings.py",
+        "source": "from one import helper\n\ndef caller():\n    return helper()\n\ndef sibling():\n    return 9\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "caller", "name": "caller", "span": {"start": 24, "end": 57}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 59, "end": 86}}
+        ],
+        "calls": [{"callee": "helper", "span": {"start": 49, "end": 57}, "owner": "caller"}]
+      },
+      "head": {
+        "path": "bindings.py",
+        "source": "from two import helper\n\ndef caller():\n    return helper()\n\ndef sibling():\n    return 9\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "caller", "name": "caller", "span": {"start": 24, "end": 57}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 59, "end": 86}}
+        ],
+        "calls": [{"callee": "helper", "span": {"start": 49, "end": 57}, "owner": "caller"}]
+      },
+      "correspondence": [
+        {"base": "caller", "head": "caller", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "python-call-owner",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return sibling()\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 59}}],
+        "calls": [{"callee": "sibling", "span": {"start": 21, "end": 30}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return sibling()\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 59}}],
+        "calls": [{"callee": "sibling", "span": {"start": 21, "end": 30}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "rust-call-owner",
+      "language": "rust",
+      "profile": "2021",
+      "base": {
+        "path": "src/example.rs",
+        "source": "fn f(x: i32) -> i32 { sibling() }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 33}}, {"key": "sibling", "name": "sibling", "span": {"start": 34, "end": 59}}],
+        "calls": [{"callee": "sibling", "span": {"start": 22, "end": 31}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/example.rs",
+        "source": "fn f(x: i32) -> i32 { sibling() }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 33}}, {"key": "sibling", "name": "sibling", "span": {"start": 34, "end": 59}}],
+        "calls": [{"callee": "sibling", "span": {"start": 22, "end": 31}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "javascript-call-owner",
+      "language": "javascript",
+      "profile": "es2020",
+      "base": {
+        "path": "src/example.js",
+        "source": "function f(x) { return sibling(); }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 35}}, {"key": "sibling", "name": "sibling", "span": {"start": 36, "end": 68}}],
+        "calls": [{"callee": "sibling", "span": {"start": 23, "end": 32}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/example.js",
+        "source": "function f(x) { return sibling(); }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 35}}, {"key": "sibling", "name": "sibling", "span": {"start": 36, "end": 68}}],
+        "calls": [{"callee": "sibling", "span": {"start": 23, "end": 32}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "typescript-call-owner",
+      "language": "typescript",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.ts",
+        "source": "function f(x: number): number { return sibling(); }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 51}}, {"key": "sibling", "name": "sibling", "span": {"start": 52, "end": 92}}],
+        "calls": [{"callee": "sibling", "span": {"start": 39, "end": 48}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/example.ts",
+        "source": "function f(x: number): number { return sibling(); }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 51}}, {"key": "sibling", "name": "sibling", "span": {"start": 52, "end": 92}}],
+        "calls": [{"callee": "sibling", "span": {"start": 39, "end": 48}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "tsx-call-owner",
+      "language": "tsx",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.tsx",
+        "source": "function f(x: number): number { return sibling(); }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 51}}, {"key": "sibling", "name": "sibling", "span": {"start": 52, "end": 92}}],
+        "calls": [{"callee": "sibling", "span": {"start": 39, "end": 48}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/example.tsx",
+        "source": "function f(x: number): number { return sibling(); }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 51}}, {"key": "sibling", "name": "sibling", "span": {"start": 52, "end": 92}}],
+        "calls": [{"callee": "sibling", "span": {"start": 39, "end": 48}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "go-call-owner",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(x int) int { return sibling() }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 48}}, {"key": "sibling", "name": "sibling", "span": {"start": 49, "end": 80}}],
+        "calls": [{"callee": "sibling", "span": {"start": 37, "end": 46}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(x int) int { return sibling() }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 48}}, {"key": "sibling", "name": "sibling", "span": {"start": 49, "end": 80}}],
+        "calls": [{"callee": "sibling", "span": {"start": 37, "end": 46}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "java-call-owner",
+      "language": "java",
+      "profile": "14",
+      "base": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int x) { return sibling(); }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 72}}],
+        "calls": [{"callee": "sibling", "span": {"start": 32, "end": 41}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int x) { return sibling(); }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 72}}],
+        "calls": [{"callee": "sibling", "span": {"start": 32, "end": 41}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "csharp-call-owner",
+      "language": "csharp",
+      "profile": "8.0",
+      "base": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int x) { return sibling(); }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 72}}],
+        "calls": [{"callee": "sibling", "span": {"start": 32, "end": 41}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int x) { return sibling(); }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 72}}],
+        "calls": [{"callee": "sibling", "span": {"start": 32, "end": 41}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "c-call-owner",
+      "language": "c",
+      "profile": "c99",
+      "base": {
+        "path": "src/example.c",
+        "source": "int f(int x) { return sibling(); }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 34}}, {"key": "sibling", "name": "sibling", "span": {"start": 35, "end": 66}}],
+        "calls": [{"callee": "sibling", "span": {"start": 22, "end": 31}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/example.c",
+        "source": "int f(int x) { return sibling(); }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 34}}, {"key": "sibling", "name": "sibling", "span": {"start": 35, "end": 66}}],
+        "calls": [{"callee": "sibling", "span": {"start": 22, "end": 31}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "rust-declaration-literal-change",
+      "language": "rust",
+      "profile": "2021",
+      "base": {
+        "path": "a.rs",
+        "source": "const LIMIT: i32 = -1; fn get() -> i32 { LIMIT }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 23, "end": 48}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 0, "end": 22}, "callable": null}]
+      },
+      "head": {
+        "path": "a.rs",
+        "source": "const LIMIT: i32 = 8192; fn get() -> i32 { LIMIT }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 25, "end": 50}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 0, "end": 24}, "callable": null}]
+      },
+      "correspondence": [{"base": "get", "head": "get", "structure": "same", "address": "same"}],
+      "declaration_correspondence": [{"base": "limit", "head": "limit", "address": "same"}]
+    },
+    {
+      "id": "python-declaration-literal-change",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "a.py",
+        "source": "LIMIT = -1\ndef get():\n    return LIMIT\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 11, "end": 38}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 0, "end": 10}, "callable": null}]
+      },
+      "head": {
+        "path": "a.py",
+        "source": "LIMIT = 8192\ndef get():\n    return LIMIT\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 13, "end": 40}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 0, "end": 12}, "callable": null}]
+      },
+      "correspondence": [{"base": "get", "head": "get", "structure": "same", "address": "same"}],
+      "declaration_correspondence": [{"base": "limit", "head": "limit", "address": "same"}]
+    },
+    {
+      "id": "javascript-declaration-literal-change",
+      "language": "javascript",
+      "profile": "es2020",
+      "base": {
+        "path": "a.js",
+        "source": "const LIMIT = -1; function get() { return LIMIT; }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 18, "end": 50}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 6, "end": 16}, "callable": null}]
+      },
+      "head": {
+        "path": "a.js",
+        "source": "const LIMIT = 8192; function get() { return LIMIT; }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 20, "end": 52}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 6, "end": 18}, "callable": null}]
+      },
+      "correspondence": [{"base": "get", "head": "get", "structure": "same", "address": "same"}],
+      "declaration_correspondence": [{"base": "limit", "head": "limit", "address": "same"}]
+    },
+    {
+      "id": "typescript-declaration-literal-change",
+      "language": "typescript",
+      "profile": "4.0",
+      "base": {
+        "path": "a.ts",
+        "source": "const LIMIT: number = -1; function get() { return LIMIT; }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 26, "end": 58}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 6, "end": 24}, "callable": null}]
+      },
+      "head": {
+        "path": "a.ts",
+        "source": "const LIMIT: number = 8192; function get() { return LIMIT; }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 28, "end": 60}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 6, "end": 26}, "callable": null}]
+      },
+      "correspondence": [{"base": "get", "head": "get", "structure": "same", "address": "same"}],
+      "declaration_correspondence": [{"base": "limit", "head": "limit", "address": "same"}]
+    },
+    {
+      "id": "tsx-declaration-literal-change",
+      "language": "tsx",
+      "profile": "4.0",
+      "base": {
+        "path": "a.tsx",
+        "source": "const LIMIT: number = -1; function get() { return LIMIT; }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 26, "end": 58}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 6, "end": 24}, "callable": null}]
+      },
+      "head": {
+        "path": "a.tsx",
+        "source": "const LIMIT: number = 8192; function get() { return LIMIT; }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 28, "end": 60}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 6, "end": 26}, "callable": null}]
+      },
+      "correspondence": [{"base": "get", "head": "get", "structure": "same", "address": "same"}],
+      "declaration_correspondence": [{"base": "limit", "head": "limit", "address": "same"}]
+    },
+    {
+      "id": "go-declaration-literal-change",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "a.go",
+        "source": "package p\nconst LIMIT = -1\nfunc get() int { return LIMIT }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 27, "end": 58}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 16, "end": 26}, "callable": null}]
+      },
+      "head": {
+        "path": "a.go",
+        "source": "package p\nconst LIMIT = 8192\nfunc get() int { return LIMIT }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 29, "end": 60}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 16, "end": 28}, "callable": null}]
+      },
+      "correspondence": [{"base": "get", "head": "get", "structure": "same", "address": "same"}],
+      "declaration_correspondence": [{"base": "limit", "head": "limit", "address": "same"}]
+    },
+    {
+      "id": "java-declaration-literal-change",
+      "language": "java",
+      "profile": "14",
+      "base": {
+        "path": "A.java",
+        "source": "class Config { static final int LIMIT = -1; int get() { return LIMIT; } }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 44, "end": 71}}],
+        "calls": [],
+        "declarations": [
+          {"key": "config", "name": "Config", "span": {"start": 0, "end": 73}, "callable": null},
+          {"key": "limit", "name": "LIMIT", "span": {"start": 32, "end": 42}, "callable": null}
+        ]
+      },
+      "head": {
+        "path": "A.java",
+        "source": "class Config { static final int LIMIT = 8192; int get() { return LIMIT; } }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 46, "end": 73}}],
+        "calls": [],
+        "declarations": [
+          {"key": "config", "name": "Config", "span": {"start": 0, "end": 75}, "callable": null},
+          {"key": "limit", "name": "LIMIT", "span": {"start": 32, "end": 44}, "callable": null}
+        ]
+      },
+      "correspondence": [{"base": "get", "head": "get", "structure": "same", "address": "same"}],
+      "declaration_correspondence": [{"base": "config", "head": "config", "address": "same"}, {"base": "limit", "head": "limit", "address": "same"}]
+    },
+    {
+      "id": "csharp-declaration-literal-change",
+      "language": "csharp",
+      "profile": "8.0",
+      "base": {
+        "path": "A.cs",
+        "source": "class Config { const int LIMIT = -1; int get() { return LIMIT; } }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 37, "end": 64}}],
+        "calls": [],
+        "declarations": [
+          {"key": "config", "name": "Config", "span": {"start": 0, "end": 66}, "callable": null},
+          {"key": "limit", "name": "LIMIT", "span": {"start": 25, "end": 35}, "callable": null}
+        ]
+      },
+      "head": {
+        "path": "A.cs",
+        "source": "class Config { const int LIMIT = 8192; int get() { return LIMIT; } }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 39, "end": 66}}],
+        "calls": [],
+        "declarations": [
+          {"key": "config", "name": "Config", "span": {"start": 0, "end": 68}, "callable": null},
+          {"key": "limit", "name": "LIMIT", "span": {"start": 25, "end": 37}, "callable": null}
+        ]
+      },
+      "correspondence": [{"base": "get", "head": "get", "structure": "same", "address": "same"}],
+      "declaration_correspondence": [{"base": "config", "head": "config", "address": "same"}, {"base": "limit", "head": "limit", "address": "same"}]
+    },
+    {
+      "id": "c-declaration-literal-change",
+      "language": "c",
+      "profile": "c99",
+      "base": {
+        "path": "a.c",
+        "source": "const int LIMIT = -1; int get(void) { return LIMIT; }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 22, "end": 53}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 10, "end": 20}, "callable": null}]
+      },
+      "head": {
+        "path": "a.c",
+        "source": "const int LIMIT = 8192; int get(void) { return LIMIT; }",
+        "parse": "accepted",
+        "occurrences": [{"key": "get", "name": "get", "span": {"start": 24, "end": 55}}],
+        "calls": [],
+        "declarations": [{"key": "limit", "name": "LIMIT", "span": {"start": 10, "end": 22}, "callable": null}]
+      },
+      "correspondence": [{"base": "get", "head": "get", "structure": "same", "address": "same"}],
+      "declaration_correspondence": [{"base": "limit", "head": "limit", "address": "same"}]
+    },
+    {
+      "id": "python-assigned-unicode-crlf-relocation",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "unicode.py",
+        "source": "# λ\r\nhandler = lambda: 1\r\ndef sibling():\r\n    return 7\r\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "handler", "name": "handler", "span": {"start": 16, "end": 25}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 27, "end": 55}}
+        ],
+        "calls": [],
+        "declarations": [{"key": "binding", "name": "handler", "span": {"start": 6, "end": 13}, "callable": "handler"}]
+      },
+      "head": {
+        "path": "unicode.py",
+        "source": "\r\n\r\n# λ\r\nhandler = lambda: 1\r\ndef sibling():\r\n    return 7\r\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "handler", "name": "handler", "span": {"start": 20, "end": 29}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 59}}
+        ],
+        "calls": [],
+        "declarations": [{"key": "binding", "name": "handler", "span": {"start": 10, "end": 17}, "callable": "handler"}]
+      },
+      "correspondence": [
+        {"base": "handler", "head": "handler", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "declaration_correspondence": [{"base": "binding", "head": "binding", "address": "same"}]
+    },
+    {
+      "id": "python-assigned-unicode-crlf-body-change",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "unicode.py",
+        "source": "# λ\r\nhandler = lambda: 1\r\ndef sibling():\r\n    return 7\r\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "handler", "name": "handler", "span": {"start": 16, "end": 25}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 27, "end": 55}}
+        ],
+        "calls": [],
+        "declarations": [{"key": "binding", "name": "handler", "span": {"start": 6, "end": 13}, "callable": "handler"}]
+      },
+      "head": {
+        "path": "unicode.py",
+        "source": "# λ\r\nhandler = lambda: 2\r\ndef sibling():\r\n    return 7\r\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "handler", "name": "handler", "span": {"start": 16, "end": 25}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 27, "end": 55}}
+        ],
+        "calls": [],
+        "declarations": [{"key": "binding", "name": "handler", "span": {"start": 6, "end": 13}, "callable": "handler"}]
+      },
+      "correspondence": [
+        {"base": "handler", "head": "handler", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "declaration_correspondence": [{"base": "binding", "head": "binding", "address": "same"}]
+    },
+    {
+      "id": "python-assigned-duplicate-body-change",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "duplicates.py",
+        "source": "handler = lambda: 1\nhandler = lambda: 2\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "first", "name": "handler", "span": {"start": 10, "end": 19}},
+          {"key": "second", "name": "handler", "span": {"start": 30, "end": 39}}
+        ],
+        "calls": [],
+        "declarations": [
+          {"key": "first", "name": "handler", "span": {"start": 0, "end": 7}, "callable": "first"},
+          {"key": "second", "name": "handler", "span": {"start": 20, "end": 27}, "callable": "second"}
+        ]
+      },
+      "head": {
+        "path": "duplicates.py",
+        "source": "handler = lambda: 1\nhandler = lambda: 9\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "first", "name": "handler", "span": {"start": 10, "end": 19}},
+          {"key": "second", "name": "handler", "span": {"start": 30, "end": 39}}
+        ],
+        "calls": [],
+        "declarations": [
+          {"key": "first", "name": "handler", "span": {"start": 0, "end": 7}, "callable": "first"},
+          {"key": "second", "name": "handler", "span": {"start": 20, "end": 27}, "callable": "second"}
+        ]
+      },
+      "correspondence": [
+        {"base": "first", "head": "first", "structure": "same", "address": "same"},
+        {"base": "second", "head": "second", "structure": "different", "address": "same"}
+      ],
+      "declaration_correspondence": [{"base": "first", "head": "first", "address": "same"}, {"base": "second", "head": "second", "address": "same"}]
+    },
+    {
+      "id": "javascript-contextual-names",
+      "language": "javascript",
+      "profile": "es2020",
+      "base": {
+        "path": "contextual.js",
+        "source": "function get() { return 1; }\nfunction set() { return 2; }\nfunction async() { return 3; }\nclass Access {\n  get value() { return 4; }\n  set value(v) {}\n  static static() { return 5; }\n  async() { return 6; }\n  async work() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "get", "name": "get", "span": {"start": 0, "end": 28}, "scope": []},
+          {"key": "set", "name": "set", "span": {"start": 29, "end": 57}, "scope": []},
+          {"key": "async", "name": "async", "span": {"start": 58, "end": 88}, "scope": []},
+          {"key": "getter", "name": "value", "span": {"start": 106, "end": 131}, "scope": ["Access"]},
+          {"key": "setter", "name": "value", "span": {"start": 134, "end": 149}, "scope": ["Access"]},
+          {"key": "static", "name": "static", "span": {"start": 152, "end": 181}, "scope": ["Access"]},
+          {"key": "async-method", "name": "async", "span": {"start": 184, "end": 205}, "scope": ["Access"]},
+          {"key": "async-modifier", "name": "work", "span": {"start": 208, "end": 234}, "scope": ["Access"]}
+        ],
+        "calls": [],
+        "declarations": [{"key": "class", "name": "Access", "span": {"start": 89, "end": 236}, "callable": null}]
+      },
+      "head": {
+        "path": "contextual.js",
+        "source": "function get() { return 9; }\nfunction set() { return 2; }\nfunction async() { return 3; }\nclass Access {\n  get value() { return 4; }\n  set value(v) {}\n  static static() { return 5; }\n  async() { return 6; }\n  async work() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "get", "name": "get", "span": {"start": 0, "end": 28}, "scope": []},
+          {"key": "set", "name": "set", "span": {"start": 29, "end": 57}, "scope": []},
+          {"key": "async", "name": "async", "span": {"start": 58, "end": 88}, "scope": []},
+          {"key": "getter", "name": "value", "span": {"start": 106, "end": 131}, "scope": ["Access"]},
+          {"key": "setter", "name": "value", "span": {"start": 134, "end": 149}, "scope": ["Access"]},
+          {"key": "static", "name": "static", "span": {"start": 152, "end": 181}, "scope": ["Access"]},
+          {"key": "async-method", "name": "async", "span": {"start": 184, "end": 205}, "scope": ["Access"]},
+          {"key": "async-modifier", "name": "work", "span": {"start": 208, "end": 234}, "scope": ["Access"]}
+        ],
+        "calls": [],
+        "declarations": [{"key": "class", "name": "Access", "span": {"start": 89, "end": 236}, "callable": null}]
+      },
+      "correspondence": [
+        {"base": "get", "head": "get", "structure": "different", "address": "same"},
+        {"base": "set", "head": "set", "structure": "same", "address": "same"},
+        {"base": "async", "head": "async", "structure": "same", "address": "same"},
+        {"base": "getter", "head": "getter", "structure": "same", "address": "same"},
+        {"base": "setter", "head": "setter", "structure": "same", "address": "same"},
+        {"base": "static", "head": "static", "structure": "same", "address": "same"},
+        {"base": "async-method", "head": "async-method", "structure": "same", "address": "same"},
+        {"base": "async-modifier", "head": "async-modifier", "structure": "same", "address": "same"}
+      ],
+      "declaration_correspondence": [{"base": "class", "head": "class", "address": "same"}]
+    },
+    {
+      "id": "typescript-contextual-names",
+      "language": "typescript",
+      "profile": "4.0",
+      "base": {
+        "path": "contextual.ts",
+        "source": "function get() { return 1; }\nfunction set() { return 2; }\nfunction async() { return 3; }\nclass Access {\n  get value() { return 4; }\n  set value(v) {}\n  static static() { return 5; }\n  async() { return 6; }\n  async work() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "get", "name": "get", "span": {"start": 0, "end": 28}, "scope": []},
+          {"key": "set", "name": "set", "span": {"start": 29, "end": 57}, "scope": []},
+          {"key": "async", "name": "async", "span": {"start": 58, "end": 88}, "scope": []},
+          {"key": "getter", "name": "value", "span": {"start": 106, "end": 131}, "scope": ["Access"]},
+          {"key": "setter", "name": "value", "span": {"start": 134, "end": 149}, "scope": ["Access"]},
+          {"key": "static", "name": "static", "span": {"start": 152, "end": 181}, "scope": ["Access"]},
+          {"key": "async-method", "name": "async", "span": {"start": 184, "end": 205}, "scope": ["Access"]},
+          {"key": "async-modifier", "name": "work", "span": {"start": 208, "end": 234}, "scope": ["Access"]}
+        ],
+        "calls": [],
+        "declarations": [{"key": "class", "name": "Access", "span": {"start": 89, "end": 236}, "callable": null}]
+      },
+      "head": {
+        "path": "contextual.ts",
+        "source": "function get() { return 9; }\nfunction set() { return 2; }\nfunction async() { return 3; }\nclass Access {\n  get value() { return 4; }\n  set value(v) {}\n  static static() { return 5; }\n  async() { return 6; }\n  async work() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "get", "name": "get", "span": {"start": 0, "end": 28}, "scope": []},
+          {"key": "set", "name": "set", "span": {"start": 29, "end": 57}, "scope": []},
+          {"key": "async", "name": "async", "span": {"start": 58, "end": 88}, "scope": []},
+          {"key": "getter", "name": "value", "span": {"start": 106, "end": 131}, "scope": ["Access"]},
+          {"key": "setter", "name": "value", "span": {"start": 134, "end": 149}, "scope": ["Access"]},
+          {"key": "static", "name": "static", "span": {"start": 152, "end": 181}, "scope": ["Access"]},
+          {"key": "async-method", "name": "async", "span": {"start": 184, "end": 205}, "scope": ["Access"]},
+          {"key": "async-modifier", "name": "work", "span": {"start": 208, "end": 234}, "scope": ["Access"]}
+        ],
+        "calls": [],
+        "declarations": [{"key": "class", "name": "Access", "span": {"start": 89, "end": 236}, "callable": null}]
+      },
+      "correspondence": [
+        {"base": "get", "head": "get", "structure": "different", "address": "same"},
+        {"base": "set", "head": "set", "structure": "same", "address": "same"},
+        {"base": "async", "head": "async", "structure": "same", "address": "same"},
+        {"base": "getter", "head": "getter", "structure": "same", "address": "same"},
+        {"base": "setter", "head": "setter", "structure": "same", "address": "same"},
+        {"base": "static", "head": "static", "structure": "same", "address": "same"},
+        {"base": "async-method", "head": "async-method", "structure": "same", "address": "same"},
+        {"base": "async-modifier", "head": "async-modifier", "structure": "same", "address": "same"}
+      ],
+      "declaration_correspondence": [{"base": "class", "head": "class", "address": "same"}]
+    },
+    {
+      "id": "tsx-contextual-names",
+      "language": "tsx",
+      "profile": "4.0",
+      "base": {
+        "path": "contextual.tsx",
+        "source": "function get() { return 1; }\nfunction set() { return 2; }\nfunction async() { return 3; }\nclass Access {\n  get value() { return 4; }\n  set value(v) {}\n  static static() { return 5; }\n  async() { return 6; }\n  async work() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "get", "name": "get", "span": {"start": 0, "end": 28}, "scope": []},
+          {"key": "set", "name": "set", "span": {"start": 29, "end": 57}, "scope": []},
+          {"key": "async", "name": "async", "span": {"start": 58, "end": 88}, "scope": []},
+          {"key": "getter", "name": "value", "span": {"start": 106, "end": 131}, "scope": ["Access"]},
+          {"key": "setter", "name": "value", "span": {"start": 134, "end": 149}, "scope": ["Access"]},
+          {"key": "static", "name": "static", "span": {"start": 152, "end": 181}, "scope": ["Access"]},
+          {"key": "async-method", "name": "async", "span": {"start": 184, "end": 205}, "scope": ["Access"]},
+          {"key": "async-modifier", "name": "work", "span": {"start": 208, "end": 234}, "scope": ["Access"]}
+        ],
+        "calls": [],
+        "declarations": [{"key": "class", "name": "Access", "span": {"start": 89, "end": 236}, "callable": null}]
+      },
+      "head": {
+        "path": "contextual.tsx",
+        "source": "function get() { return 9; }\nfunction set() { return 2; }\nfunction async() { return 3; }\nclass Access {\n  get value() { return 4; }\n  set value(v) {}\n  static static() { return 5; }\n  async() { return 6; }\n  async work() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "get", "name": "get", "span": {"start": 0, "end": 28}, "scope": []},
+          {"key": "set", "name": "set", "span": {"start": 29, "end": 57}, "scope": []},
+          {"key": "async", "name": "async", "span": {"start": 58, "end": 88}, "scope": []},
+          {"key": "getter", "name": "value", "span": {"start": 106, "end": 131}, "scope": ["Access"]},
+          {"key": "setter", "name": "value", "span": {"start": 134, "end": 149}, "scope": ["Access"]},
+          {"key": "static", "name": "static", "span": {"start": 152, "end": 181}, "scope": ["Access"]},
+          {"key": "async-method", "name": "async", "span": {"start": 184, "end": 205}, "scope": ["Access"]},
+          {"key": "async-modifier", "name": "work", "span": {"start": 208, "end": 234}, "scope": ["Access"]}
+        ],
+        "calls": [],
+        "declarations": [{"key": "class", "name": "Access", "span": {"start": 89, "end": 236}, "callable": null}]
+      },
+      "correspondence": [
+        {"base": "get", "head": "get", "structure": "different", "address": "same"},
+        {"base": "set", "head": "set", "structure": "same", "address": "same"},
+        {"base": "async", "head": "async", "structure": "same", "address": "same"},
+        {"base": "getter", "head": "getter", "structure": "same", "address": "same"},
+        {"base": "setter", "head": "setter", "structure": "same", "address": "same"},
+        {"base": "static", "head": "static", "structure": "same", "address": "same"},
+        {"base": "async-method", "head": "async-method", "structure": "same", "address": "same"},
+        {"base": "async-modifier", "head": "async-modifier", "structure": "same", "address": "same"}
+      ],
+      "declaration_correspondence": [{"base": "class", "head": "class", "address": "same"}]
+    },
+    {
+      "id": "javascript-grammar-boundary",
+      "language": "javascript",
+      "profile": "ES2020",
+      "base": {
+        "path": "src/grammar-boundary.js",
+        "source": "function identity(value) { return value; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "identity", "span": {"start": 0, "end": 42}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 43, "end": 75}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/grammar-boundary.js",
+        "source": "function identity(value: number): number { return value; }\nfunction sibling() { return 7; }\n",
+        "parse": "rejected",
+        "occurrences": [],
+        "calls": []
+      },
+      "correspondence": []
+    },
+    {
+      "id": "typescript-grammar-boundary",
+      "language": "typescript",
+      "profile": "6.0.3/ES2020/non-strict",
+      "base": {
+        "path": "src/grammar-boundary.ts",
+        "source": "function identity(value) { return value; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "identity", "span": {"start": 0, "end": 42}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 43, "end": 75}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/grammar-boundary.ts",
+        "source": "function identity(value: number): number { return value; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "identity", "span": {"start": 0, "end": 58}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 59, "end": 91}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "tsx-grammar-boundary",
+      "language": "tsx",
+      "profile": "6.0.3/ES2020/non-strict",
+      "base": {
+        "path": "src/grammar-boundary.tsx",
+        "source": "function identity(value) { return value; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "identity", "span": {"start": 0, "end": 42}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 43, "end": 75}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/grammar-boundary.tsx",
+        "source": "function identity(value: number): number { return value; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "identity", "span": {"start": 0, "end": 58}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 59, "end": 91}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "python315-lazy-import-mode",
+      "language": "python",
+      "profile": "3.15",
+      "base": {
+        "path": "src/lazy.py",
+        "source": "lazy import fractions as ratios\ndef focus(lazy):\n    return lazy\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 32, "end": 64}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 65, "end": 92}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/lazy.py",
+        "source": "import fractions as ratios\ndef focus(lazy):\n    return lazy\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 27, "end": 59}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 60, "end": 87}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python315-lazy-identifier",
+      "language": "python",
+      "profile": "3.15",
+      "base": {
+        "path": "src/lazy_name.py",
+        "source": "def focus(lazy):\n    return lazy + 7\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 36}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 37, "end": 64}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/lazy_name.py",
+        "source": "def focus(lazy):\n    return lazy + 8\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 36}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 37, "end": 64}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python315-unpack-list",
+      "language": "python",
+      "profile": "3.15",
+      "base": {
+        "path": "src/unpack.py",
+        "source": "def focus(chunks):\n    return [*chunk for chunk in chunks]\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 58}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 59, "end": 86}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/unpack.py",
+        "source": "def focus(groups):\n    return [*chunk for chunk in groups]\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 58}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 59, "end": 86}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python315-unpack-set",
+      "language": "python",
+      "profile": "3.15",
+      "base": {
+        "path": "src/unpack.py",
+        "source": "def focus(chunks):\n    return {*chunk for chunk in chunks}\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 58}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 59, "end": 86}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/unpack.py",
+        "source": "def focus(groups):\n    return {*chunk for chunk in groups}\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 58}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 59, "end": 86}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python315-unpack-dictionary",
+      "language": "python",
+      "profile": "3.15",
+      "base": {
+        "path": "src/unpack.py",
+        "source": "def focus(chunks):\n    return {**chunk for chunk in chunks}\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 59}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 60, "end": 87}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/unpack.py",
+        "source": "def focus(groups):\n    return {**chunk for chunk in groups}\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 59}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 60, "end": 87}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python315-unpack-generator",
+      "language": "python",
+      "profile": "3.15",
+      "base": {
+        "path": "src/unpack.py",
+        "source": "def focus(chunks):\n    return (*chunk for chunk in chunks)\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 58}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 59, "end": 86}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/unpack.py",
+        "source": "def focus(groups):\n    return (*chunk for chunk in groups)\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 58}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 59, "end": 86}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python315-unpack-nested",
+      "language": "python",
+      "profile": "3.15",
+      "base": {
+        "path": "src/unpack.py",
+        "source": "def focus(chunks):\n    return [*[*chunk for chunk in group] for group in chunks]\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 80}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 81, "end": 108}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/unpack.py",
+        "source": "def focus(groups):\n    return [*[*chunk for chunk in group] for group in groups]\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 80}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 81, "end": 108}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python315-async-unpack",
+      "language": "python",
+      "profile": "3.15",
+      "base": {
+        "path": "src/unpack_async.py",
+        "source": "async def focus(chunks):\n    return [*chunk async for chunk in chunks]\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 70}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 71, "end": 98}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/unpack_async.py",
+        "source": "async def focus(chunks):\n    return {*chunk async for chunk in chunks}\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 70}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 71, "end": 98}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python315-positive-pattern",
+      "language": "python",
+      "profile": "3.15",
+      "base": {
+        "path": "src/pattern.py",
+        "source": "# π\ndef focus(value):\n    match value:\n        case {+1: item}:\n            return item\n        case _:\n            return None\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 5, "end": 128}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 129, "end": 156}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/pattern.py",
+        "source": "# π\ndef focus(value):\n    match value:\n        case {-1: item}:\n            return item\n        case _:\n            return None\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 5, "end": 128}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 129, "end": 156}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "go127-generic-method-body",
+      "language": "go",
+      "profile": "1.27",
+      "base": {
+        "path": "src/generic.go",
+        "source": "package example\ntype Box struct{}\nfunc (Box) focus[T ~int](value T) T { return value + 7 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 34, "end": 90}, "scope": ["Box"]},
+          {"key": "sibling", "name": "sibling", "span": {"start": 91, "end": 122}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/generic.go",
+        "source": "package example\ntype Box struct{}\nfunc (Box) focus[T ~int](value T) T { return value + 8 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 34, "end": 90}, "scope": ["Box"]},
+          {"key": "sibling", "name": "sibling", "span": {"start": 91, "end": 122}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "go127-generic-method-constraint",
+      "language": "go",
+      "profile": "1.27",
+      "base": {
+        "path": "src/constraint.go",
+        "source": "package example\ntype Box struct{}\nfunc (Box) focus[T ~int](value T) T { return value }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 34, "end": 86}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 87, "end": 118}}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/constraint.go",
+        "source": "package example\ntype Box struct{}\nfunc (Box) focus[T ~int64](value T) T { return value }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 34, "end": 88}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 89, "end": 120}}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "go126-new-expression",
+      "language": "go",
+      "profile": "1.26",
+      "base": {
+        "path": "src/new.go",
+        "source": "package example\nfunc focus() *int { return new(42) }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 16, "end": 52}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 53, "end": 84}, "scope": []}
+        ],
+        "calls": [{"callee": "new", "span": {"start": 43, "end": 50}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/new.go",
+        "source": "package example\nfunc focus() *int { return new(43) }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 16, "end": 52}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 53, "end": 84}, "scope": []}
+        ],
+        "calls": [{"callee": "new", "span": {"start": 43, "end": 50}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "go114-new-shadow-index",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/shadow.go",
+        "source": "package example\nfunc focus(new []int) int { return new[0] }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 16, "end": 59}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 60, "end": 91}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/shadow.go",
+        "source": "package example\nfunc focus(new []int) int { return new[1] }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 16, "end": 59}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 60, "end": 91}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "java27-compact-source",
+      "language": "java",
+      "profile": "27",
+      "base": {
+        "path": "src/Compact.java",
+        "source": "int focus() { return 7; }\nint sibling() { return 7; }\nvoid main() {}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 25}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 26, "end": 53}, "scope": []},
+          {"key": "main", "name": "main", "span": {"start": 54, "end": 68}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/Compact.java",
+        "source": "int focus() { return 8; }\nint sibling() { return 7; }\nvoid main() {}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 25}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 26, "end": 53}, "scope": []},
+          {"key": "main", "name": "main", "span": {"start": 54, "end": 68}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"},
+        {"base": "main", "head": "main", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "java27-module-import",
+      "language": "java",
+      "profile": "27",
+      "base": {
+        "path": "src/Imports.java",
+        "source": "import module java.base;\nint focus() { return 7; }\nint sibling() { return 7; }\nvoid main() {}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 25, "end": 50}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 51, "end": 78}, "scope": []},
+          {"key": "main", "name": "main", "span": {"start": 79, "end": 93}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/Imports.java",
+        "source": "import module java.base;\nint focus() { return 8; }\nint sibling() { return 7; }\nvoid main() {}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 25, "end": 50}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 51, "end": 78}, "scope": []},
+          {"key": "main", "name": "main", "span": {"start": 79, "end": 93}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"},
+        {"base": "main", "head": "main", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "java8-orchard-varargs",
+      "language": "java",
+      "profile": "8",
+      "base": {
+        "path": "src/Varargs.java",
+        "source": "class Varargs {\npublic static int focus(final int... values) { return values.length; }\nstatic int sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 16, "end": 86}, "scope": ["Varargs"]},
+          {"key": "sibling", "name": "sibling", "span": {"start": 87, "end": 121}, "scope": ["Varargs"]}
+        ],
+        "calls": [],
+        "bindings": [{"name": "values", "kind": "Parameter", "start": 53}]
+      },
+      "head": {
+        "path": "src/Varargs.java",
+        "source": "class Varargs {\npublic static int focus(final long... values) { return values.length; }\nstatic int sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 16, "end": 87}, "scope": ["Varargs"]},
+          {"key": "sibling", "name": "sibling", "span": {"start": 88, "end": 122}, "scope": ["Varargs"]}
+        ],
+        "calls": [],
+        "bindings": [{"name": "values", "kind": "Parameter", "start": 54}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "rust199-c-variadic",
+      "language": "rust",
+      "profile": "1.99 edition 2024",
+      "base": {
+        "path": "src/variadic.rs",
+        "source": "unsafe extern \"C\" fn focus(_: ...) -> i32 { 7 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 47}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 73}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/variadic.rs",
+        "source": "unsafe extern \"C\" fn focus(_: ...) -> i32 { 8 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 47}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 73}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "rust2024-let-chain",
+      "language": "rust",
+      "profile": "1.99 edition 2024",
+      "base": {
+        "path": "src/chain.rs",
+        "source": "fn focus(value: Option<i32>) -> i32 { if let Some(x) = value && x > 7 { x } else { 0 } }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 88}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 89, "end": 114}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/chain.rs",
+        "source": "fn focus(value: Option<i32>) -> i32 { if let Some(x) = value && x > 8 { x } else { 0 } }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 88}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 89, "end": 114}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "csharp14-file-directive",
+      "language": "csharp",
+      "profile": "14 file-based",
+      "base": {
+        "path": "src/File.cs",
+        "source": "#:property LangVersion=14\nint focus() { return 7; }\nint sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 26, "end": 51}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 52, "end": 79}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/File.cs",
+        "source": "#:property LangVersion=13\nint focus() { return 7; }\nint sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 26, "end": 51}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 52, "end": 79}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "csharp14-extension-body",
+      "language": "csharp",
+      "profile": "14",
+      "base": {
+        "path": "src/Extension.cs",
+        "source": "static class Extensions { extension(string text) {\npublic int focus() => text.Length + 7;\npublic int sibling() => 7;\n} }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 51, "end": 89}, "scope": ["Extensions"]},
+          {"key": "sibling", "name": "sibling", "span": {"start": 90, "end": 116}, "scope": ["Extensions"]}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/Extension.cs",
+        "source": "static class Extensions { extension(string text) {\npublic int focus() => text.Length + 8;\npublic int sibling() => 7;\n} }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 51, "end": 89}, "scope": ["Extensions"]},
+          {"key": "sibling", "name": "sibling", "span": {"start": 90, "end": 116}, "scope": ["Extensions"]}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "javascript-using-line-break",
+      "language": "javascript",
+      "profile": "ES2026 / TypeScript 7 syntax",
+      "base": {
+        "path": "src/asi.js",
+        "source": "function focus(){const using=1;let resource=7;using\nresource=null;return resource;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 83}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 84, "end": 113}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/asi.js",
+        "source": "function focus(){const using=1;let resource=8;using\nresource=null;return resource;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 83}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 84, "end": 113}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "typescript-using-line-break",
+      "language": "typescript",
+      "profile": "ES2026 / TypeScript 7 syntax",
+      "base": {
+        "path": "src/asi.ts",
+        "source": "function focus(){const using=1;let resource:number|null=7;using\nresource=null;return resource;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 95}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 96, "end": 125}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/asi.ts",
+        "source": "function focus(){const using=1;let resource:number|null=8;using\nresource=null;return resource;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 95}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 96, "end": 125}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "tsx-using-line-break",
+      "language": "tsx",
+      "profile": "ES2026 / TypeScript 7 syntax",
+      "base": {
+        "path": "src/asi.tsx",
+        "source": "function focus(){const using=1;let resource:number|null=7;using\nresource=null;return resource;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 95}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 96, "end": 125}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/asi.tsx",
+        "source": "function focus(){const using=1;let resource:number|null=8;using\nresource=null;return resource;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 95}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 96, "end": 125}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "javascript-return-cr",
+      "language": "javascript",
+      "profile": "ES2026",
+      "base": {
+        "path": "src/return.js",
+        "source": "function focus(){return\r7;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 27}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 57}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/return.js",
+        "source": "function focus(){return 7;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 27}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 57}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "typescript-variance",
+      "language": "typescript",
+      "profile": "TypeScript 7 syntax",
+      "base": {
+        "path": "src/variance.ts",
+        "source": "type Box<out T> = {value:T};\nfunction focus(value:Box<number>){return value.value+7;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 29, "end": 85}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 86, "end": 115}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/variance.ts",
+        "source": "type Box<out T> = {value:T};\nfunction focus(value:Box<number>){return value.value+8;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 29, "end": 85}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 86, "end": 115}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "tsx-variance",
+      "language": "tsx",
+      "profile": "TypeScript 7 syntax",
+      "base": {
+        "path": "src/variance.tsx",
+        "source": "type Box<out T> = {value:T};\nfunction focus(value:Box<number>){return value.value+7;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 29, "end": 85}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 86, "end": 115}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/variance.tsx",
+        "source": "type Box<out T> = {value:T};\nfunction focus(value:Box<number>){return value.value+8;}\nfunction sibling(){return 7;}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 29, "end": 85}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 86, "end": 115}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "c23-atomic-type",
+      "language": "c",
+      "profile": "C23",
+      "base": {
+        "path": "src/atomic.c",
+        "source": "int focus(void) { _Atomic(int) value = 7; return value; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 57}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 58, "end": 89}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/atomic.c",
+        "source": "int focus(void) { _Atomic(int) value = 8; return value; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 57}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 58, "end": 89}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "c23-trailing-label",
+      "language": "c",
+      "profile": "C23",
+      "base": {
+        "path": "src/label.c",
+        "source": "int focus(void) { return 7; done: }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 35}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 36, "end": 67}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/label.c",
+        "source": "int focus(void) { return 8; done: }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 35}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 36, "end": 67}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "c99-contextual-alignof",
+      "language": "c",
+      "profile": "C99",
+      "base": {
+        "path": "src/old.c",
+        "source": "int focus(int alignof) { return alignof + 7; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 46}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 47, "end": 78}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/old.c",
+        "source": "int focus(int alignof) { return alignof + 8; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 46}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 47, "end": 78}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "cpp23-if-consteval",
+      "language": "cpp",
+      "profile": "C++23 experimental",
+      "base": {
+        "path": "src/consteval.cpp",
+        "source": "constexpr int focus() { if consteval { return 7; } else { return 1; } }\nint sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 71}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 72, "end": 99}, "scope": []}
+        ],
+        "calls": []
+      },
+      "head": {
+        "path": "src/consteval.cpp",
+        "source": "constexpr int focus() { if consteval { return 8; } else { return 1; } }\nint sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 0, "end": 71}, "scope": []},
+          {"key": "sibling", "name": "sibling", "span": {"start": 72, "end": 99}, "scope": []}
+        ],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "java8-orchard-annotated-varargs",
+      "language": "java",
+      "profile": "8",
+      "base": {
+        "path": "src/Varargs.java",
+        "source": "class Varargs {\npublic static int focus(@Deprecated final int... values) { return values.length; }\nstatic int sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 16, "end": 98}, "scope": ["Varargs"]},
+          {"key": "sibling", "name": "sibling", "span": {"start": 99, "end": 133}, "scope": ["Varargs"]}
+        ],
+        "calls": [],
+        "bindings": [{"name": "values", "kind": "Parameter", "start": 65}]
+      },
+      "head": {
+        "path": "src/Varargs.java",
+        "source": "class Varargs {\npublic static int focus(@Deprecated final long... values) { return values.length; }\nstatic int sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "focus", "name": "focus", "span": {"start": 16, "end": 99}, "scope": ["Varargs"]},
+          {"key": "sibling", "name": "sibling", "span": {"start": 100, "end": 134}, "scope": ["Varargs"]}
+        ],
+        "calls": [],
+        "bindings": [{"name": "values", "kind": "Parameter", "start": 66}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "go114-callee-chained",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: source coordinates are UTF-8 bytes.\nfunc leaf() int { return 7 }\nfunc factory() func() int { return leaf }\nfunc caller() int { return factory()() }\nfunc sibling() int { return 9 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 53, "end": 81}},
+          {"key": "factory", "name": "factory", "span": {"start": 82, "end": 123}},
+          {"key": "caller", "name": "caller", "span": {"start": 124, "end": 164}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 165, "end": 196}}
+        ],
+        "calls": [
+          {"callee": "factory()", "span": {"start": 151, "end": 162}, "owner": "caller"},
+          {"callee": "factory", "span": {"start": 151, "end": 160}, "owner": "caller"}
+        ]
+      },
+      "head": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: source coordinates are UTF-8 bytes.\nfunc leaf() int { return 7 }\nfunc factory() func() int { return leaf }\nfunc caller() int { return (factory())() }\nfunc sibling() int { return 9 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 53, "end": 81}},
+          {"key": "factory", "name": "factory", "span": {"start": 82, "end": 123}},
+          {"key": "caller", "name": "caller", "span": {"start": 124, "end": 166}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 167, "end": 198}}
+        ],
+        "calls": [
+          {"callee": "(factory())", "span": {"start": 151, "end": 164}, "owner": "caller"},
+          {"callee": "factory", "span": {"start": 152, "end": 161}, "owner": "caller"}
+        ]
+      },
+      "correspondence": [
+        {"base": "leaf", "head": "leaf", "structure": "same", "address": "same"},
+        {"base": "factory", "head": "factory", "structure": "same", "address": "same"},
+        {"base": "caller", "head": "caller", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "go114-callee-indexed",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: source coordinates are UTF-8 bytes.\nfunc leaf() int { return 7 }\nfunc factory() []func() int { return []func() int{leaf, leaf} }\nfunc caller() int { return factory()[0]() }\nfunc sibling() int { return 9 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 53, "end": 81}},
+          {"key": "factory", "name": "factory", "span": {"start": 82, "end": 145}},
+          {"key": "caller", "name": "caller", "span": {"start": 146, "end": 189}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 190, "end": 221}}
+        ],
+        "calls": [
+          {"callee": "factory()[0]", "span": {"start": 173, "end": 187}, "owner": "caller"},
+          {"callee": "factory", "span": {"start": 173, "end": 182}, "owner": "caller"}
+        ]
+      },
+      "head": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: source coordinates are UTF-8 bytes.\nfunc leaf() int { return 7 }\nfunc factory() []func() int { return []func() int{leaf, leaf} }\nfunc caller() int { return factory()[1]() }\nfunc sibling() int { return 9 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 53, "end": 81}},
+          {"key": "factory", "name": "factory", "span": {"start": 82, "end": 145}},
+          {"key": "caller", "name": "caller", "span": {"start": 146, "end": 189}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 190, "end": 221}}
+        ],
+        "calls": [
+          {"callee": "factory()[1]", "span": {"start": 173, "end": 187}, "owner": "caller"},
+          {"callee": "factory", "span": {"start": 173, "end": 182}, "owner": "caller"}
+        ]
+      },
+      "correspondence": [
+        {"base": "leaf", "head": "leaf", "structure": "same", "address": "same"},
+        {"base": "factory", "head": "factory", "structure": "same", "address": "same"},
+        {"base": "caller", "head": "caller", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "go114-callee-selector",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: source coordinates are UTF-8 bytes.\ntype Box struct{}\nfunc (Box) Value() int { return 7 }\nfunc factory() Box { return Box{} }\nfunc caller() int { return (factory()).Value() }\nfunc sibling() int { return 9 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "Value", "span": {"start": 71, "end": 106}},
+          {"key": "factory", "name": "factory", "span": {"start": 107, "end": 142}},
+          {"key": "caller", "name": "caller", "span": {"start": 143, "end": 191}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 192, "end": 223}}
+        ],
+        "calls": [
+          {"callee": "(factory()).Value", "span": {"start": 170, "end": 189}, "owner": "caller"},
+          {"callee": "factory", "span": {"start": 171, "end": 180}, "owner": "caller"}
+        ]
+      },
+      "head": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: source coordinates are UTF-8 bytes.\ntype Box struct{}\nfunc (Box) Value() int { return 7 }\nfunc factory() Box { return Box{} }\nfunc caller() int { return factory().Value() }\nfunc sibling() int { return 9 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "Value", "span": {"start": 71, "end": 106}},
+          {"key": "factory", "name": "factory", "span": {"start": 107, "end": 142}},
+          {"key": "caller", "name": "caller", "span": {"start": 143, "end": 189}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 190, "end": 221}}
+        ],
+        "calls": [
+          {"callee": "factory().Value", "span": {"start": 170, "end": 187}, "owner": "caller"},
+          {"callee": "factory", "span": {"start": 170, "end": 179}, "owner": "caller"}
+        ]
+      },
+      "correspondence": [
+        {"base": "leaf", "head": "leaf", "structure": "same", "address": "same"},
+        {"base": "factory", "head": "factory", "structure": "same", "address": "same"},
+        {"base": "caller", "head": "caller", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "go114-callee-literal",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: function literal ownership.\nfunc leaf() int { return 7 }\nfunc caller() int { return func() int { return leaf() }() }\nfunc sibling() int { return 9 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 45, "end": 73}},
+          {"key": "caller", "name": "caller", "span": {"start": 74, "end": 133}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 134, "end": 165}},
+          {"key": "literal", "name": "<anonymous>", "span": {"start": 101, "end": 129}, "scope": ["caller"]}
+        ],
+        "calls": [
+          {"callee": "func() int { return leaf() }", "span": {"start": 101, "end": 131}, "owner": "caller"},
+          {"callee": "leaf", "span": {"start": 121, "end": 127}, "owner": "literal"}
+        ]
+      },
+      "head": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: function literal ownership.\nfunc leaf() int { return 7 }\nfunc caller() int { return (func() int { return leaf() })() }\nfunc sibling() int { return 9 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 45, "end": 73}},
+          {"key": "caller", "name": "caller", "span": {"start": 74, "end": 135}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 136, "end": 167}},
+          {"key": "literal", "name": "<anonymous>", "span": {"start": 102, "end": 130}, "scope": ["caller"]}
+        ],
+        "calls": [
+          {"callee": "(func() int { return leaf() })", "span": {"start": 101, "end": 133}, "owner": "caller"},
+          {"callee": "leaf", "span": {"start": 122, "end": 128}, "owner": "literal"}
+        ]
+      },
+      "correspondence": [
+        {"base": "leaf", "head": "leaf", "structure": "same", "address": "same"},
+        {"base": "caller", "head": "caller", "structure": "different", "address": "same"},
+        {"base": "literal", "head": "literal", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "go114-callee-returned-literal",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: returned closure owns its body calls.\nfunc leaf() int { return 7 }\nfunc factory() func() int { return func() int { return leaf() } }\nfunc caller() int { return factory()() }\nfunc sibling() int { return 9 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 55, "end": 83}},
+          {"key": "factory", "name": "factory", "span": {"start": 84, "end": 149}},
+          {"key": "caller", "name": "caller", "span": {"start": 150, "end": 190}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 191, "end": 222}},
+          {"key": "literal", "name": "<anonymous>", "span": {"start": 119, "end": 147}, "scope": ["factory"]}
+        ],
+        "calls": [
+          {"callee": "leaf", "span": {"start": 139, "end": 145}, "owner": "literal"},
+          {"callee": "factory()", "span": {"start": 177, "end": 188}, "owner": "caller"},
+          {"callee": "factory", "span": {"start": 177, "end": 186}, "owner": "caller"}
+        ]
+      },
+      "head": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: returned closure owns its body calls.\nfunc leaf() int { return 7 }\nfunc sibling() int { return 9 }\nfunc factory() func() int { return func() int { return leaf() } }\nfunc caller() int { return factory()() }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 55, "end": 83}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 84, "end": 115}},
+          {"key": "factory", "name": "factory", "span": {"start": 116, "end": 181}},
+          {"key": "caller", "name": "caller", "span": {"start": 182, "end": 222}},
+          {"key": "literal", "name": "<anonymous>", "span": {"start": 151, "end": 179}, "scope": ["factory"]}
+        ],
+        "calls": [
+          {"callee": "leaf", "span": {"start": 171, "end": 177}, "owner": "literal"},
+          {"callee": "factory()", "span": {"start": 209, "end": 220}, "owner": "caller"},
+          {"callee": "factory", "span": {"start": 209, "end": 218}, "owner": "caller"}
+        ]
+      },
+      "correspondence": [
+        {"base": "leaf", "head": "leaf", "structure": "same", "address": "same"},
+        {"base": "factory", "head": "factory", "structure": "same", "address": "same"},
+        {"base": "caller", "head": "caller", "structure": "same", "address": "same"},
+        {"base": "literal", "head": "literal", "structure": "same", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "go114-callee-shadow",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: parameter spelling never binds the outer definition.\nfunc leaf() int { return 7 }\nfunc caller() int { return func(leaf func() int) int { return leaf() }(leaf) }\nfunc sibling() int { return 9 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 70, "end": 98}},
+          {"key": "caller", "name": "caller", "span": {"start": 99, "end": 177}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 178, "end": 209}},
+          {"key": "literal", "name": "<anonymous>", "span": {"start": 126, "end": 169}, "scope": ["caller"]}
+        ],
+        "calls": [
+          {"callee": "func(leaf func() int) int { return leaf() }", "span": {"start": 126, "end": 175}, "owner": "caller"},
+          {"callee": "leaf", "span": {"start": 161, "end": 167}, "owner": "literal"}
+        ]
+      },
+      "head": {
+        "path": "src/callee.go",
+        "source": "package p\n// π: parameter spelling never binds the outer definition.\nfunc leaf() int { return 7 }\nfunc caller() int { return func(callback func() int) int { return callback() }(leaf) }\nfunc sibling() int { return 9 }\n",
+        "parse": "accepted",
+        "occurrences": [
+          {"key": "leaf", "name": "leaf", "span": {"start": 70, "end": 98}},
+          {"key": "caller", "name": "caller", "span": {"start": 99, "end": 185}},
+          {"key": "sibling", "name": "sibling", "span": {"start": 186, "end": 217}},
+          {"key": "literal", "name": "<anonymous>", "span": {"start": 126, "end": 177}, "scope": ["caller"]}
+        ],
+        "calls": [
+          {"callee": "func(callback func() int) int { return callback() }", "span": {"start": 126, "end": 183}, "owner": "caller"},
+          {"callee": "callback", "span": {"start": 165, "end": 175}, "owner": "literal"}
+        ]
+      },
+      "correspondence": [
+        {"base": "leaf", "head": "leaf", "structure": "same", "address": "same"},
+        {"base": "caller", "head": "caller", "structure": "different", "address": "same"},
+        {"base": "literal", "head": "literal", "structure": "different", "address": "same"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same"}
+      ]
+    },
+    {
+      "id": "python-retained-parameter",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(y):\n    return y + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "rust-retained-parameter",
+      "language": "rust",
+      "profile": "2021",
+      "base": {
+        "path": "src/example.rs",
+        "source": "fn f(x: i32) -> i32 { x + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 29}}, {"key": "sibling", "name": "sibling", "span": {"start": 30, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.rs",
+        "source": "fn f(y: i32) -> i32 { y + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 29}}, {"key": "sibling", "name": "sibling", "span": {"start": 30, "end": 55}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "javascript-retained-parameter",
+      "language": "javascript",
+      "profile": "es2020",
+      "base": {
+        "path": "src/example.js",
+        "source": "function f(x) { return x + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 31}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 64}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.js",
+        "source": "function f(y) { return y + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 31}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 64}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "typescript-retained-parameter",
+      "language": "typescript",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.ts",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.ts",
+        "source": "function f(y: number): number { return y + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "tsx-retained-parameter",
+      "language": "tsx",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.tsx",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.tsx",
+        "source": "function f(y: number): number { return y + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "go-retained-parameter",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(x int) int { return x + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 76}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(y int) int { return y + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 76}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "java-retained-parameter",
+      "language": "java",
+      "profile": "14",
+      "base": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int y) { return y + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "csharp-retained-parameter",
+      "language": "csharp",
+      "profile": "8.0",
+      "base": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int y) { return y + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "c-retained-parameter",
+      "language": "c",
+      "profile": "c99",
+      "base": {
+        "path": "src/example.c",
+        "source": "int f(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.c",
+        "source": "int f(int y) { return y + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "cpp-retained-parameter",
+      "language": "cpp",
+      "profile": "C++17 experimental",
+      "base": {
+        "path": "src/example.cpp",
+        "source": "int f(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.cpp",
+        "source": "int f(int y) { return y + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python-cosmetic-comments",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "# file comment\ndef f(x):\n\n    # cosmetic\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 15, "end": 57}}, {"key": "sibling", "name": "sibling", "span": {"start": 59, "end": 86}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "same"
+    },
+    {
+      "id": "python-comment-only",
+      "language": "python",
+      "profile": "3.8",
+      "base": {"path": "src/example.py", "source": "# before\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "head": {"path": "src/example.py", "source": "# after\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "correspondence": [],
+      "file_structure": "same"
+    },
+    {
+      "id": "rust-cosmetic-comments",
+      "language": "rust",
+      "profile": "2021",
+      "base": {
+        "path": "src/example.rs",
+        "source": "fn f(x: i32) -> i32 { x + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 29}}, {"key": "sibling", "name": "sibling", "span": {"start": 30, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.rs",
+        "source": "// file comment\nfn f(x: i32) -> i32 {\n    // cosmetic\n    x + 1 }\nfn sibling() -> i32 { 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 16, "end": 65}}, {"key": "sibling", "name": "sibling", "span": {"start": 66, "end": 91}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "same"
+    },
+    {
+      "id": "rust-comment-only",
+      "language": "rust",
+      "profile": "2021",
+      "base": {"path": "src/example.rs", "source": "// before\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "head": {"path": "src/example.rs", "source": "// after\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "correspondence": [],
+      "file_structure": "same"
+    },
+    {
+      "id": "javascript-cosmetic-comments",
+      "language": "javascript",
+      "profile": "es2020",
+      "base": {
+        "path": "src/example.js",
+        "source": "function f(x) { return x + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 31}}, {"key": "sibling", "name": "sibling", "span": {"start": 32, "end": 64}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.js",
+        "source": "// file comment\nfunction f(x) {\n    // cosmetic\n    return x + 1; }\nfunction sibling() { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 16, "end": 67}}, {"key": "sibling", "name": "sibling", "span": {"start": 68, "end": 100}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "same"
+    },
+    {
+      "id": "javascript-comment-only",
+      "language": "javascript",
+      "profile": "es2020",
+      "base": {"path": "src/example.js", "source": "// before\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "head": {"path": "src/example.js", "source": "// after\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "correspondence": [],
+      "file_structure": "same"
+    },
+    {
+      "id": "typescript-cosmetic-comments",
+      "language": "typescript",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.ts",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.ts",
+        "source": "// file comment\nfunction f(x: number): number {\n    // cosmetic\n    return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 16, "end": 83}}, {"key": "sibling", "name": "sibling", "span": {"start": 84, "end": 124}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "same"
+    },
+    {
+      "id": "typescript-comment-only",
+      "language": "typescript",
+      "profile": "4.0",
+      "base": {"path": "src/example.ts", "source": "// before\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "head": {"path": "src/example.ts", "source": "// after\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "correspondence": [],
+      "file_structure": "same"
+    },
+    {
+      "id": "tsx-cosmetic-comments",
+      "language": "tsx",
+      "profile": "4.0",
+      "base": {
+        "path": "src/example.tsx",
+        "source": "function f(x: number): number { return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 47}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 88}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.tsx",
+        "source": "// file comment\nfunction f(x: number): number {\n    // cosmetic\n    return x + 1; }\nfunction sibling(): number { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 16, "end": 83}}, {"key": "sibling", "name": "sibling", "span": {"start": 84, "end": 124}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "same"
+    },
+    {
+      "id": "tsx-comment-only",
+      "language": "tsx",
+      "profile": "4.0",
+      "base": {"path": "src/example.tsx", "source": "// before\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "head": {"path": "src/example.tsx", "source": "// after\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "correspondence": [],
+      "file_structure": "same"
+    },
+    {
+      "id": "go-cosmetic-comments",
+      "language": "go",
+      "profile": "1.14",
+      "base": {
+        "path": "src/example.go",
+        "source": "package p\nfunc f(x int) int { return x + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 76}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.go",
+        "source": "// file comment\npackage p\nfunc f(x int) int {\n    // cosmetic\n    return x + 1 }\nfunc sibling() int { return 7 }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 26, "end": 80}}, {"key": "sibling", "name": "sibling", "span": {"start": 81, "end": 112}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "same"
+    },
+    {
+      "id": "go-comment-only",
+      "language": "go",
+      "profile": "1.14",
+      "base": {"path": "src/example.go", "source": "// before\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "head": {"path": "src/example.go", "source": "// after\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "correspondence": [],
+      "file_structure": "same"
+    },
+    {
+      "id": "java-cosmetic-comments",
+      "language": "java",
+      "profile": "14",
+      "base": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.java",
+        "source": "// file comment\nclass T {\nint f(int x) {\n    // cosmetic\n    return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 26, "end": 76}}, {"key": "sibling", "name": "sibling", "span": {"start": 77, "end": 104}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "same"
+    },
+    {
+      "id": "java-comment-only",
+      "language": "java",
+      "profile": "14",
+      "base": {"path": "src/example.java", "source": "// before\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "head": {"path": "src/example.java", "source": "// after\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "correspondence": [],
+      "file_structure": "same"
+    },
+    {
+      "id": "csharp-cosmetic-comments",
+      "language": "csharp",
+      "profile": "8.0",
+      "base": {
+        "path": "src/example.cs",
+        "source": "class T {\nint f(int x) { return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 40}}, {"key": "sibling", "name": "sibling", "span": {"start": 41, "end": 68}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.cs",
+        "source": "// file comment\nclass T {\nint f(int x) {\n    // cosmetic\n    return x + 1; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 26, "end": 76}}, {"key": "sibling", "name": "sibling", "span": {"start": 77, "end": 104}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "same"
+    },
+    {
+      "id": "csharp-comment-only",
+      "language": "csharp",
+      "profile": "8.0",
+      "base": {"path": "src/example.cs", "source": "// before\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "head": {"path": "src/example.cs", "source": "// after\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "correspondence": [],
+      "file_structure": "same"
+    },
+    {
+      "id": "c-cosmetic-comments",
+      "language": "c",
+      "profile": "c99",
+      "base": {
+        "path": "src/example.c",
+        "source": "int f(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.c",
+        "source": "// file comment\nint f(int x) {\n    // cosmetic\n    return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 16, "end": 66}}, {"key": "sibling", "name": "sibling", "span": {"start": 67, "end": 98}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "same"
+    },
+    {
+      "id": "c-comment-only",
+      "language": "c",
+      "profile": "c99",
+      "base": {"path": "src/example.c", "source": "// before\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "head": {"path": "src/example.c", "source": "// after\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "correspondence": [],
+      "file_structure": "same"
+    },
+    {
+      "id": "cpp-cosmetic-comments",
+      "language": "cpp",
+      "profile": "C++17 experimental",
+      "base": {
+        "path": "src/example.cpp",
+        "source": "int f(int x) { return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 30}}, {"key": "sibling", "name": "sibling", "span": {"start": 31, "end": 62}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.cpp",
+        "source": "// file comment\nint f(int x) {\n    // cosmetic\n    return x + 1; }\nint sibling(void) { return 7; }\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 16, "end": 66}}, {"key": "sibling", "name": "sibling", "span": {"start": 67, "end": 98}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "same"
+    },
+    {
+      "id": "cpp-comment-only",
+      "language": "cpp",
+      "profile": "C++17 experimental",
+      "base": {"path": "src/example.cpp", "source": "// before\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "head": {"path": "src/example.cpp", "source": "// after\n", "parse": "accepted", "occurrences": [], "calls": []},
+      "correspondence": [],
+      "file_structure": "same"
+    },
+    {
+      "id": "python-layout",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x+1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 24}}, {"key": "sibling", "name": "sibling", "span": {"start": 26, "end": 53}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "same", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "same"
+    },
+    {
+      "id": "python-docstring-added",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    \"\"\"public\"\"\"\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 43}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 72}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python-docstring-changed",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    \"\"\"public\"\"\"\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 43}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 72}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    \"\"\"private\"\"\"\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 44}}, {"key": "sibling", "name": "sibling", "span": {"start": 46, "end": 73}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python-docstring-quotes",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    \"\"\"public\"\"\"\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 43}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 72}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    '''public'''\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 43}}, {"key": "sibling", "name": "sibling", "span": {"start": 45, "end": 72}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python-annotation-added",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 26}}, {"key": "sibling", "name": "sibling", "span": {"start": 28, "end": 55}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(x: int) -> int:\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 38}}, {"key": "sibling", "name": "sibling", "span": {"start": 40, "end": 67}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python-annotation-changed",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x: int) -> int:\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 38}}, {"key": "sibling", "name": "sibling", "span": {"start": 40, "end": 67}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(x: float) -> float:\n    return x + 1\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 42}}, {"key": "sibling", "name": "sibling", "span": {"start": 44, "end": 71}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "different", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python-local-annotation",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    result = x + 1\n    return result\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 46}}, {"key": "sibling", "name": "sibling", "span": {"start": 48, "end": 75}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(x):\n    result: int = x + 1\n    return result\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 51}}, {"key": "sibling", "name": "sibling", "span": {"start": 53, "end": 80}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python-loop-variable",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(items):\n    result = 0\n    for price in items:\n        result = result + price\n    return result\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 102}}, {"key": "sibling", "name": "sibling", "span": {"start": 104, "end": 131}}],
+        "calls": []
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(items):\n    result = 0\n    for cost in items:\n        result = result + cost\n    return result\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 100}}, {"key": "sibling", "name": "sibling", "span": {"start": 102, "end": 129}}],
+        "calls": []
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "python-field-read-order",
+      "language": "python",
+      "profile": "3.8",
+      "base": {
+        "path": "src/example.py",
+        "source": "def f(obj):\n    x = obj.value\n    mutate()\n    return x\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 55}}, {"key": "sibling", "name": "sibling", "span": {"start": 57, "end": 84}}],
+        "calls": [{"callee": "mutate", "span": {"start": 34, "end": 42}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/example.py",
+        "source": "def f(obj):\n    mutate()\n    return obj.value\n\ndef sibling():\n    return 7\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 0, "end": 45}}, {"key": "sibling", "name": "sibling", "span": {"start": 47, "end": 74}}],
+        "calls": [{"callee": "mutate", "span": {"start": 16, "end": 24}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    },
+    {
+      "id": "java-field-read-order",
+      "language": "java",
+      "profile": "14",
+      "base": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(T obj) { int x = obj.value; mutate(); return x; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 65}}, {"key": "sibling", "name": "sibling", "span": {"start": 66, "end": 93}}],
+        "calls": [{"callee": "mutate", "span": {"start": 44, "end": 52}, "owner": "focus"}]
+      },
+      "head": {
+        "path": "src/example.java",
+        "source": "class T {\nint f(T obj) { mutate(); return obj.value; }\nint sibling() { return 7; }\n}\n",
+        "parse": "accepted",
+        "occurrences": [{"key": "focus", "name": "f", "span": {"start": 10, "end": 54}}, {"key": "sibling", "name": "sibling", "span": {"start": 55, "end": 82}}],
+        "calls": [{"callee": "mutate", "span": {"start": 25, "end": 33}, "owner": "focus"}]
+      },
+      "correspondence": [
+        {"base": "focus", "head": "focus", "structure": "different", "address": "same", "signature": "same", "exact_body": "different"},
+        {"base": "sibling", "head": "sibling", "structure": "same", "address": "same", "signature": "same", "exact_body": "same"}
+      ],
+      "file_structure": "different"
+    }
+  ]
+}

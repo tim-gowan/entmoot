@@ -1,0 +1,27 @@
+{
+  "version": "2.1.0",
+  "runs": [{
+    "tool": {"driver": {"name": "FixtureScanner", "version": "1.0", "rules": [{"id": "R1", "properties": {"unknownVendorField": "retained-in-raw"}}]}},
+    "originalUriBaseIds": {"SRCROOT": {"uri": "."}},
+    "results": [{
+      "ruleId": "R1",
+      "ruleIndex": 0,
+      "level": "warning",
+      "message": {"text": "dense fixture"},
+      "baselineState": "new",
+      "fingerprints": {"stable": "fp-1"},
+      "suppressions": [{"kind": "external", "status": "accepted", "justification": "fixture"}],
+      "taxa": [{"id": "CWE-79", "toolComponent": {"name": "CWE"}}],
+      "locations": [{
+        "physicalLocation": {"artifactLocation": {"uri": "sample.js", "uriBaseId": "SRCROOT"}, "region": {"startLine": 1, "startColumn": 1, "endLine": 1, "endColumn": 4}},
+        "logicalLocations": [{"fullyQualifiedName": "sample.main"}]
+      }],
+      "relatedLocations": [{"physicalLocation": {"artifactLocation": {"uri": "sample.js", "uriBaseId": "SRCROOT"}, "region": {"startLine": 2, "startColumn": 1}}}],
+      "fixes": [{"description": {"text": "fix"}, "artifactChanges": []}],
+      "codeFlows": [{"threadFlows": [{"locations": [
+        {"location": {"physicalLocation": {"artifactLocation": {"uri": "sample.js", "uriBaseId": "SRCROOT"}, "region": {"startLine": 1, "startColumn": 1}}, "message": {"text": "first"}}, "kinds": ["source"]},
+        {"location": {"physicalLocation": {"artifactLocation": {"uri": "sample.js", "uriBaseId": "SRCROOT"}, "region": {"startLine": 2, "startColumn": 1}}, "message": {"text": "second"}}, "kinds": ["sink"]}
+      ]}]}]
+    }]
+  }]
+}

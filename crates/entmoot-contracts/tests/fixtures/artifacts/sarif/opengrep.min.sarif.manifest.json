@@ -1,0 +1,30 @@
+{
+  "schema_version": "logic.artifact.v1",
+  "identity_schema_version": "logic.identity.v1",
+  "artifact_id": "1ece63721a610c9fada9c5324ff275c7762e9c3e427a529eec2285ddb518815e",
+  "artifact_series_id": "89946ed9a63831a457ba5796f32c4d699a5acc40a5032d479ac4b31ce5f8c0da",
+  "format": "sarif21",
+  "producer": {
+    "name": "Opengrep OSS",
+    "version": "1.0.0-test"
+  },
+  "snapshot": {
+    "repository_id": "github.com/acme/app",
+    "revision": "f356a09207c7a9550eb6fc4c3945e081922cf998",
+    "source_state": "committed"
+  },
+  "scope": {
+    "scope_universe_id": "b1939ae3aabaccabaf119d1fdc87dace704a995c54123bb05e3fb72c6cc02f2b",
+    "selector_language_version": "logic.path_glob.v1",
+    "profile": "review",
+    "languages": [
+      "python",
+      "typescript"
+    ],
+    "included_paths": [],
+    "excluded_paths": [],
+    "completeness": "partial"
+  },
+  "content_digest": "blake3:3cb5e017a2498b98edfd8f95c1556c906ce30776aad650c1b24458ef5579e723",
+  "artifact_path": "opengrep.min.sarif"
+}

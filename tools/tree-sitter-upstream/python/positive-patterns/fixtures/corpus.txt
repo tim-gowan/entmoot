@@ -1,0 +1,48 @@
+================================================================================
+Explicit positive scalar and complex literal patterns
+================================================================================
+
+match value:
+    case +1: pass
+    case +1.5: pass
+    case +1j: pass
+    case +0.25+1.75j: pass
+    case -1: pass
+
+--------------------------------------------------------------------------------
+
+(module
+  (match_statement
+    (identifier)
+    (block
+      (case_clause (case_pattern (integer)) (block (pass_statement)))
+      (case_clause (case_pattern (float)) (block (pass_statement)))
+      (case_clause (case_pattern (integer)) (block (pass_statement)))
+      (case_clause (case_pattern (complex_pattern (float) (float))) (block (pass_statement)))
+      (case_clause (case_pattern (integer)) (block (pass_statement))))))
+
+================================================================================
+Positive mapping keys and nested sequence patterns preserve following declaration
+================================================================================
+
+match value:
+    case {+1: [+2, item]}: pass
+def after():
+    return 17
+
+--------------------------------------------------------------------------------
+
+(module
+  (match_statement
+    (identifier)
+    (block
+      (case_clause
+        (case_pattern
+          (dict_pattern
+            (integer)
+            (case_pattern
+              (list_pattern
+                (case_pattern (integer))
+                (case_pattern (dotted_name (identifier)))))))
+        (block (pass_statement)))))
+  (function_definition (identifier) (parameters) (block (return_statement (integer)))))

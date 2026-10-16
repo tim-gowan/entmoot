@@ -1,0 +1,128 @@
+--- a/grammar.js
++++ b/grammar.js
+@@ -36,6 +36,29 @@
+   name: 'c',
+ 
+   conflicts: $ => [
++    [$.type_specifier, $.expression, $.alignof_expression],
++    [$.expression, $.alignof_expression],
++    [$._declarator, $.alignas_qualifier, $.type_specifier],
++    [$._declarator, $.type_qualifier, $.type_specifier],
++    [$._declarator, $.storage_class_specifier, $.type_specifier],
++    [$._field_declarator, $.alignas_qualifier],
++    [$._field_declarator, $.type_qualifier],
++    [$._type_declarator, $.alignas_qualifier],
++    [$._type_declarator, $.type_qualifier],
++    [$.alignas_qualifier, $.expression],
++    [$.type_qualifier, $.expression],
++    [$._declarator, $.alignas_qualifier],
++    [$._declarator, $.type_qualifier],
++    [$.alignas_qualifier, $.sized_type_specifier],
++    [$.alignas_qualifier, $.type_specifier],
++    [$.type_qualifier, $.type_specifier, $.sized_type_specifier],
++    [$.alignas_qualifier, $.type_specifier, $.expression],
++    [$.type_qualifier, $.sized_type_specifier],
++    [$.type_qualifier, $.type_specifier],
++    [$.storage_class_specifier, $.sized_type_specifier],
++    [$.storage_class_specifier, $.type_specifier],
++    [$._type_definition_type],
++    [$._declaration_specifiers],
+     [$._trailing_label, $.labeled_statement],
+     [$._declaration_modifiers, $._empty_declaration],
+     [$.declaration, $.storage_class_specifier],
+@@ -65,6 +88,7 @@
+   ],
+ 
+   inline: $ => [
++    $._pre_c23_identifier,
+     $._type_identifier,
+     $._field_identifier,
+     $._statement_identifier,
+@@ -168,7 +192,7 @@
+     ...preprocIf('_in_enumerator_list', $ => seq($.enumerator, ',')),
+     ...preprocIf('_in_enumerator_list_no_comma', $ => $.enumerator, -1),
+ 
+-    // C99 `_Pragma("…")`, the operator form of #pragma
++    // C99 `_Pragma("Ã¢â‚¬Â¦")`, the operator form of #pragma
+     pragma_operator: $ => seq('_Pragma', '(', $.string_literal, ')'),
+ 
+     preproc_arg: _ => token(prec(-1, /\S([^/\n]|\/[^*]|\\\r?\n)*/)),
+@@ -298,11 +322,11 @@
+       $.ms_declspec_modifier,
+     ),
+ 
+-    _declaration_specifiers: $ => prec.right(seq(
++    _declaration_specifiers: $ => seq(
+       repeat($._declaration_modifiers),
+       field('type', $.type_specifier),
+       repeat($._declaration_modifiers),
+-    )),
++    ),
+ 
+     linkage_specification: $ => seq(
+       'extern',
+@@ -385,6 +409,7 @@
+       $.array_declarator,
+       $.parenthesized_declarator,
+       $.identifier,
++      alias($._pre_c23_identifier, $.identifier),
+     ),
+ 
+     _declaration_declarator: $ => choice(
+@@ -394,6 +419,7 @@
+       $.array_declarator,
+       $.parenthesized_declarator,
+       $.identifier,
++      alias($._pre_c23_identifier, $.identifier),
+     ),
+ 
+     _field_declarator: $ => choice(
+@@ -1032,6 +1058,7 @@
+       $.field_expression,
+       $.compound_literal_expression,
+       $.identifier,
++      alias($._pre_c23_identifier, $.identifier),
+       $.number_literal,
+       $._string,
+       $.true,
+@@ -1064,6 +1091,7 @@
+ 
+     _assignment_left_expression: $ => choice(
+       $.identifier,
++      alias($._pre_c23_identifier, $.identifier),
+       $.call_expression,
+       $.field_expression,
+       $.pointer_expression,
+@@ -1162,10 +1190,10 @@
+       ),
+     )),
+ 
+-    alignof_expression: $ => prec(PREC.SIZEOF, seq(
++    alignof_expression: $ => seq(
+       choice('__alignof__', '__alignof', '_alignof', 'alignof', '_Alignof'),
+       seq('(', field('type', $.type_descriptor), ')'),
+-    )),
++    ),
+ 
+     offsetof_expression: $ => prec(PREC.OFFSETOF, seq(
+       'offsetof',
+@@ -1406,14 +1434,17 @@
+     false: _ => token(choice('FALSE', 'false')),
+     null: _ => choice('NULL', 'nullptr'),
+ 
++    // These spellings were ordinary identifiers before C23.
++    _pre_c23_identifier: _ => choice('constexpr', 'thread_local', 'alignas', 'alignof'),
++
+     identifier: _ =>
+       /(\p{XID_Start}|\$|_|\\u[0-9A-Fa-f]{4}|\\U[0-9A-Fa-f]{8})(\p{XID_Continue}|\$|\\u[0-9A-Fa-f]{4}|\\U[0-9A-Fa-f]{8})*/,
+ 
+     _type_identifier: $ => alias(
+-      $.identifier,
++      choice($.identifier, $._pre_c23_identifier),
+       $.type_identifier,
+     ),
+-    _field_identifier: $ => alias($.identifier, $.field_identifier),
++    _field_identifier: $ => alias(choice($.identifier, $._pre_c23_identifier), $.field_identifier),
+     _statement_identifier: $ => alias($.identifier, $.statement_identifier),
+ 
+     _empty_declaration: $ => seq(

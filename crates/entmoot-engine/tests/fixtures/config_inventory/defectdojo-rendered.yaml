@@ -1,0 +1,201 @@
+# Sanitized, deterministic rendering of the DefectDojo connector shape used by
+# the config/runtime inventory eval. It is not asserted to be a live deployment.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: defectdojo
+  namespace: defectdojo
+data:
+  DD_DATABASE_HOST: defectdojo-postgresql
+  DD_CELERY_BROKER_HOST: defectdojo-valkey
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: defectdojo
+  namespace: defectdojo
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: defectdojo-django
+  namespace: defectdojo
+spec:
+  selector:
+    matchLabels:
+      defectdojo.org/component: django
+  template:
+    metadata:
+      labels:
+        defectdojo.org/component: django
+    spec:
+      containers:
+        - name: uwsgi
+          image: example.invalid/defectdojo-django:fixture
+          envFrom:
+            - configMapRef:
+                name: defectdojo
+            - secretRef:
+                name: defectdojo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: defectdojo-django
+  namespace: defectdojo
+spec:
+  selector:
+    defectdojo.org/component: django
+  ports:
+    - port: 80
+      targetPort: 8081
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: defectdojo
+  namespace: defectdojo
+spec:
+  rules:
+    - host: defectdojo.example.invalid
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: defectdojo-django
+                port:
+                  number: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: defectdojo-celery-worker
+  namespace: defectdojo
+spec:
+  selector:
+    matchLabels:
+      defectdojo.org/component: celery
+      defectdojo.org/subcomponent: worker
+  template:
+    metadata:
+      labels:
+        defectdojo.org/component: celery
+        defectdojo.org/subcomponent: worker
+    spec:
+      containers:
+        - name: celery
+          image: example.invalid/defectdojo-django:fixture
+          envFrom:
+            - configMapRef:
+                name: defectdojo
+            - secretRef:
+                name: defectdojo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: defectdojo-celery-beat
+  namespace: defectdojo
+spec:
+  selector:
+    matchLabels:
+      defectdojo.org/component: celery
+      defectdojo.org/subcomponent: beat
+  template:
+    metadata:
+      labels:
+        defectdojo.org/component: celery
+        defectdojo.org/subcomponent: beat
+    spec:
+      containers:
+        - name: celery
+          image: example.invalid/defectdojo-django:fixture
+          envFrom:
+            - configMapRef:
+                name: defectdojo
+            - secretRef:
+                name: defectdojo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: defectdojo-postgresql
+  namespace: defectdojo
+spec:
+  selector:
+    app.kubernetes.io/name: postgresql
+  ports:
+    - port: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: defectdojo-postgresql
+  namespace: defectdojo
+spec:
+  serviceName: defectdojo-postgresql
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgresql
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: postgresql
+    spec:
+      containers:
+        - name: postgresql
+          image: example.invalid/postgresql:fixture
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: defectdojo-valkey
+  namespace: defectdojo
+spec:
+  selector:
+    app.kubernetes.io/name: valkey
+  ports:
+    - port: 6379
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: defectdojo-valkey
+  namespace: defectdojo
+spec:
+  serviceName: defectdojo-valkey
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: valkey
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: valkey
+    spec:
+      containers:
+        - name: valkey
+          image: example.invalid/valkey:fixture
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: defectdojo-initializer
+  namespace: defectdojo
+spec:
+  template:
+    metadata:
+      labels:
+        defectdojo.org/component: initializer
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: initializer
+          image: example.invalid/defectdojo-django:fixture
+          envFrom:
+            - configMapRef:
+                name: defectdojo
+            - secretRef:
+                name: defectdojo

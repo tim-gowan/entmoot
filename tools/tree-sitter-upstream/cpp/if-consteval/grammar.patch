@@ -1,0 +1,31 @@
+--- a/grammar.js
++++ b/grammar.js
+@@ -930,11 +930,23 @@
+ 
+     if_statement: $ => prec.right(seq(
+       'if',
+-      optional('constexpr'),
+-      field('condition', $.condition_clause),
+-      field('consequence', $.statement),
+-      optional(field('alternative', $.else_clause)),
+-    )),
++      choice(
++        seq(
++          optional('constexpr'),
++          field('condition', $.condition_clause),
++          field('consequence', $.statement),
++          optional(field('alternative', $.else_clause)),
++        ),
++        seq(
++          optional(choice('!', 'not')),
++          'consteval',
++          field('consequence', $.compound_statement),
++          optional(field('alternative', alias($._consteval_else_clause, $.else_clause))),
++        ),
++      ),
++    )),
++
++    _consteval_else_clause: $ => seq('else', $.compound_statement),
+ 
+     // Using prec(1) instead of prec.dynamic(1) causes issues with the
+     // range loop's declaration specifiers if `int` is passed in, it'll

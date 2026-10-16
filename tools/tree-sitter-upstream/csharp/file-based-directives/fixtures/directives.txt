@@ -1,0 +1,29 @@
+==================
+File directive preserves the following declaration
+==================
+
+#:property LangVersion=14
+class After {}
+
+---
+
+(compilation_unit
+  (file_based_directive)
+  (class_declaration
+    name: (identifier)
+    body: (declaration_list)))
+
+==================
+Directive spelling in a comment is not a directive
+==================
+
+// #:property LangVersion=14
+class After {}
+
+---
+
+(compilation_unit
+  (comment)
+  (class_declaration
+    name: (identifier)
+    body: (declaration_list)))

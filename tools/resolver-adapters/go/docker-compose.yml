@@ -1,0 +1,24 @@
+# Spin up / down the Go Class C sidecar toolchain without installing Go on the host.
+#
+#   docker compose -f tools/resolver-adapters/go/docker-compose.yml build
+#   set ENTMOOT_GO_ADAPTER to docker_sidecar_proxy.py (see README)
+#   docker compose -f tools/resolver-adapters/go/docker-compose.yml down --rmi local
+#
+services:
+  go-sidecar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: entmoot-go-sidecar:1.26
+    working_dir: /src
+    volumes:
+      # Host checkout/source root is bind-mounted by the proxy at runtime via
+      # `docker compose run -v <host_root>:/src:ro` — this default is a no-op
+      # placeholder so `compose config` stays valid.
+      - ${ENTMOOT_GO_DOCKER_SRC:-.}:/src:ro
+    environment:
+      ENTMOOT_GO_GOPROXY: "off"
+      ENTMOOT_GO_GOTOOLCHAIN: "local"
+      ENTMOOT_GO_PREWARM_GOPROXY: "https://proxy.golang.org,direct"
+    stdin_open: true
+    tty: false

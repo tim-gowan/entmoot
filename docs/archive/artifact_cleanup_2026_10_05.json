@@ -1,0 +1,1425 @@
+{
+  "evaluation_only": true,
+  "method_id": "entmoot.docs-artifacts-cleanup.v1",
+  "date_utc": "2026-10-05",
+  "recovery_sha": "b46b57292d033038a02bb4fdfadec1ed3b5bc80c",
+  "policy": "Explicit plan cleanup: delete superseded non-final evidence packs, orphan receipts, git-only eval stubs, solver-audit implementation scratch, and distilled horizon essays; retain living runbooks, _final packs, repair verify inputs, and JSON baselines/gates.",
+  "retained": [
+    "solver_*_final_2026-09-27 packs and artifacts",
+    "P1/native evidence packs listed in compatibility_cases/README",
+    "solver_repair_2026-10-03 and verify/benchmark scripts",
+    "solver_audit live-spec/live-corpus/python-environment/probes.rs",
+    "P2 harness receipts query_scale/shared_storage/storage_retention",
+    "horizon BASELINE/GATES/MEASUREMENTS JSON and goldens",
+    "living READMEs, ADRs, ARCHITECTURE, PLANNING, CHANGELOG"
+  ],
+  "measurement": "Logical file lengths before deletion; recover pruned bodies via git show b46b57292d033038a02bb4fdfadec1ed3b5bc80c:<path>.",
+  "deleted_files": 234,
+  "deleted_logical_bytes": 10005495,
+  "files": [
+    {
+      "path": "docs/COMMIT_UPDATE_EVALUATION.md",
+      "bytes": 318,
+      "reason": "superseded_or_implementation_artifact",
+      "outcome": "deleted"
+    },
+    {
+      "path": "docs/ECOSYSTEM_SCALE_EVALUATION.md",
+      "bytes": 318,
+      "reason": "superseded_or_implementation_artifact",
+      "outcome": "deleted"
+    },
+    {
+      "path": "docs/REAL_WORLD_EVAL_BASELINE.md",
+      "bytes": 292,
+      "reason": "superseded_or_implementation_artifact",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/baseline_2026-09-22.json",
+      "bytes": 9146,
+      "reason": "orphan_compatibility_baseline",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/dependency_pins_2026-09-23.json",
+      "bytes": 4200,
+      "reason": "superseded_pin_manifest",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/qa_2026-09-23.json",
+      "bytes": 2247,
+      "reason": "orphan_qa_receipt",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/qa_pre_commit_2026-09-23.log.gz",
+      "bytes": 19074,
+      "reason": "orphan_qa_receipt",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/receipts/otel-legacy.json",
+      "bytes": 127673,
+      "reason": "superseded_or_implementation_artifact",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/receipts/rust-contracts-gap.json",
+      "bytes": 1496,
+      "reason": "superseded_or_implementation_artifact",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/receipts/rust-legacy.json",
+      "bytes": 1656,
+      "reason": "superseded_or_implementation_artifact",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/breadth-availability.json",
+      "bytes": 11564,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/csharp-native.txt",
+      "bytes": 107,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/engine-paths.txt",
+      "bytes": 25236,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/evidence-replay.txt",
+      "bytes": 127,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/flask-compatibility.json.gz",
+      "bytes": 38715,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/horizon-registry.txt",
+      "bytes": 116,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/java-go-qualified.txt",
+      "bytes": 110,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/local_checkout_index.json",
+      "bytes": 6843,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/native-rust-oxc-go.txt",
+      "bytes": 1880,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/oasis-express-compatibility.json.gz",
+      "bytes": 3498,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/program-adapters.txt",
+      "bytes": 140,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/provider-warning.txt",
+      "bytes": 3293,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/relative-import.txt",
+      "bytes": 4398,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/reproduce.py",
+      "bytes": 2537,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_audit_2026-10-03/sidecar-timeout.txt",
+      "bytes": 618,
+      "reason": "implementation_scratch_after_repair",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27.json",
+      "bytes": 372495,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/c-consumer.json.gz",
+      "bytes": 1088,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/c-consumer.native.json.gz",
+      "bytes": 1483,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/c-tiny-regex-c.json.gz",
+      "bytes": 7733,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/c-tiny-regex-c.native.json.gz",
+      "bytes": 3924,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/cpp-consumer.json.gz",
+      "bytes": 1089,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/cpp-consumer.native.json.gz",
+      "bytes": 1489,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/cpp-tiny-regex-c.json.gz",
+      "bytes": 7733,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/cpp-tiny-regex-c.native.json.gz",
+      "bytes": 3928,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/csharp-consumer.json.gz",
+      "bytes": 1095,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/csharp-consumer.native.json.gz",
+      "bytes": 2556,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/csharp-fuzzysharp.json.gz",
+      "bytes": 42790,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/csharp-fuzzysharp.native.json.gz",
+      "bytes": 20813,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/go-consumer.json.gz",
+      "bytes": 1464,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/go-consumer.native.json.gz",
+      "bytes": 5458,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/go-x-mod.json.gz",
+      "bytes": 431708,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/go-x-mod.native.json.gz",
+      "bytes": 93375,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/java-commons-codec.json.gz",
+      "bytes": 372140,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/java-commons-codec.native.json.gz",
+      "bytes": 128932,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/java-consumer.json.gz",
+      "bytes": 1124,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/java-consumer.native.json.gz",
+      "bytes": 2436,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/javascript-consumer.json.gz",
+      "bytes": 1289,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/javascript-consumer.native.json.gz",
+      "bytes": 1301,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/javascript-escape-string-regexp.json.gz",
+      "bytes": 1132,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/javascript-escape-string-regexp.native.json.gz",
+      "bytes": 1246,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/javascript-is-plain-obj.json.gz",
+      "bytes": 1090,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/javascript-is-plain-obj.native.json.gz",
+      "bytes": 1250,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/python-consumer.json.gz",
+      "bytes": 1262,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/python-consumer.native.json.gz",
+      "bytes": 564718,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/python-httpx.json.gz",
+      "bytes": 203128,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/python-httpx.native.json.gz",
+      "bytes": 794933,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/rust-consumer.json.gz",
+      "bytes": 1435,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/rust-consumer.native.json.gz",
+      "bytes": 1398,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/rust-percent-encoding.json.gz",
+      "bytes": 13386,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/rust-percent-encoding.native.json.gz",
+      "bytes": 4175,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/rust-unicode-ident.json.gz",
+      "bytes": 11143,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/rust-unicode-ident.native.json.gz",
+      "bytes": 5377,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/typescript-consumer.json.gz",
+      "bytes": 1289,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/typescript-consumer.native.json.gz",
+      "bytes": 1304,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/typescript-escape-string-regexp.json.gz",
+      "bytes": 1132,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/typescript-escape-string-regexp.native.json.gz",
+      "bytes": 1246,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/typescript-is-plain-obj.json.gz",
+      "bytes": 1090,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_dependency_audit_2026-09-27/typescript-is-plain-obj.native.json.gz",
+      "bytes": 1250,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27.json",
+      "bytes": 1415327,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-base-a.json.gz",
+      "bytes": 818,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-base-a.native.json.gz",
+      "bytes": 1479,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-base-b.json.gz",
+      "bytes": 818,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-base-b.native.json.gz",
+      "bytes": 1475,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-body-a.json.gz",
+      "bytes": 818,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-body-a.native.json.gz",
+      "bytes": 1475,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-body-b.json.gz",
+      "bytes": 818,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-body-b.native.json.gz",
+      "bytes": 1477,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-boundary-a.json.gz",
+      "bytes": 813,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-boundary-a.native.json.gz",
+      "bytes": 1476,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-boundary-b.json.gz",
+      "bytes": 816,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-boundary-b.native.json.gz",
+      "bytes": 1475,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-consumer.json.gz",
+      "bytes": 1193,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-consumer.native.json.gz",
+      "bytes": 1515,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-removed-a.json.gz",
+      "bytes": 680,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-removed-a.native.json.gz",
+      "bytes": 1480,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-removed-b.json.gz",
+      "bytes": 681,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/c-removed-b.native.json.gz",
+      "bytes": 1482,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-base-a.json.gz",
+      "bytes": 825,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-base-a.native.json.gz",
+      "bytes": 1490,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-base-b.json.gz",
+      "bytes": 819,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-base-b.native.json.gz",
+      "bytes": 1483,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-body-a.json.gz",
+      "bytes": 825,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-body-a.native.json.gz",
+      "bytes": 1488,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-body-b.json.gz",
+      "bytes": 821,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-body-b.native.json.gz",
+      "bytes": 1485,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-boundary-a.json.gz",
+      "bytes": 823,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-boundary-a.native.json.gz",
+      "bytes": 1487,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-boundary-b.json.gz",
+      "bytes": 823,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-boundary-b.native.json.gz",
+      "bytes": 1489,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-consumer.json.gz",
+      "bytes": 1204,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-consumer.native.json.gz",
+      "bytes": 1529,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-removed-a.json.gz",
+      "bytes": 684,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-removed-a.native.json.gz",
+      "bytes": 1494,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-removed-b.json.gz",
+      "bytes": 687,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/cpp-removed-b.native.json.gz",
+      "bytes": 1493,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-base-a.json.gz",
+      "bytes": 804,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-base-a.native.json.gz",
+      "bytes": 2190,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-base-b.json.gz",
+      "bytes": 808,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-base-b.native.json.gz",
+      "bytes": 2194,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-body-a.json.gz",
+      "bytes": 808,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-body-a.native.json.gz",
+      "bytes": 1911,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-body-b.json.gz",
+      "bytes": 807,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-body-b.native.json.gz",
+      "bytes": 1913,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-boundary-a.json.gz",
+      "bytes": 807,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-boundary-a.native.json.gz",
+      "bytes": 1911,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-boundary-b.json.gz",
+      "bytes": 808,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-boundary-b.native.json.gz",
+      "bytes": 1921,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-consumer.json.gz",
+      "bytes": 1243,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-consumer.native.json.gz",
+      "bytes": 2166,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-removed-a.json.gz",
+      "bytes": 490,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-removed-a.native.json.gz",
+      "bytes": 1618,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-removed-b.json.gz",
+      "bytes": 488,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/csharp-removed-b.native.json.gz",
+      "bytes": 1617,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-base-a.json.gz",
+      "bytes": 804,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-base-a.native.json.gz",
+      "bytes": 1412,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-base-b.json.gz",
+      "bytes": 801,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-base-b.native.json.gz",
+      "bytes": 1411,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-body-a.json.gz",
+      "bytes": 803,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-body-a.native.json.gz",
+      "bytes": 1412,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-body-b.json.gz",
+      "bytes": 800,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-body-b.native.json.gz",
+      "bytes": 1411,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-boundary-a.json.gz",
+      "bytes": 994,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-boundary-a.native.json.gz",
+      "bytes": 1502,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-boundary-b.json.gz",
+      "bytes": 995,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-boundary-b.native.json.gz",
+      "bytes": 1500,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-consumer.json.gz",
+      "bytes": 1371,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-consumer.native.json.gz",
+      "bytes": 1822,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-removed-a.json.gz",
+      "bytes": 496,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-removed-a.native.json.gz",
+      "bytes": 1110,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-removed-b.json.gz",
+      "bytes": 497,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/go-removed-b.native.json.gz",
+      "bytes": 1110,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-base-a.json.gz",
+      "bytes": 806,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-base-a.native.json.gz",
+      "bytes": 1305,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-base-b.json.gz",
+      "bytes": 808,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-base-b.native.json.gz",
+      "bytes": 1303,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-body-a.json.gz",
+      "bytes": 806,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-body-a.native.json.gz",
+      "bytes": 1303,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-body-b.json.gz",
+      "bytes": 809,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-body-b.native.json.gz",
+      "bytes": 1300,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-boundary-a.json.gz",
+      "bytes": 807,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-boundary-a.native.json.gz",
+      "bytes": 1309,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-boundary-b.json.gz",
+      "bytes": 805,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-boundary-b.native.json.gz",
+      "bytes": 1307,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-consumer.json.gz",
+      "bytes": 1205,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-consumer.native.json.gz",
+      "bytes": 1497,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-removed-a.json.gz",
+      "bytes": 488,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-removed-a.native.json.gz",
+      "bytes": 1027,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-removed-b.json.gz",
+      "bytes": 487,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/java-removed-b.native.json.gz",
+      "bytes": 1022,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-base-a.json.gz",
+      "bytes": 799,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-base-a.native.json.gz",
+      "bytes": 974,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-base-b.json.gz",
+      "bytes": 799,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-base-b.native.json.gz",
+      "bytes": 974,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-body-a.json.gz",
+      "bytes": 799,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-body-a.native.json.gz",
+      "bytes": 977,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-body-b.json.gz",
+      "bytes": 801,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-body-b.native.json.gz",
+      "bytes": 978,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-boundary-a.json.gz",
+      "bytes": 801,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-boundary-a.native.json.gz",
+      "bytes": 979,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-boundary-b.json.gz",
+      "bytes": 800,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-boundary-b.native.json.gz",
+      "bytes": 982,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-consumer.json.gz",
+      "bytes": 1206,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-consumer.native.json.gz",
+      "bytes": 1200,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-removed-a.json.gz",
+      "bytes": 633,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-removed-a.native.json.gz",
+      "bytes": 922,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-removed-b.json.gz",
+      "bytes": 634,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/javascript-removed-b.native.json.gz",
+      "bytes": 924,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-base-a.json.gz",
+      "bytes": 816,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-base-a.native.json.gz",
+      "bytes": 557869,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-base-b.json.gz",
+      "bytes": 817,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-base-b.native.json.gz",
+      "bytes": 557874,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-body-a.json.gz",
+      "bytes": 815,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-body-a.native.json.gz",
+      "bytes": 557867,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-body-b.json.gz",
+      "bytes": 814,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-body-b.native.json.gz",
+      "bytes": 557869,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-boundary-a.json.gz",
+      "bytes": 815,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-boundary-a.native.json.gz",
+      "bytes": 557886,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-boundary-b.json.gz",
+      "bytes": 817,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-boundary-b.native.json.gz",
+      "bytes": 557886,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-consumer.json.gz",
+      "bytes": 1214,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-consumer.native.json.gz",
+      "bytes": 558437,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-removed-a.json.gz",
+      "bytes": 650,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-removed-a.native.json.gz",
+      "bytes": 557341,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-removed-b.json.gz",
+      "bytes": 652,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/python-removed-b.native.json.gz",
+      "bytes": 557341,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-base-a.json.gz",
+      "bytes": 793,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-base-a.native.json.gz",
+      "bytes": 1007,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-base-b.json.gz",
+      "bytes": 795,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-base-b.native.json.gz",
+      "bytes": 1007,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-body-a.json.gz",
+      "bytes": 792,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-body-a.native.json.gz",
+      "bytes": 1003,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-body-b.json.gz",
+      "bytes": 794,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-body-b.native.json.gz",
+      "bytes": 1006,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-boundary-a.json.gz",
+      "bytes": 794,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-boundary-a.native.json.gz",
+      "bytes": 1006,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-boundary-b.json.gz",
+      "bytes": 796,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-boundary-b.native.json.gz",
+      "bytes": 1006,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-consumer.json.gz",
+      "bytes": 1335,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-consumer.native.json.gz",
+      "bytes": 1182,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-removed-a.json.gz",
+      "bytes": 509,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-removed-a.native.json.gz",
+      "bytes": 819,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-removed-b.json.gz",
+      "bytes": 510,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/rust-removed-b.native.json.gz",
+      "bytes": 816,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-base-a.json.gz",
+      "bytes": 798,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-base-a.native.json.gz",
+      "bytes": 988,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-base-b.json.gz",
+      "bytes": 799,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-base-b.native.json.gz",
+      "bytes": 986,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-body-a.json.gz",
+      "bytes": 799,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-body-a.native.json.gz",
+      "bytes": 990,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-body-b.json.gz",
+      "bytes": 798,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-body-b.native.json.gz",
+      "bytes": 988,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-boundary-a.json.gz",
+      "bytes": 802,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-boundary-a.native.json.gz",
+      "bytes": 992,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-boundary-b.json.gz",
+      "bytes": 800,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-boundary-b.native.json.gz",
+      "bytes": 991,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-consumer.json.gz",
+      "bytes": 1205,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-consumer.native.json.gz",
+      "bytes": 1211,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-removed-a.json.gz",
+      "bytes": 632,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-removed-a.native.json.gz",
+      "bytes": 922,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-removed-b.json.gz",
+      "bytes": 633,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/compatibility_cases/solver_impact_controls_2026-09-27/typescript-removed-b.native.json.gz",
+      "bytes": 922,
+      "reason": "superseded_non_final_evidence_pack",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/horizon_cases/UAT_2026-09-21.md",
+      "bytes": 4529,
+      "reason": "dated_campaign_essay_distilled",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/horizon_cases/VERIFICATION_2026-09-21.md",
+      "bytes": 10690,
+      "reason": "dated_campaign_essay_distilled",
+      "outcome": "deleted"
+    },
+    {
+      "path": "evals/topology/horizon_cases/v2/VERIFICATION_2026-09-21.md",
+      "bytes": 7845,
+      "reason": "dated_campaign_essay_distilled",
+      "outcome": "deleted"
+    }
+  ]
+}

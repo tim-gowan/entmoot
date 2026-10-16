@@ -1,0 +1,91 @@
+# Entmoot native floors — qualified adapter pins and language surfaces.
+# Structural inventory may accept broader syntax; native evidence is limited to
+# these pins. Producer receipts record observed host versions separately.
+# Series labels stay v1 until the repository move; pins fence incompatible tools.
+
+schema_version = "entmoot.native_floors.v1"
+
+[host]
+# Workspace toolchain required to build in-process producers (RA + Oxc).
+rustc = "1.98.0"
+
+[[family]]
+id = "rust"
+producer_id = "rust_analyzer"
+adapter_pin = "0.0.358"
+host_floor = "rustc 1.98.0 + rust-src for the selected toolchain"
+language_surface = "edition and cfg of the selected Cargo target"
+closed_dispatch = "entmoot.rust.direct-function.v1, direct-inherent.v1, direct-associated.v1"
+notes = "Free functions, inherent methods, and associated functions (UFCS) may Close; trait methods stay open."
+
+[[family]]
+id = "oxc"
+producer_id = "oxc_semantic"
+adapter_pin = "0.153.0"
+host_floor = "rustc 1.98.0 (in-process Cargo feature resolved-oxc)"
+language_surface = "JS/TS/TSX lexical scopes; no type checker"
+closed_dispatch = "entmoot.oxc.direct-identifier.v1"
+notes = "Unique lexical identifier callees may Close; member and indirect forms stay open. Distinct from typescript_program."
+
+[[family]]
+id = "typescript"
+producer_id = "typescript_program"
+adapter_pin = "typescript.program/1"
+tool_pin = "typescript@6.0.3"
+host_floor = "Node.js with built entmoot-typescript.cjs; requires tsconfig.json"
+language_surface = "TypeScript Program API 4.9.5 through 6.0.3"
+language_ceiling = "6.0.3"
+unqualified = ["typescript@7 (no compiler API for this adapter)"]
+historical_controls = ["4.9.5", "5.0.4", "5.5.4", "5.9.3"]
+closed_dispatch = "entmoot.typescript.direct-function.v1"
+notes = "Unique Program function signatures may Close; call signatures stay open. Do not set ENTMOOT_TYPESCRIPT_ADAPTER for default P1 JS/TS. Migration to the TypeScript 7.1 Program/checker API is deferred in PLANNING.md."
+
+[[family]]
+id = "python"
+producer_id = "pyright_program"
+adapter_pin = "pyright-program/1.1.414"
+tool_pin = "pyright 1.1.414 @ a07bbdeae085f59396acee8739c7d862dd3a1ff1"
+host_floor = "Node.js + built entmoot-pyright.cjs; interpreter 3.8–3.14"
+language_surface = "Python syntax targets 3.8 through 3.14"
+closed_dispatch = "entmoot.python.direct-function.v1, direct-member.v1"
+notes = "Unique function and member binds may Close; decorator/runtime indirection stays open. Project typechecker config is not loaded; selected import roots only."
+
+[[family]]
+id = "go"
+producer_id = "go_types_sidecar"
+adapter_pin = "go_types_sidecar.isolated_modules.v1"
+tool_pin = "golang.org/x/tools v0.52.0"
+host_floor = "Go 1.26+ (sidecar module) or Docker Desktop proxy"
+language_surface = "selected module/workspace, tags, GOOS/GOARCH"
+closed_dispatch = "entmoot.go.direct-function.v1, direct-method.v1"
+notes = "Package free functions and concrete methods may Close; interface methods stay open."
+
+[[family]]
+id = "csharp"
+producer_id = "roslyn"
+adapter_pin = "catalog roslyn artifact"
+tool_pin = "Microsoft.CodeAnalysis.* 4.14.0"
+host_floor = ".NET SDK 9 (net9.0) with MSBuild Locator"
+language_surface = "C# language version of the loaded project/adhoc compilation"
+closed_dispatch = "entmoot.csharp.direct-static.v1, direct-sealed.v1, direct-base.v1, direct-partial.v1, direct-instance.v1"
+notes = "Static/sealed/base/partial/non-virtual instance may Close; virtual/interface stay open."
+
+[[family]]
+id = "java"
+producer_id = "javac_trees"
+adapter_pin = "catalog java jar (javac Trees materialization)"
+tool_pin = "JDK javac Trees"
+host_floor = "full JDK 17+ on PATH (release 8/11/17/21/25 controls)"
+language_surface = "selected --release and explicit source_roots/classpath"
+closed_dispatch = "entmoot.java.direct-static.v1, direct-private.v1, direct-final.v1, direct-super.v1"
+notes = "Static/private/final/super may Close; open virtual and interface stay open. javac-only."
+
+[[family]]
+id = "c_family"
+producer_id = "clang"
+adapter_pin = "catalog clang artifact"
+tool_pin = "libclang Python bindings 18.1.1"
+host_floor = "Python 3.10+ with libclang==18.1.1 and LIBCLANG_PATH"
+language_surface = "one compile_commands.json configuration"
+closed_dispatch = "entmoot.clang.direct-function.v1 (non-virtual)"
+notes = "Non-virtual functions/methods may Close; virtual CXX stays open. C++ inventory remains experimental."

@@ -1,0 +1,135 @@
+name: Native qualification
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+concurrency:
+  group: native-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+env:
+  CARGO_BUILD_JOBS: 2
+  PYTHONUTF8: '1'
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          repository: microsoft/pyright
+          ref: a07bbdeae085f59396acee8739c7d862dd3a1ff1
+          path: .tmp/adapter-build/source/pyright
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - run: rustup show
+      - run: rustup component add rust-src
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: '1.26.0'
+          cache: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: '9.0.318'
+      - name: Build pinned native adapters
+        shell: pwsh
+        run: |
+          python -m pip install libclang==18.1.1 blake3==1.0.8 psutil==7.0.0
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python scripts/build_resolver_adapters.py --out .tmp/adapter-build/resolver-adapters
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python scripts/build_pyright_program.py --source .tmp/adapter-build/source/pyright --out .tmp/adapter-build/pyright-program
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python scripts/build_typescript_program.py --out .tmp/adapter-build/typescript-program --version-tools .tmp/adapter-build/typescript-versions
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo build -p entmoot --features producer
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo build -p entmoot-mcp
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo build -p entmoot-contracts --example blake3_digest
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          rustup toolchain install 1.79.0 --profile minimal
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          rustup toolchain install 1.91 --profile minimal
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          rustup toolchain install 1.95.0 --profile minimal
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Native expansion and discrete version controls
+        shell: pwsh
+        run: |
+          # Host sidecars only — do not enable Docker Go.
+          Remove-Item Env:ENTMOOT_GO_VIA_DOCKER -ErrorAction SilentlyContinue
+          $env:ENTMOOT_ADAPTERS_ROOT = (Resolve-Path .tmp/adapter-build/resolver-adapters).Path
+          "ENTMOOT_ADAPTERS_ROOT=$($env:ENTMOOT_ADAPTERS_ROOT)" >> $env:GITHUB_ENV
+          $build = Get-Content .tmp/adapter-build/resolver-adapters/build-receipt.json | ConvertFrom-Json
+          foreach ($entry in $build.environment.PSObject.Properties) {
+            [Environment]::SetEnvironmentVariable($entry.Name, $entry.Value, 'Process')
+            "$($entry.Name)=$($entry.Value)" >> $env:GITHUB_ENV
+          }
+          $env:ENTMOOT_PYRIGHT_ADAPTER = (Resolve-Path .tmp/adapter-build/pyright-program/entmoot-pyright.cjs).Path
+          $env:ENTMOOT_TYPESCRIPT_ADAPTER = (Resolve-Path .tmp/adapter-build/typescript-program/entmoot-typescript.cjs).Path
+          # Isolate durable state under the runner home (never write into analyzed trees).
+          $env:ENTMOOT_DATA_DIR = Join-Path $env:RUNNER_TEMP 'entmoot-home'
+          "ENTMOOT_DATA_DIR=$($env:ENTMOOT_DATA_DIR)" >> $env:GITHUB_ENV
+          # Record host discovery into a scratch workspace profile (init never downloads).
+          $profileRoot = Join-Path $env:RUNNER_TEMP 'entmoot-adapter-profile'
+          New-Item -ItemType Directory -Force -Path $profileRoot | Out-Null
+          Set-Content -Path (Join-Path $profileRoot 'main.go') -Value "package main`nfunc main() {}`n"
+          cargo run --locked -p entmoot --features producer --quiet -- init --root $profileRoot
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $profilePath = Join-Path $profileRoot '.entmoot/adapter-profile.json'
+          if (-not (Test-Path $profilePath)) {
+            throw 'init did not write adapter-profile.json'
+          }
+          $publication = Join-Path $profileRoot '.entmoot/current.json'
+          cargo run --locked -p entmoot --features producer --quiet -- status --publication $publication --source-root $profileRoot | Out-Null
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo test --locked -p entmoot --features producer,native-tests --test program_adapters -- --include-ignored --test-threads=1
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo test --locked -p entmoot --features producer,native-tests --test adapter_controls -- --test-threads=1
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo test --locked -p entmoot --features producer --test producer_cli -- --include-ignored --test-threads=1
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo test --locked -p entmoot --features producer --test campaign_harness revision_campaign_joins_actual_occurrences_and_preserves_unconsumed_frontiers -- --ignored --exact
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo test --locked -p entmoot-engine --all-features --test dispatch_expectations --test callsites_c_family --test callsites_csharp --test callsites_go --test callsites_java --test callsites_rust --test callsites_javascript -- --include-ignored --test-threads=1
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo test --locked -p entmoot-engine --all-features --test package_compatibility native_python_five_controls -- --ignored --exact --test-threads=1
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Retain native build provenance on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: native-${{ matrix.os }}
+          path: .tmp/adapter-build/resolver-adapters/build-receipt.json
+          if-no-files-found: ignore
+      - name: Historical Rust compiler control
+        shell: pwsh
+        run: cargo test --locked -p entmoot --features producer,native-tests --test adapter_controls pinned_rust_compilers_preserve_trait_macro_and_generic_syntax -- --ignored --exact --test-threads=1
+      - name: Linux VFS and binary-classpath controls
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          cargo test --locked -p entmoot --features native-tests --test adapter_controls clang_closed_vfs_negative_lookup_is_not_ambient_absence -- --ignored --exact
+          cargo test --locked -p entmoot --features native-tests --test adapter_controls javac_binary_authority_requires_the_declared_classpath -- --ignored --exact
+      - name: Rehearse extracted native-enabled packages
+        run: python scripts/package_smoke.py --producer

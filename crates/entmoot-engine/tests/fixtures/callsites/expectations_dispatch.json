@@ -1,0 +1,803 @@
+{
+  "rust/free_fn": [
+    {
+      "name": "free-fn-closed",
+      "site": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller() -> i32 { leaf() }",
+        "within": "leaf()"
+      },
+      "owner": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller() -> i32 { leaf() }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "src/lib.rs",
+        "text": "pub fn leaf() -> i32 { 1 }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.rust.direct-function.v1",
+      "assumption_contains": [
+        "cargo",
+        "free-function",
+        "foreign"
+      ]
+    }
+  ],
+  "rust/inherent": [
+    {
+      "name": "inherent-closed",
+      "site": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller(api: &Api) -> i32 { api.direct() }",
+        "within": "api.direct()"
+      },
+      "owner": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller(api: &Api) -> i32 { api.direct() }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "src/lib.rs",
+        "text": "pub fn direct(&self) -> i32 { self.value }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.rust.direct-inherent.v1",
+      "assumption_contains": [
+        "cargo",
+        "inherent",
+        "trait"
+      ]
+    }
+  ],
+  "rust/ufcs": [
+    {
+      "name": "ufcs-closed",
+      "site": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller() -> Api { Api::make() }",
+        "within": "Api::make()"
+      },
+      "owner": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller() -> Api { Api::make() }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "src/lib.rs",
+        "text": "pub fn make() -> Self { Self }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.rust.direct-associated.v1",
+      "assumption_contains": [
+        "cargo",
+        "associated",
+        "trait"
+      ]
+    }
+  ],
+  "rust/trait_dyn": [
+    {
+      "name": "trait-dyn-open",
+      "site": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller(r: &dyn Read) -> i32 { r.value() }",
+        "within": "r.value()"
+      },
+      "owner": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller(r: &dyn Read) -> i32 { r.value() }"
+      },
+      "outcomes": [
+        "repository_callable",
+        "repository_symbol",
+        "unresolved"
+      ],
+      "closed_dispatch": false,
+      "dispatch_gap": "dynamic_dispatch"
+    }
+  ],
+  "rust/callback": [
+    {
+      "name": "callback-open",
+      "site": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller(cb: fn() -> i32) -> i32 { cb() }",
+        "within": "cb()"
+      },
+      "owner": {
+        "path": "src/lib.rs",
+        "text": "pub fn caller(cb: fn() -> i32) -> i32 { cb() }"
+      },
+      "outcomes": [
+        "unresolved",
+        "unsupported"
+      ],
+      "closed_dispatch": false,
+      "dispatch_gap": "indirect_call"
+    }
+  ],
+  "go/free_fn": [
+    {
+      "name": "free-fn-closed",
+      "site": {
+        "path": "main.go",
+        "text": "func Caller() int { return Leaf() }",
+        "within": "Leaf()"
+      },
+      "owner": {
+        "path": "main.go",
+        "text": "func Caller() int { return Leaf() }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "main.go",
+        "text": "func Leaf() int { return 1 }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.go.direct-function.v1",
+      "assumption_contains": [
+        "build tags",
+        "GOOS",
+        "unsafe"
+      ]
+    }
+  ],
+  "go/concrete_method": [
+    {
+      "name": "concrete-method-closed",
+      "site": {
+        "path": "main.go",
+        "text": "func Caller(b Box) int { return b.Get() }",
+        "within": "b.Get()"
+      },
+      "owner": {
+        "path": "main.go",
+        "text": "func Caller(b Box) int { return b.Get() }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "main.go",
+        "text": "func (Box) Get() int { return 1 }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.go.direct-method.v1",
+      "assumption_contains": [
+        "Go",
+        "concrete",
+        "interface"
+      ]
+    }
+  ],
+  "go/iface": [
+    {
+      "name": "iface-open",
+      "site": {
+        "path": "main.go",
+        "text": "func Caller(w Worker) int { return w.Help() }",
+        "within": "w.Help()"
+      },
+      "owner": {
+        "path": "main.go",
+        "text": "func Caller(w Worker) int { return w.Help() }"
+      },
+      "outcomes": [
+        "repository_symbol"
+      ],
+      "signature": true,
+      "closed_dispatch": false,
+      "dispatch_gap": "dynamic_dispatch"
+    }
+  ],
+  "go/callback": [
+    {
+      "name": "callback-open",
+      "site": {
+        "path": "main.go",
+        "text": "func Caller(cb func() int) int { return cb() }",
+        "within": "cb()"
+      },
+      "owner": {
+        "path": "main.go",
+        "text": "func Caller(cb func() int) int { return cb() }"
+      },
+      "outcomes": [
+        "unresolved",
+        "unsupported"
+      ],
+      "closed_dispatch": false,
+      "dispatch_gap": "indirect_call"
+    }
+  ],
+  "java/static_call": [
+    {
+      "name": "static-closed",
+      "site": {
+        "path": "demo/Main.java",
+        "text": "public static int caller() { return leaf(); }",
+        "within": "leaf()"
+      },
+      "owner": {
+        "path": "demo/Main.java",
+        "text": "public static int caller() { return leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "demo/Main.java",
+        "text": "public static int leaf() { return 1; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.java.direct-static.v1",
+      "assumption_contains": [
+        "javac",
+        "static"
+      ]
+    }
+  ],
+  "java/private_call": [
+    {
+      "name": "private-closed",
+      "site": {
+        "path": "demo/Main.java",
+        "text": "public int caller() { return leaf(); }",
+        "within": "leaf()"
+      },
+      "owner": {
+        "path": "demo/Main.java",
+        "text": "public int caller() { return leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "demo/Main.java",
+        "text": "private int leaf() { return 1; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.java.direct-private.v1",
+      "assumption_contains": [
+        "javac",
+        "private"
+      ]
+    }
+  ],
+  "java/final_method": [
+    {
+      "name": "final-closed",
+      "site": {
+        "path": "demo/Main.java",
+        "text": "public int caller() { return leaf(); }",
+        "within": "leaf()"
+      },
+      "owner": {
+        "path": "demo/Main.java",
+        "text": "public int caller() { return leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "demo/Main.java",
+        "text": "public final int leaf() { return 1; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.java.direct-final.v1",
+      "assumption_contains": [
+        "javac",
+        "final"
+      ]
+    }
+  ],
+  "java/super_call": [
+    {
+      "name": "super-closed",
+      "site": {
+        "path": "demo/Main.java",
+        "text": "int caller() { return super.leaf(); }",
+        "within": "super.leaf()"
+      },
+      "owner": {
+        "path": "demo/Main.java",
+        "text": "int caller() { return super.leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "demo/Main.java",
+        "text": "int leaf() { return 1; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.java.direct-super.v1",
+      "assumption_contains": [
+        "javac",
+        "super"
+      ]
+    }
+  ],
+  "java/default_iface": [
+    {
+      "name": "default-iface-open",
+      "site": {
+        "path": "demo/Main.java",
+        "text": "static int caller(Worker worker) { return worker.work(); }",
+        "within": "worker.work()"
+      },
+      "owner": {
+        "path": "demo/Main.java",
+        "text": "static int caller(Worker worker) { return worker.work(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "demo/Main.java",
+        "text": "default int work() { return 7; }"
+      },
+      "closed_dispatch": false,
+      "dispatch_gap": "dynamic_dispatch"
+    }
+  ],
+  "java/open_virtual": [
+    {
+      "name": "open-virtual",
+      "site": {
+        "path": "demo/Main.java",
+        "text": "static int caller(Base value) { return value.leaf(); }",
+        "within": "value.leaf()"
+      },
+      "owner": {
+        "path": "demo/Main.java",
+        "text": "static int caller(Base value) { return value.leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable",
+        "repository_symbol"
+      ],
+      "closed_dispatch": false,
+      "dispatch_gap": "dynamic_dispatch",
+      "allow_empty_targets": true
+    }
+  ],
+  "csharp/static_call": [
+    {
+      "name": "static-closed",
+      "site": {
+        "path": "Main.cs",
+        "text": "public static int Caller() { return Leaf(); }",
+        "within": "Leaf()"
+      },
+      "owner": {
+        "path": "Main.cs",
+        "text": "public static int Caller() { return Leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "Main.cs",
+        "text": "public static int Leaf() { return 1; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.csharp.direct-static.v1",
+      "assumption_contains": [
+        "MSBuild",
+        "static"
+      ]
+    }
+  ],
+  "csharp/sealed_method": [
+    {
+      "name": "sealed-closed",
+      "site": {
+        "path": "Main.cs",
+        "text": "public static int Caller(Child child) { return child.Leaf(); }",
+        "within": "child.Leaf()"
+      },
+      "owner": {
+        "path": "Main.cs",
+        "text": "public static int Caller(Child child) { return child.Leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "Main.cs",
+        "text": "public sealed override int Leaf() { return 2; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.csharp.direct-sealed.v1",
+      "assumption_contains": [
+        "MSBuild",
+        "sealed"
+      ]
+    }
+  ],
+  "csharp/base_call": [
+    {
+      "name": "base-closed",
+      "site": {
+        "path": "Main.cs",
+        "text": "public int Caller() { return base.Leaf(); }",
+        "within": "base.Leaf()"
+      },
+      "owner": {
+        "path": "Main.cs",
+        "text": "public int Caller() { return base.Leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "Main.cs",
+        "text": "public virtual int Leaf() { return 1; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.csharp.direct-base.v1",
+      "assumption_contains": [
+        "MSBuild",
+        "base"
+      ]
+    }
+  ],
+  "csharp/partial_method": [
+    {
+      "name": "partial-closed",
+      "site": {
+        "path": "Declarations.cs",
+        "text": "public static int Caller() { return Compute(7); }",
+        "within": "Compute(7)"
+      },
+      "owner": {
+        "path": "Declarations.cs",
+        "text": "public static int Caller() { return Compute(7); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "Implementation.cs",
+        "text": "public static partial int Compute(int value) { return value; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.csharp.direct-partial.v1",
+      "assumption_contains": [
+        "MSBuild",
+        "partial"
+      ]
+    }
+  ],
+  "csharp/expression_body": [
+    {
+      "name": "expression-body-closed",
+      "site": {
+        "path": "Main.cs",
+        "text": "public static int Caller() { return Expression(); }",
+        "within": "Expression()"
+      },
+      "owner": {
+        "path": "Main.cs",
+        "text": "public static int Caller() { return Expression(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "Main.cs",
+        "text": "public static int Expression() => 7;"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.csharp.direct-static.v1",
+      "assumption_contains": [
+        "MSBuild",
+        "static"
+      ]
+    }
+  ],
+  "csharp/ordinary_instance": [
+    {
+      "name": "ordinary-instance-closed",
+      "site": {
+        "path": "Main.cs",
+        "text": "public static int Caller(Box box) { return box.Leaf(); }",
+        "within": "box.Leaf()"
+      },
+      "owner": {
+        "path": "Main.cs",
+        "text": "public static int Caller(Box box) { return box.Leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "Main.cs",
+        "text": "public int Leaf() { return 1; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.csharp.direct-instance.v1",
+      "assumption_contains": [
+        "MSBuild",
+        "non-virtual"
+      ]
+    }
+  ],
+  "csharp/open_virtual": [
+    {
+      "name": "open-virtual",
+      "site": {
+        "path": "Main.cs",
+        "text": "public static int Caller(Base value) { return value.Leaf(); }",
+        "within": "value.Leaf()"
+      },
+      "owner": {
+        "path": "Main.cs",
+        "text": "public static int Caller(Base value) { return value.Leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable",
+        "repository_symbol"
+      ],
+      "closed_dispatch": false,
+      "dispatch_gap": "dynamic_dispatch",
+      "allow_empty_targets": true
+    }
+  ],
+  "c_family/non_virtual_c": [
+    {
+      "name": "non-virtual-c-closed",
+      "site": {
+        "path": "main.c",
+        "text": "int caller(void) { return leaf(); }",
+        "within": "leaf()"
+      },
+      "owner": {
+        "path": "main.c",
+        "text": "int caller(void) { return leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "main.c",
+        "text": "int leaf(void) { return 1; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.clang.direct-function.v1",
+      "assumption_contains": [
+        "compile_commands",
+        "non-virtual"
+      ]
+    }
+  ],
+  "c_family/virtual_cxx": [
+    {
+      "name": "virtual-cxx-open",
+      "site": {
+        "path": "main.cpp",
+        "text": "int caller(Base& b) { return b.leaf(); }",
+        "within": "b.leaf()"
+      },
+      "owner": {
+        "path": "main.cpp",
+        "text": "int caller(Base& b) { return b.leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable",
+        "repository_symbol"
+      ],
+      "closed_dispatch": false,
+      "dispatch_gap": "dynamic_dispatch",
+      "allow_empty_targets": true
+    }
+  ],
+  "javascript/identifier": [
+    {
+      "name": "identifier-closed",
+      "site": {
+        "path": "main.js",
+        "text": "export function caller() { return leaf(); }",
+        "within": "leaf()"
+      },
+      "owner": {
+        "path": "main.js",
+        "text": "export function caller() { return leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "main.js",
+        "text": "export function leaf() { return 1; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.oxc.direct-identifier.v1",
+      "assumption_contains": [
+        "module",
+        "identifier",
+        "runtime"
+      ]
+    }
+  ],
+  "javascript/member": [
+    {
+      "name": "member-open",
+      "site": {
+        "path": "main.js",
+        "text": "export function caller() { return api.leaf(); }",
+        "within": "api.leaf()"
+      },
+      "owner": {
+        "path": "main.js",
+        "text": "export function caller() { return api.leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable",
+        "unresolved",
+        "repository_symbol"
+      ],
+      "allow_empty_targets": true,
+      "closed_dispatch": false,
+      "dispatch_gap": "dynamic_dispatch"
+    }
+  ],
+  "javascript/arrow_const": [
+    {
+      "name": "arrow-const-open",
+      "site": {
+        "path": "main.js",
+        "text": "export function caller() { return leaf(); }",
+        "within": "leaf()"
+      },
+      "owner": {
+        "path": "main.js",
+        "text": "export function caller() { return leaf(); }"
+      },
+      "outcomes": [
+        "unresolved",
+        "unsupported"
+      ],
+      "closed_dispatch": false,
+      "dispatch_gap": "unsupported_construct"
+    }
+  ],
+  "python/unique_fn": [
+    {
+      "name": "unique-fn-closed",
+      "site": {
+        "path": "main.py",
+        "text": "def caller() -> int:\n    return leaf()",
+        "within": "leaf()"
+      },
+      "owner": {
+        "path": "main.py",
+        "text": "def caller() -> int:\n    return leaf()"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "main.py",
+        "text": "def leaf() -> int:\n    return 1"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.python.direct-function.v1",
+      "assumption_contains": [
+        "pyright",
+        "unique",
+        "runtime"
+      ]
+    }
+  ],
+  "python/unique_member": [
+    {
+      "name": "unique-member-closed",
+      "site": {
+        "path": "main.py",
+        "text": "def caller(api: Api) -> int:\n    return api.leaf()",
+        "within": "api.leaf()"
+      },
+      "owner": {
+        "path": "main.py",
+        "text": "def caller(api: Api) -> int:\n    return api.leaf()"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "main.py",
+        "text": "def leaf(self) -> int:\n        return 1"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.python.direct-member.v1",
+      "assumption_contains": [
+        "pyright",
+        "unique",
+        "runtime"
+      ]
+    }
+  ],
+  "python/decorator_open": [
+    {
+      "name": "decorator-open",
+      "site": {
+        "path": "main.py",
+        "text": "def caller() -> int:\n    return leaf()",
+        "within": "leaf()"
+      },
+      "owner": {
+        "path": "main.py",
+        "text": "def caller() -> int:\n    return leaf()"
+      },
+      "outcomes": [
+        "repository_callable",
+        "unresolved",
+        "unsupported",
+        "repository_symbol"
+      ],
+      "closed_dispatch": false,
+      "dispatch_gap": "dynamic_dispatch"
+    }
+  ],
+  "typescript/unique_signature": [
+    {
+      "name": "unique-signature-closed",
+      "site": {
+        "path": "main.ts",
+        "text": "export function caller(): number { return leaf(); }",
+        "within": "leaf()"
+      },
+      "owner": {
+        "path": "main.ts",
+        "text": "export function caller(): number { return leaf(); }"
+      },
+      "outcomes": [
+        "repository_callable"
+      ],
+      "target": {
+        "path": "main.ts",
+        "text": "export function leaf(): number { return 1; }"
+      },
+      "closed_dispatch": true,
+      "policy_id": "entmoot.typescript.direct-function.v1",
+      "assumption_contains": [
+        "program",
+        "unique",
+        "runtime"
+      ]
+    }
+  ],
+  "typescript/call_signature_open": [
+    {
+      "name": "call-signature-open",
+      "site": {
+        "path": "main.ts",
+        "text": "export function caller(fn: Fn): number { return fn(); }",
+        "within": "fn()"
+      },
+      "owner": {
+        "path": "main.ts",
+        "text": "export function caller(fn: Fn): number { return fn(); }"
+      },
+      "outcomes": [
+        "unresolved",
+        "unsupported",
+        "repository_symbol"
+      ],
+      "closed_dispatch": false,
+      "dispatch_gap": "indirect_call"
+    }
+  ]
+}

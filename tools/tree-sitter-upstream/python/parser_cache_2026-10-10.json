@@ -1,0 +1,233 @@
+{
+  "format": "entmoot.grammar_parser_cache.v1",
+  "source_commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea",
+  "original_packet": {
+    "path": "G:/GitHub/entmoot/tools/tree-sitter-upstream/python/qualification_2026-10-10.json",
+    "bytes": 251777,
+    "digest": "blake3:17e30968ba000913d8db54bf5fc4782b95998481a4ee456c0251529c41b75b60",
+    "retention": "local_bytes"
+  },
+  "original_source_inputs": [
+    {
+      "path": "tools/tree-sitter-upstream/python/qualify_cst.py",
+      "digest": "blake3:a16760b8d9093e6667bbbf929d72e07c77a25dff5d4290977751cfde07ff3fad",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/qualify_bindings.py",
+      "digest": "blake3:076f2cbf889faf6926ec03fc75e6c4458a36a92c9871677bd5edb83ee336801c",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/qualify_examples.py",
+      "digest": "blake3:0a44891cde1b2b4882e8dbfafbffd8f941f08f5b012c74b4f41503628c1eb568",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/qualify_linux.py",
+      "digest": "blake3:500a7a0fb41e472800fa6825f366d8c24b7cac5b064524fa94591ee5a06c2b5f",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/measure_parser.py",
+      "digest": "blake3:f361b990a5a0024c5e2bdbf3c61a0710f17467431adc7737181800721d3705eb",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/run_oracles.py",
+      "digest": "blake3:86bf5d65def414b5b5b23fc0c5a7cd88dd352b1a3177d715633f10e783ff9c72",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/requirements.txt",
+      "digest": "blake3:5c4afbe6c85e62eb9cda50536447f77075f293a48d65f30680f5cd80463a1ba6",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/comprehension-unpacking/grammar.patch",
+      "digest": "blake3:ced0b0fb88d4d92767bc74c578b3401acf9ca4caf83dfc1621b07dcdc62fb6ee",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/comprehension-unpacking/fixtures/corpus.txt",
+      "digest": "blake3:aeb826e60fae60500718e25bfb643d33f72ac4aab197a2f783fd194a6a8ff98e",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/comprehension-unpacking/fixtures/positive.py",
+      "digest": "blake3:d6675f9f37d0e24ed1efd486344c8d4b8e4fdf0c596c65d34148a4119c2e400c",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/comprehension-unpacking/fixtures/call_bodies.py",
+      "digest": "blake3:3a74b982c60e608ca6ee078ff43b62186e846bcaadb0b0de843f824d7b4ce3b9",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/comprehension-unpacking/fixtures/historical_unpacking.py",
+      "digest": "blake3:8e9b609e9e420f7fd690bf28727217a7a7c1060aef937aac94254cf0f18bfea5",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    },
+    {
+      "path": "tools/tree-sitter-upstream/python/lazy-imports/fixtures/positive.py",
+      "digest": "blake3:81239f146b3ea958ca2a0773fb3838651d90b8aae7662ad55e1f9a7b8d06ec73",
+      "retention": "git_snapshot",
+      "commit": "4f05dbdba3f3125946f9612df1b7f8d804115dea"
+    }
+  ],
+  "rows": [
+    {
+      "variant": "baseline",
+      "platform": "windows",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe",
+        "test",
+        "--rebuild",
+        "--stat",
+        "total-only"
+      ],
+      "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline",
+      "exit_code": 0,
+      "parser_digest": "blake3:3f3c20519769643cb4e263ebf939a6f780366d2c2ccd01cfd34dc4c4785c62ac",
+      "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\forced_corpus\\baseline.log",
+      "log_digest": "blake3:b2ec6afed964780770b79aa0f90ccb77e5bad389cb72b4764da644b004e92ae7",
+      "corpus_cases": 117
+    },
+    {
+      "variant": "lazy-proposal",
+      "platform": "windows",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe",
+        "test",
+        "--rebuild",
+        "--stat",
+        "total-only"
+      ],
+      "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\lazy-proposal",
+      "exit_code": 0,
+      "parser_digest": "blake3:b204114387461db007121e83dc1d2964da477e135473db1ca9915ec7cd02737b",
+      "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\forced_corpus\\lazy-proposal.log",
+      "log_digest": "blake3:f2a4926f09e631aa4afa7028669e3f44a4530e75f8f8f986c31d0ed5f4e98da2",
+      "corpus_cases": 118
+    },
+    {
+      "variant": "comprehension",
+      "platform": "windows",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe",
+        "test",
+        "--rebuild",
+        "--stat",
+        "total-only"
+      ],
+      "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\comprehension",
+      "exit_code": 0,
+      "parser_digest": "blake3:cdca1b47578e7f4f3937fde5ebe3187f30acfdffa533af10ff6bfbf1a2efedd3",
+      "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\forced_corpus\\comprehension.log",
+      "log_digest": "blake3:ae4248acfbeda469aa9c8d3129b7910a2a3dbb60c2cfc56b42918ca256958547",
+      "corpus_cases": 120
+    },
+    {
+      "variant": "combined",
+      "platform": "windows",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe",
+        "test",
+        "--rebuild",
+        "--stat",
+        "total-only"
+      ],
+      "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\combined",
+      "exit_code": 0,
+      "parser_digest": "blake3:23c6648f2bb36ebdc821c56d19ad8c29cf94dd0659a7368400d7206c5f5e2918",
+      "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\forced_corpus\\combined.log",
+      "log_digest": "blake3:bd7f9d60b9a1f867c4e53b0ed5f04e6110347955429185182fab78fb47c71968",
+      "corpus_cases": 121
+    },
+    {
+      "variant": "signed-baseline",
+      "platform": "windows",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe",
+        "test",
+        "--rebuild",
+        "--stat",
+        "total-only"
+      ],
+      "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-baseline",
+      "exit_code": 0,
+      "parser_digest": "blake3:4e0f49b6020b63c801adbdb07ab474395c744ae6b717eaf0f05d6772443b06a6",
+      "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\forced_corpus\\signed-baseline.log",
+      "log_digest": "blake3:f54a1025a970d9277ad5ee532dc1fdd1cfca9157ab7b069baf7d645e15ff3a66",
+      "corpus_cases": 119
+    },
+    {
+      "variant": "signed-combined",
+      "platform": "windows",
+      "command": [
+        "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\baseline\\node_modules\\tree-sitter-cli\\tree-sitter.exe",
+        "test",
+        "--rebuild",
+        "--stat",
+        "total-only"
+      ],
+      "cwd": "G:\\GitHub\\entmoot\\.tmp\\tools\\tree-sitter-qualification\\python\\signed-combined",
+      "exit_code": 0,
+      "parser_digest": "blake3:c670cf11d27e757df3018d97e609a570e05b138f25afe9d2a8e596fc49e5e2e8",
+      "log": "G:\\GitHub\\entmoot\\.tmp\\evals\\consolidation_2026-10-10\\python_grammar\\forced_corpus\\signed-combined.log",
+      "log_digest": "blake3:faa21d73745f1f692c49c6b625a28dc3f63abd92b460934068b060037cf58510",
+      "corpus_cases": 123
+    },
+    {
+      "variant": "baseline",
+      "platform": "linux_wsl",
+      "command": [
+        "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/linux-tools/tree-sitter",
+        "test",
+        "--rebuild",
+        "--stat",
+        "total-only"
+      ],
+      "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-baseline",
+      "exit_code": 0,
+      "parser_digest": "blake3:3f3c20519769643cb4e263ebf939a6f780366d2c2ccd01cfd34dc4c4785c62ac",
+      "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/forced_corpus/linux-baseline.log",
+      "log_digest": "blake3:ab08f1d765cf2d7ca157b977186be5978c4d1a38ce483c023ba7ed23f11d21f9",
+      "corpus_cases": 117
+    },
+    {
+      "variant": "combined",
+      "platform": "linux_wsl",
+      "command": [
+        "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/linux-tools/tree-sitter",
+        "test",
+        "--rebuild",
+        "--stat",
+        "total-only"
+      ],
+      "cwd": "/mnt/g/GitHub/entmoot/.tmp/tools/tree-sitter-qualification/python/linux-combined",
+      "exit_code": 0,
+      "parser_digest": "blake3:23c6648f2bb36ebdc821c56d19ad8c29cf94dd0659a7368400d7206c5f5e2918",
+      "log": "/mnt/g/GitHub/entmoot/.tmp/evals/consolidation_2026-10-10/python_grammar/forced_corpus/linux-combined.log",
+      "log_digest": "blake3:388b302c7047ef7808b41868c02f3bd6d59041780d80ced1e72361dae40f37da",
+      "corpus_cases": 121
+    }
+  ],
+  "diagnosis": "Tree-sitter CLI libraries share a grammar-name cache across scratch variants; force rebuilding makes each corpus use its own current parser",
+  "limits": [
+    "All existing Windows variants and original Linux baseline/combined rechecked; other unrun platform lanes remain unqualified",
+    "Does not change the original packet or imply its source paths still contain the historical bytes"
+  ]
+}

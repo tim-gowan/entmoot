@@ -1,0 +1,183 @@
+"""Pinned Go proposal: independent source/CST, compiler-mode and runtime controls."""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from grammar_runtime import digest, endpoint, load_language, runtime_digest, scratch_grammar, shape
+import tree_sitter
+from declaration_cases import declaration_shapes as cases
+
+ROOT = Path(__file__).resolve().parent
+PINS = {"baseline": "2346a3ab1bb3857b48b29d779a1ef9799a248cd7",
+        "proposal": "2a37d91d26d36a2709c3d0dbcfa9ba79f9e58a87"}
+GENERATED = ("src/parser.c", "src/grammar.json", "src/node-types.json")
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--grammar", type=Path, required=True)
+    ap.add_argument("--variant", choices=tuple(PINS), required=True)
+    ap.add_argument("--cli", type=Path, required=True)
+    ap.add_argument("--go", type=Path, required=True)
+    ap.add_argument("--cache", type=Path, required=True)
+    ap.add_argument("--out", type=Path, required=True)
+    args = ap.parse_args()
+    grammar = scratch_grammar(args.grammar)
+    index_path = ROOT.parents[3] / "tools/tree-sitter-upstream/checkouts.json"
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    checkout = next(row for row in index["checkouts"] if row["id"] == "tree-sitter-go")
+    source_root = Path(checkout["path"]).resolve(strict=True)
+    source_commit = PINS[args.variant]
+    source_inputs = {}
+    for relative in ("grammar.js", "tree-sitter.json", "src/scanner.c"):
+        tracked = subprocess.run(["git", "-C", str(source_root), "cat-file", "-e", source_commit + ":" + relative], capture_output=True)
+        if tracked.returncode:
+            if relative == "src/scanner.c" and not (grammar / relative).exists():
+                continue
+            raise ValueError("source input is not available at pinned revision: " + relative)
+        raw = subprocess.check_output(["git", "-C", str(source_root), "show", source_commit + ":" + relative])
+        source_inputs[relative] = digest(raw)
+        if digest((grammar / relative).read_bytes()) != source_inputs[relative]:
+            raise ValueError("scratch input differs from its declared source commit: " + relative)
+    upstream_generated = {relative: digest(subprocess.check_output(["git", "-C", str(source_root), "show", source_commit + ":" + relative]))
+                          for relative in GENERATED}
+    cli, compiler = (p.resolve(strict=True) for p in (args.cli, args.go))
+    output = args.out.resolve()
+    if output.exists():
+        raise ValueError("choose a fresh receipt path")
+    logs = output.parent / (output.stem + "-logs")
+    logs.mkdir(parents=True, exist_ok=False)
+    env = {**os.environ, "GOTOOLCHAIN": "local", "GOPROXY": "off", "GOSUMDB": "off", "GOENV": "off",
+           "GOROOT": str(compiler.parent.parent), "GOFLAGS": "", "GOEXPERIMENT": "", "CGO_ENABLED": "0", "GOCACHE": str(args.cache.resolve())}
+    host = subprocess.check_output([str(compiler), "env", "GOHOSTOS", "GOHOSTARCH"], env=env, text=True).split()
+    env.update(GOOS=host[0], GOARCH=host[1])
+    commands = []
+
+    def run(name, command, cwd=grammar, compiler_env=False):
+        start = time.perf_counter()
+        result = subprocess.run(list(map(str, command)), cwd=cwd, env=env if compiler_env else None, capture_output=True, timeout=180)
+        log = logs / (name + ".log")
+        log.write_bytes(result.stdout + result.stderr)
+        commands.append({"name": name, "command": list(map(str, command)), "cwd": str(cwd), "exit_code": result.returncode,
+                         "wall_seconds": time.perf_counter() - start, "log": str(log), "log_digest": digest(log.read_bytes())})
+        return result
+
+    generator = run("generator-version", [cli, "--version"])
+    version = run("compiler-version", [compiler, "version"], compiler_env=True)
+    if not generator.stdout.startswith(b"tree-sitter 0.25.8 ") or not version.stdout.startswith(b"go version go1.27.2 "):
+        raise ValueError("qualification requires locked CLI 0.25.8 and Go 1.27.2")
+    before = {p: digest((grammar / p).read_bytes()) for p in GENERATED}
+    run("generate-1", [cli, "generate", "--abi", "15"]).check_returncode()
+    generated = {p: digest((grammar / p).read_bytes()) for p in GENERATED}
+    # Preserve the exact mismatch, while identifying the reviewed banner-only
+    # difference in the proposal's checked-in parser. Never normalize evidence.
+    upstream_parser = subprocess.check_output(["git", "-C", str(source_root), "show", source_commit + ":src/parser.c"])
+    generated_parser = (grammar / "src/parser.c").read_bytes()
+    banner_only = (upstream_parser != generated_parser and
+                   upstream_parser.split(b"\n", 1)[1] == generated_parser.split(b"\n", 1)[1] and
+                   upstream_parser.split(b"\n", 1)[0] == b"/* Automatically @generated by tree-sitter */" and
+                   generated_parser.split(b"\n", 1)[0] == b"/* Automatically @generated by tree-sitter v0.25.8 */")
+    run("generate-2", [cli, "generate", "--abi", "15"]).check_returncode()
+    if generated != {p: digest((grammar / p).read_bytes()) for p in GENERATED}:
+        raise ValueError("non-deterministic generation")
+    corpus = run("corpus", [cli, "test", "--rebuild", "--stat", "total-only"])
+    library_path = logs / ("go.dll" if os.name == "nt" else "go.so")
+    run("build", [cli, "build", "--output", library_path]).check_returncode()
+    handle, language = load_language(library_path, "go")
+    parser = tree_sitter.Parser(language)
+    rows = []
+    for case in cases():
+        main_body = case["main"] + "; " if case["main"] else ""
+        source = ("// π\npackage main\n" + case.get("imports", "") + "\n" + case["types"] + "\n" + case["method"] +
+                  '\nfunc After() int { return 7 }\nfunc main() { ' + main_body + 'if After()!=7 {panic("sibling lost")}; println("oracle:ok") }\n')
+        if case.get("crlf"):
+            source = source.replace("\n", "\r\n")
+        raw = source.encode()
+        file = logs / (case["id"] + ".go")
+        file.write_bytes(raw)
+        result = run("compile-" + case["id"], [compiler, "run", "-gcflags=-lang=" + case["mode"], file], cwd=logs, compiler_env=True)
+        compiled = result.returncode == 0
+        compiler_ok = compiled == case["compiler"] and (not compiled or b"oracle:ok" in result.stderr + result.stdout)
+        tree = parser.parse(raw)
+        has_error = tree.root_node.has_error
+        ok = (not has_error) == case["parse"]
+        recovery = None
+        parameter_recovery = None
+        if not has_error:
+            declarations = [n for n in tree.root_node.named_children if n.type in ("method_declaration", "function_declaration")]
+            names = [n.child_by_field_name("name").text.decode() for n in declarations]
+            ok = ok and names == ["Map", "After", "main"]
+            if ok:
+                method, after, _ = declarations
+                ok = after.start_byte == raw.index(b"func After") and method.start_byte == raw.index(b"func ")
+                if "type_parameters" in case:
+                    params = method.child_by_field_name("type_parameters")
+                    observed = params.text.decode() if params is not None else None
+                    ok = ok and observed == case["type_parameters"] and method.child_by_field_name("parameters").text.decode() == case["parameters"]
+                    ok = ok and method.type == case.get("kind", "method_declaration")
+            dirty = raw + b"func Broken(\n"
+            tree.edit(len(raw), len(raw), len(dirty), endpoint(raw), endpoint(raw), endpoint(dirty))
+            changed = parser.parse(dirty, tree)
+            malformed = changed.root_node.has_error
+            changed.edit(len(raw), len(dirty), len(raw), endpoint(raw), endpoint(dirty), endpoint(raw))
+            recovery = malformed and shape(parser.parse(raw, changed)) == shape(parser.parse(raw))
+            if case.get("type_parameters"):
+                # Edit inside the method, where recovery previously swallowed
+                # following declarations, rather than only appending bad syntax.
+                marker = case["type_parameters"].encode()
+                start = raw.index(marker, raw.index(b"func "))
+                end = start + len(marker)
+                removed = raw[:start] + raw[end:]
+                original = parser.parse(raw)
+                original.edit(start, end, start, endpoint(raw[:start]), endpoint(raw[:end]), endpoint(raw[:start]))
+                edited = parser.parse(removed, original)
+                edit_parity = shape(edited) == shape(parser.parse(removed))
+                edited.edit(start, start, end, endpoint(raw[:start]), endpoint(raw[:start]), endpoint(raw[:end]))
+                parameter_recovery = edit_parity and shape(parser.parse(raw, edited)) == shape(parser.parse(raw))
+        rows.append({"expectation": case, "source": source, "source_digest": digest(raw),
+                     "structural": {"has_error": has_error, "expected_cst_met": ok, "incremental_recovery": recovery,
+                                    "parameter_edit_recovery": parameter_recovery},
+                     "compiler": {"accepted": compiled, "passed": compiler_ok, "target_mode": case["mode"], "exit_code": result.returncode},
+                     "native_resolver": "not_run"})
+        print(json.dumps({"case": case["id"], "compiler_passed": compiler_ok, "cst_passed": ok}), flush=True)
+    compiler_binary = compiler.parent.parent / "pkg/tool" / (host[0] + "_" + host[1]) / ("compile.exe" if os.name == "nt" else "compile")
+    common_checks_passed = corpus.returncode == 0 and all(
+        r["compiler"]["passed"] and r["structural"]["incremental_recovery"] is not False
+        and r["structural"]["parameter_edit_recovery"] is not False for r in rows)
+    passed = common_checks_passed and all(r["structural"]["expected_cst_met"] for r in rows)
+    process_success = common_checks_passed and (args.variant == "baseline" or passed)
+    report = {"format": "entmoot.go_grammar_qualification.v1", "variant": args.variant, "source_commit": source_commit,
+              "source_root": str(source_root), "source_index_digest": digest(index_path.read_bytes()), "source_inputs": source_inputs,
+              "driver_digest": digest(Path(__file__).read_bytes()), "runtime_driver_digest": runtime_digest(),
+              "fixture_digest": digest((ROOT / "declaration_cases.py").read_bytes()),
+              "grammar_digest": digest((grammar / "grammar.js").read_bytes()), "generated_files": generated,
+              "generation_matches_input": before == generated, "generation_repeatable": True,
+              "upstream_generated_files": upstream_generated, "generation_matches_upstream": upstream_generated == generated,
+              "upstream_parser_banner_only_difference": banner_only,
+              "generator": generator.stdout.decode().strip(), "generator_digest": digest(cli.read_bytes()),
+              "compiler": version.stdout.decode().strip(), "compiler_binary_digest": digest(compiler_binary.read_bytes()),
+              "tool_digest": digest(compiler.read_bytes()), "target": {"os": host[0], "architecture": host[1]},
+              "parser": {"abi": language.abi_version, "states": language.parse_state_count, "node_kinds": language.node_kind_count,
+                         "c_bytes": (grammar / "src/parser.c").stat().st_size, "library_bytes": library_path.stat().st_size,
+                         "library_digest": digest(library_path.read_bytes())},
+              "corpus_passed": corpus.returncode == 0, "cases": rows, "commands": commands, "passed": passed,
+              "common_checks_passed": common_checks_passed, "process_success": process_success,
+              "limits": ["Current compiler with historical language modes; no historical compiler-installation matrix",
+                         "No Entmoot visitor or native resolver qualification; upstream binding/platform/example lanes remain separate",
+                         "Baseline intentionally retains unsupported-syntax diagnostics; proposal requires every authored CST control"]}
+    with output.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(report, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({"receipt": str(output), "passed": passed, "cases": len(rows)}))
+    raise SystemExit(0 if process_success else 1)
+
+
+if __name__ == "__main__":
+    main()
