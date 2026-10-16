@@ -131,9 +131,16 @@ been published. Re-run qualification after any implementation change.
 
 ### GitHub Actions
 
-- `ci.yml`: clean Linux/Windows structural and authored-evidence tests, packaging
-  rehearsal, Python controls; Linux formatting/Clippy, schemas, Dylint, dependency
-  license, advisory and unused-dependency checks. No path-based correctness skips.
+Lane model: local pre-commit is fast and ownership-scoped; CI is authoritative;
+tag CD creates the GitHub Release and publishes to crates.io.
+
+- **Pre-commit** (`scripts/pre_commit_check.py`): developer accelerator—policy,
+  fmt, ownership-scoped clippy/test. Not a substitute for CI; never teach
+  `ci.yml` path-based correctness skips.
+- `ci.yml`: Linux/Windows structural tests, packaging rehearsal, Python controls;
+  Linux formatting/Clippy, schemas, Dylint, licenses/advisories. Cargo build
+  cache via Actions; ubuntu uploads `.crate` workflow artifacts. No path-based
+  correctness skips.
 - `native.yml`: explicitly provisioned Windows/Linux adapters, pinned Pyright and
   TypeScript, Rust/Oxc producer/helper, dispatch and compatibility semantics.
 - `docs.yml`: every PR builds docs and runs examples; main deploys only when
@@ -141,14 +148,16 @@ been published. Re-run qualification after any implementation change.
   its source and ensure the account supports Pages for this private repository.
   Source artifacts are generated even while hosting is disabled. Versioned docs
   match the package build; a GitHub Wiki is not a second source of truth.
-- `release.yml`: tag/version equality, all three workflows on that exact tag,
-  protected environment, dependency-order publication, registry visibility checks,
-  clean registry install and prerelease package assets. Jobs have bounded timeouts,
-  minimal permissions and verified immutable action pins. PR workflow inputs pass
-  through environment variables and full-SHA validation before Git invocation.
+- `release.yml` (**sole CD**): on tag `v*`, runs ci/native/docs on that SHA,
+  asserts tag↔version, creates the GitHub Release with `.crate` assets, then
+  Trusted Publishing to crates.io. Bounded timeouts, minimal permissions,
+  verified immutable action pins.
+- `publish.yml`: manual dry-run / bootstrap gate only (`publish=false` by
+  default). Tags go through `release.yml`; do not use `publish.yml` as the
+  primary release path.
 
 Create/register each crate and configure its trusted publisher for this repository,
-`release.yml`, and `crates-io` environment; then set
+**`release.yml`**, and `crates-io` environment; then set
 `CRATES_IO_TRUSTED_PUBLISHING=true`. For bootstrap, an owner-scoped, short-lived
 `CARGO_REGISTRY_TOKEN` secret in that protected environment is supported. Never
 place credentials in source or logs. The release cannot roll back an already

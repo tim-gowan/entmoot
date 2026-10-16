@@ -1,3 +1,5 @@
+# Sole CD path: tag v* → CI/native/docs → GitHub Release → crates.io Trusted Publishing.
+# Configure crates.io Trusted Publishing against this workflow and environment `crates-io`.
 name: Release
 on:
   push:
@@ -15,6 +17,7 @@ jobs:
   docs:
     uses: ./.github/workflows/docs.yml
   publish:
+    name: GitHub Release and crates.io
     needs: [ci, native, docs]
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -22,14 +25,65 @@ jobs:
     permissions:
       contents: write
       id-token: write
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_BUILD_JOBS: 2
+      PYTHONUTF8: '1'
+      RELEASE_TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
       - run: rustup show
+      - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
+        with:
+          shared-key: release-ubuntu
+          cache-targets: true
       - run: python3 scripts/check_release.py --tag "$RELEASE_TAG"
+      - name: Refuse if any crate version already on crates.io
+        run: |
+          set -euo pipefail
+          VERSION="$(python3 - <<'PY'
+          import tomllib
+          from pathlib import Path
+          print(tomllib.loads(Path("Cargo.toml").read_text(encoding="utf-8"))["workspace"]["package"]["version"])
+          PY
+          )"
+          for name in entmoot-contracts entmoot-core entmoot-engine entmoot entmoot-mcp; do
+            CODE="$(curl -sS -o /dev/null -w '%{http_code}' \
+              -H 'User-Agent: entmoot-release-ci (github.com/tim-gowan/entmoot)' \
+              "https://crates.io/api/v1/crates/${name}/${VERSION}")"
+            echo "crates.io status for ${name}@${VERSION}: ${CODE}"
+            if [ "$CODE" = "200" ]; then
+              echo "Version already published; refusing duplicate upload"
+              exit 1
+            fi
+            if [ "$CODE" != "404" ]; then
+              echo "Unexpected crates.io response; refusing to continue"
+              exit 1
+            fi
+          done
+      - run: python3 scripts/package_smoke.py
+      - name: Create GitHub Release with packaged crates
+        run: |
+          set -euo pipefail
+          VERSION="$(python3 - <<'PY'
+          import tomllib
+          from pathlib import Path
+          print(tomllib.loads(Path("Cargo.toml").read_text(encoding="utf-8"))["workspace"]["package"]["version"])
+          PY
+          )"
+          PRERELEASE_ARGS=()
+          case "$VERSION" in
+            *-alpha*|*-beta*|*-rc*) PRERELEASE_ARGS=(--prerelease) ;;
+          esac
+          gh release create "$RELEASE_TAG" target/package/*.crate \
+            --verify-tag "${PRERELEASE_ARGS[@]}" --generate-notes
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
       - name: Obtain short-lived crates.io credential
         id: auth
         if: vars.CRATES_IO_TRUSTED_PUBLISHING == 'true'
@@ -38,8 +92,3 @@ jobs:
         run: python3 scripts/publish_release.py
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token || secrets.CARGO_REGISTRY_TOKEN }}
-      - name: Create prerelease with the tested source packages
-        run: gh release create "$RELEASE_TAG" target/package/*.crate --verify-tag --prerelease --generate-notes
-        env:
-          RELEASE_TAG: ${{ github.ref_name }}
-          GH_TOKEN: ${{ github.token }}

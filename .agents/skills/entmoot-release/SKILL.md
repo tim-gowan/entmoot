@@ -20,8 +20,11 @@ receipts and retained evidence, including failed/partial runs. Preserve historic
 stores rather than relabeling them with a new implementation.
 
 Prepare a clean payload without secrets, scratch, databases, build products or Git
-metadata. Follow the user's requested copy/commit/push boundary. Publish only when
-authorized and the exact tag passes structural, native and docs workflows. Check
-ownership and protected-environment configuration without printing credentials.
-A local dry run is not publication; report actual remote outcomes. Partial registry
-publication is immutable and needs reconciliation before another attempt.
+metadata. Follow the user's requested copy/commit/push boundary. Sole CD is
+`release.yml` on tag `v*` (GitHub Release + crates.io). `publish.yml` is dry-run /
+bootstrap only. Publish only when authorized and the exact tag passes structural,
+native and docs workflows. Trusted Publishing must list `release.yml` and
+environment `crates-io`. Check ownership and protected-environment configuration
+without printing credentials. A local dry run is not publication; report actual
+remote outcomes. Partial registry publication is immutable and needs reconciliation
+before another attempt.

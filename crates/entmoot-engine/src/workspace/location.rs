@@ -19,9 +19,7 @@ static DATA_DIRECTORY: OnceLock<Option<PathBuf>> = OnceLock::new();
 /// A directory contains isolated workspace namespaces; it is not a SQLite filename.
 /// Remote locations are deliberately unsupported until a transport is implemented.
 pub fn configure_data_directory(directory: Option<&Path>) -> Result<(), WorkspaceError> {
-    let directory = directory
-        .map(|path| validate_local_data_path(path))
-        .transpose()?;
+    let directory = directory.map(validate_local_data_path).transpose()?;
     DATA_DIRECTORY
         .set(directory)
         .map_err(|_| super::failure("data directory already configured for this process"))

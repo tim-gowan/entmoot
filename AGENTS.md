@@ -62,8 +62,10 @@ own wire shape. [CHANGELOG](CHANGELOG.md) records delivered work.
 - Use production revision/occurrence fixtures with independently authored
   expectations. Keep native unavailability honest (missing tools stay
   unknown/partial, never silent absence). Bind requires adapters for inventory
-  languages unless `--structural-only`. Run focused checks before
-  workspace/fmt/Clippy/doctests/schema checks. Maintain
+  languages unless `--structural-only`. Local pre-commit
+  (`scripts/pre_commit_check.py`) is a fast ownership-scoped accelerator—not a
+  substitute for CI; never teach `ci.yml` path-based correctness skips. Run
+  focused checks before workspace/fmt/Clippy/doctests/schema checks. Maintain
   [test ownership](scripts/test_ownership.json) when targets change.
 - Keep the five crate boundaries. Contracts contain no vendor/compiler/DB types;
   CLI and MCP share engine read operations. Reads do not enqueue native producers.

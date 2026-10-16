@@ -1,16 +1,11 @@
-# Publish all five workspace crates to crates.io via Trusted Publishing (OIDC).
+# Manual dry-run / bootstrap gate only. Primary CD is release.yml on tag v*.
+# Default publish=false: validate packaging and report whether crates.io would accept.
+# Forced publish=true is emergency bootstrap only—does not create a GitHub Release.
 #
-# Auth: rust-lang/crates-io-auth-action (official crates.io token exchange).
-# No long-lived CARGO_REGISTRY_TOKEN secret required when Trusted Publishing is set.
-#
-# Prerequisites (one-time):
-#   1. GitHub Environment `crates-io`.
-#   2. crates.io Trusted Publishing (or pending publisher) for each crate:
-#        owner=tim-gowan  repo=entmoot  workflow=publish.yml  environment=crates-io
-#      Crates: entmoot-contracts, entmoot-core, entmoot-engine, entmoot, entmoot-mcp
-#   See docs/runbooks/local-alpha.md
+# Trusted Publishing for routine releases must target release.yml + environment crates-io.
+# See docs/runbooks/local-alpha.md
 
-name: Publish to crates.io
+name: Publish to crates.io (dry-run / bootstrap)
 
 on:
   workflow_dispatch:
@@ -20,7 +15,7 @@ on:
         required: true
         type: string
       publish:
-        description: "Upload to crates.io (false = gate only)"
+        description: "Emergency crates.io upload (false = gate only; prefer release.yml tags)"
         required: false
         default: false
         type: boolean
@@ -58,9 +53,12 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "publish=${PUBLISH}" >> "$GITHUB_OUTPUT"
           echo "version=${VERSION} publish=${PUBLISH}"
+          if [ "$PUBLISH" = "true" ]; then
+            echo "::warning::Forced publish bypasses GitHub Release; prefer tagging for release.yml CD"
+          fi
 
   gate:
-    name: Validate packaging
+    name: Validate packaging (dry-run)
     runs-on: ubuntu-latest
     needs: classify
     timeout-minutes: 45
@@ -72,6 +70,10 @@ jobs:
         with:
           python-version: '3.13'
       - run: rustup show
+      - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
+        with:
+          shared-key: publish-gate-ubuntu
+          cache-targets: true
       - name: Assert workspace version
         run: |
           set -euo pipefail
@@ -87,8 +89,7 @@ jobs:
       - run: cargo clippy --workspace --locked --all-targets --features entmoot-core/full-tests -- -D warnings
       - run: python3 scripts/check_release.py
       - run: python3 scripts/package_smoke.py
-      - name: Refuse if any crate version already on crates.io
-        if: needs.classify.outputs.publish == 'true'
+      - name: Report crates.io availability
         run: |
           set -euo pipefail
           VERSION="${{ needs.classify.outputs.version }}"
@@ -98,23 +99,24 @@ jobs:
               "https://crates.io/api/v1/crates/${name}/${VERSION}")"
             echo "crates.io status for ${name}@${VERSION}: ${CODE}"
             if [ "$CODE" = "200" ]; then
-              echo "Version already published; refusing duplicate upload"
-              exit 1
-            fi
-            if [ "$CODE" != "404" ]; then
+              echo "Version already published; dry-run would refuse upload"
+              if [ "${{ needs.classify.outputs.publish }}" = "true" ]; then
+                exit 1
+              fi
+            elif [ "$CODE" != "404" ]; then
               echo "Unexpected crates.io response; refusing to continue"
               exit 1
             fi
           done
+          echo "Dry-run OK. Tag v${VERSION} and use release.yml for GitHub Release + crates.io."
 
-  publish:
-    name: Trusted publish (OIDC)
+  bootstrap:
+    name: Emergency crates.io bootstrap
     runs-on: ubuntu-latest
     needs: [classify, gate]
     if: needs.classify.outputs.publish == 'true'
     environment: crates-io
     timeout-minutes: 60
-    # Stay on the host VM for OIDC (job containers can break id-token exchange).
     permissions:
       id-token: write
       contents: read

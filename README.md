@@ -136,7 +136,9 @@ operator/release workflows.
 
 The [local alpha guide](docs/runbooks/local-alpha.md) covers the prior corpus
 sample, validation, upgrade/rebuild policy, private-repository Pages setup and
-handoff to `tim-gowan/entmoot`. CI separates compiler-free tests from provisioned
-native controls. Publish only the exact revision that passes both.
+handoff to `tim-gowan/entmoot`. Local pre-commit is ownership-scoped and fast;
+CI is authoritative (cached builds, crate artifacts). Tag CD (`release.yml`)
+creates the GitHub Release and publishes to crates.io. Publish only the exact
+revision that passes structural and native gates.
 
 MIT OR Apache-2.0. Bundled grammar sources retain their upstream licenses.

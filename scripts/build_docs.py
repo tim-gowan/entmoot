@@ -106,7 +106,17 @@ def main():
         (source / "app.py").write_text("def work(object):\n    object.toString()\n", encoding="utf-8")
         for command in (["find", "work"], ["boundaries", "--callee", "*.toString()"], ["status"], ["inventory"]):
             result = json.loads(subprocess.check_output([str(cli), "-C", str(source), "--json", *command]))
-            if command[0] in {"find", "boundaries"}:
+            if command[0] == "find":
+                # Subject find may include the repo subject alongside the callable.
+                subjects = result.get("subjects") or {}
+                callables = [
+                    entry
+                    for entry in subjects.values()
+                    if entry.get("kind") == "callable" and entry.get("display_ref") == "app.py::work"
+                ]
+                assert len(callables) == 1, result
+                assert result["result_bounds"]["total_matches"] >= 1, result
+            elif command[0] == "boundaries":
                 assert result["result_bounds"]["total_matches"] == 1, result
     print(f"Generated {len(pages)} owner pages, {len(commands)} CLI help sections and {len(tools)} MCP schemas at {destination}")
 
