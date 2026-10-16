@@ -125,7 +125,7 @@ struct Args {
     #[arg(long, default_value_t = 64, value_parser = clap::value_parser!(u16).range(0..=4096))]
     operation_queue: u16,
     /// Provider graph(s), current.json pointers, or published checkouts for compatibility.
-    /// When omitted, discover bounded local .entmoot/deps publications.
+    /// When omitted, discover bounded publications under the workspace volume's deps directory.
     #[arg(long)]
     provider: Vec<PathBuf>,
     /// Published logic.graph.v1 topology used for subject discovery.
@@ -151,7 +151,7 @@ struct Args {
     /// Seconds to wait for publication open on each tools/call (default 180).
     #[arg(long, default_value_t = 180, value_parser = clap::value_parser!(u64).range(1..=3600))]
     ready_timeout_seconds: u64,
-    /// Fail boot when `.entmoot/adapter-profile.json` has hard gaps (opt-in).
+    /// Fail boot when the workspace adapter profile has hard gaps (opt-in).
     #[arg(long)]
     require_adapter_config: bool,
 }
@@ -1327,7 +1327,7 @@ async fn main() -> Result<()> {
             }
             Ok(None) => {
                 eprintln!(
-                    "entmoot-mcp: no .entmoot/adapter-profile.json under {}; run entmoot init",
+                    "entmoot-mcp: no workspace adapter profile for {}; run entmoot init",
                     root.display()
                 );
                 if args.require_adapter_config {

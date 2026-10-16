@@ -81,7 +81,7 @@ submission/control/execution with explicit `--collaboration-source-root`.
 The workspace repository is selected automatically; `--collaboration-store` is an
 expert override. The portable request contains no host path. Source observation
 itself does not create a missing store. These jobs update the shared registry;
-they do not replace `.entmoot/current.json` or alter a worktree's ignore rules.
+they do not replace the workspace's current publication pointer or alter its ignore rules.
 Inventory stays compiler-free; canon is an explicit structural experiment. Steps
 are checkpoint boundaries, not hard elapsed-time limits. An interrupted file batch
 can repeat; completed file outcomes survive restart and collection. Canon carries

@@ -25,7 +25,7 @@ resolved-rust-analyzer = [
     "dep:ra_ap_syntax",
     "dep:ra_ap_vfs",
 ]
-# Optional in-process Oxc JS/TS lexical solver (pinned for rustc 1.95).
+# Optional in-process Oxc JS/TS lexical solver (host toolchain in rust-toolchain.toml).
 resolved-oxc = ["dep:oxc"]
 
 [dependencies]

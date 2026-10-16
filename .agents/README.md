@@ -16,7 +16,10 @@ intent and authorization; local preparation does not imply successful publicatio
 ## IDE / agent tool trees
 
 Canonical content lives here under `.agents/`. `.cursor/`, `.codex/`, and
-`.claude/` are gitignored. Create local symlinks so IDEs resolve the same files:
+`.claude/` are gitignored. Where a harness supports this layout, links can reuse
+the same files. First inspect existing paths; never replace a populated directory
+or another link. The following commands apply only to absent paths. Codex uses
+the root AGENTS.md entry point; these links alone do not enable rule discovery:
 
 ```text
 # PowerShell (repo root)

@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-16: Maintainer guidance and documentation audit
+
+- Map changes to identity, storage, publication, frontend and test-lane checks in
+  AGENTS; clarify fixture isolation, independent assertions and evidence limits.
+- Correct storage/discovery/help comments, native feature commands and release
+  version examples. Mark previous qualification reports as historical and record
+  reproduced implementation/test blockers in PLANNING. These are documentation
+  corrections, not fixes for the runtime defects or renewed release qualification.
+
 ## 2026-10-16: Docs after publish; parameterized pipelines
 
 - Move CD docs to after successful crates.io publish; CI/PR docs stage under
@@ -14,11 +23,12 @@
 - Add dispatch-only `demo.yml` plus `evals/demo/getrandom-structural.json`
   (pinned `getrandom-0.1.16`, structural-only).
 
-## 1.0.0-alpha.1 — local candidate (2026-10-16)
+## Local candidate preparation (2026-10-16)
 
 - Default durable state to `~/.entmoot` (workspaces, `config.json` volume +
-  `ENTMOOT_*` slots, adapters). Analyzing a source never writes `<source>/.entmoot`.
-  Adapter discovery: process/config overrides → checkout → PATH → home adapters.
+  `ENTMOOT_*` slots, adapters). Native artifact placement remains a known gap.
+  Current discovery: nonempty process/config overrides → checkout → home → PATH;
+  PLANNING tracks the discrepancy from the intended precedence.
 - Prepare and reuse local workspace storage automatically in CLI/MCP; optional
   `ENTMOOT_DATA_DIR` / `--data-dir` overrides the home root. Native production remains explicit.
 - Add find/inspect/read-source/callers/callees/boundaries CLI verbs, shared boundary

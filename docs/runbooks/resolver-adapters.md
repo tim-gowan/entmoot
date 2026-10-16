@@ -20,8 +20,8 @@ including TypeScript 7's lack of a compiler API.
 Catalog (paths + env): [`tools/resolver-adapters/catalog.toml`](../../tools/resolver-adapters/catalog.toml).
 Native floors (pins + language surfaces): [`tools/resolver-adapters/floors.toml`](../../tools/resolver-adapters/floors.toml).
 Readiness: `entmoot status` (home-scoped adapter profile after `init`).
-Maintainer terms: [AGENTS glossary](../../AGENTS.md#maintainer-glossary).
-Bind ranking: [`RESOLVER_WORKFLOW.md`](../architecture/ARCHITECTURE.md) §5–§6.
+Maintainer terms: [AGENTS vocabulary](../../AGENTS.md#native-tools-and-vocabulary).
+Bind/canon ownership: [architecture](../architecture/ARCHITECTURE.md#canon-and-clone-operations).
 
 Java family id is `java` / `ENTMOOT_JAVA_ADAPTER` (javac Trees only).
 Operators use `entmoot init`; the hidden `index` command is a low-level structural write.
@@ -104,19 +104,28 @@ Directories are pruned before reading; coverage records the excluded scope.
 Ancestor and machine-global ignore settings do not change an explicitly selected
 root. Ignore files remain snapshot inputs so policy edits invalidate the view.
 
+Fresh discovery during init uses the order below. Bind/produce first honor a
+nonempty explicit override, then reuse an existing profile path if its file is
+present, before searching the default candidates. Re-run init to refresh discovery.
+
 | Step | Behavior |
 |------|----------|
-| Process `ENTMOOT_*` set | Exclusive path (canonicalize; relative → CWD); missing → hard `invalid_environment` (no fallthrough) |
+| Nonempty process `ENTMOOT_*` | Exclusive path (canonicalize; relative → CWD); missing → hard `invalid_environment` (no fallthrough) |
 | else workspace/global `config.json` `env` slot | Same exclusive rules when non-empty |
 | else analyzed checkout | Conventional `.tmp/adapter-build/...` under the checkout |
-| else PATH basename | Installed CLI names when present |
 | else `ENTMOOT_ADAPTERS_ROOT` / `~/.entmoot/adapters/` | Catalog relatives for sidecars and programs |
+| else PATH basename | Installed CLI names when present |
+
+This is the current discovery order. Empty process overrides currently fall
+through, and home adapters precede PATH; both differ from the intended contract.
+Track repairs in [PLANNING](../../PLANNING.md#current-qualification-blockers).
 
 When multiple host tool versions exist, selection follows ecosystem priority
 (`JAVA_HOME`, `DOTNET_ROOT`, active venv, rustup default, then PATH).
 
-`bind` requires native by default; incomplete `semantic_status` fails the bind.
-Use `--structural-only` to skip native producers.
+`bind` requires native by default; useful partial dispatch evidence can succeed.
+Skipped/failed production, invalid environments and exhausted budgets fail
+required-native bind. Use `--structural-only` to skip native producers.
 
 Native production defaults to a one-hour wall budget **per producer** across
 `init`, `bind` and standalone producer commands. Use `--timeout-seconds` for a
@@ -151,8 +160,8 @@ entmoot status
 ```
 
 Durable state defaults to `~/.entmoot/workspaces/<source-key>/` with `config.json`
-(volume + empty `ENTMOOT_*` slots) and a `store/` volume. Analyzing a source never
-creates `<source>/.entmoot`.
+(volume + empty `ENTMOOT_*` slots) and a `store/` volume. Structural initialization
+uses this volume; native artifact placement still has the known gap linked above.
 
 ## Rust (in-process)
 

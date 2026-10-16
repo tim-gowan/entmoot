@@ -1,7 +1,7 @@
-//! Workspace `.entmoot/adapter-profile.json` discovery, load/store, and resolve fallback.
+//! Adapter profile discovery, load/store and resolution in the workspace volume.
 //!
 //! Init refreshes the profile from host discovery. Bind/produce resolve adapters as:
-//! process `ENTMOOT_*` (exclusive) → profile path → catalog relatives.
+//! nonempty process/config override (exclusive) → profile path → catalog relatives.
 //! Entmoot never downloads toolchains.
 
 use std::cell::RefCell;
@@ -42,7 +42,7 @@ fn active_workspace_root() -> Option<PathBuf> {
     ACTIVE_WORKSPACE_ROOT.with(|slot| slot.borrow().clone())
 }
 
-/// Path to the adapter profile file under a workspace root.
+/// Path to the adapter profile file in the workspace's selected storage volume.
 #[must_use]
 pub fn profile_path(workspace_root: &Path) -> PathBuf {
     storage_directory(workspace_root).join(ADAPTER_PROFILE_FILE)
@@ -50,7 +50,7 @@ pub fn profile_path(workspace_root: &Path) -> PathBuf {
 
 /// Load an adapter profile when the file exists and parses.
 ///
-/// Refuses the obsolete pre-release `.entmoot/native-profile.json` layout (no alias).
+/// Refuses the obsolete pre-release `native-profile.json` in that volume (no alias).
 pub fn load_profile(workspace_root: &Path) -> Result<Option<AdapterProfile>, String> {
     let obsolete = storage_directory(workspace_root).join(OBSOLETE_NATIVE_PROFILE_FILE);
     if obsolete.is_file() && !profile_path(workspace_root).is_file() {
@@ -75,7 +75,7 @@ pub fn load_profile(workspace_root: &Path) -> Result<Option<AdapterProfile>, Str
     Ok(Some(profile))
 }
 
-/// Persist an adapter profile under `.entmoot/`.
+/// Persist an adapter profile in the workspace's selected storage volume.
 pub fn store_profile(workspace_root: &Path, profile: &AdapterProfile) -> Result<(), String> {
     let dir = storage_directory(workspace_root);
     fs::create_dir_all(&dir).map_err(|error| format!("create {}: {error}", dir.display()))?;
@@ -330,7 +330,7 @@ fn workspace_adapter_candidates(
     repo_relative: bool,
 ) -> Vec<PathBuf> {
     super::family_registry::adapter_candidate_paths_for(
-        "", // no exclusive env — checkout then home
+        "", // no exclusive env — checkout, home, then PATH
         relatives,
         repo_relative,
         Some(workspace_root),
@@ -347,7 +347,7 @@ fn profile_recorded_path(workspace_root: &Path, family: &str) -> Option<PathBuf>
 
 /// Resolve an adapter using process/config env → profile → checkout → home/PATH.
 ///
-/// When `env_var` is set (process or config slot), only that path is considered.
+/// When `env_var` is nonempty (process or config slot), only that path is considered.
 /// Missing exclusive paths yield `None` so `available()` stays false; callers
 /// use `adapter_env_configured` for explicit invalid-environment messaging.
 pub fn resolve_with_profile(
@@ -400,7 +400,7 @@ pub fn resolve_with_profile(
     )
 }
 
-/// Walk ancestors for `.entmoot/adapter-profile.json` or `.entmoot/current.json`.
+/// Walk source ancestors for an adapter profile or current publication in their selected volume.
 #[must_use]
 pub fn find_workspace_root(start: &Path) -> Option<PathBuf> {
     for ancestor in start.ancestors() {

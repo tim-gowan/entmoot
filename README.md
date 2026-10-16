@@ -23,14 +23,16 @@ entmoot -C /path/to/project boundaries --callee "*.toString()" --outcome unsuppo
 ```
 
 After the alpha is published, registry installation uses
-`cargo install entmoot --version 1.0.0-alpha.1 --locked` and the equivalent command
+`cargo install entmoot --version <published-version> --locked` and the equivalent command
 for `entmoot-mcp`. The repository's version is a release candidate until the
 protected release workflow succeeds; local tests do not establish publication.
 
 Run inside the source repository or select it with `-C`. First use automatically
 creates a structural inventory and private local storage under `~/.entmoot`
-(override with `--data-dir` / `ENTMOOT_DATA_DIR`). Analyzing a checkout never
-writes into that checkout. Later reads reuse the current immutable publication.
+(override with `--data-dir` / `ENTMOOT_DATA_DIR`). Structural initialization keeps
+its state outside the checkout. Native artifact placement and configuration
+validation still have [known gaps](PLANNING.md#current-qualification-blockers).
+Later reads reuse the current immutable publication.
 No database setup is required. Remote storage is not implemented.
 
 ```text
@@ -103,23 +105,25 @@ or qualification changes. **Alpha candidate** means implemented and locally
 controlled; **partial** means useful evidence with material gaps. No row claims
 exhaustive language semantics or runtime/security proof.
 
-The [fresh alpha sample](docs/runbooks/local-alpha.md#fresh-alpha-evidence-2026-10-16)
+The [recorded alpha sample](docs/runbooks/local-alpha.md#fresh-alpha-evidence-2026-10-16)
 covers 5,407 call sites across four pinned publications and 47 verified source
-digests/spans, with build and native-scope limitations kept explicit.
+digests/spans, with build and native-scope limitations kept explicit. The current
+audit found [qualification blockers](PLANNING.md#current-qualification-blockers);
+that sample does not establish current release readiness.
 
 | Capability | Maturity | Utility and limit / verification owner |
 |---|---|---|
 | Structural inventory and identities | Alpha candidate | Compiler-free source/revision navigation; parsing is not compiler qualification. [Revision controls](crates/entmoot-core/tests/revision_pairs.rs) |
-| Automatic local storage and recovery | Alpha candidate | First-use structural preparation, optional home-directory location, immutable history and fingerprint fencing. [Workspace controls](crates/entmoot-cli/tests/workspace_defaults.rs) |
+| Automatic local storage and recovery | Partial | Home storage is the default; native artifacts, config validation, budgets and migrated controls need repair. [Blockers](PLANNING.md#current-qualification-blockers); [workspace controls](crates/entmoot-cli/tests/workspace_defaults.rs) |
 | CLI/MCP navigation and source | Alpha candidate | Shared bounded operations and digest-verified reads; first inventory has a startup cost. [Transport controls](crates/entmoot-mcp/tests/stdio_e2e.rs) |
-| Source/native call boundaries | Alpha candidate | Distinct-site counts, attributed native detail, explicit unreported evidence and three closure scopes. [Boundary controls](crates/entmoot-engine/tests/call_boundaries.rs) |
+| Source/native call boundaries | Partial | Distinct-site counts and explicit closure scopes; native detail retrieval has a storage-path gap. [Boundary controls](crates/entmoot-engine/tests/call_boundaries.rs) |
 | Native binding/dispatch | Partial, per configuration | Repository/external/intrinsic/unknown observations; no universal closed-world claim. [Native qualification](.github/workflows/native.yml) |
 | Revision impact and scoped overlay | Alpha candidate | Scope/signature/multiplicity-aware presence deltas; not API compatibility. [Overlay owner](crates/entmoot-engine/src/overlay.rs) |
 | Consumer/provider compatibility | Partial | Authored positive/negative controls; missing import/export scope remains incomplete. [Controls](crates/entmoot-engine/tests/package_compatibility.rs) |
 | Dependency materialization | Alpha candidate | Confined staged copying, opaque version keys, symlink rejection and resource bounds. [Safety owner](crates/entmoot-engine/src/materialize.rs) |
 | Test impact / unused candidates | Partial | Review and test-selection assistance; no coverage or dead-code proof. [Testing](docs/runbooks/testing.md) |
 | Canon / clone candidates / collaboration | Experimental | Explicit evidence policies and local recovery; no runtime equivalence proof or remote collaboration service. [Architecture](docs/architecture/ARCHITECTURE.md) |
-| Registry packages / generated docs / CI | Alpha candidate; external release pending | Five independently extractable packages, package fingerprint equality rehearsal, protected publication and generated docs. [Release gates](docs/runbooks/local-alpha.md) |
+| Registry packages / generated docs / CI | Qualification blocked | Five package owners and generated docs; storage tests and native CI preflight need repair before release. [Release gates](docs/runbooks/local-alpha.md) |
 | Remote storage / global package catalog | Planned, unimplemented | Future location transport must preserve publication, provenance, query and mutation semantics. |
 
 ## Maintain and release

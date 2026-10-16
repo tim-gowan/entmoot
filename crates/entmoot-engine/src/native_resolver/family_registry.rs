@@ -1,4 +1,4 @@
-//! Family catalog + adapter binary discovery (env/config exclusive, then PATH/home).
+//! Family catalog and discovery: nonempty env/config override, checkout, home, PATH.
 
 use crate::workspace::{
     canonicalize_override_path, default_entmoot_home, resolve_entmoot_override,
@@ -116,7 +116,8 @@ fn checkout_program_roots(checkout: &Path) -> [PathBuf; 2] {
 /// Candidate paths for an adapter env var + relative artifact list.
 ///
 /// Order: exclusive override (process/config) → analyzed checkout conventional
-/// paths → home/`ENTMOOT_ADAPTERS_ROOT` adapters. Override paths are exclusive.
+/// paths → home/`ENTMOOT_ADAPTERS_ROOT` adapters → PATH basenames.
+/// Nonempty override paths are exclusive; empty overrides currently fall through.
 pub fn adapter_candidate_paths(
     env_var: &str,
     relative_artifacts: &[&str],
@@ -221,7 +222,7 @@ pub fn resolve_sidecar_family(id: &str) -> Option<PathBuf> {
     resolve_adapter_binary(family.env, family.relative_artifacts, family.repo_relative)
 }
 
-/// True when the exclusive env/config override is set (even if the path is missing).
+/// True when a nonempty exclusive env/config override exists, even for a missing path.
 pub fn adapter_env_configured(env_var: &str) -> bool {
     resolve_entmoot_override(env_var, None).is_some()
 }

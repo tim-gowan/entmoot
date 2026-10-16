@@ -66,7 +66,7 @@ impl QueryEngine {
         });
         if report.adapter_profile.is_none() {
             report.limitations.push(
-                "adapter_profile_unavailable; run entmoot init to refresh .entmoot/adapter-profile.json"
+                "adapter_profile_unavailable; run entmoot init to refresh the workspace adapter profile"
                     .into(),
             );
         }

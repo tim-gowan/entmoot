@@ -154,8 +154,7 @@ pub fn discover_publication(start: &Path) -> Result<WorkspacePublication, Worksp
         }
     }
     Err(WorkspaceError::Invalid(
-        "no .entmoot/current.json publication; run entmoot init or pass --graph/--publication"
-            .into(),
+        "no current workspace publication; run entmoot init or pass --graph/--publication".into(),
     ))
 }
 
@@ -739,7 +738,8 @@ fn bind_graph(
     Ok(stages)
 }
 
-/// Initialize a new source snapshot; explicit effectful API, never called by queries.
+/// Publish a source snapshot for explicit init or first-use frontend preparation.
+/// Query-service reads do not call this; frontends may bootstrap missing inventory.
 pub fn initialize_workspace(
     root: &Path,
     repository: Option<&str>,
@@ -986,7 +986,7 @@ fn publish(
     }
     let started = std::time::Instant::now();
     let inventory_families: Vec<String> = languages(&graph).into_iter().collect();
-    // plan_only must not create `.entmoot/` (no publication, no profile file).
+    // plan_only must not write a publication or adapter profile to workspace storage.
     let adapter_profile = if options.plan_only {
         crate::native_resolver::adapter_profile::discover(&root, Some(&inventory_families))
     } else {

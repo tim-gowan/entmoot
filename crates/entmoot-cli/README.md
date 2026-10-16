@@ -1,6 +1,6 @@
 # entmoot
 
-Command-line interface. Install with `cargo install entmoot --version 1.0.0-alpha.1 --locked`. Add `--features producer` for Rust Analyzer/Oxc and the matching producer helper.
+Command-line interface. After publication, install with `cargo install entmoot --version <published-version> --locked`. Add `--features producer` for Rust Analyzer/Oxc and the matching producer helper.
 
 Alpha software: pin the exact prerelease and lockfile; incompatible derivations require rebuilding disposable local publications.
 

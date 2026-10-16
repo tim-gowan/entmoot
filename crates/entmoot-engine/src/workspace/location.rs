@@ -1,8 +1,8 @@
 //! Local frontend storage selection. Portable queries never contain database paths.
 //!
-//! Durable state defaults under `~/.entmoot` (or `ENTMOOT_DATA_DIR`). Analyzed
-//! source trees are never written. Per-workspace `config.json` points at a volume
-//! and may override `ENTMOOT_*` slots when process env is unset.
+//! Durable state defaults under `~/.entmoot` (or `ENTMOOT_DATA_DIR`). This module
+//! selects storage independently of source trees. Per-workspace `config.json`
+//! points at a volume and supplies `ENTMOOT_*` slots when process env is empty/unset.
 use super::{WorkspaceError, WorkspacePublication};
 use entmoot_contracts::{
     EntmootConfig, ENTMOOT_CONFIG_FILE, ENTMOOT_CONFIG_SCHEMA, ENTMOOT_DEFAULT_STORE,
@@ -158,15 +158,19 @@ fn resolve_volume(namespace: &Path, config: &EntmootConfig) -> Result<PathBuf, W
 
 /// Compute the local storage volume without creating it when possible.
 ///
-/// Always namespaced under the data root. Never returns `<source>/.entmoot`.
+/// Configuration is namespaced under the data root; an explicit volume can be elsewhere.
+/// Uses the best-effort fallback behavior of [`storage_directory_in`].
 pub fn storage_directory(root: &Path) -> PathBuf {
     storage_directory_in(root, Some(&data_root()))
 }
 
-/// Pure path selection used by embedding applications and frontend discovery.
+/// Best-effort volume lookup used by embedding applications and frontend discovery.
 ///
 /// `data_directory` of `None` uses [`default_entmoot_home`]. When the workspace
-/// config exists, its `volume` is honored; otherwise the default `store/` sibling.
+/// config is valid, its `volume` is honored; otherwise the default `store/` sibling.
+/// Reads configuration from disk without creating it. Invalid config or volume
+/// errors currently fall back silently; this is not configuration validation.
+/// Mutation callers must validate configuration before relying on this path.
 pub fn storage_directory_in(root: &Path, data_directory: Option<&Path>) -> PathBuf {
     let data = data_directory
         .map(Path::to_owned)
@@ -178,6 +182,7 @@ pub fn storage_directory_in(root: &Path, data_directory: Option<&Path>) -> PathB
 }
 
 /// Resolve a single `ENTMOOT_*` value: process env → workspace config → global config.
+/// Empty values are skipped; configuration read errors are currently ignored.
 #[must_use]
 pub fn resolve_entmoot_override(key: &str, source_root: Option<&Path>) -> Option<String> {
     if let Ok(value) = std::env::var(key) {
@@ -202,7 +207,7 @@ pub fn resolve_entmoot_override(key: &str, source_root: Option<&Path>) -> Option
     None
 }
 
-/// True when the exclusive override is configured (process or config slot).
+/// True when a nonempty override is configured (process or config slot).
 #[must_use]
 pub fn entmoot_override_configured(key: &str, source_root: Option<&Path>) -> bool {
     resolve_entmoot_override(key, source_root).is_some()

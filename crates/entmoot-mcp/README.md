@@ -196,7 +196,7 @@ single-subject explain/export with explicit `max_bytes` for large evidence.
 
 `compatibility` uses the same `CompatibilityRequest` and `CompatibilityResult`
 as CLI `assess compatibility`. Configure repeated `--provider <graph|current.json|checkout>` inputs,
-or let startup discover at most 256 direct directories under `.entmoot/deps`.
+or let startup discover at most 256 direct directories under the workspace storage volume's `deps/` directory.
 Each may contain `logic.graph.v1` or a local `current.json`; discovered graph
 and store paths must remain inside that dependency directory. `{}` assesses all
 configured providers; `{"request": ...}` selects their publication digests.
@@ -262,4 +262,4 @@ separate; none is inferred from provider completion.
 
 `entmoot-mcp --tools-schema` prints generated tools/input schemas without opening
 storage. Rust contracts own output shape. After publication, install with
-`cargo install entmoot-mcp --version 1.0.0-alpha.1 --locked`.
+`cargo install entmoot-mcp --version <published-version> --locked` after publication.

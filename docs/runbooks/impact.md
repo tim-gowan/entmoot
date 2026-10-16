@@ -19,7 +19,7 @@ Impact accepts `--correspondence-mode relative_occurrence|explicit_alias`,
 Inventory-only presence deltas (no Bound/Fits):  
 `entmoot assess overlay --base-graph <a> --head-graph <b> [--name model_validate]`.
 
-Package-downgrade recipe: materialize both versions under `.entmoot/deps`, init
+Package-downgrade recipe: materialize both versions under the workspace volume's `deps/`, init
 each with `--subject`, run impact with PURL subject correspondence, overlay
 consumer×provider inventories, then optional `entmoot assess compatibility`.
 
