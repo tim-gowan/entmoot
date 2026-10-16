@@ -7,9 +7,9 @@ pub mod impact;
 pub mod location;
 pub use location::{
     canonicalize_override_path, configure_data_directory, data_root, default_entmoot_home,
-    ensure_global_config, ensure_workspace_config, entmoot_override_configured, host_home_directory,
-    prepare_discovered_workspace, prepare_workspace, resolve_entmoot_override, storage_directory,
-    storage_directory_in, workspace_namespace,
+    ensure_global_config, ensure_workspace_config, entmoot_override_configured,
+    host_home_directory, prepare_discovered_workspace, prepare_workspace, resolve_entmoot_override,
+    storage_directory, storage_directory_in, workspace_namespace,
 };
 pub mod open;
 pub mod retention;

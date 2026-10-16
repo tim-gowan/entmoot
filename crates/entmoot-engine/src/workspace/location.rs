@@ -74,7 +74,8 @@ fn validate_local_data_path(path: &Path) -> Result<PathBuf, WorkspaceError> {
 #[must_use]
 pub fn workspace_namespace(root: &Path, data_directory: &Path) -> PathBuf {
     let canonical = fs::canonicalize(root).unwrap_or_else(|_| root.to_owned());
-    let key = entmoot_contracts::blake3_hex(canonical.as_os_str().as_encoded_bytes()).replace(':', "-");
+    let key =
+        entmoot_contracts::blake3_hex(canonical.as_os_str().as_encoded_bytes()).replace(':', "-");
     data_directory.join("workspaces").join(key)
 }
 
@@ -82,12 +83,8 @@ pub fn workspace_namespace(root: &Path, data_directory: &Path) -> PathBuf {
 pub fn load_config_file(path: &Path) -> Result<EntmootConfig, WorkspaceError> {
     match fs::read(path) {
         Ok(bytes) => {
-            let config: EntmootConfig = serde_json::from_slice(&bytes).map_err(|error| {
-                super::failure(format!(
-                    "invalid {}: {error}",
-                    path.display()
-                ))
-            })?;
+            let config: EntmootConfig = serde_json::from_slice(&bytes)
+                .map_err(|error| super::failure(format!("invalid {}: {error}", path.display())))?;
             if config.schema != ENTMOOT_CONFIG_SCHEMA {
                 return Err(super::failure(format!(
                     "unsupported config schema {:?} (expected {ENTMOOT_CONFIG_SCHEMA})",
@@ -116,9 +113,8 @@ pub fn ensure_workspace_config(namespace: &Path) -> Result<EntmootConfig, Worksp
     }
     fs::create_dir_all(namespace)?;
     let config = EntmootConfig::empty_local();
-    let bytes = serde_json::to_vec_pretty(&config).map_err(|error| {
-        super::failure(format!("serialize workspace config: {error}"))
-    })?;
+    let bytes = serde_json::to_vec_pretty(&config)
+        .map_err(|error| super::failure(format!("serialize workspace config: {error}")))?;
     fs::write(&path, bytes)?;
     Ok(config)
 }
@@ -131,9 +127,8 @@ pub fn ensure_global_config(data_directory: &Path) -> Result<EntmootConfig, Work
     }
     fs::create_dir_all(data_directory)?;
     let config = EntmootConfig::empty_local();
-    let bytes = serde_json::to_vec_pretty(&config).map_err(|error| {
-        super::failure(format!("serialize global config: {error}"))
-    })?;
+    let bytes = serde_json::to_vec_pretty(&config)
+        .map_err(|error| super::failure(format!("serialize global config: {error}")))?;
     fs::write(&path, bytes)?;
     Ok(config)
 }
@@ -144,7 +139,12 @@ fn resolve_volume(namespace: &Path, config: &EntmootConfig) -> Result<PathBuf, W
             "remote storage is not implemented; set mode to local or choose a local volume",
         ));
     }
-    match config.volume.as_deref().map(str::trim).filter(|v| !v.is_empty()) {
+    match config
+        .volume
+        .as_deref()
+        .map(str::trim)
+        .filter(|v| !v.is_empty())
+    {
         Some(volume) => {
             let path = PathBuf::from(volume);
             let absolute = if path.is_absolute() {
