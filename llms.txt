@@ -1,0 +1,4 @@
+# Entmoot
+
+Structural inventory, attributable native evidence and bounded change impact.
+Repository: https://github.com/tim-gowan/entmoot

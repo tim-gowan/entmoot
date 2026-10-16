@@ -1,20 +1,10 @@
 # Revision impact controls
 
-Impact compares actual source occurrences and retained evidence across explicit
-snapshots. Direct parents and deliberately selected windows remain distinct.
-A structural change, binding change and declared contract change are separate
-observations. Missing or partial observations are not unchanged results.
-
-Cargo owners: `revision_pairs`, `revision_receipts`, `impact_relay`,
-`artifact_cli` and MCP `stdio_e2e`. The Go frontier unit control in
-[revalidation](../../crates/entmoot-engine/src/revalidation.rs) covers module and
-embedded-resource selectors. The [campaign harness](../../evals/harness/README.md)
-checks real process output, occurrence correspondence and unconsumed pagination.
-
-Returned callers are bounded navigation evidence. Unknown, truncated and
-unconsumed frontiers remain visible. Refreshing applicability must retain the
-original supplied facts and their producer attribution; it does not rewrite
-historical structural identity.
+Procedure for revision compare, subject correspondence and inventory overlay.
+Meaning (subjects, correspondence, missing ≠ absence): [ARCHITECTURE](../architecture/ARCHITECTURE.md).
+CLI shapes: `entmoot assess --help` (and generated docs CLI reference). Cargo
+owners: `revision_pairs`, `revision_receipts`, `impact_relay`, `artifact_cli`,
+MCP `stdio_e2e`; harness: [evals/harness](../../evals/harness/README.md).
 
 ## Subject correspondence and inventory overlay
 

@@ -1,5 +1,10 @@
 # Entmoot MCP transport
 
+Operator entry: [README](https://github.com/tim-gowan/entmoot#readme). Meaning:
+[ARCHITECTURE](https://github.com/tim-gowan/entmoot/blob/main/docs/architecture/ARCHITECTURE.md).
+Tool input schemas: `entmoot-mcp --tools-schema` (and generated docs)—do not
+hand-copy them here. Procedures below.
+
 Build `cargo build -p entmoot --features producer -p entmoot-mcp`.
 Cursor local wiring: [`.agents/mcp.json`](https://github.com/tim-gowan/entmoot/blob/main/.agents/mcp.json) (symlink `.cursor` → `.agents`) via
 [`scripts/run_entmoot_mcp.py`](https://github.com/tim-gowan/entmoot/blob/main/scripts/run_entmoot_mcp.py); usage guidance lives in the [agent runtime runbook](https://github.com/tim-gowan/entmoot/blob/main/docs/runbooks/agent-runtimes.md).

@@ -124,11 +124,15 @@ digests/spans, with build and native-scope limitations kept explicit.
 
 ## Maintain and release
 
-[Architecture](docs/architecture/ARCHITECTURE.md), [planning](PLANNING.md),
-[changelog](CHANGELOG.md), [runbooks](docs/README.md) and [AGENTS](AGENTS.md) are the
-owners. Rust and [generated JSON Schema](crates/entmoot-contracts/generated/README.md)
-own wire shapes. Repository skills under [.agents/skills](.agents/README.md) give
-short operator/release workflows. No generated docs need hand-maintained copies.
+This README is the main operator entry. [Architecture](docs/architecture/ARCHITECTURE.md)
+is the meaning walkthrough. Public API and engine semantics live in crate rustdoc;
+CLI help, MCP `--tools-schema` and [generated JSON Schema](crates/entmoot-contracts/generated/README.md)
+own interface and wire shape—no hand-maintained copies. Short [runbooks](docs/README.md)
+hold procedures only. [AGENTS](AGENTS.md) owns maintainer/agent invariants (update
+in the same turn as durable changes); [llms.txt](llms.txt) is a static link to this
+repository. [Planning](PLANNING.md) and [changelog](CHANGELOG.md) track active and
+delivered work. Skills under [.agents/skills](.agents/README.md) give short
+operator/release workflows.
 
 The [local alpha guide](docs/runbooks/local-alpha.md) covers the prior corpus
 sample, validation, upgrade/rebuild policy, private-repository Pages setup and

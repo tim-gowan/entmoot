@@ -39,6 +39,15 @@ own wire shape. [CHANGELOG](CHANGELOG.md) records delivered work.
 
 ## Working conventions
 
+- **Every turn:** when this session changes durable behavior, contracts, CLI/MCP
+  surfaces, maturity, meaning or procedures, update the matching owner in the
+  same turn—do not defer a docs pass. Prefer inline rustdoc (`//!` / `///`) for
+  public API and engine semantics; [README](README.md) for operator entry and
+  maturity; [ARCHITECTURE](docs/architecture/ARCHITECTURE.md) for the identity
+  and ownership walkthrough; short runbooks for procedure steps only (link, do
+  not restate essays); Clap help / MCP `--tools-schema` / contract schema
+  examples for interface and wire shape. [llms.txt](llms.txt) is a static LLM
+  discovery stub (GitHub repo root URL only)—not a second copy of this file.
 - Further execution machinery must earn its place through measured need. Use
   representative end-to-end workflows, including interruption/recovery where
   relevant, to justify additional scheduling, queuing, checkpointing or

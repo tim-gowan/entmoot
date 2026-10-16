@@ -1,7 +1,10 @@
-"""Build versioned operator docs from existing owners and executable interfaces.
+"""Build versioned operator docs from owners and executable interfaces.
 
-No second Markdown source tree: Rustdoc, CLI help, MCP input schemas and the Rust
-contract schemas are copied/generated from the same build. Output is disposable.
+Public SSOT: crate rustdoc, live CLI help, MCP tool schemas and contract JSON
+Schema. README is the main operator entry; ARCHITECTURE is the meaning walkthrough;
+runbooks stay short procedures. AGENTS is maintainer guidance (still rendered);
+llms.txt is not part of this site. No second Markdown tree for CLI/MCP/API.
+Output is disposable.
 """
 import argparse
 import html
@@ -85,7 +88,15 @@ def main():
         raise SystemExit("Run cargo doc --workspace --no-deps first")
     shutil.copytree(ROOT / "target/doc", destination / "api", dirs_exist_ok=True)
     index = f'<h1>Entmoot {html.escape(version)}</h1><p>Structural evidence, attributable native observations and bounded change impact.</p><ul>'
-    for label, url in [("Operator guide and maturity", "README.html"), ("Procedures", "docs/README.html"), ("Architecture", "docs/architecture/ARCHITECTURE.html"), ("CLI reference", "cli.html"), ("MCP tools", "mcp.html"), ("Rust API", "api/entmoot_engine/index.html"), ("Release and upgrade guide", "docs/runbooks/local-alpha.html")]:
+    for label, url in [
+        ("README (main entry)", "README.html"),
+        ("Architecture walkthrough", "docs/architecture/ARCHITECTURE.html"),
+        ("Rust API (rustdoc)", "api/entmoot_engine/index.html"),
+        ("CLI reference (live help)", "cli.html"),
+        ("MCP tools (live schemas)", "mcp.html"),
+        ("Procedures", "docs/README.html"),
+        ("Release and upgrade guide", "docs/runbooks/local-alpha.html"),
+    ]:
         index += f'<li><a href="{url}">{label}</a></li>'
     (destination / "index.html").write_text(page("Documentation", index + "</ul>"), encoding="utf-8")
     (destination.parent / "index.html").write_text(page("Versions", f'<h1>Entmoot documentation</h1><a href="v{version}/index.html">{version}</a>'), encoding="utf-8")
