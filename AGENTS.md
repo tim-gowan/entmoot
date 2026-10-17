@@ -138,3 +138,5 @@ provider data qualifies attachment; live controls qualify native semantics.
   stronger compatibility rung; see [impact](docs/runbooks/impact.md).
 
 Local workflow skills and concise rules: [.agents](.agents/README.md).
+If present, read `.agents/maintainer-configuration.mdc` for machine-local execution
+paths. Local overrides do not change the portable defaults or invariants above.

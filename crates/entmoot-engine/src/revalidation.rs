@@ -55,11 +55,10 @@ pub fn publish_revalidation_ledger(
                 .into(),
         ));
     }
-    let parent = ledger
+    let destination = crate::atomic_write::publication_path(ledger)?;
+    let parent = destination
         .parent()
-        .filter(|p| !p.as_os_str().is_empty())
         .unwrap_or_else(|| std::path::Path::new("."));
-    std::fs::create_dir_all(parent)?;
     // Keep the private database, WAL and lifecycle sidecar under one RAII root;
     // publishing the database must not leak a fresh orphan lock per ledger.
     let stage = tempfile::tempdir_in(parent)?;
@@ -78,7 +77,7 @@ pub fn publish_revalidation_ledger(
     // Publish the local lifecycle sidecar before the database becomes visible.
     // Read-only opens must never create it implicitly.
     let _lease = crate::storage_lease::shared(ledger, true)?;
-    temp.persist_noclobber(ledger)
+    temp.persist_noclobber(&destination)
         .map_err(|error| error.error)?;
     Ok(receipt)
 }

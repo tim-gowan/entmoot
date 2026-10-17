@@ -174,7 +174,12 @@ not waive request, evidence, publication or implementation fences. Capacity/disk
 failures preserve the prior persisted checkpoint; start a new search or explicitly
 raise the relevant resource allowance. These flags write operational state only.
 
-The revision campaign runner accepts `--max-operations <count>` and
+The revision campaign runner passes `--data-dir <run-dir>/data` to every CLI
+command. This run-owned volume takes precedence over environment and workspace
+configuration; existing source-tree `.entmoot` data is left untouched. Use a fresh
+run namespace after input or runner-layout changes.
+
+The runner accepts `--max-operations <count>` and
 `--wall-seconds <seconds>` on `run`. Both stop admission between completed
 revision/comparison units. Create `<run-dir>/stop.request` for the same graceful
 stop; remove it to resume. Repeat the command with the same configuration and run

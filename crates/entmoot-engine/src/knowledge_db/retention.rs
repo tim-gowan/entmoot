@@ -16,7 +16,10 @@ pub(crate) struct StoreCatalog {
 impl Maintenance {
     pub(crate) fn open(path: &Path) -> Result<Self, KnowledgeRepositoryError> {
         let lease = crate::storage_lease::exclusive(path)?;
-        let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_WRITE)?;
+        let connection = Connection::open_with_flags(
+            crate::sqlite_startup::file_path(path),
+            OpenFlags::SQLITE_OPEN_READ_WRITE,
+        )?;
         connection.busy_timeout(std::time::Duration::from_secs(1))?;
         let actual = connection.pragma_query_value(None, "user_version", |r| r.get(0))?;
         if actual != STORAGE_SCHEMA_VERSION {

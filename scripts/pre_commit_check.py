@@ -34,7 +34,8 @@ if str(ROOT) not in sys.path:
 # Import/Sync AST policy lives in tools/entmoot-lints (cargo dylint).
 BANNED_DEP_NAMES = ("sha2", "sha256")
 
-SKIP_DIRS = {".git", ".tmp", ".venv", "venv", "node_modules", "target", "archive"}
+# Local data roots may contain installed tools and third-party adapter sources.
+SKIP_DIRS = {".git", ".tmp", ".entmoot", ".venv", "venv", "node_modules", "target", "archive"}
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]*\]\((?P<target>[^)]+)\)")
 CANONICAL_CRATES = {
     "entmoot-contracts",
@@ -496,7 +497,7 @@ def main() -> int:
         ("pre-commit Python tests", [sys.executable, "-m", "unittest",
             "scripts.test_pr_structural_diff", "scripts.test_test_ownership",
             "scripts.test_propose_test_ownership", "scripts.test_pre_commit_check",
-            "scripts.test_normalize_sarif_repo_paths"]),
+            "scripts.test_normalize_sarif_repo_paths", "scripts.test_docs_workflow"]),
         ("cargo fmt", ["cargo", "fmt", "--", "--check"]),
     ):
         code = run(cmd, label)

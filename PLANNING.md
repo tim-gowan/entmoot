@@ -32,11 +32,12 @@ audit are repaired with regression controls. Adapter default precedence now
 matches checkout → PATH → home; process overrides remain exclusive, and readiness
 uses workspace config selections consistently with runtime resolution.
 
-Release still requires the exact candidate's structural/native CI and extracted
-package gates on both supported operating systems. The repair checkout has no
-installed sidecar/Program adapters; authored attachment/discovery controls do not
-qualify those native semantics. Provision the pinned adapters before running the
-complete dispatch cohort. Historical alpha receipts are not a substitute.
+Provision pinned sidecar/Program adapters explicitly for native qualification.
+Roslyn MSBuild project loading needs an approved host run when the sandbox denies
+its child named-pipe connection; ad-hoc C# success does not qualify that mode.
+Release still requires the exact candidate's structural/native CI and extracted-
+package gates on both supported operating systems. Local installation and
+historical passing receipts do not qualify a later revision.
 
 ## Active scope
 

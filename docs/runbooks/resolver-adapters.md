@@ -19,7 +19,7 @@ including TypeScript 7's lack of a compiler API.
 
 Catalog (paths + env): [`tools/resolver-adapters/catalog.toml`](../../tools/resolver-adapters/catalog.toml).
 Native floors (pins + language surfaces): [`tools/resolver-adapters/floors.toml`](../../tools/resolver-adapters/floors.toml).
-Readiness: `entmoot status` (home-scoped adapter profile after `init`).
+Readiness: `entmoot status` (adapter profile in the selected workspace volume after `init`).
 Maintainer terms: [AGENTS vocabulary](../../AGENTS.md#native-tools-and-vocabulary).
 Bind/canon ownership: [architecture](../architecture/ARCHITECTURE.md#canon-and-clone-operations).
 
@@ -65,10 +65,17 @@ entmoot status
 entmoot bind
 ```
 
-`init` writes the home-scoped adapter profile from discovery (catalog /
+`init` writes the selected-volume adapter profile from discovery (catalog /
 `ENTMOOT_ADAPTERS_ROOT` / process overrides). `bind` requires native for inventory
 languages by default; use `--structural-only` to waive. Optional shell exports:
 [`.env.example`](../../.env.example).
+
+For a sandbox-accessible local installation, select a gitignored output with the
+builders' `--out` flags and pass an explicit `--data-dir` / `ENTMOOT_DATA_DIR`.
+Keep caches and fixture TEMP writable, outside analyzed source; Cargo fixtures
+inside this checkout need the workspace-excluded `.tmp/` directory. File access
+does not establish runtime permission: validate native controls in the actual
+sandbox, including [Roslyn's MSBuild communication requirement](../../tools/resolver-adapters/roslyn/README.md#request).
 
 Docker Go (`ENTMOOT_GO_VIA_DOCKER=1`) and Curl CompDB Docker helpers remain
 **optional overrides**, not the default path.

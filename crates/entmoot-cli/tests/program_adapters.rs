@@ -14,18 +14,15 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
 fn adapter(name: &str, relative: &str) -> PathBuf {
-    let path = std::env::var_os(name)
-        .map(PathBuf::from)
+    // Use the shared installed-tool lookup without selecting the Program tier
+    // globally: ordinary CLI fixtures still exercise the default Oxc tier.
+    let path = entmoot_engine::native_resolver::resolve_adapter_binary(name, &[relative], true)
         .unwrap_or_else(|| {
-            Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("../../.tmp/adapter-build")
-                .join(relative)
+            panic!(
+                "requested native lane requires {name} / {relative} under {}",
+                entmoot_engine::native_resolver::adapters_root_hint()
+            )
         });
-    assert!(
-        path.is_file(),
-        "requested native lane requires {}",
-        path.display()
-    );
     let canonical = path.canonicalize().unwrap();
     let spelling = canonical.to_string_lossy();
     PathBuf::from(spelling.strip_prefix(r"\\?\").unwrap_or(&spelling))

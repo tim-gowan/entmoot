@@ -148,12 +148,6 @@ jobs:
       - name: Historical Rust compiler control
         shell: pwsh
         run: cargo test --locked -p entmoot --features "$($env:PRODUCER_FEATURES),native-tests" --test adapter_controls pinned_rust_compilers_preserve_trait_macro_and_generic_syntax -- --ignored --exact --test-threads=1
-      - name: Linux VFS and binary-classpath controls
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          cargo test --locked -p entmoot --features "${PRODUCER_FEATURES},native-tests" --test adapter_controls clang_closed_vfs_negative_lookup_is_not_ambient_absence -- --ignored --exact
-          cargo test --locked -p entmoot --features "${PRODUCER_FEATURES},native-tests" --test adapter_controls javac_binary_authority_requires_the_declared_classpath -- --ignored --exact
       - name: Rehearse extracted native-enabled packages
         run: python scripts/package_smoke.py --producer
       - name: Build producer release CLI

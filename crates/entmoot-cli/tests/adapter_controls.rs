@@ -155,7 +155,14 @@ fn source_discovery_prunes_scratch_before_opening_projects() {
                 "public class Api { public int run() { return Math.abs(-1); } }",
             );
         }
-        for directory in [".tmp", "target", "node_modules", ".venv"] {
+        for directory in [
+            ".entmoot",
+            ".tmp",
+            ".cache",
+            "target",
+            "node_modules",
+            ".venv",
+        ] {
             write(root, &format!("{directory}/broken.sln"), "not a solution");
             write(
                 root,
@@ -186,6 +193,51 @@ fn source_discovery_prunes_scratch_before_opening_projects() {
             .all(|c| !c["path"].as_str().unwrap().contains('/')));
     }
 }
+
+#[test]
+fn go_module_discovery_prunes_local_data_but_keeps_visible_nested_modules() {
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path();
+    write(root, "go.mod", "module example/main\ngo 1.26\n");
+    write(
+        root,
+        "main.go",
+        "package main\nfunc leaf() {}\nfunc main() { leaf() }\n",
+    );
+    write(root, "nested/go.mod", "module example/nested\ngo 1.26\n");
+    write(
+        root,
+        "nested/api.go",
+        "package api\nfunc leaf() {}\nfunc Run() { leaf() }\n",
+    );
+    for directory in [".entmoot", ".tmp", ".cache"] {
+        write(
+            root,
+            &format!("{directory}/tool/go.mod"),
+            "not a Go module\n",
+        );
+        write(
+            root,
+            &format!("{directory}/tool/main.go"),
+            "invalid Go source\n",
+        );
+    }
+    let value = native("GO", json!({"root":root}), &[]);
+    assert_eq!(
+        value["invalid_environment"], false,
+        "{}",
+        value["diagnostics"]
+    );
+    let paths: std::collections::BTreeSet<_> = rows(&value["calls"])
+        .iter()
+        .map(|call| call["path"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        paths,
+        std::collections::BTreeSet::from(["main.go", "nested/api.go"])
+    );
+}
+
 fn exports(value: &Value) -> Vec<&Value> {
     assert_eq!(
         value["invalid_environment"], false,
@@ -288,7 +340,6 @@ fn clang_template_body_layout_target_and_missing_compdb() {
 }
 
 #[test]
-#[ignore = "clang VFS input_closure fence not emitted on current libclang 18.1.1 Windows pin"]
 fn clang_closed_vfs_negative_lookup_is_not_ambient_absence() {
     let temp = tempfile::tempdir().unwrap();
     let root = temp.path();
@@ -501,6 +552,27 @@ fn project(root: &Path, name: &str, assembly: &str, source: &str) {
 }
 
 #[test]
+fn roslyn_project_load_failure_does_not_become_adhoc_success() {
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path();
+    write(root, "Broken.csproj", "<Project><malformed");
+    write(
+        root,
+        "Api.cs",
+        "public class Api { public int Leaf() => System.Math.Abs(-1); }",
+    );
+    let value = native("ROSLYN", json!({"root":root}), &[]);
+    assert_eq!(
+        value["invalid_environment"], true,
+        "{}",
+        value["diagnostics"]
+    );
+    assert_eq!(value["build_context"]["project_system"], "msbuild_project");
+    assert!(!rows(&value["diagnostics"]).is_empty());
+    assert!(rows(&value["calls"]).is_empty(), "{}", value["calls"]);
+}
+
+#[test]
 fn roslyn_evaluated_projects_import_digests_and_conflicting_exports() {
     let temp = tempfile::tempdir().unwrap();
     let root = temp.path();
@@ -688,7 +760,6 @@ fn javac_historical_modes_reject_newer_syntax_at_old_floor() {
 }
 
 #[test]
-#[ignore = "javac jar classpath AccessDeniedException under Windows TEMP on this host"]
 fn javac_binary_authority_requires_the_declared_classpath() {
     let temp = tempfile::tempdir().unwrap();
     let root = temp.path();

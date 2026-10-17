@@ -1,7 +1,8 @@
 """Execute immutable revision campaigns against explicitly supplied Git worktrees.
 
 Local configuration supplies paths and the complete child-process environment.
-It is pinned as a profile material. This runner never clones, checks out, resets,
+It is pinned as a profile material. Every CLI command explicitly selects the
+run-owned data volume. This runner never clones, checks out, resets, writes to,
 or removes source trees. Native enrichment is automatic and safe-mode; unavailable
 producers remain explicit. External build closure and compiler-mode qualification
 are not established by a successful execution or by material hashes.
@@ -98,7 +99,7 @@ def verify_checkout(repository: Path, root: Path, revision: str) -> None:
     common = lambda path: Path(_git(path, 'rev-parse', '--path-format=absolute', '--git-common-dir').decode().strip()).resolve()
     _require(common(root) == common(repository), 'source worktree belongs to a different repository')
     _require(_git(root, 'rev-parse', 'HEAD').decode().strip() == revision, 'source worktree HEAD differs from requested revision')
-    _require(not _git(root, 'ls-files', '-z', '--', '.entmoot'), 'tracked .entmoot paths cannot be campaign outputs')
+    _require(not _git(root, 'ls-files', '-z', '--', '.entmoot'), 'tracked .entmoot paths cannot be qualified source')
     _require(not _git(root, 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--', '.', ':(exclude).entmoot'),
              'source worktree contains modified or untracked source')
     entries = _git(root, 'ls-files', '--stage')
@@ -125,6 +126,7 @@ def prepare(config_path: Path, destination: Path) -> Path:
               'revisions': revisions, 'comparisons': comparisons, 'budget': config['budget']}
     # Exclusive namespace: even an empty existing directory is not a fresh run.
     destination.mkdir(parents=False, exist_ok=False)
+    (destination / 'data').mkdir()
     manifest = destination / 'inputs.json'
     with manifest.open('xb') as stream:
         stream.write(encoded(inputs))
@@ -166,6 +168,8 @@ def run_lock(directory: Path):
 class Executor:
     def __init__(self, directory: Path, config_path: Path):
         self.directory = directory.resolve(strict=True)
+        self.data_directory = (self.directory / 'data').resolve(strict=True)
+        _require(inside(self.data_directory, self.directory), 'campaign data escaped the owned run directory')
         self.config_path = config_path.resolve(strict=True)
         self.config, self.materials = configuration(self.config_path)
         self.cli = Path(self.config['cli']).resolve(strict=True)
@@ -197,6 +201,9 @@ class Executor:
         """
         _require(self.store.get_receipt(key + '/process') is None, 'incomplete or failed operation requires a fresh run')
         self.verify()
+        # Explicit CLI selection wins over the pinned environment and workspace
+        # config, so publication and scratch writes stay within the run lifetime.
+        args = ['--data-dir', str(self.data_directory), *args]
         started = time.monotonic()
         result = subprocess.run([str(self.cli), *args], cwd=cwd, env=self.config['environment'],
                                 capture_output=True, check=False)
@@ -243,13 +250,7 @@ class Executor:
             return receipt
         output = self.directory / revision
         output.mkdir(exist_ok=False)
-        publication = root / '.entmoot'
-        # Never adopt, erase, or force-rebind another run's publication.
-        publication.mkdir(exist_ok=False)
-        with (publication / '.gitignore').open('x', encoding='utf-8') as stream:
-            stream.write('*\n')
-        with (publication / 'campaign-owner.json').open('xb') as stream:
-            stream.write(encoded({'input_digest': self.input_digest, 'run': str(self.directory)}))
+        publication = self.data_directory
         indexed = output / 'indexed.json'
         self.command(key + '/index', ['index', '--root', str(root), '--repo', self.inputs['repository_id'],
                                      '--revision', revision, '--out', str(indexed), '--config', 'v1'], root)

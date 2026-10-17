@@ -334,7 +334,10 @@ impl SqliteKnowledgeRepository {
     /// Operational reads may precede the first knowledge publication. They must
     /// still verify compatibility and must never create tables or missing stores.
     pub fn open_operations_read_only(path: &Path) -> Result<Self, OperationError> {
-        let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+        let connection = Connection::open_with_flags(
+            crate::sqlite_startup::file_path(path),
+            OpenFlags::SQLITE_OPEN_READ_ONLY,
+        )?;
         connection.busy_timeout(std::time::Duration::from_secs(5))?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |r| r.get(0))?;
         if version != STORAGE_SCHEMA_VERSION {

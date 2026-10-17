@@ -626,6 +626,9 @@ fn revision_campaign_joins_actual_occurrences_and_preserves_unconsumed_frontiers
                 revision,
             ],
         );
+        // Existing local data is not owned by the campaign, even in its worktrees.
+        std::fs::create_dir(path.join(".entmoot")).unwrap();
+        std::fs::write(path.join(".entmoot/sentinel"), b"unrelated local data").unwrap();
         worktrees.insert(revision.clone(), json!(path));
     }
     let mut environment: serde_json::Map<String, Value> = std::env::vars()
@@ -643,6 +646,9 @@ fn revision_campaign_joins_actual_occurrences_and_preserves_unconsumed_frontiers
         })
         .map(|(key, value)| (key, json!(value)))
         .collect();
+    // The runner must select its own volume explicitly, overriding an inherited
+    // data root without writing to that root or either analyzed checkout.
+    environment.insert("ENTMOOT_DATA_DIR".into(), json!(tmp.path().join("data")));
     for family in ["GO", "JAVA", "ROSLYN", "PYRIGHT", "CLANG"] {
         // Keep sidecar families exclusive-unavailable so host tools are not used.
         environment.insert(
@@ -709,6 +715,23 @@ fn revision_campaign_joins_actual_occurrences_and_preserves_unconsumed_frontiers
     assert_eq!(result["pairs"][0]["callers"]["eligible_subjects"], 3);
     assert_eq!(result["pairs"][0]["callers"]["unconsumed_subjects"], 2);
     assert_eq!(successful(invoke("run")), result);
+    assert!(!tmp.path().join("data").exists());
+    let owned_data = directory.join("data").canonicalize().unwrap();
+    for revision in &revisions {
+        let receipt = &result["revisions"][revision];
+        for field in ["graph", "store"] {
+            assert!(Path::new(receipt[field].as_str().unwrap())
+                .canonicalize()
+                .unwrap()
+                .starts_with(&owned_data));
+        }
+        let local_data = Path::new(worktrees[revision].as_str().unwrap()).join(".entmoot");
+        assert_eq!(std::fs::read_dir(&local_data).unwrap().count(), 1);
+        assert_eq!(
+            std::fs::read(local_data.join("sentinel")).unwrap(),
+            b"unrelated local data"
+        );
+    }
     let source = Path::new(worktrees[&revisions[0]].as_str().unwrap()).join("source.js");
     std::fs::write(source, "function changed() {}\n").unwrap();
     assert!(!invoke("run").status.success());

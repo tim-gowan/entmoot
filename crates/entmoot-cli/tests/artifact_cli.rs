@@ -1447,7 +1447,11 @@ fn transition_revalidation_is_atomic_replayable_and_keeps_historical_evidence() 
             .output()
             .unwrap()
     };
-    let ledger = directory.path().join("ledger.sqlite3");
+    let mut ledger_parent = directory.path().to_path_buf();
+    while ledger_parent.as_os_str().len() < 280 {
+        ledger_parent.push("nested-ledger-publication");
+    }
+    let ledger = ledger_parent.join("ledger.sqlite3");
     let output = execute(&request, &ledger);
     assert!(
         output.status.success(),

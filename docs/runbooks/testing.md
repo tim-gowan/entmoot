@@ -21,8 +21,9 @@ downstream packages. Missing ownership widens to workspace checks.
     callable; `allowed_targets` permits absence but rejects other/duplicate
     callable targets. Select sites/owners independently and assert outcomes and
     Closed policy/assumption fences.
-    Historical/host `#[ignore]` rows stay for multi-toolchain and known
-    Windows jar/VFS flakes only; Open rows must not claim Closed.
+    Historical `#[ignore]` rows require explicit multi-toolchain provisioning;
+    Open rows must not claim Closed. Clang VFS and Java classpath controls run
+    in the ordinary native suite on both supported operating systems.
   - **Language-deep** — `callsites_*` keep producer/environment specials (canon,
     cfg/edition, package_api, raw sidecar, ESM/CJS quirks). Do not re-assert
     product Open/Closed rows already covered by expectations.

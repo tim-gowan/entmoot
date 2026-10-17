@@ -4,8 +4,10 @@ Pinned `go/packages` + `go/types` worker. Speaks the shared Entmoot sidecar JSON
 envelope on stdin/stdout (see `crates/entmoot-engine` `producers::sidecar`).
 
 Multi-module trees (e.g. OpenTelemetry Demo with `src/*/go.mod`) are discovered
-automatically: each `go.mod` under the request root is loaded with `./...`, and
-call paths are relativized to that root.
+automatically: eligible modules under the request root are loaded with `./...`,
+and call paths are relativized to that root. Discovery prunes hidden directories
+(including `.entmoot` and `.tmp`), vendor/dependency trees and example directories.
+An explicitly selected root is still eligible when its own name starts with a dot.
 
 Test variants are included by default (`ENTMOOT_GO_TESTS=include`); set `exclude`
 for production-only native scope. The receipt records this choice, and both
@@ -33,7 +35,8 @@ On Windows the artifact is `entmoot-go-resolver.exe`.
 export ENTMOOT_GO_ADAPTER=/absolute/path/to/entmoot-go-resolver
 ```
 
-If unset, the engine looks for this directory relative to `entmoot-engine`.
+Unset selection follows the shared [adapter discovery procedure](../../../docs/runbooks/resolver-adapters.md);
+installed binaries do not depend on a build-machine source path.
 
 ## Docker Compose toolchain (optional override)
 

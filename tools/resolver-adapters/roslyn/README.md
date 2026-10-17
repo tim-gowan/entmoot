@@ -41,14 +41,18 @@ export ENTMOOT_ROSLYN_ADAPTER=/path/to/Entmoot.RoslynSolver.dll
 }
 ```
 
-When a `.sln` or `.csproj` exists under `root`, the worker prefers
-`MSBuildWorkspace`. Otherwise it parses every `*.cs` file (excluding `bin` /
-`obj`) with an `AdhocWorkspace` / `CSharpCompilation`.
+When a `.sln` or `.csproj` exists under `root`, the worker uses
+`MSBuildWorkspace`. Loading or evaluating that project must succeed; failure
+returns `invalid_environment` with diagnostics and never substitutes ad-hoc
+compilation. Without a project, it uses an `AdhocWorkspace` / `CSharpCompilation`
+and reports its limited reference profile. Source discovery excludes build and
+scratch directories.
 
-**Cut (perf) / honesty (playbook §6):** prefer inventory-span site filters (match
-Rust) over full-tree walks after compile. After MSBuild failure, prefer loud
-`invalid_environment` / `partial` over Adhoc parse-all as a “success” path.
-See [`docs/architecture/ARCHITECTURE.md`](../../../docs/architecture/ARCHITECTURE.md).
+MSBuild project loading needs a .NET SDK and communication with its child build
+host. A sandbox that denies that named-pipe connection cannot qualify project
+semantics even when the adapter files are readable. Use an explicitly approved
+host run for that mode; do not widen sandbox permissions or treat fallback
+parsing as qualification.
 
 `plan: true` discovers inputs only and skips call extraction.
 
@@ -58,8 +62,8 @@ Source interface, abstract and extern signatures remain declaration evidence;
 they never select an implementation occurrence. Default interface bodies and
 expression-bodied methods remain callable. A partial method binds to its
 compiler-selected implementation. The
-[production CLI tests](../../../crates/entmoot-cli/tests/producer_cli.rs)
-checks these cases with actual Roslyn output and authored source selectors.
+[dispatch controls](../../../crates/entmoot-engine/tests/dispatch_expectations.rs)
+check these cases with actual Roslyn output and authored source selectors.
 
 `fixtures/mini/` has no project file so the adhoc path is exercised: `Caller.Run`
 calls `Sibling.Help`, `Caller.Indirect` invokes a delegate (`indirect_call`), and

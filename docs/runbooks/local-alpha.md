@@ -15,8 +15,8 @@ one existing workspace knowledge repository with immutable publication views.
 No ordinary database or publication flags are necessary. `-C` selects the source.
 Durable state defaults to `~/.entmoot` (`--data-dir` / `ENTMOOT_DATA_DIR`
 overrides the home root). Source-root namespaces under that directory prevent two
-projects from sharing a current view. Structural initialization uses that volume;
-native artifact placement and config validation have the known gaps linked above.
+projects from sharing a current view. Structural publications and native artifacts
+use that selected volume; invalid configuration fails before choosing storage.
 An existing broken pointer is an error, never silently replaced. Repeated reads
 reuse the current view; `init` refreshes explicitly and
 `bind` adds native evidence.
@@ -30,8 +30,8 @@ separate preparation step; on large sources it can delay MCP startup.
 A future remote location must be a transport at the local composition boundary,
 not a database path embedded in portable requests. It must preserve snapshot
 selection, source verification, producer isolation, atomic publication, history,
-authentication and bounded reads. Frontend preparation rejects URI locations;
-mutation-side config validation remains a blocker. No remote protocol or universal
+authentication and bounded reads. Reads and mutations reject URI locations.
+No remote protocol or universal
 subject/version catalog is claimed.
 
 `boundaries` in CLI/MCP selects exact callee syntax or `*` patterns, optional path,
@@ -56,10 +56,11 @@ remain unestablished without matching closure evidence.
   Human terminal rendering and stable JSON preserve bounded-query semantics.
 - Packages have exact prerelease dependencies, READMEs/licenses and package-local
   composed fingerprints. Installed adapter defaults never refer to build-machine
-  paths. Nonempty explicit adapter paths remain exclusive; invalid paths fail visibly.
+  paths. Explicit process adapter overrides remain exclusive, including empty
+  values; invalid paths fail visibly.
 - Structural CI excludes suites gated by the `native-tests` feature. Native jobs
-  select dispatch and package-compatibility controls as well as adapter tests;
-  the current preflight must be repaired before they can qualify a release.
+  select dispatch and package-compatibility controls as well as adapter tests.
+  Preflight discovers profiles through init's returned publication/store locator.
 
 ## Upgrade and recovery
 
@@ -100,9 +101,23 @@ failures and unsupported constructs remain different observations.
    target/debug/entmoot --mcp target/debug/entmoot-mcp --out .tmp/staging` (add `.exe`
    on Windows). Existing Markdown owners, actual CLI help, actual MCP input schemas
    and Rust JSON Schema form versioned docs; executable examples run on clean roots.
-6. Copy only the clean export payload to the sibling repository, commit and push.
-   Inspect the exact commit's structural and native CI plus docs results. Configure
-   the protected `crates-io` environment and tag `v<workspace-version>` only when ready.
+6. Commit and push the validated candidate. Configure the `crates-io` environment
+   and tag `v<workspace-version>` only when ready. `release.yml` gates publication
+   on that tag's structural, native and docs jobs; inspect their actual results
+   and the subsequent registry-install checks before declaring a release.
+
+New crate names require an initial API-token publication. Configure a short-lived
+`CARGO_REGISTRY_TOKEN` in `crates-io` with publish-new/publish-update access to the
+five workspace names, and set `CRATES_IO_TRUSTED_PUBLISHING=false` for bootstrap.
+Once all crates exist, configure each crate's Trusted Publishing for
+`tim-gowan/entmoot`, `release.yml`, environment `crates-io`; enable the variable
+and revoke/remove the bootstrap token. OIDC cannot create new crate names.
+
+Docs called by a release inherit its push event; supplied inputs select release
+output and Pages upload. Direct docs push/PR runs stage only. Pages deployment
+also requires an Actions-based Pages site and `PAGES_ENABLED=true`; a private
+repository needs a supporting GitHub plan. A successful artifact build alone
+does not mean the site was deployed.
 
 ### Local qualification and copy handoff (2026-10-16)
 
@@ -114,9 +129,10 @@ The handoff reported 1,553 passing workspace tests/doctests, eight compiler-free
 campaign controls, one revision-accounting control and 81 Python harness tests.
 Provisioned native lanes reportedly passed 101 additional controls, including the
 five-case Python compatibility test, historical Rust/TypeScript and native revision joins.
-Two platform-specific clang VFS / javac binary-classpath controls remain Linux CI
-gates; they were not qualified on this Windows host. Other ignored tests retain
-their explicit provisioning requirements.
+At that time, Clang VFS / javac binary-classpath controls were only qualified by
+the Linux CI lane. Subsequent local provisioning validated both on Windows and
+removed those platform ignores. Other ignored tests retain their explicit
+provisioning requirements.
 
 Formatting, strict structural and producer Clippy, generated contracts/inputs,
 test ownership, Dylint, licenses, advisories, unused dependencies and workflow

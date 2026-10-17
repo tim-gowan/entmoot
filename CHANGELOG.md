@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-10-16: Release documentation workflow
+
+- Honor reusable docs inputs when the caller event is a tag push. Direct push/PR
+  runs still stage only; explicit false inputs remain false. Exercise the actual
+  workflow parameter script in local hooks and repository CI.
+- Require documentation qualification before registry publication; deploy Pages
+  after publication only when the repository has enabled it.
+
+## 2026-10-16: Local adapter qualification repairs
+
+- Preserve atomic artifact, JSON and ledger publication under deeply nested
+  Windows data roots, retaining no-clobber and corruption checks. Resolve the
+  same paths for SQLite repository, maintenance and queue readers/writers.
+- Keep Roslyn project-load failures as invalid environments; do not substitute
+  successful ad-hoc evidence for a failed MSBuild compilation scope.
+- Run Clang VFS and Java binary-classpath controls in both native CI platforms,
+  removing obsolete host-specific ignores. Add malformed-project coverage.
+- Exclude local `.entmoot` tools/data from repository Markdown and dependency
+  policy scans, with controls that still reject defects in repository sources.
+- Resolve Program test tools through shared adapter discovery, including relocated
+  adapter roots, without selecting a different provider for default CLI fixtures.
+- Prune hidden local data and scratch trees from Go module discovery while
+  retaining visible nested modules and explicitly selected roots.
+- Select a run-owned data volume explicitly for revision campaigns, preserving
+  analyzed checkouts and existing local data across pauses and resumed reads.
+- Add the optional local maintainer-rule entry point and correct selected-volume
+  adapter-profile and release procedures. Portable storage defaults are unchanged.
+
 ## 2026-10-16: Storage and test-qualification repairs
 
 - Archive native evidence in the publication's selected volume and retain readable
