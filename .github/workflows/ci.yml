@@ -135,9 +135,22 @@ jobs:
           cache-dependency-path: |
             ${{ env.EVALS_REQUIREMENTS }}
             ${{ env.EVALS_TOKENIZER_REQUIREMENTS }}
-      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
-        with:
-          tool: actionlint@1.7.7
+      # actionlint is a Go release binary; install-action has no manifest and
+      # cargo-binstall cannot resolve it. Pin the Linux amd64 archive checksum.
+      - name: Install actionlint
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=1.7.7
+          archive="actionlint_${version}_linux_amd64.tar.gz"
+          expected_sha256=023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757
+          base="https://github.com/rhysd/actionlint/releases/download/v${version}"
+          curl -fsSL -o "/tmp/${archive}" "${base}/${archive}"
+          echo "${expected_sha256}  /tmp/${archive}" | sha256sum -c -
+          mkdir -p "${HOME}/.local/bin"
+          tar -xzf "/tmp/${archive}" -C "${HOME}/.local/bin" actionlint
+          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+          "${HOME}/.local/bin/actionlint" -version
       - run: actionlint -shellcheck= -pyflakes=
       - run: python -m pip install -r "${{ env.EVALS_REQUIREMENTS }}"
       - run: python -m pip install -r "${{ env.EVALS_TOKENIZER_REQUIREMENTS }}"

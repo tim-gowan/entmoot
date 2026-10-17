@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-17: Install actionlint from its release archive
+
+- CI workflow lint installs the pinned `actionlint` 1.7.7 Linux amd64 release
+  with a checksum check. `taiki-e/install-action` has no actionlint manifest, and
+  the cargo-binstall fallback cannot resolve the Go binary.
+
 ## 2026-10-17: Explain the product and its evidence
 
 - Add README architecture and sequence diagrams, operation entry points, hash
