@@ -49,6 +49,10 @@ class PilotMeasurementTests(unittest.TestCase):
             write(pilot / 'commands/failed-init/process.json', {
                 'arguments': ['entmoot.exe', '--data-dir', str(root), 'init'], 'cwd': str(root),
                 'status': 'timeout', 'wall_seconds': 5, 'sampled_peak_tree_rss_bytes': None})
+            abandoned = pilot / 'commands/interrupted-retain/stdout'
+            abandoned.parent.mkdir(parents=True)
+            abandoned.write_text('committed, but the coordinator stopped before its receipt')
+            write(pilot / 'before-continuation/views.json', {'r-old': {'inventory_grade': {'passed': False}}})
             write(trials / 'oracles.json', [{'expected': ['app.py']}])
             oracle_digest = material_digest(trials / 'oracles.json')
             write(trials / 'inputs.json', {'oracle_digest': oracle_digest})
@@ -69,6 +73,10 @@ class PilotMeasurementTests(unittest.TestCase):
             measurements = json.loads((bundle / 'history/processes.json').read_bytes())
             self.assertEqual(measurements, [{'phase': 'init', 'attempt': 'failed-init',
                 'measurement': {'status': 'timeout', 'wall_seconds': 5, 'sampled_peak_tree_rss_bytes': None}}])
+            self.assertEqual(json.loads((bundle / 'history/unfinalized-processes.json').read_bytes()),
+                             ['commands/interrupted-retain'])
+            self.assertEqual(json.loads((bundle / 'history/prior-inventory-grades.json').read_bytes()),
+                             {'r-old': {'passed': False}})
 
 
 if __name__ == '__main__':

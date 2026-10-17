@@ -8,6 +8,9 @@ from evals.harness.agent_trials import TrialTools, attempt, grade_answer, report
 from evals.harness.agent_provider import AgentProvider, ProviderTurn, load_provider, sum_usage
 from evals.harness.codex_provider import CodexProvider, model_arguments, model_result, reported_usage
 from evals.harness.contracts import ContractError
+from evals.harness import agent_trials
+from evals.harness.history_pilot import write
+from evals.harness.revision_campaign import material_digest
 
 
 def answer(**values):
@@ -17,6 +20,68 @@ def answer(**values):
 
 
 class AgentTrialTests(unittest.TestCase):
+    def test_prepare_freezes_inputs_without_model_calls_and_run_refuses_drift(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pilot, prepared, cli = root / 'pilot', root / 'prepared', root / 'entmoot'
+            cli.write_bytes(b'fixture executable, never launched')
+            spec = json.loads(Path('evals/experiments/local-trials.json').read_bytes())
+            spec.update(repository_order=['r'], task_limit=1, max_attempts=2, python_call_selectors={})
+            write(root / 'config.json', spec)
+            episode = {'repository': 'r', 'base': 'a', 'head': 'b', 'status': 'passed',
+                       'expected': {'added': [], 'deleted': [], 'modified': ['app.py']}}
+            write(pilot / 'report.json', {'episodes': [episode], 'implementation_unchanged': True})
+            write(pilot / 'inputs.json', {'tools': {'cli': material_digest(cli)},
+                'selection': {'configuration': {'repositories': [{'id': 'r', 'extensions': ['.py']}]}}})
+            write(pilot / 'views.json', {})
+            write(pilot / 'oracle-trees.json', {'r-a': {'app.py': 'old'}, 'r-b': {'app.py': 'new'}})
+            for revision in ('a', 'b'):
+                path = pilot / 'publications/sources' / ('r-' + revision) / 'app.py'
+                path.parent.mkdir(parents=True)
+                path.write_text('value = ' + repr(revision))
+            provider = Mock(spec=AgentProvider)
+            provider.identity.return_value = {'kind': 'fixture'}
+            provider.respond.side_effect = AssertionError('preparation must not call a model')
+            def git_command(arguments, cwd, commands, name, environment, timeout):
+                output = root / 'git-output'
+                output.write_text(arguments[2][-1] if arguments[3] == 'rev-parse' else '')
+                return {'status': 'complete', 'stdout': str(output)}
+            with patch.object(agent_trials, 'load_provider', return_value=provider), \
+                    patch.object(agent_trials, 'command', side_effect=git_command), \
+                    patch('tiktoken.get_encoding', return_value=None):
+                result = agent_trials.prepare(root / 'config.json', pilot, prepared, cli)
+                self.assertEqual(result['status'], 'prepared')
+                self.assertEqual(result['planned_attempts'], 2)
+                oracle_bytes = (prepared / 'oracles.json').read_bytes()
+                self.assertEqual(len(json.loads(oracle_bytes)), 1)
+                provider.respond.assert_not_called()
+                self.assertFalse((prepared / 'attempts.json').exists())
+                source = pilot / 'publications/sources/r-b/app.py'
+                source.write_text('changed while paused')
+                with self.assertRaisesRegex(ContractError, 'material changed'):
+                    agent_trials.run(pilot, prepared, cli)
+                provider.respond.assert_not_called()
+                source.write_text("value = 'b'")
+                (prepared / 'oracles.json').write_text('[]')
+                with self.assertRaisesRegex(ContractError, 'oracle'):
+                    agent_trials.run(pilot, prepared, cli)
+                provider.respond.assert_not_called()
+                (prepared / 'oracles.json').write_bytes(oracle_bytes)
+                provider.identity.return_value = {'kind': 'changed fixture'}
+                with self.assertRaisesRegex(ContractError, 'provider identity'):
+                    agent_trials.run(pilot, prepared, cli)
+                provider.respond.assert_not_called()
+                provider.identity.return_value = {'kind': 'fixture'}
+                provider.respond.side_effect = None
+                provider.respond.return_value = ProviderTurn('complete', answer(evidence=[]),
+                    {'input_tokens': 1, 'output_tokens': 1}, {'status': 'complete'})
+                executed = agent_trials.run(pilot, prepared, cli)
+                self.assertEqual(executed['executed_attempts'], 2)
+                self.assertEqual(provider.respond.call_count, 2)
+                with self.assertRaisesRegex(ContractError, 'already started'):
+                    agent_trials.run(pilot, prepared, cli)
+                self.assertEqual(provider.respond.call_count, 2)
+
     def test_usage_preserves_subsets_and_missing_counters(self):
         usage = {'input_tokens': 100, 'cached_input_tokens': 40, 'output_tokens': 20, 'reasoning_output_tokens': 10}
         raw = '\n'.join(json.dumps(event) for event in [

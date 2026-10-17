@@ -32,7 +32,8 @@ class AgentProvider(Protocol):
 
     Return complete only for an action decoded without out-of-interface tool use.
     Invalid responses and timeouts still return a measurement and any known usage.
-    Preparation may probe availability/version, but never install or authenticate.
+    Preparation may probe the local executable version, but never call a model,
+    install tools or authenticate. Model availability belongs to explicit execution.
     """
 
     def identity(self) -> dict: ...

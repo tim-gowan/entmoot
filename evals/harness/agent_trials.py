@@ -323,8 +323,10 @@ def report(attempts: list[dict], planned: int) -> dict:
                 'Repeated tasks and related revisions are clustered; no ecosystem confidence interval is claimed.']}
 
 
-def run(config: Path, pilot: Path, root: Path, cli: Path, provider_executable: Path | None = None,
-        task_limit=None, repetitions=None, max_attempts=None):
+def prepare(config: Path, pilot: Path, root: Path, cli: Path, provider_executable: Path | None = None,
+            task_limit=None, repetitions=None, max_attempts=None) -> dict:
+    """Freeze tasks and execution inputs, with no model calls or authentication."""
+    began = time.monotonic()
     spec = json.loads(config.read_bytes())
     required = {'id', 'seed', 'provider', 'task_limit', 'repetitions', 'max_attempts', 'max_turns',
                 'attempt_seconds', 'max_reported_tokens', 'max_context_characters', 'tool_output_characters',
@@ -340,29 +342,26 @@ def run(config: Path, pilot: Path, root: Path, cli: Path, provider_executable: P
     if spec['task_limit'] * spec['repetitions'] * 2 > spec['max_attempts']:
         raise ContractError('paired schedule exceeds max_attempts; reduce tasks or repetitions')
     import tiktoken
-    tokenizer = tiktoken.get_encoding(spec['tokenizer'])
+    tiktoken.get_encoding(spec['tokenizer'])
     provider = load_provider(spec['provider'], provider_executable)
     root.mkdir(parents=True, exist_ok=False)
     provider.prepare(root)
     study = json.loads((pilot / 'report.json').read_bytes())
     inputs = json.loads((pilot / 'inputs.json').read_bytes())
+    if not study['implementation_unchanged']:
+        raise ContractError('pilot implementation changed while running')
     if material_digest(cli) != inputs['tools']['cli']:
         raise ContractError('trials require the matched pilot CLI; rebuild a new pilot for another implementation')
     views = json.loads((pilot / 'views.json').read_bytes())
     extensions = {row['id']: row['extensions'] for row in inputs['selection']['configuration']['repositories']}
     tasks = [dict(row, id=row['repository'] + '-' + row['head'], extensions=extensions[row['repository']])
              for row in select_tasks(study, spec['repository_order'], spec['task_limit'], spec['seed'])]
+    if len(tasks) != spec['task_limit']:
+        raise ContractError('selected population cannot fill the configured task schedule')
     oracle_trees = json.loads((pilot / 'oracle-trees.json').read_bytes())
     # Check the owned checkouts before deriving independent answers from them.
     # Model tools cannot mutate these checkouts; source reads also carry byte fences.
-    for key in sorted({task['repository'] + '-' + task[side] for task in tasks for side in ('base', 'head')}):
-        source = pilot / 'publications' / 'sources' / key
-        for label, arguments, expected in [('head', ['rev-parse', 'HEAD'], key.rsplit('-', 1)[1]),
-                                            ('clean', ['status', '--porcelain', '--untracked-files=all'], '')]:
-            receipt = command(['git', '-C', str(source), *arguments], root, root / 'commands',
-                              key + '-' + label, os.environ.copy(), 30)
-            if receipt['status'] != 'complete' or Path(receipt['stdout']).read_text().strip() != expected:
-                raise ContractError('trial source is missing, changed or at another revision: ' + key)
+    verify_checkouts(tasks, pilot, root)
     for task in tasks:
         selector = spec['python_call_selectors'].get(task['repository'])
         task['kind'] = 'python_calls' if selector else 'file_delta'
@@ -380,9 +379,90 @@ def run(config: Path, pilot: Path, root: Path, cli: Path, provider_executable: P
           'pilot_report_digest': material_digest(pilot / 'report.json'),
           'runner_digest': material_digest(Path(__file__)), 'oracle_module_digest': material_digest(Path(__file__).with_name('trial_oracles.py')),
           'provider_contract_digest': material_digest(Path(__file__).with_name('agent_provider.py')),
+          'harness_sources': trial_sources(),
+          'pilot_materials': pilot_materials(pilot, tasks, views, oracle_trees),
           'oracle_digest': material_digest(root / 'oracles.json'),
           'tokenizer': {'name': spec['tokenizer'], 'package_version': version('tiktoken')},
           'host': {'platform': platform.platform(), 'python': sys.version}})
+    result = {'status': 'prepared', 'planned_attempts': len(tasks) * spec['repetitions'] * 2,
+              'executed_attempts': 0, 'inputs_digest': material_digest(root / 'inputs.json'),
+              'wall_seconds': time.monotonic() - began}
+    write(root / 'preparation.json', result)
+    return result
+
+
+def trial_sources() -> dict:
+    return {name: material_digest(Path(__file__).with_name(name)) for name in (
+        'agent_trials.py', 'agent_provider.py', 'trial_oracles.py', 'history_pilot.py',
+        'measurement.py', 'repository_campaign.py', 'revision_campaign.py', 'workflow_report.py',
+        'contracts.py', 'wire_schema.py')}
+
+
+def verify_checkouts(tasks: list[dict], pilot: Path, root: Path) -> None:
+    for key in sorted({task['repository'] + '-' + task[side] for task in tasks for side in ('base', 'head')}):
+        source = pilot / 'publications' / 'sources' / key
+        for label, arguments, expected in [('head', ['rev-parse', 'HEAD'], key.rsplit('-', 1)[1]),
+                                            ('clean', ['status', '--porcelain', '--untracked-files=all'], '')]:
+            receipt = command(['git', '-C', str(source), *arguments], root, root / 'commands',
+                              key + '-' + label, os.environ.copy(), 30)
+            if receipt['status'] != 'complete' or Path(receipt['stdout']).read_text().strip() != expected:
+                raise ContractError('trial source is missing, changed or at another revision: ' + key)
+
+
+def pilot_materials(pilot: Path, tasks: list[dict], views: dict, trees: dict) -> dict:
+    """Fence the paused study's source bytes, graphs, locators and shared store."""
+    paths = {pilot / name for name in ('report.json', 'inputs.json', 'views.json', 'oracle-trees.json')}
+    keys = {task['repository'] + '-' + task[side] for task in tasks for side in ('base', 'head')}
+    for key in keys:
+        source = pilot / 'publications/sources' / key
+        paths.update(beneath(source, name) for name in trees[key])
+        if key in views:
+            paths.update((Path(views[key]['graph']), Path(views[key]['retained']['locator'])))
+            database = Path(views[key]['retained']['publication']['database'])
+            paths.update(path for path in (database, Path(str(database) + '-wal')) if path.exists())
+    result = {}
+    for path in sorted(paths):
+        if not path.resolve().is_relative_to(pilot.resolve()):
+            raise ContractError('trial material is outside the pilot: ' + str(path))
+        result[path.relative_to(pilot).as_posix()] = material_digest(path)
+    return result
+
+
+def run(pilot: Path, root: Path, cli: Path, provider_executable: Path | None = None) -> dict:
+    """Execute a previously prepared schedule once, after rechecking its fences."""
+    began = time.monotonic()
+    prepared = json.loads((root / 'preparation.json').read_bytes())
+    if prepared['status'] != 'prepared' or material_digest(root / 'inputs.json') != prepared['inputs_digest']:
+        raise ContractError('prepared inputs changed')
+    inputs = json.loads((root / 'inputs.json').read_bytes())
+    if material_digest(root / 'oracles.json') != inputs['oracle_digest']:
+        raise ContractError('frozen oracle bytes changed')
+    if (root / 'execution.json').exists() or (root / 'attempts.json').exists():
+        raise ContractError('prepared schedule already started; preserve receipts and prepare a new run')
+    if trial_sources() != inputs['harness_sources'] or sys.version != inputs['host']['python']:
+        raise ContractError('prepared harness or interpreter changed; prepare a new run')
+    if material_digest(cli) != inputs['tools']['cli']:
+        raise ContractError('prepared trial executable changed')
+    tasks = json.loads((root / 'oracles.json').read_bytes())
+    views = json.loads((pilot / 'views.json').read_bytes())
+    trees = json.loads((pilot / 'oracle-trees.json').read_bytes())
+    if pilot_materials(pilot, tasks, views, trees) != inputs['pilot_materials']:
+        raise ContractError('prepared pilot material changed; prepare a new run')
+    verify_checkouts(tasks, pilot, root)
+    spec, tools = inputs['configuration'], inputs['tools']
+    import tiktoken
+    if version('tiktoken') != inputs['tokenizer']['package_version']:
+        raise ContractError('prepared tokenizer changed')
+    tokenizer = tiktoken.get_encoding(spec['tokenizer'])
+    provider = load_provider(spec['provider'], provider_executable)
+    provider.prepare(root)
+    if provider.identity() != tools['provider']:
+        raise ContractError('prepared provider identity changed')
+    # Exclusive creation also refuses two coordinators racing to start the same
+    # paid schedule. This is a one-shot boundary, not a trial resume protocol.
+    with (root / 'execution.json').open('xb') as stream:
+        stream.write(canonical_json({'inputs_digest': prepared['inputs_digest'],
+            'planned_attempts': prepared['planned_attempts'], 'preflight_wall_seconds': time.monotonic() - began}))
     attempts = []
     for repetition in range(spec['repetitions']):
         for index, task in enumerate(tasks):
@@ -419,7 +499,7 @@ def regenerate_report(root: Path) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation', choices=['run', 'report'], nargs='?', default='run')
+    parser.add_argument('operation', choices=['prepare', 'run', 'report'])
     parser.add_argument('--config', type=Path)
     parser.add_argument('--pilot', type=Path)
     parser.add_argument('--run-dir', type=Path, required=True)
@@ -431,12 +511,17 @@ def main():
     args = parser.parse_args()
     if args.operation == 'report':
         result = regenerate_report(args.run_dir.resolve())
-    else:
+    elif args.operation == 'prepare':
         if not all((args.config, args.pilot, args.cli)):
-            parser.error('run requires --config, --pilot and --cli')
-        result = run(args.config, args.pilot.resolve(), args.run_dir.resolve(), args.cli.resolve(), args.provider_executable,
-                     args.task_limit, args.repetitions, args.max_attempts)
-    print(json.dumps({'executed_attempts': result['executed_attempts']}))
+            parser.error('prepare requires --config, --pilot and --cli')
+        result = prepare(args.config, args.pilot.resolve(), args.run_dir.resolve(), args.cli.resolve(), args.provider_executable,
+                         args.task_limit, args.repetitions, args.max_attempts)
+    else:
+        if not all((args.pilot, args.cli)) or any(value is not None for value in (
+                args.config, args.task_limit, args.repetitions, args.max_attempts)):
+            parser.error('run requires --pilot and --cli, and uses the prepared configuration without overrides')
+        result = run(args.pilot.resolve(), args.run_dir.resolve(), args.cli.resolve(), args.provider_executable)
+    print(json.dumps({key: result[key] for key in ('status', 'planned_attempts', 'executed_attempts') if key in result}))
 
 
 if __name__ == '__main__':

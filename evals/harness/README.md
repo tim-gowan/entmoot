@@ -16,10 +16,12 @@ publication instead of being copied into campaign storage.
 - `measurement` / `workflow_report`: shared process observations and descriptive
   costs. Missing counters stay unknown; output tokens are not model usage.
 - `history_pilot`: bounded, seeded history/CI candidate sampling, independent Git
-  source-byte grading and retained production views. CI metadata is not a bug oracle.
+  source-byte grading and retained production views. Explicit continuation reuses
+  completed initialization and preserves interrupted work. CI metadata is not a bug oracle.
 - `agent_trials` / `trial_oracles`: paired local agent decisions through bounded
   source/Git tools and optional Entmoot reads, with independent source oracles.
-  Model usage, failed attempts and incomplete answers remain visible. See the
+  `prepare` freezes inputs without model calls; explicit `run` rechecks them before
+  execution. Model usage, failed attempts and incomplete answers remain visible. See the
   [local pilot recipe](../../docs/runbooks/revision-evaluation.md#local-history-pilot-and-agent-calibration).
 - `agent_provider` / `codex_provider`: provider-neutral response/usage contract
   and the current Codex CLI adapter. The runner does not parse vendor events or

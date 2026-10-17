@@ -2,6 +2,10 @@
 
 ## 2026-10-17: Local history and agent evaluation harness
 
+- Separate model-free trial preparation from explicit execution; fence paused
+  source/store/tool/oracle inputs and refuse duplicate starts. Continue an
+  interrupted history retention phase without repeating initialization, retaining
+  prior grades, coordinator provenance, replay costs and missing process receipts.
 - Add bounded history/CI sampling with frozen first-parent pins, explicit missing
   strata, independent Git source-byte grading and shared production view retention.
 - Add paired local agent configuration with a twelve-attempt calibration default,

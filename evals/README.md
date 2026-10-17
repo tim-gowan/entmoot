@@ -22,7 +22,8 @@ across eight repositories. The [agent calibration](experiments/local-trials.json
 pairs source/Git access with Entmoot plus the same fallback tools, using independent
 file-delta and syntactic-call oracles. Its default is 12 attempts of at most two
 minutes each. The provider interface separates model invocation and usage from
-tools and grading; Codex CLI is the only implemented live adapter. See the
+tools and grading; Codex CLI is the only implemented live adapter. Prepare and
+review frozen inputs without model calls before explicitly starting the run. See the
 [local commands and limits](../docs/runbooks/revision-evaluation.md#local-history-pilot-and-agent-calibration).
 
 ## Dispatch demo

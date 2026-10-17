@@ -52,6 +52,12 @@ and usage accounting belong to the provider adapter. Codex CLI is the only live
 adapter; an offline fixture checks the provider-independent loop. A provider
 interface does not qualify additional models or providers.
 
+Preparation is a separate, model-free command. It freezes the schedule, source
+and store material, provider identity and oracle. Execution rechecks those inputs
+after the pause and refuses drift or a repeated start. A stopped history pilot
+can reuse completed initialization with recorded coordinator provenance; retention
+and grading replay in full, and earlier costs and grades remain available.
+
 Preserve every attempted case and grade it again from saved answers without model
 calls. Report actual provider usage, delivered-text counts and process measurements
 separately. Each decision starts a fresh model turn containing explicit history;

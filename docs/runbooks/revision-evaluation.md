@@ -208,6 +208,22 @@ different checkout text policy; use a fresh run instead of rewriting prior study
 sources. Explicit repository checkout transforms can still differ from raw Git
 blobs and must remain visible to the oracle.
 
+If initialization completed but retention was stopped, preserve the run. Once the
+coordinator and its children have exited, record that observation in
+`interruption.json` with `status: "stopped_after_children_exited"`. A single
+explicit continuation can reuse initialization:
+
+```text
+python -m evals.harness.history_pilot resume --selection .tmp/pilot/frame/selection.json --run-dir .tmp/pilot/study --cli target/debug/entmoot --retain-helper target/debug/examples/retain_campaign_publication --previous-runner-digest <inputs.json harness_sources.history_pilot.py>
+```
+
+Continuation requires the original product, evaluator and harness dependencies.
+It records an explicit coordinator version transition, archives earlier grades,
+and replays **all** retention and independent grading through the same owner as a
+fresh run. Existing locators are not proof of a completed check. Repeated work
+remains in measured costs; command streams without final receipts have unknown
+costs. Finished reports and existing continuations cannot be overwritten.
+
 The [agent configuration](../../evals/experiments/local-trials.json) defaults to
 six paired tasks, one repetition and at most twelve attempts, each capped at two
 minutes. Its `provider` configuration records the adapter, model and reasoning
@@ -218,7 +234,17 @@ Codex executable is required for the implemented `codex_cli` adapter; model call
 use that account's allowance. `--provider-executable` selects an explicit path.
 
 ```text
-python -m evals.harness.agent_trials run --config evals/experiments/local-trials.json --pilot .tmp/pilot/study --run-dir .tmp/pilot/trials --cli target/debug/entmoot
+python -m evals.harness.agent_trials prepare --config evals/experiments/local-trials.json --pilot .tmp/pilot/study --run-dir .tmp/pilot/trials --cli target/debug/entmoot
+```
+
+`prepare` checks the provider version, freezes tasks, independent answers, source
+bytes, store/graph identities, tools and budgets, then stops **without model
+calls**. Review `preparation.json`, `inputs.json` and `oracles.json` at this boundary.
+Keep the pilot quiescent. The following explicit `run` starts model calls; it
+rechecks frozen inputs and refuses changed material or an already-started schedule:
+
+```text
+python -m evals.harness.agent_trials run --pilot .tmp/pilot/study --run-dir .tmp/pilot/trials --cli target/debug/entmoot
 python -m evals.harness.agent_trials report --run-dir .tmp/pilot/trials
 python -m evals.harness.pilot_report --pilot .tmp/pilot/study --trials .tmp/pilot/trials --out .tmp/pilot/summary.json
 ```
@@ -255,8 +281,8 @@ Per-call counters remain in the receipts. Known subtotals still enforce the toke
 allowance when a provider omits another counter; missing costs are never zero.
 Billing, private reasoning and exact server model weights are not inferred.
 
-Keep calibration separate from confirmation. The larger schedule is explicit:
-`--task-limit 20 --repetitions 3 --max-attempts 120`. It requires a separately
+Keep calibration separate from confirmation. The larger schedule is explicit
+on `prepare`: `--task-limit 20 --repetitions 3 --max-attempts 120`. It requires a separately
 authorized model budget and frozen, eligible tasks; increasing repetitions does
 not create new repository families or qualify semantic-upgrade workflows. Retain
 all attempted cases and report setup separately from query/trial costs.

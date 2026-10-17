@@ -14,6 +14,10 @@ typed dispatch, upgrade safety or a security defect. Failed CI selects candidate
 only. Freeze pins, configuration, eligible frame and oracle before model trials;
 do not select tasks by Entmoot success or put expected answers into prompts.
 
+Use `agent_trials prepare` to freeze and review inputs without model calls, then
+explicit `run` only within the authorized budget. Honor requested pauses at that
+boundary; preparation never includes a model availability probe.
+
 Use matched, unchanged CLI/retention binaries and fresh .tmp run directories.
 Preserve failed attempts, underfilled strata, source fences and missing counters.
 Run the configured small calibration within the user's model/time allowance;

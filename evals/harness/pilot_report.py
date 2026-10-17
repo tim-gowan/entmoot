@@ -41,6 +41,13 @@ def measurements(paths: list[Path]) -> dict:
     return result
 
 
+def unfinalized_processes(pilot: Path) -> list[str]:
+    """A stream without a final receipt has unknown status and cost, even if committed."""
+    return sorted(path.parent.relative_to(pilot).as_posix()
+                  for base in (pilot / 'commands', pilot / 'publications/logs')
+                  for path in base.rglob('stdout') if not (path.parent / 'process.json').exists())
+
+
 def trial_operations(attempts: list[dict]) -> dict:
     """Keep delivered context separate from full command output and model usage."""
     groups = defaultdict(list)
@@ -93,11 +100,14 @@ def summarize(pilot: Path, trials: Path | None) -> dict:
               'source_file_memberships': sum(view['inventory_grade']['expected_files'] for view in views.values()),
               'inventory_grades': dict(Counter('passed' if view['inventory_grade']['passed'] else 'failed' for view in views.values())),
               'operation_measurements': measurements(processes), 'trials': None,
+              'continuation': study.get('continuation'),
+              'unfinalized_process_receipts': unfinalized_processes(pilot),
               'limitations': study['limitations'] + [
                   'First-parent/date and metadata caps define the sampling frame; underfilled strata are retained.',
                   'Ordinary history is not verified passing CI; missing CI metadata is not absence of failures.',
                   'File membership observations and repeated revisions are not independent repository trials.',
                   'Resource counters cover instrumented child processes, not exact whole-study CPU or memory.',
+                  'Unfinalized process streams have unknown status/cost and are listed separately from measured attempts.',
                   'Checkout inside repository_campaign and coordinator overhead lack separate process receipts.',
                   'Database bytes are logical main/WAL/SHM bytes, not allocated storage or the entire acquisition directory.',
                   'Index runs use local debug binaries and warm/unspecified OS caches; no cold-cache or release-speed claim.',
@@ -112,6 +122,8 @@ def summarize(pilot: Path, trials: Path | None) -> dict:
         result['trial_configuration'] = trial_inputs['configuration']
         result['trial_report_digest'] = material_digest(trials / 'report.json')
         result['trial_operations'] = trial_operations(json.loads((trials / 'attempts.json').read_bytes()))
+        result['trial_setup'] = {name: json.loads((trials / (name + '.json')).read_bytes())
+                                 for name in ('preparation', 'execution') if (trials / (name + '.json')).exists()}
         pairs = trial_report['pairs']
         result['paired_differences'] = {
             cohort: {field: distribution([pair[field] for pair in selected])
@@ -138,6 +150,11 @@ def export_bundle(pilot: Path, trials: Path | None, destination: Path, summary: 
     write(destination / 'history/report.json', json.loads((pilot / 'report.json').read_bytes()))
     write(destination / 'history/inventory-grades.json', {
         key: view['inventory_grade'] for key, view in json.loads((pilot / 'views.json').read_bytes()).items()})
+    write(destination / 'history/unfinalized-processes.json', unfinalized_processes(pilot))
+    previous = pilot / 'before-continuation/views.json'
+    if previous.exists():
+        write(destination / 'history/prior-inventory-grades.json', {
+            key: view['inventory_grade'] for key, view in json.loads(previous.read_bytes()).items()})
     processes = []
     for path in sorted([*(pilot / 'commands').rglob('process.json'),
                         *(pilot / 'publications/logs').rglob('process.json')]):
@@ -151,6 +168,7 @@ def export_bundle(pilot: Path, trials: Path | None, destination: Path, summary: 
         'normalization': 'Remove machine-local mirror paths; preserve the frame, pins, selection and original sampler digest.',
         'tools': inputs['tools'], 'harness_sources': inputs['harness_sources'],
         'evaluator_digest': inputs['evaluator_digest'],
+        'continuation': summary.get('continuation'),
         'reporter_digest': material_digest(Path(__file__)),
         'omitted': ['source checkouts', 'production databases', 'raw command streams', 'model prompts'],
         'limitations': ['Replay pins rather than reacquiring live CI metadata to reproduce the selected population.',
@@ -168,6 +186,9 @@ def export_bundle(pilot: Path, trials: Path | None, destination: Path, summary: 
                     call['process'] = portable_process(call['process'])
         write(saved / 'attempts.json', attempts)
         write(saved / 'report.json', json.loads((trials / 'report.json').read_bytes()))
+        for name in ('preparation.json', 'execution.json'):
+            if (trials / name).exists():
+                write(saved / name, json.loads((trials / name).read_bytes()))
 
 
 def main():

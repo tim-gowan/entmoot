@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 
 from evals.harness.contracts import ContractError
 from evals.harness.measurement import command, database_bytes
@@ -270,6 +271,81 @@ def run(selection: Path, root: Path, cli: Path, retain: Path) -> dict:
     write(root / 'oracle-trees.json', trees)
     summary = run_repositories(recipe_path, root / 'publications', cli, 0, True)
     write(root / 'repositories-summary.json', summary)
+    return finish(selection, root, cli, retain, excluded)
+
+
+def verify_continuation(root: Path, inputs: dict, tools: dict, previous_runner: str) -> dict:
+    """Permit a recorded coordinator transition, never a changed product or oracle."""
+    if evaluator_digest() != inputs['evaluator_digest']:
+        raise ContractError('original evaluator is required for continuation')
+    if tools != inputs['tools']:
+        raise ContractError('experiment executable changed')
+    if previous_runner != inputs['harness_sources']['history_pilot.py']:
+        raise ContractError('previous runner digest does not match frozen inputs')
+    changes = {}
+    for name, before in inputs['harness_sources'].items():
+        if material_digest(root / 'inputs/harness' / name) != before:
+            raise ContractError('archived harness source changed: ' + name)
+        after = material_digest(Path(__file__).with_name(name))
+        if before != after:
+            if name != 'history_pilot.py':
+                raise ContractError('continuation requires original harness dependency: ' + name)
+            changes[name] = {'previous': before, 'current': after}
+    return changes
+
+
+def resume(selection: Path, root: Path, cli: Path, retain: Path, previous_runner: str) -> dict:
+    """Reuse completed initialization; replay retention and grading after a clean stop.
+
+    All retention operations replay through the idempotent production API. An
+    interrupted child may have committed without a receipt, so neither existing
+    locators nor old grades are treated as completed checks in this phase.
+    """
+    inputs = json.loads((root / 'inputs.json').read_bytes())
+    if (root / 'report.json').exists() or (root / 'continuation.json').exists():
+        raise ContractError('continuation requires an unfinished run with no prior continuation')
+    if material_digest(selection) != inputs['selection_digest']:
+        raise ContractError('frozen selection changed')
+    tools = {'cli': material_digest(cli), 'retain': material_digest(retain)}
+    changes = verify_continuation(root, inputs, tools, previous_runner)
+    summary = json.loads((root / 'repositories-summary.json').read_bytes())
+    recipes = json.loads((root / 'repositories.json').read_bytes())['repositories']
+    if (set(recipes) != {row['id'] for row in summary['repositories']} or
+            any(row.get('inventory_status') != 'complete' for row in summary['repositories'])):
+        raise ContractError('continuation requires completed initialization for every recipe')
+    interruption = json.loads((root / 'interruption.json').read_bytes())
+    if interruption.get('status') != 'stopped_after_children_exited':
+        raise ContractError('confirm the prior coordinator and children stopped before continuation')
+    archive = root / 'before-continuation'
+    archive.mkdir(exist_ok=False)
+    for name in ('inputs.json', 'views.json', 'interruption.json'):
+        if (root / name).exists():
+            shutil.copyfile(root / name, archive / name)
+    shutil.copyfile(Path(__file__), archive / 'continuation-runner.py')
+    continuation = {'previous_inputs_digest': material_digest(root / 'inputs.json'),
+        'previous_views_digest': material_digest(archive / 'views.json') if (archive / 'views.json').exists() else None,
+        'interruption_digest': material_digest(root / 'interruption.json'), 'runner_changes': changes,
+        'policy': 'Reuse initialization; replay all retention and independent byte/delta grades; preserve earlier measurements.'}
+    write(root / 'continuation.json', continuation)
+    trees = json.loads((root / 'oracle-trees.json').read_bytes())
+    excluded = [{'revision': key, 'reason': 'not_initialized_in_original_run'} for key in trees if key not in recipes]
+    return finish(selection, root, cli, retain, excluded, continuation)
+
+
+def finish(selection: Path, root: Path, cli: Path, retain: Path, excluded: list,
+           continuation: dict | None = None) -> dict:
+    inputs = json.loads((root / 'inputs.json').read_bytes())
+    frozen, tools = inputs['selection'], inputs['tools']
+    evaluator = evaluator_digest() if continuation is not None else inputs['evaluator_digest']
+    sources = ({name: material_digest(Path(__file__).with_name(name)) for name in inputs['harness_sources']}
+               if continuation is not None else inputs['harness_sources'])
+    spec = frozen['configuration']
+    configured = {repo['id']: repo for repo in spec['repositories']}
+    recipes = json.loads((root / 'repositories.json').read_bytes())['repositories']
+    mirrors = {key.rsplit('-', 1)[0]: row['url'] for key, row in recipes.items()}
+    trees = json.loads((root / 'oracle-trees.json').read_bytes())
+    summary = json.loads((root / 'repositories-summary.json').read_bytes())
+    commands = Commands(root, spec['command_timeout_seconds'])
     published = {row['id']: row for row in summary['repositories']}
     views, observed, inventories = {}, {}, {}
     for key, row in published.items():
@@ -301,6 +377,8 @@ def run(selection: Path, root: Path, cli: Path, retain: Path) -> dict:
         except (ContractError, OSError, ValueError) as error:
             excluded.append({'revision': key, 'reason': str(error)})
         write(root / 'views.json', views)
+        print(json.dumps({'revision': key, 'graded_views': len(views),
+                          'passed': inventories.get(key, {}).get('passed')}), flush=True)
     episodes = [grade_episode(episode, trees, observed, inventories) for episode in frozen['episodes']]
     result = {'episodes': episodes, 'counts': dict(Counter(row['status'] for row in episodes)),
               'requested_episodes': len(spec['repositories']) * sum(spec['quotas'].values()),
@@ -312,6 +390,9 @@ def run(selection: Path, root: Path, cli: Path, retain: Path) -> dict:
                   'CI failures are metadata candidates; code failure and repair are not established.',
                   'This lane grades source deltas, not callable impact, native dispatch or security.',
                   'No language dependency installation or upstream code execution in this structural lane.']}
+    if continuation is not None:
+        result['continuation'] = continuation
+        result['limitations'].append('Initialization predates a recorded coordinator change; implementation_unchanged covers the final retention/grading phase. Retention replay costs include repeated work.')
     result['implementation_unchanged'] = (evaluator_digest() == evaluator and
         all(material_digest(Path(__file__).with_name(name)) == value for name, value in sources.items()) and
         material_digest(cli) == tools['cli'] and material_digest(retain) == tools['retain'])
@@ -323,12 +404,13 @@ def run(selection: Path, root: Path, cli: Path, retain: Path) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation', choices=['harvest', 'run'])
+    parser.add_argument('operation', choices=['harvest', 'run', 'resume'])
     parser.add_argument('--config', type=Path)
     parser.add_argument('--selection', type=Path)
     parser.add_argument('--run-dir', type=Path, required=True)
     parser.add_argument('--cli', type=Path)
     parser.add_argument('--retain-helper', type=Path)
+    parser.add_argument('--previous-runner-digest', help='original inputs.json history_pilot.py digest; required for resume')
     args = parser.parse_args()
     if args.operation == 'harvest':
         if not args.config:
@@ -338,7 +420,13 @@ def main():
     else:
         if not all((args.selection, args.cli, args.retain_helper)):
             parser.error('run requires --selection, --cli and --retain-helper')
-        result = run(args.selection, args.run_dir, args.cli.resolve(), args.retain_helper.resolve())
+        if args.operation == 'resume':
+            if not args.previous_runner_digest:
+                parser.error('resume requires --previous-runner-digest')
+            result = resume(args.selection, args.run_dir.resolve(), args.cli.resolve(), args.retain_helper.resolve(),
+                            args.previous_runner_digest)
+        else:
+            result = run(args.selection, args.run_dir, args.cli.resolve(), args.retain_helper.resolve())
         print(json.dumps({key: result[key] for key in ('counts', 'selected_episodes', 'retained_views')}))
 
 
