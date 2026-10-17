@@ -77,6 +77,32 @@ records delivered work. Known defects belong in PLANNING, not weaker contracts.
   repository clusters. Source inventory, syntax, dispatch and runtime behavior
   are separate claims. Output size alone does not establish agent cost savings.
 
+## Interface design
+
+- Start with an operator question and reuse the shared engine operation. CLI verbs
+  use kebab-case; wire fields and MCP operations keep their existing snake_case
+  convention. Name selectors for their entity and scope; distinguish IDs, names,
+  paths, counts, byte offsets and budgets rather than accepting ambiguous strings.
+- Parameterize choices callers need: subject/revision, evidence scope, filters,
+  limits and continuation. Keep implementation tuning internal unless a measured
+  workflow needs control. Reuse typed selectors and shared defaults across CLI/MCP;
+  do not introduce per-command aliases for the same concept or opaque JSON flags
+  when a small typed option suffices. Preserve existing spellings or document an
+  explicit compatibility change.
+- Environment variables select process-wide deployment/tool defaults, not hidden
+  query semantics. Prefer explicit request parameters for reproducible operations.
+  Define precedence at the shared configuration owner, validate explicit values,
+  and test unset, empty, invalid and conflicting selections in child processes.
+- Rust contracts own input/output semantics and validation; regenerate schemas.
+  Return decision-relevant summaries with stable IDs, provenance, uncertainty and
+  actionable continuation. Keep explain/export for detail. Every truncated result
+  needs a usable next step; cursors must bind the filters and publication they page.
+  Machine-readable stdout must remain parseable; diagnostics belong on stderr.
+- Identity encodings must frame variants, fields and optional presence before
+  hashing. Presentation, correspondence and equivalence are separate policies;
+  deduplication must not erase distinct evidence. Test required distinctions as
+  well as intentional equivalences through persistence and public queries.
+
 ## Implementation and validation
 
 - Fix the existing common owner before adding another abstraction. Split modules
