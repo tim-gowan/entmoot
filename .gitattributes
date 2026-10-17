@@ -2,6 +2,7 @@
 *.rs text eol=lf
 
 # Versioned campaign receipts have byte digests; preserve bytes on every OS.
+evals/experiments/history-pilot-2026-10-17/** -text
 evals/real_world/breadth_2026-09-21.json text eol=lf
 evals/topology/horizon_cases/*.json text eol=lf
 evals/topology/horizon_cases/golden/*.json text eol=lf

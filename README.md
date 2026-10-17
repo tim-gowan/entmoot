@@ -111,6 +111,12 @@ digests/spans, with build and native-scope limitations kept explicit. That histo
 sample does not establish current release readiness; the repaired controls still
 require [release qualification](PLANNING.md#current-qualification-blockers).
 
+The [history pilot](docs/runbooks/revision-evaluation.md#history-inventory-evidence-2026-10-17)
+checked 72 selected comparisons across eight repositories: 139 retained revisions
+and 19,188 selected-source file memberships matched independent Git-byte oracles.
+This supports bounded source-inventory use. AI trials remain unrun; it establishes
+neither agent savings nor semantic-upgrade or security accuracy.
+
 | Capability | Maturity | Utility and limit / verification owner |
 |---|---|---|
 | Structural inventory and identities | Alpha candidate | Compiler-free source/revision navigation; parsing is not compiler qualification. [Revision controls](crates/entmoot-core/tests/revision_pairs.rs) |
@@ -124,7 +130,7 @@ require [release qualification](PLANNING.md#current-qualification-blockers).
 | Dependency materialization | Alpha candidate | Confined staged copying, opaque version keys, symlink rejection and resource bounds. [Safety owner](crates/entmoot-engine/src/materialize.rs) |
 | Test impact / unused candidates | Partial | Review and test-selection assistance; no coverage or dead-code proof. [Testing](docs/runbooks/testing.md) |
 | Canon / clone candidates / collaboration | Experimental | Explicit evidence policies and local recovery; no runtime equivalence proof or remote collaboration service. [Architecture](docs/architecture/ARCHITECTURE.md) |
-| Registry packages / generated docs / CI | Qualification blocked | Five package owners and generated docs; storage tests and native CI preflight need repair before release. [Release gates](docs/runbooks/local-alpha.md) |
+| Registry packages / generated docs / CI | Qualification pending | Local regression repairs and controls passed; the exact candidate still needs hosted structural/native and extracted-package gates. [Release gates](docs/runbooks/local-alpha.md) |
 | Remote storage / global package catalog | Planned, unimplemented | Future location transport must preserve publication, provenance, query and mutation semantics. |
 
 ## Maintain and release

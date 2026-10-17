@@ -788,6 +788,10 @@
         },
         {
           "kind": "file_prefix",
+          "path": "evals/experiments/history-pilot-2026-10-17/"
+        },
+        {
+          "kind": "file_prefix",
           "path": "evals/harness/requirements-agent.txt"
         },
         {

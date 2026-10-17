@@ -2,6 +2,10 @@
 
 ## 2026-10-17: Local history and agent evaluation harness
 
+- Record the frozen eight-repository history pilot: 72 selected comparisons,
+  139 retained views and 19,188 selected-source memberships passed independent
+  checks. Preserve replay pins, costs, failed controls and limitations. Prepare
+  six paired agent tasks without starting AI execution; agent benefit remains unmeasured.
 - Separate model-free trial preparation from explicit execution; fence paused
   source/store/tool/oracle inputs and refuse duplicate starts. Continue an
   interrupted history retention phase without repeating initialization, retaining

@@ -275,6 +275,11 @@ provide frozen selection, independent file-byte/syntactic-call oracles, bounded
 tools, provider usage and regrading without model calls. The default calibration
 is 12 attempts of at most two minutes; implementation is not evidence of benefit.
 
+The [2026-10-17 history pilot](docs/runbooks/revision-evaluation.md#history-inventory-evidence-2026-10-17)
+completed 72 selected comparisons and 139 retained revision views, with independent
+source-byte and persisted-membership checks. The six-task paired calibration is
+prepared but unrun; its results and any agent-benefit claims remain outstanding.
+
 The 2026-10-17 investigation is under `.tmp/workflow-evaluation/`: the candidate
 catalog records upstream anchors and unresolved qualification; the read-only
 legacy inventory records the earlier survey's actual schema/counts. Reuse its

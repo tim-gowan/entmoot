@@ -26,6 +26,10 @@ tools and grading; Codex CLI is the only implemented live adapter. Prepare and
 review frozen inputs without model calls before explicitly starting the run. See the
 [local commands and limits](../docs/runbooks/revision-evaluation.md#local-history-pilot-and-agent-calibration).
 
+The [2026-10-17 history evidence](experiments/history-pilot-2026-10-17/manifest.json)
+preserves the frozen selection, case-level grades and measured costs for replay.
+It qualifies sampled source inventory; the paired AI trials remain unrun.
+
 ## Dispatch demo
 
 [`demo/getrandom-structural.json`](demo/getrandom-structural.json) is a one-root

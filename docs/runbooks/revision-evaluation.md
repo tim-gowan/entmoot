@@ -316,6 +316,64 @@ line and presentation limits for source reads. For exact added/deleted/modified
 file lists, use `git diff --no-renames --name-status <base> <head>` with the same
 source-extension scope. A bounded callable-impact page answers another question.
 
+### History inventory evidence, 2026-10-17
+
+The [frozen evidence bundle](../../evals/experiments/history-pilot-2026-10-17/manifest.json)
+records a purposive eight-repository pilot: Express, Fastify, Requests, docker-py,
+Axum, getrandom, chi and Gin. The bounded first-parent frame contained 988
+candidates in 2025-10-01 through 2026-09-30. Seeded selection filled 72 of 80
+requested pairs: 24 failed-CI candidates, 32 ordinary and 16 source-neutral.
+Eight failed-CI slots were underfilled; none were replaced. CI metadata does not
+establish a code failure, and ordinary commits are not verified passing CI.
+
+All 72 source-delta comparisons and 139 revision inventories passed independent
+Git membership/content checks, covering 19,188 selected-extension file
+memberships. These are repeated observations within eight repository clusters,
+not 19,188 independent experiments. The
+[case grades](../../evals/experiments/history-pilot-2026-10-17/history/report.json)
+and [cost summary](../../evals/experiments/history-pilot-2026-10-17/summary.json)
+preserve the denominators and limitations. This qualifies the sampled source
+inventory/content question; it does not grade callable completeness, typed
+dispatch, behavior, upgrade safety or security findings.
+
+The production database retains revision views and source digests. Immutable
+source bytes remain in the owned Git acquisitions; retain those acquisitions
+alongside the database and locators. The supplementary
+[persisted-source audit](../../evals/experiments/history-pilot-2026-10-17/history/persisted-source-audit.json)
+checks stored membership/digests, snapshot revisions and matching Git trees/bytes
+using a fingerprint-qualified reader. Its separate control detects deletion of
+one selected source membership in a disposable database copy.
+
+The original checkout inherited host CRLF conversion. The byte oracle exposed
+the mismatch; the corrected run used fresh clones with explicit text policy.
+The [recovery record](../../evals/experiments/history-pilot-2026-10-17/recovery.json)
+preserves that failure, earlier calibrations and a separately accounted model
+availability probe. The corrected run was then stopped on request after
+initialization and 76 grades. Its recorded continuation replayed all retention
+and grading, preserving prior observations and an unfinalized child receipt.
+Local debug binaries, uncontrolled cache/load and overlapping validation limit
+performance interpretation. Missing measurements remain unknown.
+
+The final shared database occupied 16,253,861,888 logical bytes (15.14 GiB),
+excluding acquisitions and original publications. The 139 initialization commands
+took 1,404.3 seconds in total (median 9.53 seconds); 215 completed retention
+attempts, including replay, took 3,495.6 seconds. One interrupted retention
+receipt lacks finalized timing. These command sums are not whole-study elapsed
+time. The summary also retains sampled memory, CPU and I/O distributions. The
+separate persisted-source audit passed all 139 views in 20.2 seconds locally.
+
+Replay the selected population without resampling live CI metadata:
+
+```text
+python -m evals.harness.history_pilot run --selection evals/experiments/history-pilot-2026-10-17/selection.json --run-dir .tmp/history-replay --cli target/debug/entmoot --retain-helper target/debug/examples/retain_campaign_publication
+```
+
+Use a fresh directory and matched binaries built together. Raw checkouts,
+databases and command streams remain local; the bounded bundle retains pins,
+grades, measurements and provenance. The [six-task AI calibration plan](../../evals/experiments/history-pilot-2026-10-17/calibration-plan.json)
+is frozen separately and has **zero executed research attempts**. No token savings, answer
+quality advantage or broader statistical capability is established yet.
+
 ## Local branch collaboration
 
 Register already produced graph exports in one repository store:
