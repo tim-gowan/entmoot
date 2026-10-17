@@ -400,34 +400,41 @@ def _acceleration_plan() -> AccelerationPlan:
     from scripts.pr_structural_diff import cargo_commands, map_path_to_selection, path_preflight_index
     try:
         report = path_preflight_index(staged_only=True)
+        paths = list(dict.fromkeys(p for f in report.files for p in (f.path, f.previous_path or f.path)))
         changed = [f for f in report.files if f.classification != "skip"]
         if not changed:
-            return AccelerationPlan("skip", "documentation/hook-only change; Python checks still run")
+            return AccelerationPlan("skip", "no Cargo owners changed; Python checks still run", changed_paths=paths)
         for item in changed:
             for path in dict.fromkeys([item.path, item.previous_path or item.path]):
                 map_path_to_selection(path, report, force=True)
         if any(note.startswith("unmapped path:") for note in report.notes):
-            return AccelerationPlan("workspace", "unmapped change; full workspace checks")
+            return AccelerationPlan("workspace", "unmapped change; full workspace checks", changed_paths=paths)
         commands = cargo_commands(report)
         if not commands:
-            return AccelerationPlan("workspace", "unmapped change; full workspace checks")
+            return AccelerationPlan("workspace", "unmapped change; full workspace checks", changed_paths=paths)
         packages = sorted({t.package for t in report.selected_targets} | set(report.selected_packages))
         if report.selected_entmoot_core_tests:
             packages = sorted(set(packages) | {"entmoot-core"})
-        return AccelerationPlan("selected", "changed-file ownership; structural equality cannot skip tests", commands, packages, [p for f in changed for p in (f.path, f.previous_path or f.path)])
+        return AccelerationPlan("selected", "changed-file ownership; structural equality cannot skip tests", commands, packages, paths)
     except Exception as error:
         print(f"pre-commit: ownership unavailable ({error}); full workspace checks", file=sys.stderr)
         return AccelerationPlan("workspace", "ownership unavailable; full workspace checks")
 
 
-def tests_build_cli_binaries(commands: list[list[str]]) -> bool:
-    """Cargo builds executable targets for this crate's integration tests."""
+def selects_integration_tests(commands: list[list[str]], package: str, target: str | None = None) -> bool:
+    """Cargo builds package executables before running its integration tests."""
     for command in commands:
         packages = {command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "-p"}
         excluded = {command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "--exclude"}
-        if "entmoot" in excluded or not ("--workspace" in command or "entmoot" in packages):
+        if package in excluded or not ("--workspace" in command or package in packages):
             continue
-        if "--test" in command or not any(flag in command for flag in ("--lib", "--doc", "--bin", "--example", "--bench")):
+        if "--tests" in command or "--all-targets" in command:
+            return True
+        if "--test" in command:
+            targets = {command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "--test"}
+            if target is None or target in targets:
+                return True
+        elif not any(flag in command for flag in ("--lib", "--doc", "--bin", "--bins", "--example", "--examples", "--bench", "--benches")):
             return True
     return False
 
@@ -497,11 +504,16 @@ def main() -> int:
         ("pre-commit Python tests", [sys.executable, "-m", "unittest",
             "scripts.test_pr_structural_diff", "scripts.test_test_ownership",
             "scripts.test_propose_test_ownership", "scripts.test_pre_commit_check",
-            "scripts.test_normalize_sarif_repo_paths", "scripts.test_docs_workflow",
-            "scripts.test_fixture_checkout"]),
+            "scripts.test_normalize_sarif_repo_paths", "scripts.test_package_smoke",
+            "scripts.test_fixture_checkout", "scripts.test_check_release", "scripts.test_build_docs"]),
         ("cargo fmt", ["cargo", "fmt", "--", "--check"]),
     ):
         code = run(cmd, label)
+        if code != 0:
+            return code
+    if plan.changed_paths is None or any(path.startswith("evals/") for path in plan.changed_paths):
+        code = run([sys.executable, "-m", "unittest", "discover", "-s", "evals/harness", "-p", "test_*.py"],
+                   "harness configuration and Python units (no AI)")
         if code != 0:
             return code
     if plan.mode == "skip":
@@ -517,7 +529,15 @@ def main() -> int:
             clippy.extend(["-p", package])
         tests = [with_features(cmd) for cmd in plan.cargo_commands]
     clippy.extend(["--", "-D", "warnings"])
-    checks = [("cargo clippy", with_features(clippy))] + [(f"cargo test {i+1}/{len(tests)}", cmd) for i, cmd in enumerate(tests)]
+    checks = [("cargo clippy", with_features(clippy))]
+    cli_ready = False
+    for i, cmd in enumerate(tests):
+        cli_ready = cli_ready or selects_integration_tests([cmd], "entmoot")
+        if selects_integration_tests([cmd], "entmoot-mcp", "http_e2e") and not cli_ready:
+            checks.append(("CLI for MCP interoperability", with_features(
+                ["cargo", "build", "-p", "entmoot", "--profile", "test", "--bins"])))
+            cli_ready = True
+        checks.append((f"cargo test {i+1}/{len(tests)}", cmd))
     failures = [label for label, cmd in checks if run(cmd, label) != 0]
     if failures:
         print("pre-commit: failed steps: " + ", ".join(failures), file=sys.stderr)
@@ -529,7 +549,7 @@ def main() -> int:
             for cmd in tests)
         commands = [] if engine_tested else [
             ("native resolver controls", ["cargo", "test", "-p", "entmoot-engine", "--test", "callsites_rust", "--test", "callsites_javascript"])]
-        if not tests_build_cli_binaries(tests):
+        if not cli_ready:
             commands.append(("matched native CLI and producer", ["cargo", "build", "-p", "entmoot", "--profile", "test", "--bins"]))
         for label, cmd in commands:
             code = run(with_features(cmd), label)

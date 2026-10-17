@@ -185,7 +185,8 @@ pub struct StatusReport {
     pub evidence_roles: CountedStat,
     /// Unresolved relation attempts by reason token.
     pub unresolved_reasons: Vec<NamedCount>,
-    /// Conflicted relation-edge count.
+    /// Relation edges with active refutation or explicit disagreement between
+    /// active claims. This does not adjudicate which producer is correct.
     pub conflicted_relations: CountedStat,
     /// Stale evidence / claim count when indexed.
     pub stale_evidence: CountedStat,

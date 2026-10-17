@@ -1,5 +1,41 @@
 # Changelog
 
+## 2026-10-17: Explain the product and its evidence
+
+- Add README architecture and sequence diagrams, operation entry points, hash
+  meanings and prior-art references. Keep historical inventory, output-volume
+  measurements and unrun AI trials distinct; link the reproducible evidence.
+- Render the same Mermaid diagrams in the generated documentation site.
+- Keep executable documentation examples in their own Git repositories and
+  disposable data roots, with exact fixture-result assertions.
+- Reuse a prepared, fingerprint-matched CLI in MCP interoperability tests;
+  prepare it before isolated tests instead of building inside a live session.
+
+## 2026-10-17: Reuse qualified CI builds
+
+- Move Python configuration, lockfile and receipt controls out of Cargo integration
+  wrappers; keep real CLI/storage controls in the binary lane. AI trials stay paused.
+- Keep workspace features and Cargo profiles consistent within each OS lane. Reuse
+  qualified CLI/MCP artifacts for docs and PR classification, and qualified crates
+  and docs for release handoff. Extracted archives still build independently.
+- Isolate package-smoke fixtures from their enclosing Git checkout and correct
+  the PR classifier's configuration selector. Validate workflow wiring separately.
+- Make read-only SQLite startup participate in the existing bounded startup lock;
+  preserve concurrent transactions and atomic snapshots without creating sidecars.
+
+## 2026-10-17: Identity and navigable uncertainty
+
+- Preserve scope field identity and composite address boundaries before hashing;
+  retain distinct opaque candidates in both canonicalization paths. Required-
+  distinction and SQLite reload/query controls cover GitHub issue #3. Historical
+  stores require their matching reader or an explicit rebuild; wire series stay v1.
+- Surface explicit disagreement between active claims on separate edges in
+  conflict facets, traversal and evidence receipts without rewriting endpoints.
+- Return an unresolved-attempt continuation from bounded call results and compact
+  delivery; reuse the pinned unresolved query and retain open-world limitations.
+- Clarify command naming, parameter/configuration ownership, typed input/output,
+  continuation and identity design rules in AGENTS.
+
 ## 2026-10-17: Local history and agent evaluation harness
 
 - Record the frozen eight-repository history pilot: 72 selected comparisons,

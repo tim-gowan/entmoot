@@ -440,7 +440,9 @@ def cargo_commands_for_targets(targets: list[CargoTarget], root: Path = DEFAULT_
     # tests subsume their nonignored siblings. Do not enable every native probe.
     for target in targets:
         if target.package in full and target.test == "campaign_harness":
-            command = prefix_for([target.package]) + ["-p", target.package, "--test", target.test, "--", "--include-ignored"]
+            # Keep the same roots: dropping the MCP/dev dependencies here changes
+            # feature unification and recompiles the libraries just qualified.
+            command = prefix_for(full) + [arg for p in full for arg in ("-p", p)] + ["--test", target.test, "--", "--include-ignored"]
             if command not in commands:
                 commands.append(command)
     for package in sorted({t.package for t in targets} - set(full)):

@@ -50,10 +50,11 @@ Docs: https://crates.io/docs/trusted-publishing
    `python scripts/prepare_release_inputs.py` and follow the
    [validation gates](runbooks/local-alpha.md#validation-and-release-gates).
 2. Tag and push `v<version>` (must match `Cargo.toml`, e.g. `v0.0.1-alpha`).
-3. `release.yml` gates publication on ci / native / docs for that SHA, packages crates, creates the
-   GitHub Release with `.crate` assets, publishes to crates.io, then runs the
-   shared `docs.yml` workflow again for post-publish Pages when enabled. CI/PR docs
-   stage under `.tmp/staging` via the same `docs.yml` defaults. `demo.yml` is
+3. `release.yml` gates publication on CI (including docs) and native qualification
+   for that SHA. It reuses CI's qualified `.crate` assets, creates the GitHub
+   Release, publishes to crates.io, then deploys the already qualified docs
+   artifact to Pages when enabled. CI/PR docs stage under `.tmp/staging` using
+   the same run's CLI/MCP binaries. `demo.yml` is
    opt-in corpus dispatch and is not part of Trusted Publishing or tag CD.
 4. Approve the **`crates-io`** environment if reviewers are required.
 
@@ -87,16 +88,16 @@ python scripts/publish_release.py
 push tag v*
         │
         ▼
-   ci.yml + native.yml + docs.yml staging (workflow_call)
+   ci.yml (including docs.yml staging) + native.yml (workflow_call)
    (demo.yml is dispatch-only; not on this path)
         │
         ▼
    release.yml publish job (environment crates-io):
         check_release --tag → refuse if crates.io has version →
-        package_smoke → gh release create (.crate) →
+        download qualified .crate artifacts → gh release create →
         OIDC (or initial-publish token) → publish_release.py
         │
         ▼
-   docs.yml (workflow_call, after publish):
-        build → .tmp/site → Pages artifact → deploy if PAGES_ENABLED
+   release.yml deploy_docs (after publish):
+        download qualified docs → Pages artifact → deploy if PAGES_ENABLED
 ```

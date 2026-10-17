@@ -11,7 +11,8 @@ same file-pair corpus or an explicit `--dataset`.
 ```text
 cargo test -p entmoot-core --test revision_pairs --test file_revision_pairs
 cargo test -p entmoot-engine --test revision_receipts
-cargo test -p entmoot --test campaign_harness -- --ignored
+python -m unittest discover -s evals/harness -p "test_*.py"
+cargo test --workspace --features entmoot-core/full-tests --test campaign_harness --test revision_receipts -- --ignored
 ```
 
 The [SQLite harness](../../evals/harness/README.md) runs direct-parent pairs or explicitly

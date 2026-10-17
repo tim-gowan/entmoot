@@ -31,6 +31,14 @@ no correspondence policy is supplied.
 
 A proposition describes a relationship; a relation edge places it in scope; a
 claim records a producer's assertion about it. Status and confidence are distinct.
+Scope keys retain field names and optional presence; composite addresses frame
+their components before hashing. Identity is not correspondence: delimiters in
+producer strings cannot merge targets or remove distinct candidates. These
+derivation changes remain in the v1 series and invalidate older fingerprints;
+use a matching historical reader or explicitly rebuild, never relabel a store.
+Explicit `contradicts` links between active claims surface both applicable edges
+as conflicted without choosing a target, rewriting endpoints or claiming closure.
+Absent or inactive linked claims do not establish active disagreement.
 No missing edge establishes falsehood without relevant completeness evidence.
 Finding locations and ordered provider traces keep their supplied meanings;
 neither becomes a source/sink or exploit claim by position alone.

@@ -28,7 +28,7 @@ env:
   PYRIGHT_PATH: .tmp/adapter-build/source/pyright
   ADAPTERS_OUT: .tmp/adapter-build/resolver-adapters
   ARTIFACT_RETENTION_DAYS: '14'
-  PRODUCER_FEATURES: producer
+  NATIVE_FEATURES: entmoot/producer,entmoot/native-tests,entmoot-engine/native-tests
 jobs:
   resolved:
     strategy:
@@ -87,18 +87,10 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python scripts/build_typescript_program.py --out .tmp/adapter-build/typescript-program --version-tools .tmp/adapter-build/typescript-versions
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo build -p entmoot --features $env:PRODUCER_FEATURES
+          # A stable workspace feature graph avoids recompiling dependencies for
+          # each test target. Keep build outputs intact until all consumers finish.
+          cargo build --locked --profile test --workspace --features $env:NATIVE_FEATURES --bins --example blake3_digest
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo build -p entmoot-mcp
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo build -p entmoot-contracts --example blake3_digest
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          # Bound disk on GHA before the heavy producer/test compile fan-out.
-          if (Test-Path target/debug/incremental) { Remove-Item -Recurse -Force target/debug/incremental }
-          if (Test-Path target/debug/examples) { Remove-Item -Recurse -Force target/debug/examples }
-          if (Test-Path target/debug/build) {
-            Get-ChildItem target/debug/build -Directory | Where-Object { $_.Name -notmatch '^(entmoot|libsqlite|blake3|tree-sitter|psm)' } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-          }
       - name: Native expansion and discrete version controls
         shell: pwsh
         run: |
@@ -120,7 +112,7 @@ jobs:
           $profileRoot = Join-Path $env:RUNNER_TEMP 'entmoot-adapter-profile'
           New-Item -ItemType Directory -Force -Path $profileRoot | Out-Null
           Set-Content -Path (Join-Path $profileRoot 'main.go') -Value "package main`nfunc main() {}`n"
-          $summaryJson = cargo run --locked -p entmoot --bin entmoot --features $env:PRODUCER_FEATURES --quiet -- --json init --root $profileRoot
+          $summaryJson = & ./target/debug/entmoot --json init --root $profileRoot
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           $summary = ($summaryJson -join "`n") | ConvertFrom-Json
           $locator = Get-Content -LiteralPath $summary.publication.store -Raw | ConvertFrom-Json
@@ -130,19 +122,19 @@ jobs:
             throw 'init did not write adapter-profile.json'
           }
           $publication = Join-Path $volume 'current.json'
-          cargo run --locked -p entmoot --bin entmoot --features $env:PRODUCER_FEATURES --quiet -- status --publication $publication --source-root $profileRoot | Out-Null
+          & ./target/debug/entmoot status --publication $publication --source-root $profileRoot | Out-Null
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked -p entmoot --features "$($env:PRODUCER_FEATURES),native-tests" --test program_adapters -- --include-ignored --test-threads=1
+          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test program_adapters -- --include-ignored --test-threads=1
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked -p entmoot --features "$($env:PRODUCER_FEATURES),native-tests" --test adapter_controls -- --test-threads=1
+          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test adapter_controls -- --test-threads=1
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked -p entmoot --features $env:PRODUCER_FEATURES --test producer_cli -- --include-ignored --test-threads=1
+          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test producer_cli -- --include-ignored --test-threads=1
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked -p entmoot --features $env:PRODUCER_FEATURES --test campaign_harness revision_campaign_joins_actual_occurrences_and_preserves_unconsumed_frontiers -- --ignored --exact
+          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test campaign_harness revision_campaign_joins_actual_occurrences_and_preserves_unconsumed_frontiers -- --ignored --exact
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked -p entmoot-engine --all-features --test dispatch_expectations --test callsites_c_family --test callsites_csharp --test callsites_go --test callsites_java --test callsites_rust --test callsites_javascript -- --include-ignored --test-threads=1
+          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test dispatch_expectations --test callsites_c_family --test callsites_csharp --test callsites_go --test callsites_java --test callsites_rust --test callsites_javascript -- --include-ignored --test-threads=1
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked -p entmoot-engine --all-features --test package_compatibility native_python_five_controls -- --ignored --exact --test-threads=1
+          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test package_compatibility native_python_five_controls -- --ignored --exact --test-threads=1
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
       - name: Retain native build provenance on failure
         if: failure()
@@ -166,26 +158,24 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           rustup toolchain install 1.95.0 --profile minimal
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked -p entmoot --features "$($env:PRODUCER_FEATURES),native-tests" --test adapter_controls pinned_rust_compilers_preserve_trait_macro_and_generic_syntax -- --ignored --exact --test-threads=1
-      - name: Rehearse extracted native-enabled packages
-        run: python scripts/package_smoke.py --producer
-      - name: Build producer release CLI
-        if: success()
+          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test adapter_controls pinned_rust_compilers_preserve_trait_macro_and_generic_syntax -- --ignored --exact --test-threads=1
+      - name: Preserve matched producer binaries
         shell: bash
         run: |
           set -euo pipefail
-          cargo build --release --locked -p entmoot --features "${PRODUCER_FEATURES}"
-          mkdir -p .tmp/cli-artifact
-          if [ -f target/release/entmoot.exe ]; then
-            cp target/release/entmoot.exe .tmp/cli-artifact/entmoot.exe
-          else
-            cp target/release/entmoot .tmp/cli-artifact/entmoot
-          fi
-      - name: Upload producer release CLI
+          mkdir -p .tmp/bin-artifact
+          for binary in entmoot entmoot-mcp entmoot-producer; do
+            suffix=""
+            if [ -f "target/debug/${binary}.exe" ]; then suffix=".exe"; fi
+            cp "target/debug/${binary}${suffix}" .tmp/bin-artifact/
+          done
+      - name: Rehearse extracted native-enabled packages
+        run: python scripts/package_smoke.py --producer --profile test --baseline-bin-dir .tmp/bin-artifact
+      - name: Upload qualified producer test-profile binaries
         if: success()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: entmoot-cli-producer-${{ runner.os }}-${{ github.sha }}
-          path: .tmp/cli-artifact/*
+          name: entmoot-bin-producer-test-${{ runner.os }}-${{ github.sha }}
+          path: .tmp/bin-artifact/*
           if-no-files-found: error
           retention-days: ${{ fromJSON(env.ARTIFACT_RETENTION_DAYS) }}

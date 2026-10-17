@@ -258,6 +258,29 @@ impl QueryEngine {
                 },
                 _ => None,
             },
+            unresolved_continuation: (match &result.payload {
+                QueryPayload::Inspect(payload) => match payload.as_ref() {
+                    // Compact calls display concrete edges only, so start with
+                    // the first attempt rather than skipping the deferred page.
+                    InspectPayload::Calls(c) if c.unresolved_bounds.total_matches > 0 => {
+                        Some(InspectQuery::Unresolved {
+                            id: c.subject.clone(),
+                            after: None,
+                            limit: Some(c.unresolved_bounds.limit),
+                        })
+                    }
+                    InspectPayload::Unresolved(u) => {
+                        u.next_cursor.clone().map(|after| InspectQuery::Unresolved {
+                            id: u.subject.clone(),
+                            after: Some(after),
+                            limit: Some(u.bounds.limit),
+                        })
+                    }
+                    _ => None,
+                },
+                _ => None,
+            })
+            .map(Box::new),
             role_selection: match &result.payload {
                 QueryPayload::Traverse(TraversePayload::Neighborhood(n)) => {
                     n.role_selection.as_ref().map(|r| CompactRoleSelection {

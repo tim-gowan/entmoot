@@ -12,6 +12,16 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.pre_commit_check import check_crate_boundaries, check_local_markdown_links, check_test_ownership_registry
 
+def check_test_command(argv, targets):
+    packages = [argv[i + 1] for i, value in enumerate(argv[:-1]) if value in ("-p", "--package")]
+    if "--workspace" in argv:
+        packages = list(targets)
+    excluded = {argv[i + 1] for i, value in enumerate(argv[:-1]) if value == "--exclude"}
+    packages = [package for package in packages if package not in excluded]
+    tests = [argv[i + 1] for i, value in enumerate(argv[:-1]) if value == "--test"]
+    for test in tests:
+        assert any(test in targets[p] for p in packages), (packages, test)
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tag")
@@ -43,10 +53,7 @@ def main():
             command = re.search(r"\bcargo test (.*)", line)
             if command:
                 argv = shlex.split(command.group(1))
-                packages = [argv[i + 1] for i, value in enumerate(argv[:-1]) if value == "-p"]
-                tests = [argv[i + 1] for i, value in enumerate(argv[:-1]) if value == "--test"]
-                for test in tests:
-                    assert any(test in targets[p] for p in packages), (workflow, packages, test)
+                check_test_command(argv, targets)
 
 if __name__ == "__main__":
     main()

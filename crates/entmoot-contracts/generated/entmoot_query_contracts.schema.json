@@ -6926,6 +6926,17 @@
                 }
               ],
               "description": "Open-attempt collection bounds when available; zero displayed is not zero known."
+            },
+            "unresolved_continuation": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/InspectQuery"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Retrieve open attempts through the shared inspect operation, independently\nof concrete-edge or presentation paging."
             }
           },
           "required": [
@@ -12162,6 +12173,250 @@
             }
           ]
         },
+        "InspectQuery": {
+          "description": "Inspect an exact subject, evidence record, trace, proposition, or relation edge.",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Assemble compact context around one inventory subject.",
+              "properties": {
+                "id": {
+                  "description": "Subject node id, address id, logic address, or display ref.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "subject",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Optional fan-out limit for neighbors and related collections.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Explain a finding, assertion, proposition, or relation-edge id.",
+              "properties": {
+                "id": {
+                  "description": "Evidence or knowledge record id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "evidence",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page ordered trace steps for a finding or trace id.",
+              "properties": {
+                "id": {
+                  "description": "Finding observation id or trace id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "trace",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Optional page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "offset": {
+                  "description": "Zero-based step offset.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Fetch a proposition and its scoped occurrences/claims.",
+              "properties": {
+                "id": {
+                  "description": "Proposition id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "proposition",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Fetch relation claims for one relation-edge id.",
+              "properties": {
+                "id": {
+                  "description": "Relation-edge id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "relation_edge",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Read one unresolved relation by its id, or page attempts for one exact subject.\nExhaustion is not proof of complete resolution or a negative relationship.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/UnresolvedPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive collection-pinned cursor from the prior page."
+                },
+                "id": {
+                  "description": "Unresolved relation id or exact inventory subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "unresolved",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Number of records per page (1..=1000; default 50).",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page materialized incoming call relations for one exact subject.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CallPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive cursor returned by the prior page. It pins snapshot and\ndurable visibility state as well as the relation key."
+                },
+                "id": {
+                  "description": "Exact subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "callers",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page materialized outgoing call relations and open call attempts.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CallPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive cursor returned by the prior page. It pins snapshot and\ndurable visibility state as well as the relation key."
+                },
+                "id": {
+                  "description": "Exact subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "callees",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            }
+          ]
+        },
         "LocationAttachment": {
           "additionalProperties": false,
           "properties": {
@@ -14755,6 +15010,17 @@
               "$ref": "#/$defs/ResultBounds",
               "description": "Independently bounded unresolved-attempt collection."
             },
+            "unresolved_continuation": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/InspectQuery"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Continue the undisplayed attempts through `inspect unresolved`, separately\nfrom the concrete-edge cursor. Exhaustion does not establish closure."
+            },
             "unresolved_relations": {
               "description": "Open outgoing call attempts; populated for callees.",
               "items": {
@@ -16543,7 +16809,7 @@
               "type": "array"
             },
             "conflicted_relation_edge_ids": {
-              "description": "Bounded edge ids with conflicting active states.",
+              "description": "Bounded edge ids with conflicting active states or explicit contradiction\nlinks between active, scope-applicable claims. Endpoints remain unchanged.",
               "items": {
                 "type": "string"
               },
@@ -20516,6 +20782,250 @@
             }
           ]
         },
+        "InspectQuery": {
+          "description": "Inspect an exact subject, evidence record, trace, proposition, or relation edge.",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Assemble compact context around one inventory subject.",
+              "properties": {
+                "id": {
+                  "description": "Subject node id, address id, logic address, or display ref.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "subject",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Optional fan-out limit for neighbors and related collections.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Explain a finding, assertion, proposition, or relation-edge id.",
+              "properties": {
+                "id": {
+                  "description": "Evidence or knowledge record id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "evidence",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page ordered trace steps for a finding or trace id.",
+              "properties": {
+                "id": {
+                  "description": "Finding observation id or trace id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "trace",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Optional page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "offset": {
+                  "description": "Zero-based step offset.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Fetch a proposition and its scoped occurrences/claims.",
+              "properties": {
+                "id": {
+                  "description": "Proposition id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "proposition",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Fetch relation claims for one relation-edge id.",
+              "properties": {
+                "id": {
+                  "description": "Relation-edge id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "relation_edge",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Read one unresolved relation by its id, or page attempts for one exact subject.\nExhaustion is not proof of complete resolution or a negative relationship.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/UnresolvedPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive collection-pinned cursor from the prior page."
+                },
+                "id": {
+                  "description": "Unresolved relation id or exact inventory subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "unresolved",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Number of records per page (1..=1000; default 50).",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page materialized incoming call relations for one exact subject.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CallPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive cursor returned by the prior page. It pins snapshot and\ndurable visibility state as well as the relation key."
+                },
+                "id": {
+                  "description": "Exact subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "callers",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page materialized outgoing call relations and open call attempts.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CallPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive cursor returned by the prior page. It pins snapshot and\ndurable visibility state as well as the relation key."
+                },
+                "id": {
+                  "description": "Exact subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "callees",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            }
+          ]
+        },
         "LineRange": {
           "additionalProperties": false,
           "description": "Inclusive one-based line window.",
@@ -24354,6 +24864,17 @@
                 "unresolved_bounds": {
                   "$ref": "#/$defs/ResultBounds",
                   "description": "Independently bounded unresolved-attempt collection."
+                },
+                "unresolved_continuation": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/InspectQuery"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Continue the undisplayed attempts through `inspect unresolved`, separately\nfrom the concrete-edge cursor. Exhaustion does not establish closure."
                 },
                 "unresolved_relations": {
                   "description": "Open outgoing call attempts; populated for callees.",
@@ -33046,6 +33567,17 @@
                       "$ref": "#/$defs/ResultBounds",
                       "description": "Independently bounded unresolved-attempt collection."
                     },
+                    "unresolved_continuation": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/InspectQuery"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Continue the undisplayed attempts through `inspect unresolved`, separately\nfrom the concrete-edge cursor. Exhaustion does not establish closure."
+                    },
                     "unresolved_relations": {
                       "description": "Open outgoing call attempts; populated for callees.",
                       "items": {
@@ -33792,7 +34324,7 @@
               "type": "array"
             },
             "conflicted_relation_edge_ids": {
-              "description": "Bounded edge ids with conflicting active states.",
+              "description": "Bounded edge ids with conflicting active states or explicit contradiction\nlinks between active, scope-applicable claims. Endpoints remain unchanged.",
               "items": {
                 "type": "string"
               },
@@ -36299,6 +36831,17 @@
                 }
               ],
               "description": "Open-attempt collection bounds when available; zero displayed is not zero known."
+            },
+            "unresolved_continuation": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/InspectQuery"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Retrieve open attempts through the shared inspect operation, independently\nof concrete-edge or presentation paging."
             }
           },
           "required": [
@@ -39880,6 +40423,250 @@
             }
           ]
         },
+        "InspectQuery": {
+          "description": "Inspect an exact subject, evidence record, trace, proposition, or relation edge.",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Assemble compact context around one inventory subject.",
+              "properties": {
+                "id": {
+                  "description": "Subject node id, address id, logic address, or display ref.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "subject",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Optional fan-out limit for neighbors and related collections.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Explain a finding, assertion, proposition, or relation-edge id.",
+              "properties": {
+                "id": {
+                  "description": "Evidence or knowledge record id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "evidence",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page ordered trace steps for a finding or trace id.",
+              "properties": {
+                "id": {
+                  "description": "Finding observation id or trace id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "trace",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Optional page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "offset": {
+                  "description": "Zero-based step offset.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Fetch a proposition and its scoped occurrences/claims.",
+              "properties": {
+                "id": {
+                  "description": "Proposition id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "proposition",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Fetch relation claims for one relation-edge id.",
+              "properties": {
+                "id": {
+                  "description": "Relation-edge id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "relation_edge",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Read one unresolved relation by its id, or page attempts for one exact subject.\nExhaustion is not proof of complete resolution or a negative relationship.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/UnresolvedPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive collection-pinned cursor from the prior page."
+                },
+                "id": {
+                  "description": "Unresolved relation id or exact inventory subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "unresolved",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Number of records per page (1..=1000; default 50).",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page materialized incoming call relations for one exact subject.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CallPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive cursor returned by the prior page. It pins snapshot and\ndurable visibility state as well as the relation key."
+                },
+                "id": {
+                  "description": "Exact subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "callers",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page materialized outgoing call relations and open call attempts.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CallPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive cursor returned by the prior page. It pins snapshot and\ndurable visibility state as well as the relation key."
+                },
+                "id": {
+                  "description": "Exact subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "callees",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            }
+          ]
+        },
         "LineRange": {
           "additionalProperties": false,
           "description": "Inclusive one-based line window.",
@@ -41177,7 +41964,7 @@
               "type": "array"
             },
             "conflicted_relation_edge_ids": {
-              "description": "Bounded edge ids with conflicting active states.",
+              "description": "Bounded edge ids with conflicting active states or explicit contradiction\nlinks between active, scope-applicable claims. Endpoints remain unchanged.",
               "items": {
                 "type": "string"
               },
@@ -44111,6 +44898,17 @@
                 "unresolved_bounds": {
                   "$ref": "#/$defs/ResultBounds",
                   "description": "Independently bounded unresolved-attempt collection."
+                },
+                "unresolved_continuation": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/InspectQuery"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Continue the undisplayed attempts through `inspect unresolved`, separately\nfrom the concrete-edge cursor. Exhaustion does not establish closure."
                 },
                 "unresolved_relations": {
                   "description": "Open outgoing call attempts; populated for callees.",
@@ -50360,6 +51158,250 @@
             }
           ]
         },
+        "InspectQuery": {
+          "description": "Inspect an exact subject, evidence record, trace, proposition, or relation edge.",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Assemble compact context around one inventory subject.",
+              "properties": {
+                "id": {
+                  "description": "Subject node id, address id, logic address, or display ref.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "subject",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Optional fan-out limit for neighbors and related collections.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Explain a finding, assertion, proposition, or relation-edge id.",
+              "properties": {
+                "id": {
+                  "description": "Evidence or knowledge record id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "evidence",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page ordered trace steps for a finding or trace id.",
+              "properties": {
+                "id": {
+                  "description": "Finding observation id or trace id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "trace",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Optional page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "offset": {
+                  "description": "Zero-based step offset.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Fetch a proposition and its scoped occurrences/claims.",
+              "properties": {
+                "id": {
+                  "description": "Proposition id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "proposition",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Fetch relation claims for one relation-edge id.",
+              "properties": {
+                "id": {
+                  "description": "Relation-edge id.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "relation_edge",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Read one unresolved relation by its id, or page attempts for one exact subject.\nExhaustion is not proof of complete resolution or a negative relationship.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/UnresolvedPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive collection-pinned cursor from the prior page."
+                },
+                "id": {
+                  "description": "Unresolved relation id or exact inventory subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "unresolved",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Number of records per page (1..=1000; default 50).",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page materialized incoming call relations for one exact subject.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CallPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive cursor returned by the prior page. It pins snapshot and\ndurable visibility state as well as the relation key."
+                },
+                "id": {
+                  "description": "Exact subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "callers",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Page materialized outgoing call relations and open call attempts.",
+              "properties": {
+                "after": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CallPageCursor"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Exclusive cursor returned by the prior page. It pins snapshot and\ndurable visibility state as well as the relation key."
+                },
+                "id": {
+                  "description": "Exact subject selector.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "callees",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Page size.",
+                  "format": "uint",
+                  "minimum": 0,
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            }
+          ]
+        },
         "LineRange": {
           "additionalProperties": false,
           "description": "Inclusive one-based line window.",
@@ -52243,6 +53285,17 @@
                       "$ref": "#/$defs/ResultBounds",
                       "description": "Independently bounded unresolved-attempt collection."
                     },
+                    "unresolved_continuation": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/InspectQuery"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Continue the undisplayed attempts through `inspect unresolved`, separately\nfrom the concrete-edge cursor. Exhaustion does not establish closure."
+                    },
                     "unresolved_relations": {
                       "description": "Open outgoing call attempts; populated for callees.",
                       "items": {
@@ -52931,7 +53984,7 @@
               "type": "array"
             },
             "conflicted_relation_edge_ids": {
-              "description": "Bounded edge ids with conflicting active states.",
+              "description": "Bounded edge ids with conflicting active states or explicit contradiction\nlinks between active, scope-applicable claims. Endpoints remain unchanged.",
               "items": {
                 "type": "string"
               },
@@ -58465,6 +59518,17 @@
                 }
               ],
               "description": "Open-attempt collection bounds when available; zero displayed is not zero known."
+            },
+            "unresolved_continuation": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/InspectQuery"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Retrieve open attempts through the shared inspect operation, independently\nof concrete-edge or presentation paging."
             }
           },
           "required": [
@@ -62615,6 +63679,17 @@
                       "$ref": "#/$defs/ResultBounds",
                       "description": "Independently bounded unresolved-attempt collection."
                     },
+                    "unresolved_continuation": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/InspectQuery"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Continue the undisplayed attempts through `inspect unresolved`, separately\nfrom the concrete-edge cursor. Exhaustion does not establish closure."
+                    },
                     "unresolved_relations": {
                       "description": "Open outgoing call attempts; populated for callees.",
                       "items": {
@@ -63361,7 +64436,7 @@
               "type": "array"
             },
             "conflicted_relation_edge_ids": {
-              "description": "Bounded edge ids with conflicting active states.",
+              "description": "Bounded edge ids with conflicting active states or explicit contradiction\nlinks between active, scope-applicable claims. Endpoints remain unchanged.",
               "items": {
                 "type": "string"
               },
@@ -68018,7 +69093,7 @@
         },
         "conflicted_relations": {
           "$ref": "#/$defs/CountedStat",
-          "description": "Conflicted relation-edge count."
+          "description": "Relation edges with active refutation or explicit disagreement between\nactive claims. This does not adjudicate which producer is correct."
         },
         "entity_kind_counts": {
           "description": "Counts by inventory entity kind.",

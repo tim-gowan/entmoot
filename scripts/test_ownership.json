@@ -10,9 +10,12 @@
     "AGENTS.md",
     ".pre-commit-config.yaml",
     "scripts/install_git_hooks.py",
+    "scripts/build_docs.py",
+    "scripts/test_build_docs.py",
     "scripts/pre_commit_check.py",
     "scripts/test_pre_commit_check.py",
-    "scripts/test_docs_workflow.py",
+    "scripts/test_package_smoke.py",
+    "scripts/test_check_release.py",
     "scripts/test_fixture_checkout.py",
     "scripts/test_ownership.json",
     "scripts/test_ownership.py",
@@ -688,10 +691,6 @@
         },
         {
           "kind": "file_prefix",
-          "path": "evals/harness/report_revision_pair.py"
-        },
-        {
-          "kind": "file_prefix",
           "path": "evals/harness/knowledge_sql.py"
         },
         {
@@ -705,98 +704,6 @@
         {
           "kind": "file_prefix",
           "path": "evals/harness/measurement.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/test_measurement.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/workflow_campaign.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/test_workflow_campaign.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/provider_observations.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/test_provider_observations.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/workflow_report.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/benchmark_workflow.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/test_workflow_report.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/history_pilot.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/test_history_pilot.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/agent_trials.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/agent_provider.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/codex_provider.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/test_agent_trials.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/trial_oracles.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/test_trial_oracles.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/pilot_report.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/test_pilot_report.py"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/experiments/local-pilot.json"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/experiments/local-trials.json"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/experiments/history-pilot-2026-10-17/"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "evals/harness/requirements-agent.txt"
-        },
-        {
-          "kind": "file_prefix",
-          "path": "crates/entmoot-cli/tests/fixtures/workflow-routing/"
         }
       ],
       "extensions": []

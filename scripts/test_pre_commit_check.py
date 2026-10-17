@@ -88,6 +88,26 @@ class AccelerationSkipTests(unittest.TestCase):
     def test_hook_unit_tests_keep_the_always_run_python_lane_without_cargo(self):
         self.assertEqual(self.plan_for("scripts/test_pre_commit_check.py").mode, "skip")
 
+    def test_eval_configuration_and_python_units_need_no_cargo_build(self):
+        from scripts import pre_commit_check as hook
+        for path in ("evals/experiments/local-trials.json", "evals/harness/test_measurement.py",
+                     "evals/harness/agent_provider.py", "evals/harness/test_campaign_configuration.py"):
+            with self.subTest(path=path):
+                plan = self.plan_for(path)
+                self.assertEqual(plan.mode, "skip")
+                with patch.multiple(hook, check_banned_patterns=lambda: 0, check_dylint=lambda: 0,
+                                    check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
+                                    check_crate_boundaries=lambda: 0, check_local_markdown_links=lambda: 0,
+                                    check_test_ownership_registry=lambda: 0), \
+                        patch.object(hook, "_acceleration_plan", return_value=plan), \
+                        patch.object(hook, "native_lane_enabled", return_value=False), \
+                        patch.object(hook, "run", return_value=0) as run, patch("builtins.print"):
+                    self.assertEqual(hook.main(), 0)
+                commands = [call.args[0] for call in run.call_args_list]
+                self.assertTrue(any("evals/harness" in cmd and "discover" in cmd for cmd in commands))
+                self.assertFalse(any(cmd[:2] in (["cargo", "build"], ["cargo", "test"], ["cargo", "clippy"])
+                                     for cmd in commands))
+
     def test_source_uses_owners_without_building_or_trusting_stale_binary(self):
         plan = self.plan_for("crates/entmoot-cli/src/main.rs")
         self.assertEqual(plan.mode, "selected")
@@ -106,6 +126,29 @@ class AccelerationSkipTests(unittest.TestCase):
 
 
 class ValidationIsolationTests(unittest.TestCase):
+    def test_mcp_http_prepares_cli_once_before_testing_without_affecting_stdio(self):
+        from scripts import pre_commit_check as hook
+        for target, needs_cli in (("http_e2e", True), ("stdio_e2e", False)):
+            plan = hook.AccelerationPlan("selected", "fixture", clippy_packages=["entmoot-mcp"],
+                cargo_commands=[["cargo", "test", "-p", "entmoot-mcp", "--test", target]])
+            with self.subTest(target=target), \
+                    patch.multiple(hook, check_banned_patterns=lambda: 0, check_dylint=lambda: 0,
+                                   check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
+                                   check_crate_boundaries=lambda: 0, check_local_markdown_links=lambda: 0,
+                                   check_test_ownership_registry=lambda: 0), \
+                    patch.object(hook, "_acceleration_plan", return_value=plan), \
+                    patch.object(hook, "native_lane_enabled", return_value=False), \
+                    patch.object(hook, "sidecar_controls", return_value=[]), \
+                    patch.object(hook, "run", return_value=0) as run, patch("builtins.print"):
+                self.assertEqual(hook.main(), 0)
+            commands = [call.args[0] for call in run.call_args_list]
+            builds = [cmd for cmd in commands if cmd[:2] == ["cargo", "build"]]
+            self.assertEqual(len(builds), int(needs_cli))
+            if needs_cli:
+                build = builds[0]
+                self.assertEqual(build[build.index("--profile") + 1], "test")
+                self.assertLess(commands.index(build), next(i for i, cmd in enumerate(commands) if cmd[:2] == ["cargo", "test"]))
+
     def test_sidecar_features_survive_without_the_in_process_native_lane(self):
         from scripts import pre_commit_check as hook
         command = ["cargo", "test", "-p", "entmoot", "--features", "entmoot/native-tests", "--test", "adapter_controls", "go_control", "--", "--include-ignored", "--exact"]
@@ -143,7 +186,7 @@ class ValidationIsolationTests(unittest.TestCase):
                          "CLI integration tests already build both native executables")
 
     def test_only_actual_cli_integration_builds_can_replace_the_binary_build(self):
-        from scripts.pre_commit_check import tests_build_cli_binaries
+        from scripts.pre_commit_check import selects_integration_tests
         for command, expected in [
             (["cargo", "test", "--workspace"], True),
             (["cargo", "test", "-p", "entmoot", "--test", "help"], True),
@@ -151,10 +194,14 @@ class ValidationIsolationTests(unittest.TestCase):
             (["cargo", "test", "-p", "entmoot", "--lib"], False),
             (["cargo", "test", "-p", "entmoot", "--doc"], False),
             (["cargo", "test", "-p", "entmoot", "--bin", "entmoot"], False),
+            (["cargo", "test", "-p", "entmoot", "--bins"], False),
+            (["cargo", "test", "-p", "entmoot", "--examples"], False),
+            (["cargo", "test", "-p", "entmoot", "--tests"], True),
+            (["cargo", "test", "-p", "entmoot", "--lib", "--all-targets"], True),
             (["cargo", "test", "--workspace", "--exclude", "entmoot"], False),
         ]:
             with self.subTest(command=command):
-                self.assertEqual(tests_build_cli_binaries([command]), expected)
+                self.assertEqual(selects_integration_tests([command], "entmoot"), expected)
 
     def test_validation_and_eval_use_same_isolated_target(self) -> None:
         from scripts.pre_commit_check import validation_environment, ROOT

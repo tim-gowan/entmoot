@@ -47,15 +47,34 @@ pub(crate) fn exclusive(path: &Path) -> std::io::Result<StorageLease> {
 /// The persistent sidecar shares the administrative `.lease` convention so
 /// retention never hashes bytes locked by another process on Windows.
 pub(crate) fn initialization(path: &Path) -> std::io::Result<File> {
-    let mut name = path.as_os_str().to_owned();
-    name.push(".startup.lease");
-    let path = PathBuf::from(name);
+    let path = initialization_path(path);
     let file = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
         .truncate(false)
         .open(&path)?;
+    lock_initialization(file, &path)
+}
+
+/// Participate in managed startup without creating or changing sidecars. Legacy
+/// stores without this lock still reach the normal schema/fingerprint preflight.
+pub(crate) fn initialization_read_only(path: &Path) -> std::io::Result<Option<File>> {
+    let path = initialization_path(path);
+    match OpenOptions::new().read(true).open(&path) {
+        Ok(file) => lock_initialization(file, &path).map(Some),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+
+fn initialization_path(path: &Path) -> PathBuf {
+    let mut name = path.as_os_str().to_owned();
+    name.push(".startup.lease");
+    PathBuf::from(name)
+}
+
+fn lock_initialization(file: File, path: &Path) -> std::io::Result<File> {
     let started = std::time::Instant::now();
     loop {
         match file.try_lock() {
@@ -114,13 +133,24 @@ mod tests {
             }
         };
         let blocked = initialization(&path);
+        let blocked_reader = initialization_read_only(&path);
         let _ = child.kill();
         child.wait().unwrap();
         assert!(ready, "child did not acquire the initialization lock");
         assert!(matches!(blocked, Err(error) if error.kind() == std::io::ErrorKind::TimedOut));
+        assert!(
+            matches!(blocked_reader, Err(error) if error.kind() == std::io::ErrorKind::TimedOut)
+        );
         let recovered = initialization(&path).unwrap();
         drop(recovered);
+        assert!(initialization_read_only(&path).unwrap().is_some());
         assert!(!path.exists(), "locking alone must not create the database");
+        let absent = directory.path().join("absent.sqlite3");
+        assert!(initialization_read_only(&absent).unwrap().is_none());
+        assert!(
+            !initialization_path(&absent).exists(),
+            "read startup never creates a lock"
+        );
     }
 
     #[test]

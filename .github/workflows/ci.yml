@@ -7,6 +7,7 @@
 name: CI
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_call:
 permissions:
@@ -23,8 +24,7 @@ env:
   PYTHON_VERSION: '3.13'
   ARTIFACT_RETENTION_DAYS: '14'
   EVALS_REQUIREMENTS: evals/harness/requirements.txt
-  # Campaign harness ignored controls also exercise agent-trial units that import
-  # the optional tokenizer package; keep it pinned with the structural lane.
+  # Tokenizer measurements are exercised by the independent Python lane.
   EVALS_TOKENIZER_REQUIREMENTS: evals/harness/requirements-tokenizer.txt
   FULL_TESTS_FEATURES: entmoot-core/full-tests
 jobs:
@@ -49,7 +49,6 @@ jobs:
           cache: pip
           cache-dependency-path: |
             ${{ env.EVALS_REQUIREMENTS }}
-            ${{ env.EVALS_TOKENIZER_REQUIREMENTS }}
       - run: rustup show
       - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
         with:
@@ -57,28 +56,26 @@ jobs:
           cache-targets: true
       - run: |
           python -m pip install -r "${{ env.EVALS_REQUIREMENTS }}"
-          python -m pip install -r "${{ env.EVALS_TOKENIZER_REQUIREMENTS }}"
       - name: Test workspace and report build storage
         shell: bash
         run: |
           trap 'df -h .; du -sh target' EXIT
           df -h .
           cargo test --workspace --locked --features ${{ env.FULL_TESTS_FEATURES }}
-      - run: cargo test --locked -p entmoot --test campaign_harness -- --ignored
-      - run: cargo test --locked -p entmoot-engine --test revision_receipts campaign_accounting -- --ignored
+      - name: Binary-backed campaign controls (same feature graph)
+        run: cargo test --workspace --locked --features ${{ env.FULL_TESTS_FEATURES }} --test campaign_harness --test revision_receipts -- --ignored
       - run: python scripts/check_release.py
-      - run: python scripts/package_smoke.py
-      - name: Build release CLI
+      - name: Preserve matched checkout binaries
         shell: bash
         run: |
           set -euo pipefail
-          cargo build --release --locked -p entmoot
-          mkdir -p .tmp/cli-artifact
-          if [ -f target/release/entmoot.exe ]; then
-            cp target/release/entmoot.exe .tmp/cli-artifact/entmoot.exe
-          else
-            cp target/release/entmoot .tmp/cli-artifact/entmoot
-          fi
+          mkdir -p .tmp/bin-artifact
+          for binary in entmoot entmoot-mcp; do
+            suffix=""
+            if [ -f "target/debug/${binary}.exe" ]; then suffix=".exe"; fi
+            cp "target/debug/${binary}${suffix}" .tmp/bin-artifact/
+          done
+      - run: python scripts/package_smoke.py --profile test --baseline-bin-dir .tmp/bin-artifact
       - name: Upload packaged crates
         if: runner.os == 'Linux' && success()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -87,12 +84,12 @@ jobs:
           path: target/package/*.crate
           if-no-files-found: error
           retention-days: ${{ fromJSON(env.ARTIFACT_RETENTION_DAYS) }}
-      - name: Upload release CLI
+      - name: Upload qualified test-profile binaries
         if: success()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: entmoot-cli-${{ runner.os }}-${{ github.sha }}
-          path: .tmp/cli-artifact/*
+          name: entmoot-bin-test-${{ runner.os }}-${{ github.sha }}
+          path: .tmp/bin-artifact/*
           if-no-files-found: error
           retention-days: ${{ fromJSON(env.ARTIFACT_RETENTION_DAYS) }}
   policy:
@@ -122,10 +119,9 @@ jobs:
       - name: Install cargo-dylint
         run: cargo install cargo-dylint dylint-link --locked --version 6.1.1 --force
       - run: python3 scripts/pre_commit_check.py --banned-only
-      - run: cargo deny --exclude-dev check advisories
       - run: cargo deny --all-features --exclude-dev check licenses advisories
   repo:
-    # Coverage: scripts/utilities unit tests only. No adapters, no remote corpora.
+    # Configuration, workflow and harness units run without building Rust or calling AI.
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -136,6 +132,27 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: ${{ env.EVALS_REQUIREMENTS }}
+          cache-dependency-path: |
+            ${{ env.EVALS_REQUIREMENTS }}
+            ${{ env.EVALS_TOKENIZER_REQUIREMENTS }}
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        with:
+          tool: actionlint@1.7.7
+      - run: actionlint -shellcheck= -pyflakes=
       - run: python -m pip install -r "${{ env.EVALS_REQUIREMENTS }}"
+      - run: python -m pip install -r "${{ env.EVALS_TOKENIZER_REQUIREMENTS }}"
       - run: python -m unittest discover -s scripts -p "test_*.py"
+      - run: python -m unittest discover -s evals/harness -p "test_*.py"
+  docs:
+    needs: structural
+    uses: ./.github/workflows/docs.yml
+    with:
+      binaries_artifact: entmoot-bin-test-Linux-${{ github.sha }}
+  gate-decision:
+    # Advisory classification reuses this run's qualified Linux binary. Full
+    # structural/native lanes remain authoritative; never rerun selected tests here.
+    if: github.event_name == 'pull_request'
+    needs: structural
+    uses: ./.github/workflows/pr-gate-decision.yml
+    with:
+      binaries_artifact: entmoot-bin-test-Linux-${{ github.sha }}

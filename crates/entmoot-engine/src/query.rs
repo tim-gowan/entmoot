@@ -14,7 +14,10 @@ mod contraction;
 mod relationships;
 pub use assessments::{assess_test_impact, assess_unused};
 mod clones;
+mod conflicts;
 mod expert;
+#[cfg(test)]
+mod identity_regressions;
 mod impact_relay;
 mod inventory;
 mod knowledge;
@@ -756,17 +759,29 @@ impl QueryEngine {
             };
             items.push(json!({"relation": edge, "opposite": opposite, "claims": claims}));
         }
-        let mut unresolved = Vec::new();
-        if direction == CallDirection::Callees {
-            for address in node_addresses(&self.graph, candidates[0]) {
-                unresolved.extend(repository.unresolved_for_source(&address)?);
-            }
-            unresolved.sort_by(|left, right| left.id.as_str().cmp(right.id.as_str()));
-            unresolved.dedup_by(|left, right| left.id == right.id);
-        }
-        let unresolved_total = unresolved.len();
-        unresolved.truncate(limit);
-        let unresolved_bounds = ResultBounds::page(limit, unresolved.len(), unresolved_total);
+        let unresolved_page = if direction == CallDirection::Callees {
+            Some(self.unresolved_page_from_repository(&repository, subject, None, Some(limit))?)
+        } else {
+            None
+        };
+        let unresolved = unresolved_page
+            .as_ref()
+            .map_or_else(|| json!([]), |page| page["items"].clone());
+        let unresolved_bounds: ResultBounds = unresolved_page.as_ref().map_or_else(
+            || Ok(ResultBounds::complete(0)),
+            |page| serde_json::from_value(page["bounds"].clone()),
+        )?;
+        let unresolved_continuation = unresolved_page
+            .as_ref()
+            .and_then(|page| page.get("next_cursor").filter(|cursor| !cursor.is_null()))
+            .map(|cursor| {
+                serde_json::from_value(cursor.clone()).map(|after| InspectQuery::Unresolved {
+                    id: candidates[0].id.clone(),
+                    after: Some(after),
+                    limit: Some(limit),
+                })
+            })
+            .transpose()?;
         let returned = page.len();
         let truncated = offset.saturating_add(returned) < total;
         let next_cursor = truncated
@@ -784,9 +799,10 @@ impl QueryEngine {
             "schema_version": QUERY_RESULT_SCHEMA,
             "operation": "inspect", "view": "calls",
             "snapshot": self.graph.snapshot,
-            "status": if truncated || unresolved_bounds.truncated { "truncated" } else if returned > 0 || !unresolved.is_empty() { "known" } else { "unknown" },
+            "status": if truncated || unresolved_bounds.truncated { "truncated" } else if returned > 0 || unresolved_bounds.total_matches > 0 { "known" } else { "unknown" },
             "subject": subject, "direction": direction, "items": items,
             "unresolved_relations": unresolved, "next_cursor": next_cursor,
+            "unresolved_continuation": unresolved_continuation,
             "visibility_cursor": visibility_cursor,
             "bounds": {"offset":offset,"limit":limit,"total_matches":total,"truncated":truncated},
             "unresolved_bounds": unresolved_bounds,
@@ -976,7 +992,11 @@ impl QueryEngine {
             .map(|&index| &self.graph.relation_edges[index])
             .collect();
         let claim_batches = repository.relation_claims_for_edges(&edges)?;
+        let explicit_conflicts = conflicts::retained_conflicts(&self.graph, repository)?;
         for (edge, relation_claims) in edges.into_iter().zip(claim_batches) {
+            if explicit_conflicts.contains(edge.id.as_str()) {
+                conflicted_edges.push(edge.id.as_str());
+            }
             scope_domains.insert(edge.scope.domain.as_str());
             if let Some(context_id) = edge.scope.context_id.as_deref() {
                 context_ids.insert(context_id);

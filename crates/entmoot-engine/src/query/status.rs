@@ -233,7 +233,7 @@ impl QueryEngine {
             &mut suggestions,
             max_suggestions,
             "conflicted_relation",
-            "active_refuted_resolution_claims",
+            "active_claim_disagreement",
             QueryRequest::Find {
                 output: Default::default(),
                 request: FindQuery::ConflictedRelation {
@@ -438,7 +438,7 @@ impl QueryEngine {
                 let items: Vec<_> = conflicted
                     .into_iter()
                     .filter(|id| path_filter_edge(self, id, path.as_deref()))
-                    .map(|id| facet_hit(id, "relation_edge", "active_refuted_claim", None))
+                    .map(|id| facet_hit(id, "relation_edge", "active_claim_disagreement", None))
                     .collect();
                 let total = items.len() as u64;
                 self.facet_result("conflicted_relation", items, total, limit, Vec::new())
@@ -609,7 +609,8 @@ impl QueryEngine {
     }
 
     fn claim_edge_partitions(&self) -> (Vec<String>, Vec<String>) {
-        let mut conflicted = BTreeSet::new();
+        let mut conflicted =
+            super::conflicts::explicit_conflicts(&self.graph, &self.graph.relation_claims);
         let mut stale = BTreeSet::new();
         for claim in &self.graph.relation_claims {
             if claim.state != RelationClaimState::Active {

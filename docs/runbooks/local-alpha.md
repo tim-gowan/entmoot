@@ -163,10 +163,10 @@ tag CD creates the GitHub Release and publishes to crates.io.
   producer CLI artifact on success.
 - `demo.yml`: dispatch-only structural corpus (`evals/demo/`); reuses CI CLI
   artifact. Not a release gate.
-- `docs.yml` (shared, parameterized): CI/PR builds into `.tmp/staging` and
-  uploads a staging artifact (no Pages deploy). After successful tag publish,
-  `release.yml` calls the same workflow with `.tmp/site` + Pages upload/deploy
-  when `PAGES_ENABLED=true`. Enable Pages with GitHub Actions as its source.
+- `docs.yml` (called by CI): reuses that run's qualified Linux test-profile CLI/MCP,
+  builds rustdoc and the site into `.tmp/staging`, and uploads a staging artifact.
+  After successful tag publish, `release.yml` deploys that artifact when
+  `PAGES_ENABLED=true`. Enable Pages with GitHub Actions as its source.
   Versioned docs match the package build; a GitHub Wiki is not a second source
   of truth.
 - `release.yml` (**sole CD**): on tag `v*`, runs ci/native/docs on that SHA, asserts

@@ -99,6 +99,29 @@ tests build the matching executables; a separate binary build runs only when tha
 lane was not selected. `on` explicitly enables native checks; `off` keeps structural checks only.
 Compatible Cargo invocations share feature settings and whole-package tests are
 batched. Native controls already included in those tests are not repeated.
+CI runs configuration and harness unit tests in its independent `repo` job.
+The local hook also runs Python harness discovery for evaluation changes. Pure
+configuration, provider mocks and Python tests do not select Cargo campaigns;
+changes to the runner/storage integration retain their binary-backed controls.
+Within each OS and feature lane, build and test commands keep a consistent
+workspace feature graph and `test` profile (this workspace sets test optimization
+separately from dev). Qualified CLI/MCP artifacts are scoped to the current run
+and SHA; docs and PR classification consume them without compiling another CLI.
+Windows and Ubuntu artifacts are not interchangeable. Structural and producer
+features remain independently qualified. Cargo's dependency cache accelerates
+compilation; it never substitutes for executing the selected tests.
+Package smoke reuses checkout binaries with `--baseline-bin-dir` and `--profile
+test`, then independently builds the extracted archives with matching profiles.
+That second build verifies packaging and cannot be replaced by a checkout cache.
+
+The [2026-10-17 CI run](https://github.com/tim-gowan/entmoot/actions/runs/39067728144)
+spent another 8m47s and 5m39s compiling the two campaign invocations after the
+workspace tests; those commands had dropped the workspace feature selection.
+The separate [PR advisory run](https://github.com/tim-gowan/entmoot/actions/runs/39067727996)
+spent 9m59s building a release CLI before rejecting its configuration selector.
+These observations motivate the shared profile/features and artifact reuse.
+Measure the revised hosted lanes before claiming a wall-time improvement; local
+cache warmth and job parallelism do not predict hosted critical-path time.
 Fresh checkouts do not acquire native dependencies automatically. Relevant installed
 sidecar controls also run when their catalog owners change; invalid explicit adapter
 or host overrides stay exclusive. Missing adapter/runtime controls print unavailable.
@@ -143,19 +166,32 @@ the existing artifact lane. Runner names describe the intended framework; they d
 not imply discovered tests, instrumented hits or assertion coverage. Supply attributed
 instrumentation facts separately. Never remove owned tests because hits are missing.
 
-The optional SQLite lane runs with Python dependencies installed:
+Configuration, lockfile, receipt, measurement and trial-provider unit controls
+run in Python without building Entmoot or starting AI trials. Install
+`evals/harness/requirements.txt` and `requirements-tokenizer.txt`, then run:
 
 ```text
-cargo test -p entmoot --test campaign_harness -- --ignored
-cargo test -p entmoot-engine --test revision_receipts campaign_accounting -- --ignored
+python -m unittest discover -s evals/harness -p "test_*.py"
+```
+
+The optional binary-backed SQLite lane runs with the Python campaign dependencies
+installed. Keep the same workspace/feature selection as the preceding workspace
+tests so Cargo can reuse the compiled dependencies:
+
+```text
+cargo test --workspace --locked --features entmoot-core/full-tests --test campaign_harness --test revision_receipts -- --ignored
 ```
 
 Traversal controls include an independently computed shortest-path oracle over
 all five-vertex DAGs, contracted/original witness comparisons, scope and cycle
 barriers, bounded caches, and continuation replay/concurrency/expiry tests. The
-MCP `http_e2e` target builds the matching CLI binary and checks authenticated
+MCP `http_e2e` reuses the matching workspace CLI and checks authenticated
 cross-client replay alongside stdio parity. No elapsed-time assertion establishes
-correctness.
+correctness. For an isolated MCP run, first build the CLI with
+`cargo build --locked --profile test -p entmoot` in the same target directory.
+The test checks its storage/implementation fingerprint before opening a session;
+it never invokes Cargo or replaces executables during a test. Pre-commit prepares
+this dependency only when its selected Cargo tests do not already build the CLI.
 
 `query_scale_bench` replays the same saved requests with acceleration disabled,
 enabled and inventory-backed loading. It reports graph loading, engine construction,
@@ -195,8 +231,8 @@ Native CI reads profile/publication locations from init's returned store locator
 | Repo | `ci.yml` → `repo` | Scripts/utilities unit tests | Remote corpus correctness |
 | Resolved + integration | `native.yml` → `resolved` | Pinned adapters + producer/bind/dispatch | All corpora green |
 | Demo | `demo.yml` (dispatch only) | One pinned upstream SHA structural pub | Release gate / native maturity |
-| Docs (CI) | `docs.yml` → `.tmp/staging` | Site build + staging artifact | Pages production deploy |
-| Docs (CD) | `docs.yml` after publish | `.tmp/site` + Pages when enabled | Pre-publish gate |
+| Docs (CI) | `ci.yml` → `docs.yml` → `.tmp/staging` | Site built from this run's qualified Linux binaries | Pages production deploy |
+| Docs (CD) | `release.yml` after publish | Deploy the qualified staging artifact when Pages is enabled | A second docs build |
 
 Gates must not clone remote corpora. Pre-commit and `pr-gate-decision.yml` are
 accelerators, not substitutes for full `ci.yml`. Never path-skip correctness in

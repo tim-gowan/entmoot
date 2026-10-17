@@ -1,5 +1,5 @@
 # Opt-in structural corpus demo. Not a release gate; must not be required by release.yml.
-# Prefers the release CLI artifact from ci.yml; falls back to a local release build.
+# Prefers the test-profile CLI artifact from ci.yml; falls back to a local test-profile build.
 name: Corpus demo
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
         type: string
         default: ''
       run_id:
-        description: "Optional Actions run id that uploaded entmoot-cli-Linux-<sha>"
+        description: "Optional Actions run id that uploaded entmoot-bin-test-Linux-<sha>"
         required: false
         type: string
         default: ''
@@ -21,14 +21,16 @@ concurrency:
   group: demo-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 env:
-  CARGO_BUILD_JOBS: 2
+  CARGO_BUILD_JOBS: 1
+  CARGO_PROFILE_DEV_DEBUG: line-tables-only
+  CARGO_PROFILE_TEST_DEBUG: line-tables-only
   PYTHONUTF8: '1'
   PYTHON_VERSION: '3.13'
   EVALS_REQUIREMENTS: evals/harness/requirements.txt
   DEMO_CONFIG: evals/demo/getrandom-structural.json
   DEMO_RUN_DIR: .tmp/demo/run
   ARTIFACT_RETENTION_DAYS: '14'
-  RUST_CACHE_KEY: structural-Linux
+  RUST_CACHE_KEY: structural-ubuntu-latest
   CI_WORKFLOW_FILE: ci.yml
   CI_WORKFLOW_NAME: CI
 jobs:
@@ -49,7 +51,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "ENTMOOT_DATA_DIR=${RUNNER_TEMP}/entmoot-demo-home" >> "$GITHUB_ENV"
-      - name: Obtain release CLI
+      - name: Obtain test-profile CLI
         id: cli
         env:
           GH_TOKEN: ${{ github.token }}
@@ -61,7 +63,7 @@ jobs:
           set -euo pipefail
           mkdir -p .tmp/demo/cli
           SHA="$(git rev-parse HEAD)"
-          ARTIFACT="entmoot-cli-Linux-${SHA}"
+          ARTIFACT="entmoot-bin-test-Linux-${SHA}"
           got=0
           if [ -n "${INPUT_RUN_ID}" ]; then
             if gh run download "${INPUT_RUN_ID}" --name "${ARTIFACT}" --dir .tmp/demo/cli; then
@@ -87,7 +89,7 @@ jobs:
             echo "path=${GITHUB_WORKSPACE}/${BIN}" >> "$GITHUB_OUTPUT"
             echo "need_build=false" >> "$GITHUB_OUTPUT"
           else
-            echo "CI CLI artifact unavailable; building release binary"
+            echo "CI CLI artifact unavailable; building test-profile binary"
             echo "need_build=true" >> "$GITHUB_OUTPUT"
           fi
       - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
@@ -95,14 +97,14 @@ jobs:
         with:
           shared-key: ${{ env.RUST_CACHE_KEY }}
           cache-targets: true
-      - name: Build release CLI fallback
+      - name: Build test-profile CLI fallback
         if: steps.cli.outputs.need_build == 'true'
         id: build
         run: |
           set -euo pipefail
           rustup show
-          cargo build --release --locked -p entmoot
-          echo "path=${GITHUB_WORKSPACE}/target/release/entmoot" >> "$GITHUB_OUTPUT"
+          cargo build --locked --profile test -p entmoot
+          echo "path=${GITHUB_WORKSPACE}/target/debug/entmoot" >> "$GITHUB_OUTPUT"
       - name: Resolve CLI path
         id: resolve
         run: |

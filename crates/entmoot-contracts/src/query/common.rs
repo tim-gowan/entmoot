@@ -342,7 +342,8 @@ pub struct RelationEvidenceSummary {
     pub active_resolution_states: Vec<ResolutionState>,
     /// Bounded edge ids with candidate support.
     pub candidate_relation_edge_ids: Vec<String>,
-    /// Bounded edge ids with conflicting active states.
+    /// Bounded edge ids with conflicting active states or explicit contradiction
+    /// links between active, scope-applicable claims. Endpoints remain unchanged.
     pub conflicted_relation_edge_ids: Vec<String>,
     /// Bounded edge ids with stale support.
     pub stale_relation_edge_ids: Vec<String>,

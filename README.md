@@ -1,14 +1,47 @@
-# Entmoot
+# Entmoot: reusable code context, with evidence and limits
 
-Entmoot gives developers and agents attributable structural knowledge about a
-repository: source occurrences, bindings, caller/callee relationships and bounded
-change impact. It preserves provenance and revision identity so that missing or
-partial evidence stays visible. It is a defensive development substrate, not a
-scanner, taint engine or security verdict.
+Tools and AI agents repeatedly reconstruct partial context from source files:
+what calls this function, what changed, which observations still apply, and where
+the evidence ends. Entmoot stores that context across revisions so the next
+question can start from attributable, queryable knowledge.
+
+Its substrate prioritizes soundness: every source identity and attached claim
+keeps its scope and provenance; ambiguity, disagreement and unfinished work stay
+visible. Use it to navigate code, investigate change impact and select evidence
+for development or security review. Entmoot is **not a scanner, taint/dataflow
+engine, proof of runtime behavior, or security verdict**. A represented call path
+does not establish exploitability; a missing path does not establish safety.
 
 Rust, Python, JS/TS/TSX, Go, Java, C# and C have structural inventory. C++ is
 experimental. Structural operation requires no language compiler at runtime.
 Native adapters add environment-dependent evidence when explicitly requested.
+
+## How the pieces fit
+
+An *occurrence* is one definition at a particular source location and revision.
+A *claim* is an attributed observation about it or a relationship. Two identical
+function bodies can share a structural hash while remaining distinct occurrences.
+
+```mermaid
+flowchart LR
+    S["Source files and revisions"] --> I["Structural inventory<br/>Definitions, call sites, spans and hashes"]
+    S --> N["Optional native adapters<br/>Compiler and environment observations"]
+    P["Provider reports<br/>For example, SARIF"] --> A["Check attachment scope<br/>and source identity"]
+    N --> A
+    I --> K["Durable knowledge repository<br/>Facts, claims, provenance and revision views"]
+    A --> K
+    K --> G["Disposable graph and query indexes"]
+    G --> Q["Shared bounded queries"]
+    Q --> C["CLI or MCP<br/>People and agents"]
+    Q --> E["Evidence, gaps and continuation<br/>Further questions remain possible"]
+```
+
+The five crates keep these responsibilities separate: `entmoot-contracts` owns
+shared data shapes, `entmoot-core` owns structural extraction, `entmoot-engine`
+owns persistence and operations, and the CLI (`entmoot`) and `entmoot-mcp` expose
+the same read service. Native evidence enriches inventory without replacing its
+structural identities. [Architecture and invariants](docs/architecture/ARCHITECTURE.md)
+describe the deeper boundaries.
 
 ## Start locally
 
@@ -52,6 +85,56 @@ Verified source reads report source drift. Terminals receive readable output;
 `--json` and redirected output receive the typed JSON contract. Use `--detail
 explain` for evidence and `--detail export` for the full bounded result. Search
 limits and compact presentation limits are separate; preserve returned cursors.
+
+```mermaid
+sequenceDiagram
+    actor User as Developer or agent
+    participant CLI as CLI or MCP
+    participant Engine as Shared engine
+    participant Store as Local knowledge store
+    User->>CLI: Find a symbol
+    CLI->>Engine: Bounded query
+    opt No structural publication exists
+        Engine->>Engine: Inventory source without a language compiler
+        Engine->>Store: Atomically publish inventory
+    end
+    Engine->>Store: Read a retained revision
+    Store-->>Engine: Facts and attributed claims
+    Engine-->>User: Matches, evidence limits and next page
+    User->>CLI: Inspect an ID or follow a continuation
+    CLI->>Engine: Reuse publication
+    Engine-->>User: Selected details and verified source
+```
+
+## Choose an operation
+
+Use returned IDs instead of guessing names. `entmoot <command> --help` and the
+generated [schemas](crates/entmoot-contracts/generated/README.md) own the complete
+syntax. These entry points cover the operator workflows:
+
+| Question or action | Commands / starting syntax |
+|---|---|
+| Find code and verify its source | `find work`, `inspect <id>`, `read-source src/main.rs --start-line 1 --end-line 30` |
+| Navigate represented calls and open work | `callers <id>`, `callees <id>`, `boundaries --reason indirect_call`; `neighborhood`, `trace-seeded-paths`, `call-components` for bounded graph views |
+| Understand inventory and evidence coverage | `status`, `inventory`, `audit-calls`; `artifact` and `query` for retained evidence |
+| Refresh or enrich knowledge explicitly | `init`, `bind`, `attach`; `deps` for declared dependency subjects |
+| Investigate a change or upgrade | `impact`, `relay-impact`, `assess`, `revalidate`; [impact](docs/runbooks/impact.md) and [compatibility](docs/runbooks/compatibility.md) explain their distinct guarantees |
+| Inspect identities and review clone candidates | `hash --help`, `policy`, `assess clones`; use a `CloneRequest` for explicit budgets and filters in the [worked examples](docs/runbooks/revision-evaluation.md) |
+| Plan or execute attributed work | `plan-analysis`, `work`, `validate-tests`; planning never launches a compiler or scanner |
+| Manage retained state and local collaboration | `storage-plan`, reviewed `storage-apply`, `collaborate`; `fingerprint` identifies compatible readers |
+| Reuse a portable query or evaluate fixtures | `request --example unresolved`, `request --request query.json`, `request --batch --request queries.json`; `validate-ground-truth` checks labeled fixtures |
+
+Start with compact output. Request `--detail explain` when deciding whether a
+result applies, or `--detail export` for a bounded machine export. Follow
+`page.next_cursor` for presentation pages. Call neighborhoods can also return
+`unresolved_continuation`, an independent inspect request for open attempts;
+finishing the concrete-edge page does not finish that frontier. The
+[MCP continuation guide](crates/entmoot-mcp/README.md) describes both cursors.
+
+The [worked workflow guide](docs/runbooks/revision-evaluation.md) includes Express
+upgrade investigations, route-to-provider paths with explicit pruning, clone
+outliers and SARIF attachment. Its mock provider facts are authored fixtures;
+the separately measured runtime observations have their own evidence limits.
 
 ## Native evidence and open boundaries
 
@@ -98,6 +181,89 @@ Compare workflows have distinct meanings: [impact and inventory overlay](docs/ru
 versus optional [package API compatibility](docs/runbooks/compatibility.md).
 Missing package evidence returns `incomplete_bind`; it is not a safe upgrade.
 
+```mermaid
+sequenceDiagram
+    actor User as Developer or agent
+    participant Engine as Entmoot engine
+    participant Tools as Explicit native or external provider
+    participant Store as Retained revision views
+    User->>Engine: bind or attach supplied evidence
+    opt bind explicitly requested
+        Engine->>Tools: Produce evidence
+        Tools-->>Engine: Scoped observations and limitations
+    end
+    Engine->>Engine: Check source and configuration fences
+    Engine->>Store: Publish attributed evidence atomically
+    User->>Engine: impact after editing source
+    Engine->>Store: Read retained baseline
+    Engine-->>User: Changes and bounded affected callers
+    Note over User,Store: Impact reads do not refresh the baseline or prove upgrade safety
+    User->>Engine: init to refresh inventory explicitly
+    Engine->>Store: Publish a new revision view
+    Note over Store: Retained historical views remain independently addressable
+```
+
+## What the hashes mean
+
+Entmoot-owned identity digests use BLAKE3. A hash identifies its declared input
+and policy, not an arbitrary notion of program equivalence. Composite keys frame
+components and optional scope fields so distinct addresses cannot merge merely
+because delimiters or omitted fields line up.
+
+| Family in the contracts | Meaning and important limit |
+|---|---|
+| `ContentDigest`, source digests | Exact selected bytes or a declared serialized input; used for source verification and cache fences. |
+| `ExactBodyId`, `StructuralHash` | Exact sealed source-span bytes / normalized syntax under a policy. Structural hashes do not recursively include callees' implementations. |
+| `PolicyId`, `LogicId` | Normalization policy identity / policy plus structural hash. Compare under the same policy. |
+| `AddressId`, logic address, occurrence identity | Locate a definition site; the enclosing publication supplies its revision. Identical bodies do not collapse distinct sites. An address alone does not identify a snapshot. |
+| Signature, module-shell and file hashes | Callable boundary / surrounding non-body structure / Merkle combination of callable and module information. The file hash is structural, not an exact byte digest. |
+| `ResolvedHash`, native publication identity | Optional native meaning under a particular environment and evidence publication; never substitutes for structural identity. |
+| Syntax, alpha and literal-parameterized clone fingerprints | Review candidates at progressively different normalization grains. Alpha accounts for binding relationships; parameterized matches may hide meaningful literal differences. |
+| Canon term, form and obligation digests | An explicit supported semantic subset with types, assumptions and definedness. Partial forms are excluded from canonical clone claims; this is not a general equivalence proof. |
+| Proposition, relation-edge, claim and unresolved-attempt IDs | Distinct relationship, scoped occurrence, attribution and open-work identities. Explicit disagreement remains attached to the original edges. |
+| Artifact, attachment, finding, configuration and implementation fingerprints | Evidence identity and compatibility fences. Contract, derivation and storage-layout changes can require a matching historical reader or explicit rebuild. |
+
+Git object IDs retain Git's own algorithm and spelling; package URLs are names,
+not content hashes. The [typed IDs](crates/entmoot-contracts/src/ids.rs),
+[relation contracts](crates/entmoot-contracts/src/relation.rs) and
+[identity walkthrough](docs/architecture/ARCHITECTURE.md) own the exact encoding.
+
+## Evidence so far
+
+The frozen [history pilot](docs/runbooks/revision-evaluation.md#history-inventory-evidence-2026-10-17)
+selected 72 of 80 planned comparison pairs from 988 first-parent candidates in
+eight purposively chosen repositories: Express, Fastify, Requests, docker-py,
+Axum, getrandom, chi and Gin. All 72 source-delta checks and 139 retained revision
+inventories matched independent Git-byte oracles, covering 19,188 selected-source
+file memberships. Eight failed-CI sampling slots were unavailable. CI failures
+are sampling metadata, not proof that a code change caused a failure.
+
+This supports **bounded historical source-inventory utility**. Observations are
+clustered within eight repositories; they do not establish callable completeness,
+dispatch accuracy, upgrade safety or security detection. The persisted database
+used 15.14 GiB of logical storage, excluding Git acquisitions; initialization
+commands totaled 1,404.3 seconds and 215 completed retention attempts, including
+replay, totaled 3,495.6 seconds. These are local debug-build observations under
+uncontrolled load, not whole-study elapsed time or production benchmarks.
+
+The [Express release cohort](docs/runbooks/revision-evaluation.md#release-cohort-evidence-2026-10-17)
+covered eight pinned versions from 4.18.2 through 5.1.0: 12 authored cases per
+version, 96 runtime observations, 96 attachments and 16 historical views. Across
+40 paired queries preserving the same finding IDs, compact output had a median
+1,455 `o200k_base` tokens versus 9,091.5 for export; the median paired reduction
+was 84.1%. This measures **response volume**, not AI reasoning cost or savings
+against grep. One framework family and repeated authored cases do not support a
+population-wide claim.
+
+**AI research trials: zero executed attempts.** A six-task paired calibration
+(up to 12 attempts, two minutes each) is prepared and paused. Provider adapters
+are separated from task preparation, grading and reporting. No answer-quality,
+reasoning-token, billed-cost or agent-productivity advantage has been established.
+The [frozen manifest](evals/experiments/history-pilot-2026-10-17/manifest.json),
+selection, grades and cost receipts support replay; the
+[evaluation skill](.agents/skills/entmoot-evaluate/SKILL.md) explains how to keep
+pins, denominators, failed attempts and unknown measurements explicit.
+
 ## Implementation maturity
 
 Reviewed 2026-10-17. Maintain this table with the owning controls whenever behavior
@@ -110,12 +276,6 @@ covers 5,407 call sites across four pinned publications and 47 verified source
 digests/spans, with build and native-scope limitations kept explicit. That historical
 sample does not establish current release readiness; the repaired controls still
 require [release qualification](PLANNING.md#current-qualification-blockers).
-
-The [history pilot](docs/runbooks/revision-evaluation.md#history-inventory-evidence-2026-10-17)
-checked 72 selected comparisons across eight repositories: 139 retained revisions
-and 19,188 selected-source file memberships matched independent Git-byte oracles.
-This supports bounded source-inventory use. AI trials remain unrun; it establishes
-neither agent savings nor semantic-upgrade or security accuracy.
 
 | Capability | Maturity | Utility and limit / verification owner |
 |---|---|---|
@@ -150,8 +310,27 @@ sample, validation, upgrade/rebuild policy, private-repository Pages setup and
 handoff to `tim-gowan/entmoot`. Local pre-commit is ownership-scoped and fast;
 CI is authoritative: structural + repo + policy (`ci.yml`), resolved native
 (`native.yml`), docs staging under `.tmp/staging` (`docs.yml`), optional corpus
-demo (`demo.yml` dispatch). Tag CD (`release.yml`) publishes crates then runs
-the shared docs workflow for Pages. Publish only the exact revision that passes
+demo (`demo.yml` dispatch). Configuration and harness unit tests run independently
+of Rust builds. Docs and PR classification reuse the binaries qualified by CI;
+Ubuntu/Windows and structural/producer feature sets remain distinct qualifications.
+Tag CD (`release.yml`) publishes crates then deploys the qualified docs artifact.
+Publish only the exact revision that passes
 structural and resolved gates.
+
+## Prior art and building blocks
+
+Entmoot uses [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for structural
+syntax and [BLAKE3](https://github.com/BLAKE3-team/BLAKE3) for its own identity
+digests. Provider interchange includes
+[OASIS SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html);
+attaching a report preserves its attribution rather than validating its verdict.
+
+The alpha-clone summary kernel adapts the compositional idea in Maziarz, Ellis,
+Lawrence, Fitzgibbon and Peyton Jones,
+[Hashing Modulo Alpha-Equivalence (PLDI 2021)](https://arxiv.org/abs/2105.02856).
+Entmoot's binding-incidence encoding and supported language policies differ from
+the paper's lambda-calculus encoding; the paper's proof is not a proof of this
+implementation. [Architecture](docs/architecture/ARCHITECTURE.md) records the
+adaptation and finite oracle controls.
 
 MIT OR Apache-2.0. Bundled grammar sources retain their upstream licenses.

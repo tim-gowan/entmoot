@@ -335,6 +335,10 @@ pub struct CompactQueryResponse {
     /// Open-attempt collection bounds when available; zero displayed is not zero known.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unresolved_bounds: Option<ResultBounds>,
+    /// Retrieve open attempts through the shared inspect operation, independently
+    /// of concrete-edge or presentation paging.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unresolved_continuation: Option<Box<super::InspectQuery>>,
     /// Role admission, unmapped and co-location counts when requested.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub role_selection: Option<CompactRoleSelection>,
