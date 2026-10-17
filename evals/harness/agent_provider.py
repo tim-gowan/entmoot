@@ -50,6 +50,11 @@ def sum_usage(rows: list[dict]) -> dict:
             for key in USAGE_FIELDS}
 
 
+def known_usage_subtotal(rows: list[dict]) -> dict:
+    """Lower bounds from supplied counters, never substitutes for missing totals."""
+    return {key: sum(row.get(key) or 0 for row in rows) for key in USAGE_FIELDS}
+
+
 def load_provider(configuration: dict, executable: Path | None = None) -> AgentProvider:
     """Select explicitly; unsupported providers never silently fall back."""
     if not isinstance(configuration, dict):

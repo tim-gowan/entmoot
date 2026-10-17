@@ -251,6 +251,8 @@ Do not add either subset twice. Each action uses an explicit-history model call,
 whose repeated context and startup cost are included. Token stopping is checked
 between calls, so the final call can exceed that allowance; wall time is enforced
 per attempt. Failed/incomplete usage remains unknown, with known subtotals shown.
+Per-call counters remain in the receipts. Known subtotals still enforce the token
+allowance when a provider omits another counter; missing costs are never zero.
 Billing, private reasoning and exact server model weights are not inferred.
 
 Keep calibration separate from confirmation. The larger schedule is explicit:

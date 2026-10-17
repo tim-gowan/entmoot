@@ -46,6 +46,9 @@ class PilotMeasurementTests(unittest.TestCase):
             write(pilot / 'views.json', {'r-' + 'b' * 40: {'graph': str(root / 'graph.json'),
                 'retained': {'locator': str(root / 'view.json')}, 'source_root': str(root),
                 'inventory_grade': inventory_grade}})
+            write(pilot / 'commands/failed-init/process.json', {
+                'arguments': ['entmoot.exe', '--data-dir', str(root), 'init'], 'cwd': str(root),
+                'status': 'timeout', 'wall_seconds': 5, 'sampled_peak_tree_rss_bytes': None})
             write(trials / 'oracles.json', [{'expected': ['app.py']}])
             oracle_digest = material_digest(trials / 'oracles.json')
             write(trials / 'inputs.json', {'oracle_digest': oracle_digest})
@@ -63,6 +66,9 @@ class PilotMeasurementTests(unittest.TestCase):
             self.assertEqual(material_digest(bundle / 'history/report.json'), material_digest(pilot / 'report.json'))
             self.assertEqual(json.loads((bundle / 'history/inventory-grades.json').read_bytes()),
                              {'r-' + 'b' * 40: inventory_grade})
+            measurements = json.loads((bundle / 'history/processes.json').read_bytes())
+            self.assertEqual(measurements, [{'phase': 'init', 'attempt': 'failed-init',
+                'measurement': {'status': 'timeout', 'wall_seconds': 5, 'sampled_peak_tree_rss_bytes': None}}])
 
 
 if __name__ == '__main__':

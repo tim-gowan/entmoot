@@ -122,6 +122,10 @@ def summarize(pilot: Path, trials: Path | None) -> dict:
 
 def export_bundle(pilot: Path, trials: Path | None, destination: Path, summary: dict) -> None:
     """Publish bounded replay inputs and grades, without checkouts or model prompts."""
+    def portable_process(process):
+        return {key: value for key, value in process.items()
+                if key not in ('arguments', 'cwd', 'stdout', 'stderr', 'launch_error')}
+
     inputs = json.loads((pilot / 'inputs.json').read_bytes())
     selection = inputs['selection']
     for repository in selection['repositories']:
@@ -134,12 +138,20 @@ def export_bundle(pilot: Path, trials: Path | None, destination: Path, summary: 
     write(destination / 'history/report.json', json.loads((pilot / 'report.json').read_bytes()))
     write(destination / 'history/inventory-grades.json', {
         key: view['inventory_grade'] for key, view in json.loads((pilot / 'views.json').read_bytes()).items()})
+    processes = []
+    for path in sorted([*(pilot / 'commands').rglob('process.json'),
+                        *(pilot / 'publications/logs').rglob('process.json')]):
+        process = json.loads(path.read_bytes())
+        processes.append({'phase': phase(process['arguments']), 'attempt': path.parent.name,
+                          'measurement': portable_process(process)})
+    write(destination / 'history/processes.json', processes)
     write(destination / 'provenance.json', {
         'original_selection_digest': inputs['selection_digest'],
         'portable_selection_digest': material_digest(destination / 'selection.json'),
         'normalization': 'Remove machine-local mirror paths; preserve the frame, pins, selection and original sampler digest.',
         'tools': inputs['tools'], 'harness_sources': inputs['harness_sources'],
         'evaluator_digest': inputs['evaluator_digest'],
+        'reporter_digest': material_digest(Path(__file__)),
         'omitted': ['source checkouts', 'production databases', 'raw command streams', 'model prompts'],
         'limitations': ['Replay pins rather than reacquiring live CI metadata to reproduce the selected population.',
                         'Model aliases and server configuration are not immutable; repeated trials can differ.']})
@@ -149,9 +161,6 @@ def export_bundle(pilot: Path, trials: Path | None, destination: Path, summary: 
         write(saved / 'inputs.json', trial_inputs)
         write(saved / 'oracles.json', json.loads((trials / 'oracles.json').read_bytes()))
         attempts = json.loads((trials / 'attempts.json').read_bytes())
-        def portable_process(process):
-            return {key: value for key, value in process.items()
-                    if key not in ('arguments', 'cwd', 'stdout', 'stderr', 'launch_error')}
         for attempt in attempts:
             attempt['model_calls'] = [portable_process(process) for process in attempt['model_calls']]
             for call in attempt['tools']:

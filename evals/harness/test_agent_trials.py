@@ -2,10 +2,10 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from evals.harness.agent_trials import TrialTools, attempt, grade_answer, report, select_tasks
-from evals.harness.agent_provider import ProviderTurn, load_provider, sum_usage
+from evals.harness.agent_provider import AgentProvider, ProviderTurn, load_provider, sum_usage
 from evals.harness.codex_provider import CodexProvider, model_arguments, model_result, reported_usage
 from evals.harness.contracts import ContractError
 
@@ -158,6 +158,33 @@ class AgentTrialTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError, 'unsupported agent provider'):
             load_provider({'kind': 'unqualified_provider'})
 
+    def test_partial_usage_keeps_known_tokens_without_counting_a_fully_measured_call(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'publications/sources/r-b'
+            source.mkdir(parents=True)
+            (source / 'app.py').write_text('value = 1\n')
+            provider = Mock(spec=AgentProvider)
+            provider.respond.side_effect = [
+                ProviderTurn('complete', answer(operation='read', path='app.py'),
+                             {'input_tokens': 10, 'output_tokens': 5}, {'status': 'complete'}),
+                ProviderTurn('invalid_response', None, {'input_tokens': 20, 'output_tokens': None}, {'status': 'complete'}),
+            ]
+            task = {'id': 'r-b', 'repository': 'r', 'base': 'a', 'head': 'b', 'kind': 'file_delta',
+                    'extensions': ['.py'], 'expected': {'added': [], 'deleted': [], 'modified': ['app.py']}}
+            spec = {'max_turns': 2, 'attempt_seconds': 120, 'max_context_characters': 80000,
+                    'tool_output_characters': 16000, 'max_reported_tokens': 120000}
+            result = attempt(task, {}, root, root / 'attempt', Path('unused'), provider, 'baseline', spec, None)
+            self.assertEqual(result['known_usage_subtotal']['input_tokens'], 30)
+            self.assertEqual(result['known_usage_subtotal']['output_tokens'], 5)
+            self.assertIsNone(result['usage']['output_tokens'])
+            self.assertFalse(result['usage_complete'])
+            self.assertEqual(result['measured_usage_calls'], 1)
+            self.assertEqual(result['model_calls'][1]['reported_usage'], {'input_tokens': 20, 'output_tokens': None})
+            summary = report([result], 2)['arms']['baseline']
+            self.assertEqual(summary['unmeasured_usage_calls'], 1)
+            self.assertEqual(summary['known_usage_subtotal']['output_tokens'], 5)
+
     def test_provider_retains_reported_usage_after_a_transport_failure(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -171,6 +198,21 @@ class AgentTrialTests(unittest.TestCase):
             self.assertEqual(result.status, 'failed')
             self.assertEqual(result.usage['input_tokens'], 51)
             self.assertIsNone(result.action)
+
+    def test_known_partial_usage_still_enforces_the_token_budget(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            provider = Mock(spec=AgentProvider)
+            provider.respond.return_value = ProviderTurn('complete', answer(operation='read', path='app.py'),
+                {'input_tokens': 15, 'output_tokens': None}, {'status': 'complete'})
+            task = {'id': 'r-b', 'repository': 'r', 'base': 'a', 'head': 'b', 'kind': 'file_delta',
+                    'extensions': ['.py'], 'expected': {'added': [], 'deleted': [], 'modified': []}}
+            spec = {'max_turns': 2, 'attempt_seconds': 120, 'max_context_characters': 80000,
+                    'tool_output_characters': 16000, 'max_reported_tokens': 10}
+            result = attempt(task, {}, root, root / 'attempt', Path('unused'), provider, 'baseline', spec, None)
+            self.assertEqual(result['stop'], 'reported_token_budget')
+            self.assertEqual(provider.respond.call_count, 1)
+            self.assertFalse(result['tools'])
 
     def test_non_object_provider_events_and_usage_fail_explicitly(self):
         for raw in (b'[]\n', b'{"type":"turn.completed","usage":null}\n'):

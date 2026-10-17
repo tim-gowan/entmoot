@@ -8,11 +8,13 @@
   independent Python call-syntax oracles, cited-answer grading and actual model
   usage. Preserve incomplete answers and unknown costs; no inferred billing.
 - Add read-only reports and portable replay bundles with case-level grades,
-  focused regression controls, verified Requests navigation examples and concise
-  evaluation skill/rules.
+  process measurements and reporter identity, focused regression controls,
+  verified Requests navigation examples and concise evaluation skill/rules.
 - Separate AI provider invocation/decoding from the trial loop. Keep Codex as the
   implemented live adapter and test substitution without model calls; preserve
   reported usage even when a provider process fails.
+- Preserve per-call usage and known subtotals when counters are incomplete;
+  enforce the token allowance from known costs without inventing missing totals.
 - Pin text-checkout defaults in owned campaign clones and reject stale policy.
   The independent Git-byte oracle exposed host CRLF conversion; preserve that
   failed run and requalify fresh source rather than normalizing the mismatch away.

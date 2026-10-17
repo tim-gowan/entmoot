@@ -20,7 +20,7 @@ import time
 import jsonschema
 
 from evals.harness.contracts import ContractError
-from evals.harness.agent_provider import AgentProvider, USAGE_FIELDS, load_provider, sum_usage
+from evals.harness.agent_provider import AgentProvider, known_usage_subtotal, load_provider, sum_usage
 from evals.harness.history_pilot import grade_delta, write
 from evals.harness.measurement import command, output_measurement
 from evals.harness.repository_campaign import beneath
@@ -239,7 +239,7 @@ def attempt(task: dict, views: dict, pilot: Path, root: Path, cli: Path, provide
         prompt_path = root / f'prompt-{turn}.json'
         prompt_path.write_text(prompt, encoding='utf-8')
         response = provider.respond(prompt_path, schema, root, remaining, tokenizer)
-        processes.append(response.measurement)
+        processes.append({**response.measurement, 'reported_usage': response.usage})
         if response.usage is not None:
             usage.append(response.usage)
         if response.status != 'complete':
@@ -255,23 +255,23 @@ def attempt(task: dict, views: dict, pilot: Path, root: Path, cli: Path, provide
         if action['operation'] == 'finish':
             final, stop = action, 'finished'
             break
-        total = sum_usage(usage)
-        if total['input_tokens'] is not None and total['output_tokens'] is not None:
-            if total['input_tokens'] + total['output_tokens'] >= spec['max_reported_tokens']:
-                stop = 'reported_token_budget'
-                break
+        total = known_usage_subtotal(usage)
+        if total['input_tokens'] + total['output_tokens'] >= spec['max_reported_tokens']:
+            stop = 'reported_token_budget'
+            break
         remaining = spec['attempt_seconds'] - (time.monotonic() - began)
         if remaining <= 0:
             stop = 'time_budget'
             break
         observation = tools.execute(action, remaining)
         history.append({'action': action, 'observation': observation})
+    measured_calls = sum(row.get('input_tokens') is not None and row.get('output_tokens') is not None for row in usage)
     result = {'task': task['id'], 'repository': task['repository'], 'arm': arm, 'repetition': repetition, 'stop': stop,
               'error': error_detail,
               'wall_seconds': time.monotonic() - began, 'model_calls': processes, 'tools': tools.calls,
-              'usage': sum_usage(usage), 'usage_complete': len(usage) == len(processes) and bool(processes)
-              and all(row['input_tokens'] is not None and row['output_tokens'] is not None for row in usage),
-              'measured_usage_calls': len(usage), 'issued_evidence': tools.issued,
+              'usage': sum_usage(usage), 'known_usage_subtotal': known_usage_subtotal(usage),
+              'usage_complete': measured_calls == len(processes) and bool(processes),
+              'measured_usage_calls': measured_calls, 'issued_evidence': tools.issued,
               'answer': final, 'task_kind': task['kind'],
               'grade': grade_calls(task['expected_calls'], final, tools.issued) if task['kind'] == 'python_calls'
               else grade_answer(task['expected'], final, tools.issued)}
@@ -292,7 +292,7 @@ def report(attempts: list[dict], planned: int) -> dict:
                      'input_tokens': distribution([row['usage']['input_tokens'] if row['usage_complete'] else None for row in rows]),
                      'output_tokens': distribution([row['usage']['output_tokens'] if row['usage_complete'] else None for row in rows]),
                      'reasoning_output_tokens': distribution([row['usage']['reasoning_output_tokens'] if row['usage_complete'] else None for row in rows]),
-                     'known_usage_subtotal': {key: sum(row['usage'].get(key) or 0 for row in rows) for key in USAGE_FIELDS},
+                     'known_usage_subtotal': known_usage_subtotal([row.get('known_usage_subtotal', row['usage']) for row in rows]),
                      'unmeasured_usage_calls': sum(len(row['model_calls']) - row['measured_usage_calls'] for row in rows),
                      'tool_calls': dict(Counter(call['operation'] for row in rows for call in row['tools']))}
     pairs = []
