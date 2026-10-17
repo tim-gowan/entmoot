@@ -114,7 +114,7 @@ jobs:
           $profileRoot = Join-Path $env:RUNNER_TEMP 'entmoot-adapter-profile'
           New-Item -ItemType Directory -Force -Path $profileRoot | Out-Null
           Set-Content -Path (Join-Path $profileRoot 'main.go') -Value "package main`nfunc main() {}`n"
-          $summaryJson = cargo run --locked -p entmoot --features $env:PRODUCER_FEATURES --quiet -- --json init --root $profileRoot
+          $summaryJson = cargo run --locked -p entmoot --bin entmoot --features $env:PRODUCER_FEATURES --quiet -- --json init --root $profileRoot
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           $summary = ($summaryJson -join "`n") | ConvertFrom-Json
           $locator = Get-Content -LiteralPath $summary.publication.store -Raw | ConvertFrom-Json
@@ -124,7 +124,7 @@ jobs:
             throw 'init did not write adapter-profile.json'
           }
           $publication = Join-Path $volume 'current.json'
-          cargo run --locked -p entmoot --features $env:PRODUCER_FEATURES --quiet -- status --publication $publication --source-root $profileRoot | Out-Null
+          cargo run --locked -p entmoot --bin entmoot --features $env:PRODUCER_FEATURES --quiet -- status --publication $publication --source-root $profileRoot | Out-Null
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           cargo test --locked -p entmoot --features "$($env:PRODUCER_FEATURES),native-tests" --test program_adapters -- --include-ignored --test-threads=1
           if ($LASTEXITCODE) { exit $LASTEXITCODE }

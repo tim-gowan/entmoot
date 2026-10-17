@@ -167,17 +167,23 @@ class ValidationIsolationTests(unittest.TestCase):
     def test_windows_validation_bounds_default_linker_concurrency_and_preserves_override(self):
         from scripts.pre_commit_check import validation_environment
 
+        # Mock shutil.which: Python 3.13's real which() consults _winapi when
+        # sys.platform is patched to win32 on a non-Windows host.
         with patch('scripts.pre_commit_check.sys.platform', 'win32'), \
-                patch('scripts.pre_commit_check.os.cpu_count', return_value=64):
+                patch('scripts.pre_commit_check.os.cpu_count', return_value=64), \
+                patch('scripts.pre_commit_check.shutil.which', return_value=None):
             self.assertEqual(validation_environment({}).get('CARGO_BUILD_JOBS'), '6')
             self.assertEqual(validation_environment({'CARGO_BUILD_JOBS': '12'})['CARGO_BUILD_JOBS'], '12')
         with patch('scripts.pre_commit_check.sys.platform', 'win32'), \
-                patch('scripts.pre_commit_check.os.cpu_count', return_value=2):
+                patch('scripts.pre_commit_check.os.cpu_count', return_value=2), \
+                patch('scripts.pre_commit_check.shutil.which', return_value=None):
             self.assertEqual(validation_environment({}).get('CARGO_BUILD_JOBS'), '2')
         with patch('scripts.pre_commit_check.sys.platform', 'win32'), \
-                patch('scripts.pre_commit_check.os.cpu_count', return_value=None):
+                patch('scripts.pre_commit_check.os.cpu_count', return_value=None), \
+                patch('scripts.pre_commit_check.shutil.which', return_value=None):
             self.assertEqual(validation_environment({}).get('CARGO_BUILD_JOBS'), '1')
-        with patch('scripts.pre_commit_check.sys.platform', 'linux'):
+        with patch('scripts.pre_commit_check.sys.platform', 'linux'), \
+                patch('scripts.pre_commit_check.shutil.which', return_value=None):
             self.assertNotIn('CARGO_BUILD_JOBS', validation_environment({}))
 
     def test_child_git_commands_do_not_inherit_the_committing_index(self) -> None:

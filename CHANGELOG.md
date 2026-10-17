@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-17: Release CI gate repairs
+
+- Disambiguate native `cargo run` with `--bin entmoot` / `default-run` when the
+  producer helper binary is also present.
+- Install `cargo-deny` / `cargo-machete` from current install-action binaries and
+  build `cargo-dylint` with the workspace toolchain (avoids edition-2024
+  cargo-binstall parse failures).
+- Bound structural CI linker concurrency; keep digest-checked artifact fixtures
+  byte-stable across Windows checkouts; isolate Windows-platform unit tests from
+  host `shutil.which` behavior.
+
 ## 2026-10-16: Release documentation workflow
 
 - Honor reusable docs inputs when the caller event is a tag push. Direct push/PR

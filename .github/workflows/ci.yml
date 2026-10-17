@@ -30,6 +30,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 65
     env:
+      # Parallel linking of large engine test binaries has SIGBUS'd ld on GHA.
+      CARGO_BUILD_JOBS: 1
       RUST_CACHE_KEY: structural-${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -97,9 +99,13 @@ jobs:
       - run: python3 scripts/prepare_release_inputs.py --check
       - run: cargo clippy --workspace --locked --all-targets --features ${{ env.FULL_TESTS_FEATURES }} -- -D warnings
       - run: cargo clippy -p entmoot --locked --features ${{ env.PRODUCER_FEATURES }} --all-targets -- -D warnings
-      - uses: taiki-e/install-action@899b013517f9e7774591216672bf75a46bb9a481 # v2.9.4
+      # Binary installs for deny/machete. cargo-dylint is not in install-action
+      # manifests; installing it via cargo-binstall fails on edition=2024 crates.
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
         with:
-          tool: cargo-dylint@6.1.1,dylint-link@6.1.1,cargo-deny@0.20.2,cargo-machete@0.9.1
+          tool: cargo-deny@0.20.2,cargo-machete@0.9.1
+      - name: Install cargo-dylint
+        run: cargo install cargo-dylint dylint-link --locked --version 6.1.1 --force
       - run: python3 scripts/pre_commit_check.py --banned-only
       - run: cargo deny --exclude-dev check advisories
       - run: cargo deny --all-features --exclude-dev check licenses advisories
