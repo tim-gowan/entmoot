@@ -11,11 +11,19 @@ and useful logs belong under `.tmp/<task>/`. Historical measurements are bounded
 observations, not current release gates.
 
 The [workflow evaluation protocol](PROTOCOL.md) separates implemented release
-controls from the proposed historical/agent survey. The bounded
+controls and local calibration from the wider proposed survey. The bounded
 [Express routing cohort](experiments/express-routing.workflow.json) supplies
 independent runtime expectations, source-verified SARIF, historical production
 views and measured CLI operations. See the
 [execution procedure](../docs/runbooks/revision-evaluation.md#bounded-workflow-experiments).
+
+The [local history profile](experiments/local-pilot.json) freezes a bounded frame
+across eight repositories. The [agent calibration](experiments/local-trials.json)
+pairs source/Git access with Entmoot plus the same fallback tools, using independent
+file-delta and syntactic-call oracles. Its default is 12 attempts of at most two
+minutes each. The provider interface separates model invocation and usage from
+tools and grading; Codex CLI is the only implemented live adapter. See the
+[local commands and limits](../docs/runbooks/revision-evaluation.md#local-history-pilot-and-agent-calibration).
 
 ## Dispatch demo
 

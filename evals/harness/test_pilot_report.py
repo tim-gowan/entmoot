@@ -40,6 +40,12 @@ class PilotMeasurementTests(unittest.TestCase):
             write(pilot / 'inputs.json', {'selection': {'repositories': [{'id': 'r', 'mirror': str(root)}],
                 'episodes': [{'base': 'a' * 40, 'head': 'b' * 40}]}, 'selection_digest': 'original',
                 'tools': {}, 'harness_sources': {}, 'evaluator_digest': 'evaluator'})
+            write(pilot / 'report.json', {'episodes': [{'repository': 'r', 'status': 'failed'}],
+                                        'implementation_unchanged': True})
+            inventory_grade = {'passed': False, 'expected_files': 1, 'missing': ['app.py']}
+            write(pilot / 'views.json', {'r-' + 'b' * 40: {'graph': str(root / 'graph.json'),
+                'retained': {'locator': str(root / 'view.json')}, 'source_root': str(root),
+                'inventory_grade': inventory_grade}})
             write(trials / 'oracles.json', [{'expected': ['app.py']}])
             oracle_digest = material_digest(trials / 'oracles.json')
             write(trials / 'inputs.json', {'oracle_digest': oracle_digest})
@@ -54,6 +60,9 @@ class PilotMeasurementTests(unittest.TestCase):
             self.assertNotIn('mirror', selected['repositories'][0])
             self.assertNotIn(str(root), (bundle / 'trials/attempts.json').read_text())
             self.assertEqual(json.loads((bundle / 'provenance.json').read_bytes())['original_selection_digest'], 'original')
+            self.assertEqual(material_digest(bundle / 'history/report.json'), material_digest(pilot / 'report.json'))
+            self.assertEqual(json.loads((bundle / 'history/inventory-grades.json').read_bytes()),
+                             {'r-' + 'b' * 40: inventory_grade})
 
 
 if __name__ == '__main__':

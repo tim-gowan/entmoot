@@ -7,8 +7,9 @@
 - Add paired local agent configuration with a twelve-attempt calibration default,
   independent Python call-syntax oracles, cited-answer grading and actual model
   usage. Preserve incomplete answers and unknown costs; no inferred billing.
-- Add read-only reports and portable replay bundles, focused regression controls,
-  verified Requests navigation examples and concise evaluation skill/rules.
+- Add read-only reports and portable replay bundles with case-level grades,
+  focused regression controls, verified Requests navigation examples and concise
+  evaluation skill/rules.
 - Separate AI provider invocation/decoding from the trial loop. Keep Codex as the
   implemented live adapter and test substitution without model calls; preserve
   reported usage even when a provider process fails.

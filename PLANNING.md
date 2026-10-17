@@ -270,7 +270,10 @@ independent oracles and explicit stopping rules. The
 owns case qualification, real upstream examples, sampling, measurement and grading.
 The bounded Express release profile now independently grades runtime scenarios,
 provider attachment and exact-reference retrieval, retaining historical production
-views and measured command outputs. Complete agent cost remains unmeasured.
+views and measured command outputs. Local history and paired agent runners now
+provide frozen selection, independent file-byte/syntactic-call oracles, bounded
+tools, provider usage and regrading without model calls. The default calibration
+is 12 attempts of at most two minutes; implementation is not evidence of benefit.
 
 The 2026-10-17 investigation is under `.tmp/workflow-evaluation/`: the candidate
 catalog records upstream anchors and unresolved qualification; the read-only
@@ -280,27 +283,27 @@ The large binding-row count is not a large independent sample. Repository and
 revision commands now share process-tree sampling, output measurements and
 attempt-preserving logs. The bounded release study remains one correlated family.
 
-Implement in this order:
+Remaining qualification, beyond the local calibration:
 
-1. **Freeze cases and truth.** Qualify eight curated mechanism/configuration cases
-   in scratch. Prepare a distinct, seeded 80-episode history pilot across eight
-   JS/TS, Python, Rust and Go repositories, including failed-CI candidates,
-   ordinary changes and neutral controls. Preserve eligibility/attrition and
-   separate related fixes from held-out cases. Java/C#/C challenge cases follow
+1. **Qualify semantic cases and truth.** Reproduce the curated mechanism and
+   configuration candidates in scratch. The local history profile targets 80
+   episodes across eight JS/TS, Python, Rust and Go repositories, preserving
+   underfilled strata. Its source-byte and lexical-call oracles do not qualify
+   semantic repairs. Separate related fixes from held-out cases. Java/C#/C need
    their own native qualification; C++ remains experimental. Failed CI and merge
    topology locate candidates, not causes or expected answers.
 2. **Extend observation only where measured.** Shared process measurement now
    covers child timeout, failed attempts, unavailable counters, byte limits and
    exact decoded token inputs. Quantify observer/coordinator overhead and add
    OS accounting only where sampled counters leave a material research gap.
-3. **Wire reusable workflows.** Extend Rust-owned campaign inputs and generated
-   schemas for the case, oracle and evaluator identities that affect replay.
-   Separate selection/materialization, oracle execution, public CLI/MCP operation
-   execution, measurement and grading. Keep host/statistical code in the harness
-   and product queries in their current owners. Parameterize real selectors,
-   dependency/configuration scope and budgets; do not encode expected answers in
-   workflow code. Cover all operation families through representative tasks and
-   focused lifecycle controls, not every command on every repository.
+3. **Extend qualified workflows.** Keep selection/materialization, independent
+   oracles, product operations, measurement and grading in their existing owners.
+   The provider boundary isolates invocation, decoding and usage; Codex CLI is
+   the only live adapter. Qualify another adapter before claiming provider parity.
+   Parameterize selectors, dependency/configuration scope and budgets; keep
+   expected answers out of workflow code. Extend Rust-owned portable campaign
+   contracts only when replay needs new wire data. Cover operation families with
+   representative tasks and focused lifecycle controls.
 4. **Qualify independent grading.** Reproduce buggy/fixed and unaffected controls;
    assert source-backed occurrences, edges, claims and test obligations separately.
    Keep authored SARIF, real provider output and runtime controls distinct. Test
@@ -308,13 +311,12 @@ Implement in this order:
    denominators, stale inputs and retry identity. Preserve unknowns and compare
    only the declared reference universe. Existing graph self-consistency checks
    remain useful but cannot grade graph completeness.
-5. **Run the bounded pilot.** Establish scripted correctness/cost first, then
-   paired agent tasks using Entmoot versus grep/source access with identical
-   fallback tools and limits. Measure actual model usage where exposed alongside
-   bytes/tokenizer counts, operation resources and setup amortization. Include
-   retries, schema/context cost and failures. Test compact output and skill
-   guidance as explicit ablations. Frozen held-out tasks estimate transfer;
-   repeated edges or runs do not inflate the independent sample size.
+5. **Evaluate transfer after calibration.** Report the small local run before
+   proposing a wider agent budget. Use paired tasks and identical fallback tools
+   and limits, keeping actual usage separate from text volume. Include failed
+   attempts, repeated context and setup cost. Add held-out semantic tasks and
+   explicit compact-output/skill ablations. Repeated edges, revisions or model
+   attempts do not create independent repository samples.
 6. **Repair and promote.** Preserve failures, add independent regressions, fix
    common owners and rerun affected cases with new implementation identities.
    Keep before/after evidence and record oracle corrections. Move small controls

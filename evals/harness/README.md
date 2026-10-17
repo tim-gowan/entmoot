@@ -26,7 +26,8 @@ publication instead of being copied into campaign storage.
   assemble vendor flags. Additional providers implement the same bounded-action
   contract; a fixture provider tests substitution without consuming model usage.
 - `pilot_report`: read-only summary of stored grades, operation resources and
-  paired costs; no model calls, product queries or database mutation.
+  paired costs, with portable case-level grades and regradable trial answers;
+  no model calls, product queries or database mutation.
 
 Run Cargo process controls with:
 

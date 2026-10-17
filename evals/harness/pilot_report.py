@@ -66,6 +66,7 @@ def summarize(pilot: Path, trials: Path | None) -> dict:
     study = json.loads((pilot / 'report.json').read_bytes())
     inputs = json.loads((pilot / 'inputs.json').read_bytes())
     views = json.loads((pilot / 'views.json').read_bytes())
+    publications = json.loads((pilot / 'repositories-summary.json').read_bytes())['repositories']
     selection = inputs['selection']
     if not study['implementation_unchanged']:
         raise ContractError('pilot implementation changed while running')
@@ -74,12 +75,14 @@ def summarize(pilot: Path, trials: Path | None) -> dict:
     repositories = {}
     for row in selection['repositories']:
         cases = [ep for ep in study['episodes'] if ep['repository'] == row['id']]
+        initial = [item for item in publications if item['id'].rsplit('-', 1)[0] == row['id']]
         repositories[row['id']] = {'selection_status': row['status'], 'strata': row.get('counts'),
             'frame_capped': row.get('frame_capped'), 'ci_status': row.get('ci_status'),
             'ci_unmatched_heads': row.get('ci_unmatched_heads'),
             'ci_retrieved_runs': sum(page['retrieved'] for page in row.get('ci_pages', [])),
             'ci_reported_total': max((page['total_count'] for page in row.get('ci_pages', [])), default=None),
-            'grades': dict(Counter(case['status'] for case in cases))}
+            'grades': dict(Counter(case['status'] for case in cases)),
+            'initial_publication_database_bytes': distribution([item.get('database_bytes') for item in initial])}
     result = {'scope': 'bounded history source inventory and local agent calibration',
               'pilot_report_digest': material_digest(pilot / 'report.json'),
               'pilot_inputs_digest': material_digest(pilot / 'inputs.json'),
@@ -126,6 +129,11 @@ def export_bundle(pilot: Path, trials: Path | None, destination: Path, summary: 
     destination.mkdir(parents=True, exist_ok=False)
     write(destination / 'selection.json', selection)
     write(destination / 'summary.json', summary)
+    # Keep case-level failures auditable; aggregate counts alone lose the
+    # distinctions that the independent oracle checked. Locators stay local.
+    write(destination / 'history/report.json', json.loads((pilot / 'report.json').read_bytes()))
+    write(destination / 'history/inventory-grades.json', {
+        key: view['inventory_grade'] for key, view in json.loads((pilot / 'views.json').read_bytes()).items()})
     write(destination / 'provenance.json', {
         'original_selection_digest': inputs['selection_digest'],
         'portable_selection_digest': material_digest(destination / 'selection.json'),

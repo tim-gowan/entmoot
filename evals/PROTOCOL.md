@@ -1,7 +1,7 @@
 # Workflow evaluation protocol
 
-This protocol separates the implemented release cohort below from a proposed
-historical CI/CVE and agent survey. The
+This protocol separates the implemented release cohort and local history/agent
+calibration from the wider proposed CI/CVE and agent survey. The
 [remaining work](../PLANNING.md#general-workflow-evaluation) separates harness
 changes from product fixes. Runtime controls independently grade their finite
 scenario set; graph accounting alone cannot establish semantic completeness.
@@ -18,11 +18,48 @@ per release are descriptive calibration, not the proposed five-repetition/three-
 fresh-store survey. The source/lock and invocation recipes live in the
 [revision runbook](../docs/runbooks/revision-evaluation.md#bounded-workflow-experiments).
 
-This cohort is separate from the eight curated mechanism cases and 80-episode
-history pilot below. Its 96 scenario executions are correlated, not 96 independent
-ecosystem trials. No held-out agent trial, billed usage or reasoning-cost savings
-is established. Local profiles remain harness configuration; portable wire shapes
+This cohort is separate from the eight curated mechanism cases and history pilot
+below. Its 96 scenario executions are correlated, not 96 independent ecosystem
+trials. This cohort does not establish agent cost or billed usage. Local profiles
+remain harness configuration; portable wire shapes
 continue to come from Rust and generated schemas.
+
+## Implemented local calibration
+
+The [history profile](experiments/local-pilot.json) and
+[agent profile](experiments/local-trials.json) implement a bounded first step,
+using the [local recipe](../docs/runbooks/revision-evaluation.md#local-history-pilot-and-agent-calibration).
+The history lane compares selected source-file membership and exact bytes against
+Git objects, then checks added/deleted/modified files between pinned revisions.
+It retains structural publications in a production knowledge database. It does
+not execute upstream tests or establish the cause of failed CI. Fresh owned
+checkouts disable host EOL conversion; repository attributes still apply and any
+difference from the raw Git-byte oracle remains a visible failure.
+
+The agent calibration selects six tasks without conditioning on Entmoot grades:
+four exact source-file deltas and two Python direct-name/attribute call inventories.
+The latter use a separately frozen standard-library AST oracle for lexical scope,
+callee spelling and call-expression location. Both arms receive the same finite
+question and bounded Git/search/source tools; Entmoot adds subject, boundary and
+initial impact reads. Complete answers require observed evidence, including source
+reads for callsites. These tasks qualify navigation and accounting, not typed
+dispatch, security findings or dependency-upgrade correctness.
+
+The checked-in schedule is one repetition per task and arm: at most 12 attempts,
+120 seconds and eight decisions per attempt. Providers emit one action at a time;
+the runner owns tools, budgets and grading. Invocation, transport, response parsing
+and usage accounting belong to the provider adapter. Codex CLI is the only live
+adapter; an offline fixture checks the provider-independent loop. A provider
+interface does not qualify additional models or providers.
+
+Preserve every attempted case and grade it again from saved answers without model
+calls. Report actual provider usage, delivered-text counts and process measurements
+separately. Each decision starts a fresh model turn containing explicit history;
+the repeated context is included in reported usage. This is a constrained-interface
+calibration, not a full CLI/MCP agent benchmark. No held-out allocation, repeated
+fresh-store comparison, skill ablation, human double-review or population confidence
+interval is established by this small schedule. The broader methods below remain
+requirements for the corresponding stronger claims.
 
 ## Reusable case and ownership
 
@@ -126,15 +163,15 @@ operations needed for each question; a case need not execute every CLI leaf.
 
 ## Sampling and historical layers
 
-Start with eight curated cases drawn from the candidates above to qualify the
-harness. Keep them separate from a proposed 80-episode pilot: ten revision
+Qualify eight curated cases drawn from the candidates above for the stronger
+semantic workflows. Keep them separate from the local pilot's target: ten revision
 episodes in each of Express, Fastify, Requests, docker-py, Axum, getrandom, chi and
 Gin. These emphasize JS/TS, Python, Rust and Go; they are purposively chosen, not
 a random ecosystem sample. Java, C# and C initially remain configuration-specific
 challenge cases. C++ remains experimental. A dependency-linked pair of repositories
 is not two independent replications of the same fix.
 
-Freeze the pilot frame before examining Entmoot results: proposed dates are
+Freeze the pilot frame before examining Entmoot results: the local profile uses
 2025-10-01 through 2026-09-30, seed 20261017. Per repository, draw four failed-CI
 repair candidates, four ordinary history episodes and two independently classified
 neutral controls. Keep these strata disjoint; neutral does not mean merely that
