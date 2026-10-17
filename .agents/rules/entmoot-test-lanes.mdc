@@ -23,3 +23,8 @@ alwaysApply: true
   processes and preserve caller overrides. Never write test state to the real home.
 - Scratch belongs in `.tmp/<task>/`. Test-only temporary directories are disposable.
   Details: [testing runbook](../../docs/runbooks/testing.md).
+
+- Evaluation claims follow the [protocol](../../evals/PROTOCOL.md): freeze the
+  eligible frame and independent oracle before trials; retain failures and
+  unknown costs. File inventory, syntactic calls, native dispatch and runtime
+  behavior need distinct oracles. Never infer model savings from output size.

@@ -1,0 +1,3 @@
+-r requirements.txt
+# Qualified by the local calibration; tokenizer counts remain separate from usage.
+tiktoken==0.12.0

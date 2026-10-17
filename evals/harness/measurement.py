@@ -7,6 +7,7 @@ Each invocation gets exclusive output files, including failures and retries.
 from __future__ import annotations
 
 import codecs
+from contextlib import nullcontext
 from datetime import datetime, timezone
 import json
 import math
@@ -42,7 +43,8 @@ def output_measurement(path: Path, *, tokenizer=None, token_byte_limit=16 * 1024
 
 
 def command(argv: list[str], cwd: Path, directory: Path, name: str,
-            environment: dict, timeout: float | None, *, tokenizer=None, sampling_interval=0.05) -> dict:
+            environment: dict, timeout: float | None, *, tokenizer=None, sampling_interval=0.05,
+            stdin_path: Path | None = None) -> dict:
     """Run one command; `None` leaves producer-owned timeout/recovery in charge."""
     if timeout is not None and (not math.isfinite(timeout) or timeout <= 0):
         raise ValueError('command timeout must be positive and finite, or None')
@@ -60,9 +62,10 @@ def command(argv: list[str], cwd: Path, directory: Path, name: str,
     limitations = {'short_lived_children_may_be_unobserved', 'rss_sum_can_count_shared_pages_more_than_once'}
     interval = sampling_interval
     launch_error = None
-    with out.open('xb') as stdout, err.open('xb') as stderr:
+    with out.open('xb') as stdout, err.open('xb') as stderr, \
+            (stdin_path.open('rb') if stdin_path else nullcontext(subprocess.DEVNULL)) as stdin:
         try:
-            process = subprocess.Popen(argv, cwd=cwd, env=environment, stdout=stdout, stderr=stderr)
+            process = subprocess.Popen(argv, cwd=cwd, env=environment, stdin=stdin, stdout=stdout, stderr=stderr)
         except OSError as error:
             status = 'tool_unavailable' if isinstance(error, FileNotFoundError) else 'launch_failed'
             launch_error = str(error)
@@ -135,6 +138,7 @@ def command(argv: list[str], cwd: Path, directory: Path, name: str,
             'resource_method': {'sampling_interval_seconds': interval, 'samples': samples,
                                 'observed_processes': len(cpu), 'cpu': 'sum_last_observed_process_counters'},
             'stdout': str(out), 'stderr': str(err),
+            'input': output_measurement(stdin_path, tokenizer=tokenizer) if stdin_path else None,
             'output': {'stdout': output_measurement(out, tokenizer=tokenizer),
                        'stderr': output_measurement(err, tokenizer=tokenizer)},
             'limitations': sorted(limitations)}

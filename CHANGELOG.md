@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-17: Local history and agent evaluation harness
+
+- Add bounded history/CI sampling with frozen first-parent pins, explicit missing
+  strata, independent Git source-byte grading and shared production view retention.
+- Add paired local agent configuration with a twelve-attempt calibration default,
+  independent Python call-syntax oracles, cited-answer grading and actual model
+  usage. Preserve incomplete answers and unknown costs; no inferred billing.
+- Add read-only reports and portable replay bundles, focused regression controls,
+  verified Requests navigation examples and concise evaluation skill/rules.
+
 ## 2026-10-17: Release CI gate repairs
 
 - Serialize concurrent SQLite initialization with a bounded OS-owned lock;

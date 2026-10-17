@@ -56,6 +56,15 @@ class CommandMeasurementTests(unittest.TestCase):
         self.assertIsNone(result['sampled_peak_tree_rss_bytes'])
         self.assertIsNone(result['sampled_tree_cpu_seconds'])
 
+    def test_explicit_stdin_is_measured_without_putting_prompt_in_arguments(self):
+        prompt = self.root / 'prompt.txt'
+        prompt.write_bytes(b'question\r\nwith context')
+        result = command([sys.executable, '-c', 'import sys; sys.stdout.buffer.write(sys.stdin.buffer.read())'],
+                         self.root, self.root, 'stdin', os.environ.copy(), 5, stdin_path=prompt)
+        self.assertEqual(Path(result['stdout']).read_bytes(), prompt.read_bytes())
+        self.assertEqual(result['input']['content_digest'], result['output']['stdout']['content_digest'])
+        self.assertNotIn('question', ' '.join(result['arguments']))
+
     def test_timeout_is_retained_and_sampled_memory_is_explicit(self):
         result = self.run_python("import time; data=bytearray(2_000_000); print('started', flush=True); time.sleep(30)", timeout=0.5)
         self.assertEqual(result['status'], 'timeout')

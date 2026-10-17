@@ -13,6 +13,9 @@ Start with status and find, then inspect/callers/callees/read-source. Use bounda
 for callee syntax, normalized native outcome/reason and build context. A text match
 is not a type claim. Count distinct sites separately from attempts/evaluations;
 retain source digest, occurrence and provider selectors when reporting a subset.
+Use Git for complete file-byte deltas; callable impact answers a different
+question. Find results can include declarations and call stubs: select exact
+subjects or boundaries, then verify the relevant source span and lexical scope.
 Use compact output first, explain/export only for needed evidence. Preserve paging
 receipts and distinguish search truncation from presentation limits.
 

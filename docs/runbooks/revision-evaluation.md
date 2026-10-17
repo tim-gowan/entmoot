@@ -170,6 +170,109 @@ and dependency-path completeness remain partial; the proposed 80-episode history
 survey and paired agent trials are still planned. The maturity table therefore
 adds this scoped evidence without promoting those broader capabilities.
 
+### Local history pilot and agent calibration
+
+The local [history configuration](../../evals/experiments/local-pilot.json) fixes
+eight repositories, a date window, seed, metadata/source budgets and disjoint
+stratum quotas. `harvest` freezes the observed frame before Entmoot runs. It reads
+public Git objects and bounded GitHub Actions metadata through an authenticated
+`gh`; it never reruns upstream CI. Missing/capped metadata and underfilled strata
+remain in `selection.json`. An ordinary episode is not an independently verified
+passing build. A failed-CI candidate is not a reproduced defect. Source-neutral
+means no selected-extension byte change, not behavioral equivalence.
+
+Use a matched locally built CLI and retention helper, an isolated data directory
+and a new run directory for each attempt. Keep the selected binaries unchanged
+while a study runs. On Windows, activate the maintainer tool environment first;
+append `.exe` to executable paths below. These recipes run from this repository.
+
+```text
+python -m pip install -r evals/harness/requirements-agent.txt
+cargo build --locked -p entmoot --features producer --bins
+cargo build --locked -p entmoot-engine --example retain_campaign_publication
+python -m evals.harness.history_pilot harvest --config evals/experiments/local-pilot.json --run-dir .tmp/pilot/frame
+python -m evals.harness.history_pilot run --selection .tmp/pilot/frame/selection.json --run-dir .tmp/pilot/study --cli target/debug/entmoot --retain-helper target/debug/examples/retain_campaign_publication
+```
+
+The structural pilot independently compares selected source paths and content
+against Git blobs, then checks added/deleted/modified file sets. It retains
+immutable views through the production repository API in `knowledge.sqlite3`;
+evaluation grades stay outside that database. This lane installs no upstream
+language dependencies and does not qualify typed dispatch or behavioral impact.
+Keep the shared database, view locators, source acquisitions, commands and frozen
+inputs together when moving the local study. The run command can reacquire pinned
+objects when the original frame's mirror directory is absent.
+
+The [agent configuration](../../evals/experiments/local-trials.json) defaults to
+six paired tasks, one repetition and at most twelve attempts, each capped at two
+minutes. It records the selected model and reasoning setting; review these for
+the local account before running. The checked-in values match the calibration
+environment, not a claim about the best available model. A local authenticated
+Codex executable is required; model calls use that account's allowance.
+
+```text
+python -m evals.harness.agent_trials run --config evals/experiments/local-trials.json --pilot .tmp/pilot/study --run-dir .tmp/pilot/trials --cli target/debug/entmoot
+python -m evals.harness.agent_trials report --run-dir .tmp/pilot/trials
+python -m evals.harness.pilot_report --pilot .tmp/pilot/study --trials .tmp/pilot/trials --out .tmp/pilot/summary.json
+```
+
+The last two commands regrade and summarize stored evidence without calling a model. The two
+arms have the same bounded Git, literal-search and source-read interface; one arm
+also has `find`, `inspect`, `boundaries` and an initial `relay-impact` page. Built-in
+model execution tools are disabled. The host executes validated JSON actions and
+keeps oracle files out of model context. This is a constrained action experiment,
+not a security sandbox or a full CLI/MCP session benchmark.
+
+File-review tasks use Git as a strong baseline. Python callsite tasks use an
+independent `ast` oracle: direct-name/attribute calls with a selected spelling
+prefix, their source lines and named lexical scope. Definitions, attribute reads,
+computed names and runtime dispatch are different claims. The grader requires
+source-read witnesses for returned callsites and complete cited pages for file
+delta answers; shorter incomplete answers do not earn a pass.
+
+Reported input/cached/output/reasoning tokens come from Codex completion events.
+Cached tokens are a subset of input; reasoning tokens are a subset of output.
+Do not add either subset twice. Each action uses an explicit-history model call,
+whose repeated context and startup cost are included. Token stopping is checked
+between calls, so the final call can exceed that allowance; wall time is enforced
+per attempt. Failed/incomplete usage remains unknown, with known subtotals shown.
+Billing, private reasoning and exact server model weights are not inferred.
+
+Keep calibration separate from confirmation. The larger schedule is explicit:
+`--task-limit 20 --repetitions 3 --max-attempts 120`. It requires a separately
+authorized model budget and frozen, eligible tasks; increasing repetitions does
+not create new repository families or qualify semantic-upgrade workflows. Retain
+all attempted cases and report setup separately from query/trial costs.
+
+#### Source navigation example: Requests
+
+The pilot includes Requests commit
+`00600b38f45dc234f825f609cea63d24e7e690af`. After running the frozen selection,
+these PowerShell commands reuse its existing structural publication:
+
+```powershell
+$cli = './target/debug/entmoot.exe'
+$source = '.tmp/pilot/study/publications/sources/requests-00600b38f45dc234f825f609cea63d24e7e690af'
+$data = '.tmp/pilot/study/publications/data'
+& $cli --standalone --data-dir $data -C $source find get_connection --output-limit 5
+& $cli --standalone --data-dir $data -C $source boundaries --callee '*get_connection*' --path src/requests/adapters.py --output-limit 5
+& $cli --standalone --data-dir $data -C $source read-source src/requests/adapters.py --start-line 606 --end-line 618 --context-lines 0 --output-limit 13
+```
+
+The first query has 17 matching subjects and returns five: callable definitions,
+local declarations and call stubs can all match the name. The boundary query
+narrows this file to one represented call, `self.get_connection_with_tls_context`.
+The verified source places it at line 612 inside `HTTPAdapter.send`. That is
+useful navigation for a transport review; it does not resolve the receiver's
+runtime class or establish a safe dependency upgrade. Repository, dependency and
+native-library completeness remain unestablished in this structural publication.
+
+Use exact IDs for inspection and retain the source digest with a cited span.
+Advance `page.next_cursor` when the complete subject set is needed; use explicit
+line and presentation limits for source reads. For exact added/deleted/modified
+file lists, use `git diff --no-renames --name-status <base> <head>` with the same
+source-extension scope. A bounded callable-impact page answers another question.
+
 ## Local branch collaboration
 
 Register already produced graph exports in one repository store:

@@ -72,6 +72,10 @@ records delivered work. Known defects belong in PLANNING, not weaker contracts.
   ARCHITECTURE owns identity/ownership; runbooks own procedure; Clap/MCP/generated
   schema own interfaces. Distinguish required invariants, observed behavior and
   unresolved defects. A dated successful run does not qualify a later revision.
+- **Evaluations:** follow [the protocol](evals/PROTOCOL.md). Freeze inputs and
+  independent oracles before trials; retain failures, missing measurements and
+  repository clusters. Source inventory, syntax, dispatch and runtime behavior
+  are separate claims. Output size alone does not establish agent cost savings.
 
 ## Implementation and validation
 

@@ -42,6 +42,10 @@ fn workflow_controls_preserve_measurements_source_fences_and_independent_claims(
             "evals.harness.test_provider_observations",
             "evals.harness.test_workflow_campaign",
             "evals.harness.test_workflow_report",
+            "evals.harness.test_history_pilot",
+            "evals.harness.test_agent_trials",
+            "evals.harness.test_trial_oracles",
+            "evals.harness.test_pilot_report",
         ],
     );
     assert!(

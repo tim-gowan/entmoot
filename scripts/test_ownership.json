@@ -740,6 +740,50 @@
         },
         {
           "kind": "file_prefix",
+          "path": "evals/harness/history_pilot.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/test_history_pilot.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/agent_trials.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/test_agent_trials.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/trial_oracles.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/test_trial_oracles.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/pilot_report.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/test_pilot_report.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/experiments/local-pilot.json"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/experiments/local-trials.json"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/requirements-agent.txt"
+        },
+        {
+          "kind": "file_prefix",
           "path": "crates/entmoot-cli/tests/fixtures/workflow-routing/"
         }
       ],

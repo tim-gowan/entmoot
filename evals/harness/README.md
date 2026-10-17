@@ -15,6 +15,14 @@ publication instead of being copied into campaign storage.
   exact-reference retrieval and production view retention over repository results.
 - `measurement` / `workflow_report`: shared process observations and descriptive
   costs. Missing counters stay unknown; output tokens are not model usage.
+- `history_pilot`: bounded, seeded history/CI candidate sampling, independent Git
+  source-byte grading and retained production views. CI metadata is not a bug oracle.
+- `agent_trials` / `trial_oracles`: paired local Codex decisions through bounded
+  source/Git tools and optional Entmoot reads, with independent source oracles.
+  Model usage, failed attempts and incomplete answers remain visible. See the
+  [local pilot recipe](../../docs/runbooks/revision-evaluation.md#local-history-pilot-and-agent-calibration).
+- `pilot_report`: read-only summary of stored grades, operation resources and
+  paired costs; no model calls, product queries or database mutation.
 
 Run Cargo process controls with:
 

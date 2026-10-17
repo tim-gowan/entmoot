@@ -5,6 +5,8 @@ needed for the task; Rust contracts and generated schemas own fields.
 
 - [entmoot-operate](skills/entmoot-operate/SKILL.md): source navigation, native
   readiness, open boundaries and local recovery.
+- [entmoot-evaluate](skills/entmoot-evaluate/SKILL.md): pinned history pilots,
+  paired agent calibration and honest evidence reports.
 - [entmoot-release](skills/entmoot-release/SKILL.md): package/docs verification,
   qualification and an authorized release handoff.
 - [Test lanes](rules/entmoot-test-lanes.mdc): existing focused test ownership.
