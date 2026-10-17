@@ -23,6 +23,9 @@ env:
   PYTHON_VERSION: '3.13'
   ARTIFACT_RETENTION_DAYS: '14'
   EVALS_REQUIREMENTS: evals/harness/requirements.txt
+  # Campaign harness ignored controls also exercise agent-trial units that import
+  # the optional tokenizer package; keep it pinned with the structural lane.
+  EVALS_TOKENIZER_REQUIREMENTS: evals/harness/requirements-tokenizer.txt
   FULL_TESTS_FEATURES: entmoot-core/full-tests
 jobs:
   structural:
@@ -44,13 +47,17 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: ${{ env.EVALS_REQUIREMENTS }}
+          cache-dependency-path: |
+            ${{ env.EVALS_REQUIREMENTS }}
+            ${{ env.EVALS_TOKENIZER_REQUIREMENTS }}
       - run: rustup show
       - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
         with:
           shared-key: ${{ env.RUST_CACHE_KEY }}
           cache-targets: true
-      - run: python -m pip install -r "${{ env.EVALS_REQUIREMENTS }}"
+      - run: |
+          python -m pip install -r "${{ env.EVALS_REQUIREMENTS }}"
+          python -m pip install -r "${{ env.EVALS_TOKENIZER_REQUIREMENTS }}"
       - name: Test workspace and report build storage
         shell: bash
         run: |

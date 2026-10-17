@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
+import sys
 import tempfile
+import types
 import unittest
 from unittest.mock import Mock, patch
 
@@ -11,6 +13,13 @@ from evals.harness.contracts import ContractError
 from evals.harness import agent_trials
 from evals.harness.history_pilot import write
 from evals.harness.revision_campaign import material_digest
+
+
+def _tokenizer_stub():
+    """Unit tests must not require the optional tokenizer package on the host."""
+    module = types.ModuleType('tiktoken')
+    module.get_encoding = Mock(return_value=object())
+    return module
 
 
 def answer(**values):
@@ -46,9 +55,10 @@ class AgentTrialTests(unittest.TestCase):
                 output = root / 'git-output'
                 output.write_text(arguments[2][-1] if arguments[3] == 'rev-parse' else '')
                 return {'status': 'complete', 'stdout': str(output)}
-            with patch.object(agent_trials, 'load_provider', return_value=provider), \
-                    patch.object(agent_trials, 'command', side_effect=git_command), \
-                    patch('tiktoken.get_encoding', return_value=None):
+            with patch.dict(sys.modules, {'tiktoken': _tokenizer_stub()}), \
+                    patch.object(agent_trials, 'version', return_value='0.12.0-test'), \
+                    patch.object(agent_trials, 'load_provider', return_value=provider), \
+                    patch.object(agent_trials, 'command', side_effect=git_command):
                 result = agent_trials.prepare(root / 'config.json', pilot, prepared, cli)
                 self.assertEqual(result['status'], 'prepared')
                 self.assertEqual(result['planned_attempts'], 2)

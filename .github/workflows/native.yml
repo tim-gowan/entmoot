@@ -75,7 +75,11 @@ jobs:
       - name: Build pinned native adapters
         shell: pwsh
         run: |
-          python -m pip install libclang==18.1.1 blake3==1.0.8 psutil==7.0.0
+          # Campaign harness revision controls need the shared eval requirements
+          # (jsonschema/blake3/psutil); clang build still pins libclang separately.
+          python -m pip install -r evals/harness/requirements.txt
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python -m pip install libclang==18.1.1
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python scripts/build_resolver_adapters.py --out $env:ADAPTERS_OUT
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
