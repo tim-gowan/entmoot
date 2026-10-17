@@ -154,8 +154,8 @@ tag CD creates the GitHub Release and publishes to crates.io.
 - **Pre-commit** (`scripts/pre_commit_check.py`): developer accelerator—policy,
   fmt, ownership-scoped clippy/test. Not a substitute for CI; never teach
   `ci.yml` path-based correctness skips.
-- `ci.yml`: `structural` (compiler-free tests, packaging, release CLI artifact),
-  `policy` (fmt/Clippy/deny), `repo` (scripts unit tests). Cargo/pip caches;
+- `ci.yml`: `structural` (compiler-free tests, packaging, test-profile CLI/MCP artifacts),
+  `policy` (fmt/Clippy/deny), `repo` (Python script/configuration/harness tests). Cargo/pip caches;
   ubuntu uploads `.crate` artifacts. No path-based correctness skips; no remote
   corpus clones.
 - `native.yml` (`resolved` job): provisioned Windows/Linux adapters, pinned

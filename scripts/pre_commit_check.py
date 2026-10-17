@@ -473,11 +473,21 @@ def main() -> int:
     else:
         print("pre-commit: native lane unavailable, disabled, or unrelated to changed owners")
 
-    def with_features(cmd: list[str]) -> list[str]:
+    qualified_packages: set[str] = set()
+
+    def align_cargo_command(cmd: list[str]) -> list[str]:
         cmd = list(cmd)
         from scripts.test_ownership import WORKSPACE_PACKAGES, workspace_manifests, workspace_dependencies
         selected = set(WORKSPACE_PACKAGES) if "--workspace" in cmd else {
             cmd[i + 1] for i, value in enumerate(cmd[:-1]) if value == "-p"}
+        if cmd[:2] == ["cargo", "test"] and selected and selected <= qualified_packages:
+            # Follow-up native controls retain the roots of the completed package
+            # lane, including dev-dependency feature unification. Keep test flags
+            # and libtest arguments scoped exactly as selected.
+            position = cmd.index("--") if "--" in cmd else len(cmd)
+            cmd[position:position] = [arg for package in sorted(qualified_packages - selected)
+                                      for arg in ("-p", package)]
+            selected = set(qualified_packages)
         manifests = workspace_manifests(ROOT)
         dependency_index = workspace_dependencies(ROOT, manifests)
         dependencies = set(selected)
@@ -527,14 +537,19 @@ def main() -> int:
     else:
         for package in plan.clippy_packages:
             clippy.extend(["-p", package])
-        tests = [with_features(cmd) for cmd in plan.cargo_commands]
+        tests = [align_cargo_command(cmd) for cmd in plan.cargo_commands]
+    from scripts.test_ownership import WORKSPACE_PACKAGES
+    for command in tests:
+        if not any(flag in command for flag in ("--test", "--lib", "--doc")):
+            qualified_packages.update(WORKSPACE_PACKAGES if "--workspace" in command else
+                                      (command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "-p"))
     clippy.extend(["--", "-D", "warnings"])
-    checks = [("cargo clippy", with_features(clippy))]
+    checks = [("cargo clippy", align_cargo_command(clippy))]
     cli_ready = False
     for i, cmd in enumerate(tests):
         cli_ready = cli_ready or selects_integration_tests([cmd], "entmoot")
         if selects_integration_tests([cmd], "entmoot-mcp", "http_e2e") and not cli_ready:
-            checks.append(("CLI for MCP interoperability", with_features(
+            checks.append(("CLI for MCP interoperability", align_cargo_command(
                 ["cargo", "build", "-p", "entmoot", "--profile", "test", "--bins"])))
             cli_ready = True
         checks.append((f"cargo test {i+1}/{len(tests)}", cmd))
@@ -552,11 +567,11 @@ def main() -> int:
         if not cli_ready:
             commands.append(("matched native CLI and producer", ["cargo", "build", "-p", "entmoot", "--profile", "test", "--bins"]))
         for label, cmd in commands:
-            code = run(with_features(cmd), label)
+            code = run(align_cargo_command(cmd), label)
             if code != 0:
                 return code
     for family, cmd in sidecar_controls(dict(os.environ), plan.changed_paths):
-        code = run(with_features(cmd), f"installed {family} control")
+        code = run(align_cargo_command(cmd), f"installed {family} control")
         if code != 0:
             return code
     return 0

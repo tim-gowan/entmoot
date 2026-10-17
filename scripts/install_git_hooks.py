@@ -60,11 +60,10 @@ def main() -> int:
     print(f"Installed pre-commit hook -> {pre_commit}")
     print(
         "pre-commit runs: banned-pattern / crate / markdown / test-ownership gates, "
-        "Python unit tests, then path-preflight (scripts/test_ownership.json) may skip "
-        "cargo builds, binary-backed evals, clippy, selected or full cargo tests, and "
-        "release CLI builds for docs/evals/hooks-only diffs. "
-        "Same GateAction receipt schema as W6; ci.yml stays authoritative. "
-        "Optional .pre-commit-config.yaml delegates to the same script (no bare always-run cargo builds)."
+        "fmt and Python unit tests. Path ownership (scripts/test_ownership.json) selects "
+        "Clippy, Cargo tests and binary-backed campaigns; configuration-only evaluation "
+        "changes run Python harness tests without rebuilding Entmoot. "
+        "CI stays authoritative. Optional .pre-commit-config.yaml delegates to the same script."
     )
     print(
         "post-commit: not installed (MCP local-index refresh is parked; see "

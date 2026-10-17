@@ -185,6 +185,24 @@ class ValidationIsolationTests(unittest.TestCase):
         self.assertFalse(any(cmd[:2] == ["cargo", "build"] for cmd in commands),
                          "CLI integration tests already build both native executables")
 
+    def test_sidecar_controls_reuse_the_workspace_package_graph(self):
+        from scripts import pre_commit_check as hook
+        from scripts.test_ownership import WORKSPACE_PACKAGES
+        command = ["cargo", "test", "-p", "entmoot", "--test", "program_adapters", "go_control", "--", "--ignored", "--exact"]
+        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_dylint=lambda: 0,
+                            check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
+                            check_crate_boundaries=lambda: 0,
+                            check_local_markdown_links=lambda: 0, check_test_ownership_registry=lambda: 0), \
+                patch.object(hook, "_acceleration_plan", return_value=hook.AccelerationPlan("workspace", "fixture")), \
+                patch.object(hook, "native_lane_enabled", return_value=True), \
+                patch.object(hook, "sidecar_controls", return_value=[("go", command)]), \
+                patch.object(hook, "run", return_value=0) as run, patch("builtins.print"):
+            self.assertEqual(hook.main(), 0)
+        actual = next(call.args[0] for call in run.call_args_list if "go_control" in call.args[0])
+        self.assertEqual({actual[i + 1] for i, value in enumerate(actual[:-1]) if value == "-p"},
+                         set(WORKSPACE_PACKAGES))
+        self.assertEqual(actual[actual.index("--") + 1:], ["--ignored", "--exact"])
+
     def test_only_actual_cli_integration_builds_can_replace_the_binary_build(self):
         from scripts.pre_commit_check import selects_integration_tests
         for command, expected in [
