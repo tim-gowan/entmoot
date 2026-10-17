@@ -487,8 +487,13 @@ mod tests {
             subject: None,
             subject_aliases: Vec::new(),
         };
-        let mut extractor = MarkerTopologyExtractor::with_snapshot("C:/checkout", snapshot.clone());
-        extractor.on_repo_begin("C:/checkout");
+        let checkout = if cfg!(windows) {
+            "C:/checkout"
+        } else {
+            "/checkout"
+        };
+        let mut extractor = MarkerTopologyExtractor::with_snapshot(checkout, snapshot.clone());
+        extractor.on_repo_begin(checkout);
         extractor.on_file("a.py", &record, None);
         extractor.on_file_end(&file_node_id("a.py"));
         let graph = extractor.finish();

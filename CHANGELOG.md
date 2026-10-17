@@ -12,6 +12,13 @@
   host `shutil.which` behavior.
 - Collapse Windows 8.3 TEMP aliases for Java package-root matching, Clang closed
   VFS retention, Roslyn digest keys and adapter-control path lookups.
+- Strip Windows verbatim (`\\?\`) prefixes after canonicalize/real-path so MSBuild,
+  libclang CompDB roots and relative joins stay ordinary drive paths.
+- Keep topology unit-test checkout roots absolute on Unix (`/checkout`); parse
+  Windows path basenames for `local/` repository ids on non-Windows hosts.
+- Use the active rustc for feature/test cfg controls (historical pins stay deferred);
+  build the CLI before resumable MCP replay so Windows link time cannot idle-expire
+  continuation tokens.
 - Shrink GHA link/debug working sets and defer historical Rust toolchain installs
   until the historical control step to avoid ENOSPC on native runners.
 

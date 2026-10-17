@@ -30,13 +30,16 @@ final class JavaInputs {
      * Prefer real paths when the host allows them. Some Windows TEMP roots deny
      * {@link Path#toRealPath()}; absolute normalize still fences the retained input.
      * Real paths also collapse 8.3 TEMP aliases so package-root prefix checks match.
+     * Strip Windows verbatim ({@code \\?\}) prefixes so relative joins stay ordinary.
      */
     static Path resolved(Path path) throws IOException {
+        Path real;
         try {
-            return path.toRealPath();
+            real = path.toRealPath();
         } catch (java.nio.file.AccessDeniedException denied) {
-            return path.toAbsolutePath().normalize();
+            real = path.toAbsolutePath().normalize();
         }
+        return withoutVerbatim(real);
     }
 
     /** Best-effort retained path for compiler-reported URIs (never throws). */
@@ -44,8 +47,19 @@ final class JavaInputs {
         try {
             return resolved(path);
         } catch (IOException error) {
-            return path.toAbsolutePath().normalize();
+            return withoutVerbatim(path.toAbsolutePath().normalize());
         }
+    }
+
+    static Path withoutVerbatim(Path path) {
+        String text = path.toString();
+        if (text.startsWith("\\\\?\\")) {
+            return Path.of(text.substring(4));
+        }
+        if (text.startsWith("//?/")) {
+            return Path.of(text.substring(4));
+        }
+        return path;
     }
 
     JavaInputs(Path root, List<Path> discovered, Main.Result result) throws IOException {
