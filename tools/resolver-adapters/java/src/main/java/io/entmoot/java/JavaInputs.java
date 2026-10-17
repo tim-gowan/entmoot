@@ -53,10 +53,17 @@ final class JavaInputs {
 
     static Path withoutVerbatim(Path path) {
         String text = path.toString();
-        if (text.startsWith("\\\\?\\")) {
+        String head = text.length() >= 8 ? text.substring(0, 8) : text;
+        if (head.equalsIgnoreCase("\\\\?\\UNC\\")) {
+            return Path.of("\\\\" + text.substring(8));
+        }
+        if (head.equalsIgnoreCase("//?/UNC/")) {
+            return Path.of("//" + text.substring(8));
+        }
+        if (text.startsWith("\\\\?\\") && text.length() >= 6 && text.charAt(5) == ':') {
             return Path.of(text.substring(4));
         }
-        if (text.startsWith("//?/")) {
+        if (text.startsWith("//?/") && text.length() >= 6 && text.charAt(5) == ':') {
             return Path.of(text.substring(4));
         }
         return path;

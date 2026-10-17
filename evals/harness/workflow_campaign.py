@@ -311,10 +311,14 @@ class WorkflowRun:
                          '--correspondence-mode','subject_match','--no-revalidate'],self.root,timeout=None)
         by_key = {key.removeprefix('step/'):json.loads(raw) for key,raw in self.store.connection.execute("SELECT receipt_key,body FROM receipts WHERE receipt_key LIKE 'step/%'")}
         steps = list(by_key.values())
+        try:
+            measured_bytes = database_bytes(self.database) if self.database.exists() else None
+        except FileNotFoundError:
+            measured_bytes = None
         result={'cases':results,'planned':len(self.spec['cases']),'correct':sum(r['status']=='complete' for r in results),
-                'production_database':str(self.database),'database_bytes':database_bytes(self.database),
+                'production_database':str(self.database),'database_bytes':measured_bytes,
                 'commands':len(steps),'command_wall_seconds':sum(step['wall_seconds'] for step in steps),
-                'median_command_seconds':statistics.median(step['wall_seconds'] for step in steps),
+                'median_command_seconds':(statistics.median(step['wall_seconds'] for step in steps) if steps else None),
                 'output_tokens':token_summary(steps),
                 'operation_costs':summarize_steps(by_key),'paired_output_tiers':paired_payloads(by_key),
                 'actual_model_usage':None,'limitations':['No controlled model trial; payload tokens are not billed or reasoning usage.',

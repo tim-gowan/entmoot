@@ -119,7 +119,11 @@ pub(crate) fn local_repository_id(toplevel_or_root: &std::path::Path) -> String 
         .file_name()
         .and_then(|s| s.to_str())
         .filter(|s| !s.is_empty() && !s.contains('\\') && !s.contains(':'))
-        .or_else(|| stripped.rsplit(['/', '\\']).find(|part| !part.is_empty()))
+        .or_else(|| {
+            stripped
+                .rsplit(['/', '\\'])
+                .find(|part| !part.is_empty() && !part.contains(':'))
+        })
         .unwrap_or("repo");
     format!("local/{name}")
 }

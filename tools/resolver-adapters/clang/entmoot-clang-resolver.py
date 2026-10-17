@@ -39,9 +39,14 @@ def retained(path: Path, *, strict: bool = False) -> Path:
     """Real path without Windows verbatim (`\\\\?\\`) prefixes that break CompDB joins."""
     resolved = path.resolve(strict=strict) if strict else path.resolve()
     text = str(resolved)
-    if text.startswith("\\\\?\\"):
+    lower = text[:8].lower()
+    if lower == "\\\\?\\unc\\":
+        return Path("\\\\" + text[8:])
+    if lower == "//?/unc/":
+        return Path("//" + text[8:])
+    if text.startswith("\\\\?\\") and len(text) >= 6 and text[5] == ":":
         return Path(text[4:])
-    if text.startswith("//?/"):
+    if text.startswith("//?/") and len(text) >= 6 and text[5] == ":":
         return Path(text[4:])
     return resolved
 

@@ -29,6 +29,9 @@ class PageTests(unittest.TestCase):
         rows = [{'output':{'stdout':{'tokens':7},'stderr':{'tokens':None}}}]
         self.assertEqual(token_summary(rows),{'total':None,'counted':7,'unmeasured_streams':1})
 
+    def test_empty_steps_remain_measurable(self):
+        self.assertEqual(token_summary([]),{'total':0,'counted':0,'unmeasured_streams':0})
+
     def test_provider_attachment_must_preserve_native_provenance(self):
         before = {'resolutions':[{'id':'native','scope':'configuration-a'}]}
         preserve_evidence(before, before)

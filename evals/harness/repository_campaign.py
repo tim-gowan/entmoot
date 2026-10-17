@@ -309,7 +309,11 @@ def run(config_path: Path, directory: Path, cli: Path, depth: int, structural_on
             prior = store.get_receipt('repository/' + name)
             prior = json.loads(prior) if prior else {}
             row['build_reused'] = build_existed and prior.get('build_status') == 'complete'
-            lock = beneath(root, spec['lock']) if spec['lock'] else None
+            lock = None
+            try:
+                lock = beneath(root, spec['lock']) if spec['lock'] else None
+            except (ContractError, OSError, ValueError) as error:
+                row['limitations'].append('lock_unavailable:' + str(error))
             if row['build_reused'] and prior.get('dependency_lock'):
                 if lock is None or not lock.is_file() or material_digest(lock) != prior['dependency_lock']['content_digest']:
                     raise ContractError('retained dependency lock changed; use a fresh campaign')
@@ -342,7 +346,11 @@ def run(config_path: Path, directory: Path, cli: Path, depth: int, structural_on
                 row['dependency_lock'] = {'path':spec['lock'], 'retained':str(retained),
                                           'content_digest':material_digest(lock),
                                           'tracked':bool(git(root,'ls-files','--',spec['lock']))}
-            pinned, gaps = lock_dependencies(root, spec['lock'], config.get('include_dev', False))
+            pinned, gaps = [], []
+            try:
+                pinned, gaps = lock_dependencies(root, spec['lock'], config.get('include_dev', False))
+            except (ContractError, OSError, ValueError) as error:
+                row['limitations'].append('lock_unavailable:' + str(error))
             row['limitations'].extend(gaps)
             for package in pinned:
                 target = config['packages'].get(package)
