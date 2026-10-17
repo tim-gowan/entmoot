@@ -51,15 +51,7 @@ jobs:
           shared-key: ${{ env.RUST_CACHE_KEY }}
           cache-targets: true
       - run: python -m pip install -r "${{ env.EVALS_REQUIREMENTS }}"
-      - name: Structural tests (split crates to bound linker memory)
-        shell: bash
-        run: |
-          set -euo pipefail
-          cargo test --locked -p entmoot-contracts --features ${{ env.FULL_TESTS_FEATURES }}
-          cargo test --locked -p entmoot-core --features ${{ env.FULL_TESTS_FEATURES }}
-          cargo test --locked -p entmoot-engine --features ${{ env.FULL_TESTS_FEATURES }}
-          cargo test --locked -p entmoot-mcp --features ${{ env.FULL_TESTS_FEATURES }}
-          cargo test --locked -p entmoot --features ${{ env.FULL_TESTS_FEATURES }}
+      - run: cargo test --workspace --locked --features ${{ env.FULL_TESTS_FEATURES }}
       - run: cargo test --locked -p entmoot --test campaign_harness -- --ignored
       - run: cargo test --locked -p entmoot-engine --test revision_receipts campaign_accounting -- --ignored
       - run: python scripts/check_release.py

@@ -271,7 +271,9 @@ fn digest(value: &Value, path: &Path) {
 }
 
 fn lookup_digest<'a>(digests: &'a Value, path: &Path, field: &str) -> &'a Value {
-    let digests = digests.as_object().unwrap_or_else(|| panic!("{field} object"));
+    let digests = digests
+        .as_object()
+        .unwrap_or_else(|| panic!("{field} object"));
     let key = path_key(path);
     if let Some(value) = digests.get(&key) {
         return value;
@@ -280,7 +282,9 @@ fn lookup_digest<'a>(digests: &'a Value, path: &Path, field: &str) -> &'a Value 
     for (candidate, value) in digests {
         let got = retained(Path::new(candidate));
         if got == wanted
-            || got.to_string_lossy().eq_ignore_ascii_case(&wanted.to_string_lossy())
+            || got
+                .to_string_lossy()
+                .eq_ignore_ascii_case(&wanted.to_string_lossy())
         {
             return value;
         }
@@ -453,14 +457,12 @@ fn go_named_types_tags_source_fences_and_test_scope() {
         .any(|r| r["symbol"].as_str().unwrap().ends_with(".Extra")
             || r["symbol"].as_str().unwrap().ends_with(".ExportedHelper")));
     digest(source_input_digest(&first["build_context"], &file), &file);
-    assert!(
-        lookup_digest(
-            &first["build_context"]["source_input_digests"],
-            &tagged,
-            "source_input_digests",
-        )
-        .is_string()
-    );
+    assert!(lookup_digest(
+        &first["build_context"]["source_input_digests"],
+        &tagged,
+        "source_input_digests",
+    )
+    .is_string());
     let closed = rows(&first["calls"])
         .iter()
         .find(|r| r["path"] == "api_test.go" && r["dispatch"]["kind"] == "closed")
