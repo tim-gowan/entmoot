@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 /// Wire schema id for [`AdapterProfile`].
 pub const ADAPTER_PROFILE_SCHEMA: &str = "entmoot.adapter_profile.v1";
 
-/// Relative path under a workspace `.entmoot/` directory.
+/// Relative path under a workspace's selected storage volume.
 pub const ADAPTER_PROFILE_FILE: &str = "adapter-profile.json";
 
 /// Obsolete filename from the pre-release native_profile layout (refuse; do not alias).
@@ -21,6 +21,8 @@ pub const OBSOLETE_NATIVE_PROFILE_FILE: &str = "native-profile.json";
 pub enum AdapterProfileSelection {
     /// Exclusive process environment variable was set.
     ProcessEnv,
+    /// Exclusive workspace or global configuration slot was set.
+    Config,
     /// Path recorded in this profile file.
     Profile,
     /// Catalog relative under adapters root / repo default.

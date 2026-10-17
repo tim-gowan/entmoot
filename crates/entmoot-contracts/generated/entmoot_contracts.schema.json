@@ -114,6 +114,11 @@
               "type": "string"
             },
             {
+              "const": "config",
+              "description": "Exclusive workspace or global configuration slot was set.",
+              "type": "string"
+            },
+            {
               "const": "profile",
               "description": "Path recorded in this profile file.",
               "type": "string"
@@ -223,6 +228,11 @@
             {
               "const": "process_env",
               "description": "Exclusive process environment variable was set.",
+              "type": "string"
+            },
+            {
+              "const": "config",
+              "description": "Exclusive workspace or global configuration slot was set.",
               "type": "string"
             },
             {
@@ -12721,6 +12731,43 @@
         "entity_kind"
       ],
       "title": "EntityRef",
+      "type": "object"
+    },
+    "EntmootConfig": {
+      "$id": "https://entmoot.dev/schemas/contracts/entmoot-contracts.v1.json?type=EntmootConfig",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "description": "Local operator configuration: volume pointer plus per-key env override slots.",
+      "properties": {
+        "env": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "description": "Per-key overrides. Empty string means unset (continue discovery).",
+          "type": "object"
+        },
+        "mode": {
+          "description": "`\"local\"` today; remote transport is rejected until implemented.",
+          "type": "string"
+        },
+        "schema": {
+          "description": "Schema id for this config document.",
+          "type": "string"
+        },
+        "volume": {
+          "description": "Absolute storage volume for this workspace. Empty/None → sibling `store/`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "schema",
+        "mode"
+      ],
+      "title": "EntmootConfig",
       "type": "object"
     },
     "EpistemicStatus": {

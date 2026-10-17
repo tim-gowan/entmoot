@@ -28,8 +28,28 @@ class NativeLaneTests(unittest.TestCase):
                 commands = sidecar_controls(env, ["tools/resolver-adapters/go/main.go"])
                 self.assertEqual(len(commands), 1)
                 self.assertIn("--include-ignored", commands[0][1], "ordinary controls must actually execute")
-                self.assertIn("entmoot/native-tests", commands[0][1])
+                command = commands[0][1]
+                features = set(command[command.index("--features") + 1].split(","))
+                self.assertLessEqual({"entmoot/native-tests", "entmoot/producer"}, features)
                 self.assertEqual(sidecar_controls({**env,"ENTMOOT_NATIVE_CHECK":"off"}, None), [])
+
+    def test_catalog_discovers_checkout_then_path_then_home(self):
+        from scripts.adapter_catalog import resolved_adapter
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkout = root / ".tmp/adapter-build/resolver-adapters/go/adapter.exe"
+            on_path = root / "bin/adapter.exe"
+            installed = root / "home/go/adapter.exe"
+            for path in (checkout, on_path, installed):
+                path.parent.mkdir(parents=True)
+                path.touch()
+            family = {"env":"ENTMOOT_GO_ADAPTER", "relative_artifacts":["go/adapter.exe"]}
+            environment = {"PATH":str(on_path.parent), "ENTMOOT_ADAPTERS_ROOT":str(root / "home")}
+            self.assertEqual(resolved_adapter(family, environment, root), checkout)
+            checkout.unlink()
+            self.assertEqual(resolved_adapter(family, environment, root), on_path)
+            on_path.unlink()
+            self.assertEqual(resolved_adapter(family, environment, root), installed)
     def test_native_lane_is_opt_in_or_preserves_an_existing_producer(self) -> None:
         from scripts.pre_commit_check import native_lane_enabled
         with TemporaryDirectory() as directory:
@@ -209,6 +229,16 @@ class MarkdownLinkCheckTests(unittest.TestCase):
 
             self.assertEqual(self.run_check(root), 1)
 
+    def test_excludes_local_adapter_data_but_checks_repository_docs(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            vendor = root / ".entmoot" / "toolchains"
+            vendor.mkdir(parents=True)
+            (vendor / "README.md").write_text("[upstream](missing.md)\n", encoding="utf-8")
+            self.assertEqual(self.run_check(root), 0)
+            (root / "README.md").write_text("[broken](missing.md)\n", encoding="utf-8")
+            self.assertEqual(self.run_check(root), 1)
+
     def test_excludes_isolated_python_dependencies_but_checks_eval_docs(self) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)
@@ -219,6 +249,21 @@ class MarkdownLinkCheckTests(unittest.TestCase):
             self.assertEqual(self.run_check(root), 0)
             (root / "evals" / "README.md").write_text("[broken](missing.md)\n", encoding="utf-8")
             self.assertEqual(self.run_check(root), 1)
+
+
+class ManifestScanTests(unittest.TestCase):
+    def test_excludes_local_adapter_manifests_but_checks_repository_manifests(self) -> None:
+        from scripts.pre_commit_check import check_banned_patterns
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            vendor = root / ".entmoot" / "sources"
+            vendor.mkdir(parents=True)
+            (vendor / "Cargo.toml").write_text('[dependencies]\nsha2 = "0.10"\n', encoding="utf-8")
+            with patch("scripts.pre_commit_check.ROOT", root), redirect_stdout(StringIO()), redirect_stderr(StringIO()):
+                self.assertEqual(check_banned_patterns(), 0)
+                (root / "Cargo.toml").write_text('[dependencies]\nsha2 = "0.10"\n', encoding="utf-8")
+                self.assertEqual(check_banned_patterns(), 1)
 
 
 class CrateBoundaryCheckTests(unittest.TestCase):

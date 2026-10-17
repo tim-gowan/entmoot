@@ -1,8 +1,9 @@
 # Local alpha operation and release
 
-Target: `tim-gowan/entmoot`, version `1.0.0-alpha.1`, five crates, v1 wire series.
-The repository is private with default branch `main`. This checkout is prepared
-for a clean copy into the sibling repository; copying, committing, pushing and
+Target: `tim-gowan/entmoot`, the workspace version in [Cargo.toml](../../Cargo.toml),
+five crates, v1 wire series. Confirm repository access and the target branch at
+handoff. Resolve [current qualification blockers](../../PLANNING.md#current-qualification-blockers)
+before preparing a clean copy; copying, committing, pushing and
 registry publication are separate operator steps. Local success is not a claim
 that GitHub CI, registry ownership or publication has succeeded.
 
@@ -14,9 +15,10 @@ one existing workspace knowledge repository with immutable publication views.
 No ordinary database or publication flags are necessary. `-C` selects the source.
 Durable state defaults to `~/.entmoot` (`--data-dir` / `ENTMOOT_DATA_DIR`
 overrides the home root). Source-root namespaces under that directory prevent two
-projects from sharing a current view. Analyzing a checkout never writes
-`<source>/.entmoot`. An existing broken pointer is an error, never silently
-replaced. Repeated reads reuse the current view; `init` refreshes explicitly and
+projects from sharing a current view. Structural publications and native artifacts
+use that selected volume; invalid configuration fails before choosing storage.
+An existing broken pointer is an error, never silently replaced. Repeated reads
+reuse the current view; `init` refreshes explicitly and
 `bind` adds native evidence.
 
 Advanced graph/publication overrides retain reproducible historical selection.
@@ -28,8 +30,9 @@ separate preparation step; on large sources it can delay MCP startup.
 A future remote location must be a transport at the local composition boundary,
 not a database path embedded in portable requests. It must preserve snapshot
 selection, source verification, producer isolation, atomic publication, history,
-authentication and bounded reads. URI locations are rejected today. No remote
-protocol or universal subject/version catalog is claimed.
+authentication and bounded reads. Reads and mutations reject URI locations.
+No remote protocol or universal
+subject/version catalog is claimed.
 
 `boundaries` in CLI/MCP selects exact callee syntax or `*` patterns, optional path,
 normalized outcome/reason and build context. Distinct sites and attributed
@@ -53,9 +56,11 @@ remain unestablished without matching closure evidence.
   Human terminal rendering and stable JSON preserve bounded-query semantics.
 - Packages have exact prerelease dependencies, READMEs/licenses and package-local
   composed fingerprints. Installed adapter defaults never refer to build-machine
-  paths. Explicit adapter paths remain exclusive; invalid overrides fail visibly.
-- Structural CI excludes the explicitly provisioned `native-tests` target. Native
-  jobs run dispatch and package-compatibility controls as well as adapter tests.
+  paths. Explicit process adapter overrides remain exclusive, including empty
+  values; invalid paths fail visibly.
+- Structural CI excludes suites gated by the `native-tests` feature. Native jobs
+  select dispatch and package-compatibility controls as well as adapter tests.
+  Preflight discovers profiles through init's returned publication/store locator.
 
 ## Upgrade and recovery
 
@@ -96,26 +101,45 @@ failures and unsupported constructs remain different observations.
    target/debug/entmoot --mcp target/debug/entmoot-mcp --out .tmp/staging` (add `.exe`
    on Windows). Existing Markdown owners, actual CLI help, actual MCP input schemas
    and Rust JSON Schema form versioned docs; executable examples run on clean roots.
-6. Copy only the clean export payload to the sibling repository, commit and push.
-   Inspect the exact commit's structural and native CI plus docs results. Configure
-   the protected `crates-io` environment and tag `v1.0.0-alpha.1` only when ready.
+6. Commit and push the validated candidate. Configure the `crates-io` environment
+   and tag `v<workspace-version>` only when ready. `release.yml` gates publication
+   on that tag's structural, native and docs jobs; inspect their actual results
+   and the subsequent registry-install checks before declaring a release.
+
+New crate names require an initial API-token publication. Configure a short-lived
+`CARGO_REGISTRY_TOKEN` in `crates-io` with publish-new/publish-update access to the
+five workspace names, and set `CRATES_IO_TRUSTED_PUBLISHING=false` for bootstrap.
+Once all crates exist, configure each crate's Trusted Publishing for
+`tim-gowan/entmoot`, `release.yml`, environment `crates-io`; enable the variable
+and revoke/remove the bootstrap token. OIDC cannot create new crate names.
+
+Docs called by a release inherit its push event; supplied inputs select release
+output and Pages upload. Direct docs push/PR runs stage only. Pages deployment
+also requires an Actions-based Pages site and `PAGES_ENABLED=true`; a private
+repository needs a supporting GitHub plan. A successful artifact build alone
+does not mean the site was deployed.
 
 ### Local qualification and copy handoff (2026-10-16)
 
-The final source passes 1,553 workspace tests/doctests, eight compiler-free
+This historical handoff report recorded the following results without a source
+commit pin. It is not current qualification: the subsequent audit reproduced
+storage-test failures and a broken native preflight (see PLANNING above).
+
+The handoff reported 1,553 passing workspace tests/doctests, eight compiler-free
 campaign controls, one revision-accounting control and 81 Python harness tests.
-Provisioned native lanes pass 101 additional controls, including the five-case
-Python compatibility test, historical Rust/TypeScript and native revision joins.
-Two platform-specific clang VFS / javac binary-classpath controls remain Linux CI
-gates; they were not qualified on this Windows host. Other ignored tests retain
-their explicit provisioning requirements.
+Provisioned native lanes reportedly passed 101 additional controls, including the
+five-case Python compatibility test, historical Rust/TypeScript and native revision joins.
+At that time, Clang VFS / javac binary-classpath controls were only qualified by
+the Linux CI lane. Subsequent local provisioning validated both on Windows and
+removed those platform ignores. Other ignored tests retain their explicit
+provisioning requirements.
 
 Formatting, strict structural and producer Clippy, generated contracts/inputs,
 test ownership, Dylint, licenses, advisories, unused dependencies and workflow
-syntax checks pass locally. Extracted default and producer packages both pass
-their smoke checks with identical checkout/package fingerprints. Generated
-docs contain 17 owner pages, 83 actual CLI help sections and 22 MCP tool schemas;
-their fresh-workspace examples and strict Rust API documentation build pass.
+syntax checks were reported passing locally. Extracted default and producer
+packages passed their smoke checks with identical checkout/package fingerprints.
+The report counted 17 owner pages, 83 actual CLI help sections and 22 MCP tool
+schemas; fresh-workspace examples and strict Rust API documentation reportedly passed.
 
 The clean source export contains tracked and non-ignored source files, including
 dot directories such as `.github`, `.cargo` and `.agents`. It excludes `.git`,
@@ -178,7 +202,8 @@ issues a temporary credential and revokes it after the job.
 
 ## Fresh alpha evidence (2026-10-16)
 
-Four fresh, pinned publications use one final implementation: contract
+These four recorded publications used one implementation, identified below.
+They do not qualify a later source revision or repair the current blockers: contract
 `60ef27792c8a30dd3a36eeeaa00fdd81104f69a4cacc69085d03dfef37cfd662`, derivation
 `f818d53bf77fc626081d19603b7254b229094086f8c98702b563bf05454da0dc` (BLAKE3).
 Historical stores were preserved. The chi subject is now explicitly

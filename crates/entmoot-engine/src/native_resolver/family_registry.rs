@@ -1,4 +1,4 @@
-//! Family catalog + adapter binary discovery (env/config exclusive, then PATH/home).
+//! Family catalog and discovery: exclusive env/config override, checkout, PATH, home.
 
 use crate::workspace::{
     canonicalize_override_path, default_entmoot_home, resolve_entmoot_override,
@@ -116,7 +116,8 @@ fn checkout_program_roots(checkout: &Path) -> [PathBuf; 2] {
 /// Candidate paths for an adapter env var + relative artifact list.
 ///
 /// Order: exclusive override (process/config) → analyzed checkout conventional
-/// paths → home/`ENTMOOT_ADAPTERS_ROOT` adapters. Override paths are exclusive.
+/// paths → PATH basenames → home/`ENTMOOT_ADAPTERS_ROOT` adapters.
+/// Process overrides are exclusive even when empty or invalid; empty config slots are unset.
 pub fn adapter_candidate_paths(
     env_var: &str,
     relative_artifacts: &[&str],
@@ -160,18 +161,17 @@ pub fn adapter_candidate_paths_for(
             out.push(build.join(relative));
         }
     }
-    // Home / ENTMOOT_ADAPTERS_ROOT.
-    let root = adapters_root(source_root);
-    for relative in relative_artifacts {
-        out.push(root.join(relative));
-    }
-    // PATH basenames (installed CLI names) — last among defaults.
+    // Installed CLI names take precedence over the home fallback.
     for relative in relative_artifacts {
         if let Some(name) = Path::new(relative).file_name() {
             if let Some(path) = path_lookup(name) {
                 out.push(path);
             }
         }
+    }
+    let root = adapters_root(source_root);
+    for relative in relative_artifacts {
+        out.push(root.join(relative));
     }
     out
 }
@@ -221,7 +221,7 @@ pub fn resolve_sidecar_family(id: &str) -> Option<PathBuf> {
     resolve_adapter_binary(family.env, family.relative_artifacts, family.repo_relative)
 }
 
-/// True when the exclusive env/config override is set (even if the path is missing).
+/// True when an exclusive process/config override exists, even for an invalid path.
 pub fn adapter_env_configured(env_var: &str) -> bool {
     resolve_entmoot_override(env_var, None).is_some()
 }
@@ -258,3 +258,117 @@ pub fn repo_join(relative: impl AsRef<Path>) -> PathBuf {
 
 /// Deprecated alias kept for call sites expecting the old constant name in messages.
 pub const DEFAULT_ADAPTERS_SUBDIR: &str = HOME_ADAPTERS_SUBDIR;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::{fs, process::Command};
+
+    #[test]
+    fn discovery_orders_defaults_and_keeps_process_overrides_exclusive() {
+        const TEST: &str = "native_resolver::family_registry::tests::discovery_orders_defaults_and_keeps_process_overrides_exclusive";
+        const ENV: &str = "ENTMOOT_GO_ADAPTER";
+        const RELATIVES: &[&str] = &["go/entmoot-go-resolver"];
+        if let Ok(expected) = std::env::var("ENTMOOT_DISCOVERY_EXPECTED") {
+            let source = std::env::current_dir().unwrap();
+            let expected = (!expected.is_empty()).then(|| PathBuf::from(expected));
+            assert_eq!(
+                resolve_adapter_binary_for(ENV, RELATIVES, false, Some(&source)),
+                expected
+            );
+            assert_eq!(
+                super::super::adapter_profile::with_workspace_root(&source, || {
+                    super::super::adapter_profile::resolve_with_profile(ENV, RELATIVES, false)
+                }),
+                expected
+            );
+            let profile = super::super::adapter_profile::discover(&source, Some(&["go".into()]));
+            let go = profile
+                .families
+                .iter()
+                .find(|row| row.family == "go")
+                .unwrap();
+            assert_eq!(
+                go.availability == entmoot_contracts::AdapterFamilyAvailability::Available,
+                expected.is_some(),
+                "{go:?}"
+            );
+            if let Some(expected) = expected {
+                assert_eq!(
+                    fs::canonicalize(go.path.as_ref().unwrap()).unwrap(),
+                    fs::canonicalize(expected).unwrap()
+                );
+            }
+            if std::env::var_os(ENV).is_some() {
+                assert_eq!(
+                    go.selection,
+                    entmoot_contracts::AdapterProfileSelection::ProcessEnv
+                );
+            } else if crate::workspace::entmoot_override_configured(ENV, Some(&source)) {
+                assert_eq!(
+                    go.selection,
+                    entmoot_contracts::AdapterProfileSelection::Config
+                );
+            }
+            return;
+        }
+        let fixture = tempfile::tempdir().unwrap();
+        let source = fixture.path().join("source");
+        let data = fixture.path().join("data");
+        let bin = fixture.path().join("bin");
+        let home = fixture.path().join("adapters");
+        let checkout = source.join(".tmp/adapter-build/resolver-adapters/go/entmoot-go-resolver");
+        let on_path = bin.join("entmoot-go-resolver");
+        let installed = home.join("go/entmoot-go-resolver");
+        let explicit = fixture.path().join("explicit-adapter");
+        for path in [&checkout, &on_path, &installed, &explicit] {
+            fs::create_dir_all(path.parent().unwrap()).unwrap();
+            fs::write(path, "authored discovery fixture; never executed").unwrap();
+        }
+        let check = |selection: Option<&Path>, expected: Option<&Path>| {
+            let mut child = Command::new(std::env::current_exe().unwrap());
+            child
+                .args(["--exact", TEST])
+                .current_dir(&source)
+                .env("ENTMOOT_DATA_DIR", &data)
+                .env(ADAPTERS_ROOT_ENV, &home)
+                .env("PATH", &bin)
+                .env(
+                    "ENTMOOT_DISCOVERY_EXPECTED",
+                    expected.unwrap_or(Path::new("")),
+                )
+                .env_remove(ENV);
+            if let Some(value) = selection {
+                child.env(ENV, value);
+            }
+            let output = child.output().unwrap();
+            assert!(
+                output.status.success(),
+                "selection={selection:?}, expected={expected:?}\n{}\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+        };
+        check(None, Some(&checkout));
+        fs::remove_file(&checkout).unwrap();
+        check(None, Some(&on_path));
+        fs::remove_file(&on_path).unwrap();
+        check(None, Some(&installed));
+        let namespace = crate::workspace::workspace_namespace(&source, &data);
+        fs::create_dir_all(&namespace).unwrap();
+        fs::write(
+            namespace.join("config.json"),
+            serde_json::to_vec(&serde_json::json!({
+                "schema":"entmoot.config.v1", "mode":"local", "env":{(ENV): explicit}
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+        let explicit = fs::canonicalize(&explicit).unwrap();
+        check(None, Some(&explicit));
+        let installed = fs::canonicalize(&installed).unwrap();
+        check(Some(&installed), Some(&installed));
+        check(Some(&fixture.path().join("missing")), None);
+        check(Some(Path::new("")), None);
+    }
+}

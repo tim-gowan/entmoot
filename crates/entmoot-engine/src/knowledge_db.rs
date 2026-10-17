@@ -442,7 +442,10 @@ impl SqliteKnowledgeRepository {
             std::fs::create_dir_all(parent)?;
         }
         let lease = crate::storage_lease::shared(path, true)?;
-        let mut repository = Self::from_connection_view(Connection::open(path)?, view)?;
+        let mut repository = Self::from_connection_view(
+            Connection::open(crate::sqlite_startup::file_path(path))?,
+            view,
+        )?;
         repository.lease = Some(lease);
         Ok(repository)
     }
@@ -483,7 +486,10 @@ impl SqliteKnowledgeRepository {
     pub fn open_view_read_only(path: &Path, view: &str) -> Result<Self, KnowledgeRepositoryError> {
         // Version preflight precedes the lease so old layouts fail with a loud
         // schema error instead of an incidental missing sidecar error.
-        let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+        let connection = Connection::open_with_flags(
+            crate::sqlite_startup::file_path(path),
+            OpenFlags::SQLITE_OPEN_READ_ONLY,
+        )?;
         connection.busy_timeout(std::time::Duration::from_secs(5))?;
         let version = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
         if version != STORAGE_SCHEMA_VERSION {

@@ -25,12 +25,17 @@ producer = ["entmoot-engine/resolved-rust-analyzer", "entmoot-engine/resolved-ox
 [[test]]
 name = "adapter_controls"
 path = "tests/adapter_controls.rs"
-required-features = ["native-tests"]
+required-features = ["native-tests", "producer"]
 
 [[test]]
 name = "program_adapters"
 path = "tests/program_adapters.rs"
 required-features = ["native-tests"]
+
+[[test]]
+name = "producer_cli"
+path = "tests/producer_cli.rs"
+required-features = ["producer"]
 
 [dependencies]
 entmoot-core = { version = "=0.0.1-alpha", path = "../entmoot-core" }

@@ -34,7 +34,8 @@ if str(ROOT) not in sys.path:
 # Import/Sync AST policy lives in tools/entmoot-lints (cargo dylint).
 BANNED_DEP_NAMES = ("sha2", "sha256")
 
-SKIP_DIRS = {".git", ".tmp", ".venv", "venv", "node_modules", "target", "archive"}
+# Local data roots may contain installed tools and third-party adapter sources.
+SKIP_DIRS = {".git", ".tmp", ".entmoot", ".venv", "venv", "node_modules", "target", "archive"}
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]*\]\((?P<target>[^)]+)\)")
 CANONICAL_CRATES = {
     "entmoot-contracts",
@@ -358,6 +359,7 @@ def run(cmd: list[str], label: str) -> int:
 
 def sidecar_controls(environment: dict[str, str], paths: list[str] | None) -> list[tuple[str, list[str]]]:
     from scripts.adapter_catalog import load_catalog, resolved_adapter, control_runtime_available
+    from scripts.test_ownership import CargoTarget, cargo_commands_for_targets
     if environment.get("ENTMOOT_NATIVE_CHECK") == "off":
         return []
     shared = ("crates/entmoot-engine/src/native_resolver/producers/sidecar.rs",
@@ -376,7 +378,8 @@ def sidecar_controls(environment: dict[str, str], paths: list[str] | None) -> li
         if resolved_adapter(family, environment) is None or not control_runtime_available(family, environment):
             print(f"pre-commit: {family['id']} control unavailable (adapter/runtime absent or exclusive override invalid)")
             continue
-        selected.append((family["id"], ["cargo", "test", "-p", "entmoot", "--features", "entmoot/native-tests", "--test", control["target"], control["filter"], "--", "--include-ignored", "--exact"]))
+        command = cargo_commands_for_targets([CargoTarget("entmoot", control["target"])])[0]
+        selected.append((family["id"], command + [control["filter"], "--", "--include-ignored", "--exact"]))
     return selected
 
 
@@ -494,7 +497,7 @@ def main() -> int:
         ("pre-commit Python tests", [sys.executable, "-m", "unittest",
             "scripts.test_pr_structural_diff", "scripts.test_test_ownership",
             "scripts.test_propose_test_ownership", "scripts.test_pre_commit_check",
-            "scripts.test_normalize_sarif_repo_paths"]),
+            "scripts.test_normalize_sarif_repo_paths", "scripts.test_docs_workflow"]),
         ("cargo fmt", ["cargo", "fmt", "--", "--check"]),
     ):
         code = run(cmd, label)

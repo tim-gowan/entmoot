@@ -1,6 +1,6 @@
-# Sole CD path: tag v* → CI + native → GitHub Release + crates.io → docs (shared with CI).
+# Sole CD path: tag v* → CI + native + docs → GitHub Release + crates.io → Pages.
 # Configure crates.io Trusted Publishing against this workflow and environment `crates-io`.
-# Docs run after successful publish; CI docs use .tmp/staging via docs.yml defaults.
+# Docs must build before publishing; optional Pages deployment follows publication.
 name: Release
 on:
   push:
@@ -21,9 +21,16 @@ jobs:
     uses: ./.github/workflows/ci.yml
   native:
     uses: ./.github/workflows/native.yml
+  docs:
+    name: Documentation qualification
+    uses: ./.github/workflows/docs.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
   publish:
     name: GitHub Release and crates.io
-    needs: [ci, native]
+    needs: [ci, native, docs]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: crates-io
@@ -94,8 +101,9 @@ jobs:
         run: python3 scripts/publish_release.py
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token || secrets.CARGO_REGISTRY_TOKEN }}
-  docs:
+  deploy_docs:
     name: Documentation (post-publish)
+    if: vars.PAGES_ENABLED == 'true'
     needs: [publish]
     uses: ./.github/workflows/docs.yml
     permissions:

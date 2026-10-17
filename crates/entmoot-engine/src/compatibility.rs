@@ -30,7 +30,9 @@ pub fn publication_input(
     path: &Path,
 ) -> Result<(PathBuf, Option<PathBuf>, Option<PathBuf>), QueryServiceError> {
     let path = if path.is_dir() {
-        let pointer = crate::workspace::storage_directory(path).join("current.json");
+        let pointer = crate::workspace::storage_directory(path)
+            .map_err(invalid)?
+            .join("current.json");
         if pointer.is_file() {
             pointer
         } else {
@@ -75,11 +77,14 @@ pub fn load_providers(
 pub fn discover_dependencies(
     root: &Path,
 ) -> Result<Vec<(PathBuf, Option<PathBuf>)>, QueryServiceError> {
-    let deps = crate::workspace::storage_directory(root).join("deps");
+    let deps = crate::workspace::storage_directory(root)
+        .map_err(invalid)?
+        .join("deps");
     if !deps.exists() {
         return Ok(Vec::new());
     }
     let canonical_root = crate::workspace::storage_directory(root)
+        .map_err(invalid)?
         .canonicalize()
         .map_err(invalid)?;
     let canonical_deps = deps.canonicalize().map_err(invalid)?;
@@ -101,7 +106,7 @@ pub fn discover_dependencies(
         if !directory.starts_with(&canonical_deps) {
             return Err(invalid("dependency directory escapes discovery root"));
         }
-        let namespace = crate::workspace::storage_directory(&directory);
+        let namespace = crate::workspace::storage_directory(&directory).map_err(invalid)?;
         let pointer = if namespace.join("current.json").is_file() {
             namespace.join("current.json")
         } else {

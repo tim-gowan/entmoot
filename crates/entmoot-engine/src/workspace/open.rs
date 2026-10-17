@@ -16,7 +16,7 @@ pub struct PublicationOpenSpec {
     pub source_root: Option<PathBuf>,
     pub compare_graph: Option<PathBuf>,
     pub require_source: bool,
-    /// Explicit provider graphs/pointers/checkouts; empty discovers `.entmoot/deps`.
+    /// Explicit provider graphs/pointers/checkouts; empty discovers the workspace volume's `deps/`.
     pub providers: Vec<PathBuf>,
     /// Workspace root for provider discovery when `providers` is empty.
     /// Defaults to effective source_root, else process cwd, at open time.

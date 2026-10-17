@@ -353,9 +353,13 @@ mod tests {
             },
         )
         .unwrap();
-        let pointer = root.path().join(".entmoot/current.json");
+        let pointer = crate::workspace::storage_directory(root.path())
+            .unwrap()
+            .join("current.json");
         let before = fs::read(&pointer).unwrap();
-        let ledger = root.path().join(".entmoot/applicability.sqlite3");
+        let ledger = crate::workspace::storage_directory(root.path())
+            .unwrap()
+            .join("applicability.sqlite3");
         let package = create_package(base.publication, head.publication, Some(&ledger)).unwrap();
         assert_eq!(fs::read(&pointer).unwrap(), before);
         assert!(ledger.is_file());
@@ -369,7 +373,9 @@ mod tests {
                 .revalidation
                 .inputs_changed
         );
-        let path = root.path().join(".entmoot/impact.json");
+        let path = crate::workspace::storage_directory(root.path())
+            .unwrap()
+            .join("impact.json");
         write_json(&path, &package).unwrap();
         let plan = bind_from_package(
             &path,

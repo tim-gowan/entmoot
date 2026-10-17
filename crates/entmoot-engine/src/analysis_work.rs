@@ -282,13 +282,15 @@ pub struct SqliteAnalysisWorkQueue {
 
 impl SqliteAnalysisWorkQueue {
     pub fn open(path: &Path) -> Result<Self, AnalysisWorkError> {
-        Self::from_connection(Connection::open(path)?)
+        Self::from_connection(Connection::open(crate::sqlite_startup::file_path(path))?)
     }
 
     /// Read existing work without initializing or modifying a queue.
     pub fn open_read_only(path: &Path) -> Result<Self, AnalysisWorkError> {
-        let connection =
-            Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+        let connection = Connection::open_with_flags(
+            crate::sqlite_startup::file_path(path),
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
+        )?;
         connection.busy_timeout(std::time::Duration::from_secs(5))?;
         connection.prepare("SELECT work_id FROM analysis_work_items LIMIT 0")?;
         Ok(Self { connection })
@@ -447,9 +449,17 @@ mod tests {
     #[test]
     fn read_only_queue_never_creates_or_changes_storage() {
         let directory = tempfile::tempdir().unwrap();
-        let path = directory.path().join("queue.sqlite3");
+        let mut parent = directory.path().to_path_buf();
+        while parent.as_os_str().len() < 280 {
+            parent.push("nested-queue-storage");
+        }
+        let path = parent.join("queue.sqlite3");
         assert!(SqliteAnalysisWorkQueue::open_read_only(&path).is_err());
-        assert!(!path.exists());
+        assert!(
+            !parent.exists(),
+            "read-only open created missing directories"
+        );
+        std::fs::create_dir_all(&parent).unwrap();
         let item = {
             let mut queue = SqliteAnalysisWorkQueue::open(&path).unwrap();
             queue.enqueue(decision()).unwrap()

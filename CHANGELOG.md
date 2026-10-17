@@ -1,5 +1,64 @@
 # Changelog
 
+## 2026-10-16: Release documentation workflow
+
+- Honor reusable docs inputs when the caller event is a tag push. Direct push/PR
+  runs still stage only; explicit false inputs remain false. Exercise the actual
+  workflow parameter script in local hooks and repository CI.
+- Require documentation qualification before registry publication; deploy Pages
+  after publication only when the repository has enabled it.
+
+## 2026-10-16: Local adapter qualification repairs
+
+- Preserve atomic artifact, JSON and ledger publication under deeply nested
+  Windows data roots, retaining no-clobber and corruption checks. Resolve the
+  same paths for SQLite repository, maintenance and queue readers/writers.
+- Keep Roslyn project-load failures as invalid environments; do not substitute
+  successful ad-hoc evidence for a failed MSBuild compilation scope.
+- Run Clang VFS and Java binary-classpath controls in both native CI platforms,
+  removing obsolete host-specific ignores. Add malformed-project coverage.
+- Exclude local `.entmoot` tools/data from repository Markdown and dependency
+  policy scans, with controls that still reject defects in repository sources.
+- Resolve Program test tools through shared adapter discovery, including relocated
+  adapter roots, without selecting a different provider for default CLI fixtures.
+- Prune hidden local data and scratch trees from Go module discovery while
+  retaining visible nested modules and explicitly selected roots.
+- Select a run-owned data volume explicitly for revision campaigns, preserving
+  analyzed checkouts and existing local data across pauses and resumed reads.
+- Add the optional local maintainer-rule entry point and correct selected-volume
+  adapter-profile and release procedures. Portable storage defaults are unchanged.
+
+## 2026-10-16: Storage and test-qualification repairs
+
+- Archive native evidence in the publication's selected volume and retain readable
+  detail after restart/rebind, including historical views and relocated storage.
+- Make storage selection return configuration errors; reject malformed/remote
+  global and workspace config without fallback publication. Apply retention
+  budgets to explicit database/view writes regardless of volume directory name.
+- Restore selected-volume syntax-cache lookup; migrate obsolete path controls and
+  native CI discovery, preserving lock, corruption, recovery and source fences.
+- Isolate environment-sensitive location/profile tests in child processes and
+  keep CLI source/data fixtures in one cleanup lifetime. Keep mock-adapter
+  synchronization outside analyzed source and assert the intended failure reason.
+- Select Kubernetes fixture resources by kind and name so same-named Services
+  cannot replace Deployments or StatefulSets through hash-dependent ordering.
+- Derive native test features from Cargo target requirements, including installed
+  sidecar controls. Match dispatch categories and details exactly; optional target
+  expectations reject unexpected or duplicate callees.
+- Align checkout/PATH/home precedence in runtime and maintainer discovery. Empty
+  process overrides stay exclusive; profiles honor config-selected adapters and
+  distinguish them from process selections. Live sidecar qualification remains
+  an explicit native CI requirement.
+
+## 2026-10-16: Maintainer guidance and documentation audit
+
+- Map changes to identity, storage, publication, frontend and test-lane checks in
+  AGENTS; clarify fixture isolation, independent assertions and evidence limits.
+- Correct storage/discovery/help comments, native feature commands and release
+  version examples. Mark previous qualification reports as historical and record
+  reproduced implementation/test blockers in PLANNING. These are documentation
+  corrections, not fixes for the runtime defects or renewed release qualification.
+
 ## 2026-10-16: Docs after publish; parameterized pipelines
 
 - Move CD docs to after successful crates.io publish; CI/PR docs stage under
@@ -14,11 +73,12 @@
 - Add dispatch-only `demo.yml` plus `evals/demo/getrandom-structural.json`
   (pinned `getrandom-0.1.16`, structural-only).
 
-## 1.0.0-alpha.1 — local candidate (2026-10-16)
+## Local candidate preparation (2026-10-16)
 
 - Default durable state to `~/.entmoot` (workspaces, `config.json` volume +
-  `ENTMOOT_*` slots, adapters). Analyzing a source never writes `<source>/.entmoot`.
-  Adapter discovery: process/config overrides → checkout → PATH → home adapters.
+  `ENTMOOT_*` slots, adapters). Native artifact placement remains a known gap.
+  Current discovery: nonempty process/config overrides → checkout → home → PATH;
+  PLANNING tracks the discrepancy from the intended precedence.
 - Prepare and reuse local workspace storage automatically in CLI/MCP; optional
   `ENTMOOT_DATA_DIR` / `--data-dir` overrides the home root. Native production remains explicit.
 - Add find/inspect/read-source/callers/callees/boundaries CLI verbs, shared boundary

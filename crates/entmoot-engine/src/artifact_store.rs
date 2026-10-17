@@ -88,12 +88,12 @@ impl FilesystemArtifactObjectRepository {
             self.verify_existing(&path, digest)?;
             return Ok(path);
         }
-        let parent = path.parent().unwrap_or(&self.root);
-        std::fs::create_dir_all(parent)?;
+        let destination = crate::atomic_write::publication_path(&path)?;
+        let parent = destination.parent().unwrap_or(&self.root);
         let mut temporary = NamedTempFile::new_in(parent)?;
         temporary.write_all(bytes)?;
         temporary.as_file_mut().sync_all()?;
-        match temporary.persist_noclobber(&path) {
+        match temporary.persist_noclobber(&destination) {
             Ok(_) => Ok(path),
             Err(error) if error.error.kind() == std::io::ErrorKind::AlreadyExists => {
                 self.verify_existing(&path, digest)?;
@@ -175,6 +175,30 @@ mod tests {
         std::fs::write(&first, b"corrupt").unwrap();
         assert!(matches!(
             repository.get(&digest),
+            Err(ArtifactStoreError::CorruptExistingObject { .. })
+        ));
+    }
+
+    #[test]
+    fn deep_data_roots_preserve_object_publication_and_reload() {
+        let directory = tempfile::tempdir().unwrap();
+        let mut root = directory.path().to_path_buf();
+        // The object name adds a full digest beneath a user-selected data root.
+        // Exercise paths beyond Win32 MAX_PATH without oversized components.
+        while root.as_os_str().len() < 280 {
+            root.push("nested-workspace-data");
+        }
+        let repository = FilesystemArtifactObjectRepository::new(&root);
+        let bytes = b"native detail in a deeply nested data root";
+        let digest = ContentDigest::parse(entmoot_contracts::blake3_hex(bytes)).unwrap();
+        let first = repository.put(&digest, bytes).unwrap();
+        assert_eq!(std::fs::read(&first).unwrap(), bytes);
+        let reopened = FilesystemArtifactObjectRepository::new(&root);
+        assert_eq!(reopened.put(&digest, bytes).unwrap(), first);
+        assert_eq!(reopened.get(&digest).unwrap(), bytes);
+        std::fs::write(&first, b"corrupt").unwrap();
+        assert!(matches!(
+            reopened.put(&digest, bytes),
             Err(ArtifactStoreError::CorruptExistingObject { .. })
         ));
     }

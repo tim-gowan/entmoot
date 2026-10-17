@@ -212,9 +212,11 @@ internal static class WorkspaceHost
         catch (Exception ex)
         {
             workspace?.Dispose();
-            diagnostics.Add($"MSBuild workspace load failed: {ex.Message}");
-            diagnostics.Add("falling back to adhoc C# parse after MSBuild failure");
-            return LoadAdhoc(root, buildContext, diagnostics);
+            diagnostics.Add($"MSBuild workspace load failed ({ex.GetType().Name}): {ex.Message}");
+            // A discovered project owns compilation scope and references. An
+            // adhoc parse cannot stand in for failed project evaluation.
+            return Failed(diagnostics, buildContext,
+                new[] { projects.Solution, projects.Project }.OfType<string>().ToArray());
         }
     }
 

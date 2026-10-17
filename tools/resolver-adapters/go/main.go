@@ -166,6 +166,11 @@ func discoverModuleRoots(root string) ([]string, error) {
 		}
 		if entry.IsDir() {
 			name := entry.Name()
+			// Local data/tool caches and scratch trees are not module roots.
+			// An explicitly selected root may itself have a dot-prefixed name.
+			if path != root && strings.HasPrefix(name, ".") {
+				return filepath.SkipDir
+			}
 			// Nested example modules often pull unpublished deps under GOPROXY=off;
 			// inventory the primary module tree, not demo apps.
 			if name == "vendor" || name == "node_modules" || name == ".git" || name == "testdata" ||

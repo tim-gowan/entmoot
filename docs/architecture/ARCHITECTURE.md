@@ -64,9 +64,12 @@ Query-service reads do not schedule native producers or mutate knowledge.
 Frontends may prepare a missing compiler-free structural publication on first use;
 existing views are reused until explicit init/bind. `-C` selects the source root.
 Optional `--data-dir` / `ENTMOOT_DATA_DIR` maps canonical roots to isolated local
-namespaces. Database paths do not enter portable queries. Remote locations are
-rejected; a future transport must preserve authentication, atomic publication,
-source verification, history and producer isolation.
+namespaces. Database paths do not enter portable queries. Remote locations must
+be rejected. Shared checked location helpers select the volume for publication,
+native objects, profiles, locks and retention; malformed configuration cannot
+redirect a read or write to a default volume. A future transport
+must preserve authentication, atomic publication, source verification, history
+and producer isolation.
 
 Call boundaries expose source spelling/spans and distinct-site counts alongside
 attributed native observations. Native types are never inferred from callee text.

@@ -17,6 +17,7 @@ Run Cargo process controls with:
 ```text
 python -m pip install -r evals/harness/requirements.txt
 cargo test -p entmoot --test campaign_harness -- --ignored
+cargo test -p entmoot --features producer,native-tests --test campaign_harness revision_campaign_joins_actual_occurrences_and_preserves_unconsumed_frontiers -- --exact --ignored
 cargo test -p entmoot-engine --test revision_receipts campaign_accounting -- --ignored
 ```
 

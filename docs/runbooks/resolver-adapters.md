@@ -19,9 +19,9 @@ including TypeScript 7's lack of a compiler API.
 
 Catalog (paths + env): [`tools/resolver-adapters/catalog.toml`](../../tools/resolver-adapters/catalog.toml).
 Native floors (pins + language surfaces): [`tools/resolver-adapters/floors.toml`](../../tools/resolver-adapters/floors.toml).
-Readiness: `entmoot status` (home-scoped adapter profile after `init`).
-Maintainer terms: [AGENTS glossary](../../AGENTS.md#maintainer-glossary).
-Bind ranking: [`RESOLVER_WORKFLOW.md`](../architecture/ARCHITECTURE.md) §5–§6.
+Readiness: `entmoot status` (adapter profile in the selected workspace volume after `init`).
+Maintainer terms: [AGENTS vocabulary](../../AGENTS.md#native-tools-and-vocabulary).
+Bind/canon ownership: [architecture](../architecture/ARCHITECTURE.md#canon-and-clone-operations).
 
 Java family id is `java` / `ENTMOOT_JAVA_ADAPTER` (javac Trees only).
 Operators use `entmoot init`; the hidden `index` command is a low-level structural write.
@@ -65,10 +65,17 @@ entmoot status
 entmoot bind
 ```
 
-`init` writes the home-scoped adapter profile from discovery (catalog /
+`init` writes the selected-volume adapter profile from discovery (catalog /
 `ENTMOOT_ADAPTERS_ROOT` / process overrides). `bind` requires native for inventory
 languages by default; use `--structural-only` to waive. Optional shell exports:
 [`.env.example`](../../.env.example).
+
+For a sandbox-accessible local installation, select a gitignored output with the
+builders' `--out` flags and pass an explicit `--data-dir` / `ENTMOOT_DATA_DIR`.
+Keep caches and fixture TEMP writable, outside analyzed source; Cargo fixtures
+inside this checkout need the workspace-excluded `.tmp/` directory. File access
+does not establish runtime permission: validate native controls in the actual
+sandbox, including [Roslyn's MSBuild communication requirement](../../tools/resolver-adapters/roslyn/README.md#request).
 
 Docker Go (`ENTMOOT_GO_VIA_DOCKER=1`) and Curl CompDB Docker helpers remain
 **optional overrides**, not the default path.
@@ -104,19 +111,28 @@ Directories are pruned before reading; coverage records the excluded scope.
 Ancestor and machine-global ignore settings do not change an explicitly selected
 root. Ignore files remain snapshot inputs so policy edits invalidate the view.
 
+Discovery first honors process or nonempty config overrides, then a recorded
+profile path if its file is present, before searching the default candidates below.
+Init refreshes readiness; it does not download or qualify an adapter.
+
 | Step | Behavior |
 |------|----------|
-| Process `ENTMOOT_*` set | Exclusive path (canonicalize; relative → CWD); missing → hard `invalid_environment` (no fallthrough) |
+| Process `ENTMOOT_*` when set | Exclusive path (canonicalize; relative → CWD); empty/missing → `invalid_environment` (no fallthrough) |
 | else workspace/global `config.json` `env` slot | Same exclusive rules when non-empty |
+| else recorded profile | Existing adapter path for this workspace |
 | else analyzed checkout | Conventional `.tmp/adapter-build/...` under the checkout |
 | else PATH basename | Installed CLI names when present |
 | else `ENTMOOT_ADAPTERS_ROOT` / `~/.entmoot/adapters/` | Catalog relatives for sidecars and programs |
 
+Readiness distinguishes process and configuration selections. Both use the same
+exclusive path as runtime resolution, including invalid choices.
+
 When multiple host tool versions exist, selection follows ecosystem priority
 (`JAVA_HOME`, `DOTNET_ROOT`, active venv, rustup default, then PATH).
 
-`bind` requires native by default; incomplete `semantic_status` fails the bind.
-Use `--structural-only` to skip native producers.
+`bind` requires native by default; useful partial dispatch evidence can succeed.
+Skipped/failed production, invalid environments and exhausted budgets fail
+required-native bind. Use `--structural-only` to skip native producers.
 
 Native production defaults to a one-hour wall budget **per producer** across
 `init`, `bind` and standalone producer commands. Use `--timeout-seconds` for a
@@ -151,8 +167,9 @@ entmoot status
 ```
 
 Durable state defaults to `~/.entmoot/workspaces/<source-key>/` with `config.json`
-(volume + empty `ENTMOOT_*` slots) and a `store/` volume. Analyzing a source never
-creates `<source>/.entmoot`.
+(volume + empty `ENTMOOT_*` slots) and a `store/` volume. Publications, native
+objects and readiness profiles use this selected volume, including when relocated.
+Explicit index/attach writes honor its retention budget through database and view locators.
 
 ## Rust (in-process)
 

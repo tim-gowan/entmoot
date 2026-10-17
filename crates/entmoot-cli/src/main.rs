@@ -184,7 +184,7 @@ enum Commands {
         /// Validated graph publication to query.
         #[arg(long)]
         graph: Option<PathBuf>,
-        /// Local publication pointer; otherwise discover .entmoot/current.json.
+        /// Local publication pointer; otherwise discover the workspace's current publication.
         #[arg(long, conflicts_with = "graph")]
         publication: Option<PathBuf>,
         /// Defaults to the graph's adjacent knowledge store.
@@ -238,7 +238,7 @@ enum Commands {
     Status {
         #[arg(long)]
         graph: Option<PathBuf>,
-        /// Local publication pointer; otherwise discover .entmoot/current.json.
+        /// Local publication pointer; otherwise discover the workspace's current publication.
         #[arg(long, conflicts_with = "graph")]
         publication: Option<PathBuf>,
         /// Defaults to the graph's adjacent durable knowledge store.
@@ -475,7 +475,7 @@ enum Commands {
         #[command(subcommand)]
         command: AssessCommand,
     },
-    /// Materialize dependency package trees under `.entmoot/deps` with declared subjects.
+    /// Materialize dependency package trees in workspace storage with declared subjects.
     Deps {
         #[command(subcommand)]
         command: DepsCommand,
@@ -544,7 +544,7 @@ enum AssessCommand {
         /// Consumer graph, current.json pointer, or published checkout; defaults to this workspace.
         #[arg(long)]
         consumer: Option<PathBuf>,
-        /// Provider graphs, pointers, or published checkouts; defaults to .entmoot/deps.
+        /// Provider graphs, pointers, or published checkouts; defaults to the workspace's deps directory.
         #[arg(long)]
         provider: Vec<PathBuf>,
         #[arg(long)]
@@ -1567,7 +1567,7 @@ fn run() -> Result<()> {
                         let root =
                             entmoot_engine::workspace::workspace_root(&std::env::current_dir()?)?;
                         let parent =
-                            entmoot_engine::workspace::storage_directory(&root).join("impact");
+                            entmoot_engine::workspace::storage_directory(&root)?.join("impact");
                         fs::create_dir_all(&parent)?;
                         tempfile::Builder::new()
                             .prefix("transition-")
@@ -1647,7 +1647,7 @@ fn run() -> Result<()> {
                 "version": version, "source": from.display().to_string(),
             });
             let dest = entmoot_engine::materialize::materialize(
-                &entmoot_engine::workspace::storage_directory(&root).join("deps"),
+                &entmoot_engine::workspace::storage_directory(&root)?.join("deps"),
                 &subject,
                 &version,
                 &from,

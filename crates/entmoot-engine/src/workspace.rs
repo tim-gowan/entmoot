@@ -148,14 +148,13 @@ pub fn workspace_root(start: &Path) -> Result<PathBuf, WorkspaceError> {
 pub fn discover_publication(start: &Path) -> Result<WorkspacePublication, WorkspaceError> {
     let start = fs::canonicalize(start)?;
     for ancestor in start.ancestors() {
-        let pointer = storage_directory(ancestor).join("current.json");
+        let pointer = storage_directory(ancestor)?.join("current.json");
         if pointer.is_file() {
             return read_publication(&pointer);
         }
     }
     Err(WorkspaceError::Invalid(
-        "no .entmoot/current.json publication; run entmoot init or pass --graph/--publication"
-            .into(),
+        "no current workspace publication; run entmoot init or pass --graph/--publication".into(),
     ))
 }
 
@@ -211,7 +210,7 @@ struct WriteGuard {
 }
 impl WriteGuard {
     fn acquire(root: &Path) -> Result<Self, WorkspaceError> {
-        let directory = storage_directory(root);
+        let directory = storage_directory(root)?;
         fs::create_dir_all(&directory)?;
         let path = directory.join("write.lock");
         let mut file = fs::OpenOptions::new()
@@ -234,7 +233,7 @@ impl WriteGuard {
 }
 
 fn ignore_publications(root: &Path) -> Result<(), WorkspaceError> {
-    let directory = storage_directory(root);
+    let directory = storage_directory(root)?;
     fs::create_dir_all(&directory)?;
     let path = directory.join(".gitignore");
     if !path.exists() {
@@ -386,6 +385,7 @@ fn reusable_lexical_oxc(
 fn bind_graph(
     graph: &mut TopologyGraph,
     location: &PublicationLocation,
+    objects: &Path,
     options: &BindOptions,
     previous: Option<&WorkspaceSummary>,
     decisions: Option<&[impact::BindDecision]>,
@@ -593,13 +593,9 @@ fn bind_graph(
                 stage.attachment =
                     Some(crate::ingest_artifact_manifest(graph, manifest, true).map_err(failure)?);
                 stage.events.push("attached".into());
-                crate::FilesystemArtifactObjectRepository::new(
-                    location
-                        .source_root
-                        .join(".entmoot/knowledge.sqlite3.objects"),
-                )
-                .archive_manifest(manifest)
-                .map_err(failure)?;
+                crate::FilesystemArtifactObjectRepository::new(objects)
+                    .archive_manifest(manifest)
+                    .map_err(failure)?;
             }
         }
         if options.require_native
@@ -739,7 +735,8 @@ fn bind_graph(
     Ok(stages)
 }
 
-/// Initialize a new source snapshot; explicit effectful API, never called by queries.
+/// Publish a source snapshot for explicit init or first-use frontend preparation.
+/// Query-service reads do not call this; frontends may bootstrap missing inventory.
 pub fn initialize_workspace(
     root: &Path,
     repository: Option<&str>,
@@ -755,7 +752,7 @@ pub fn initialize_workspace(
     if !options.plan_only {
         ignore_publications(&root)?;
     }
-    let pointer = storage_directory(&root).join("current.json");
+    let pointer = storage_directory(&root)?.join("current.json");
     let previous = if pointer.exists() {
         Some(read_publication(&pointer)?)
     } else {
@@ -828,11 +825,11 @@ pub fn bind_publication(
     if !options.plan_only {
         // An imported snapshot cannot tolerate changes to its root .gitignore.
         // A directory-local ignore file hides every generated publication instead.
-        fs::write(storage_directory(&root).join(".gitignore"), "*\n")?;
+        fs::write(storage_directory(&root)?.join(".gitignore"), "*\n")?;
         let source_objects =
             crate::FilesystemArtifactObjectRepository::new(artifact_store_path(&store_path)?);
         let destination_objects = crate::FilesystemArtifactObjectRepository::new(
-            storage_directory(&root).join("knowledge.sqlite3.objects"),
+            storage_directory(&root)?.join("knowledge.sqlite3.objects"),
         );
         for artifact in &graph.artifacts {
             let digest = entmoot_contracts::ContentDigest::parse(artifact.content_digest.clone())
@@ -847,7 +844,7 @@ pub fn bind_publication(
             }
         }
     }
-    let pointer = storage_directory(&root).join("current.json");
+    let pointer = storage_directory(&root)?.join("current.json");
     let previous = if pointer.is_file() {
         Some(read_publication(&pointer)?)
     } else {
@@ -984,9 +981,12 @@ fn publish(
             coverage.coverage_id = coverage.derive_id().map_err(failure)?;
         }
     }
+    let storage = storage_directory(&root)?;
+    let database = storage.join("knowledge.sqlite3");
+    let objects = artifact_store_path(&database)?;
     let started = std::time::Instant::now();
     let inventory_families: Vec<String> = languages(&graph).into_iter().collect();
-    // plan_only must not create `.entmoot/` (no publication, no profile file).
+    // plan_only must not write a publication or adapter profile to workspace storage.
     let adapter_profile = if options.plan_only {
         crate::native_resolver::adapter_profile::discover(&root, Some(&inventory_families))
     } else {
@@ -1032,7 +1032,7 @@ fn publish(
     if !options.plan_only {
         retention::check_admission(&root)?;
     }
-    let generations = storage_directory(&root).join("current");
+    let generations = storage.join("current");
     if options.plan_only {
         let location =
             previous
@@ -1047,6 +1047,7 @@ fn publish(
             bind_graph(
                 &mut graph,
                 &location,
+                &objects,
                 options,
                 previous_receipt.as_ref(),
                 decisions,
@@ -1078,6 +1079,7 @@ fn publish(
         bind_graph(
             &mut graph,
             &location,
+            &objects,
             options,
             previous_receipt.as_ref(),
             decisions,
@@ -1088,7 +1090,7 @@ fn publish(
     let staged_store = location.store.clone();
     retention::check_admission(&root)?;
     let locator = crate::KnowledgeViewLocator {
-        database: storage_directory(&root).join("knowledge.sqlite3"),
+        database,
         view: entmoot_contracts::blake3_hex(&serde_json::to_vec(&graph)?),
     };
     location.store = generation.path().join("graph.json.knowledge.view.json");
@@ -1160,7 +1162,7 @@ fn publish(
     };
     // Retain the complete generation before the single atomic visibility change.
     let _generation_path = generation.keep();
-    write_json(&storage_directory(&root).join("current.json"), &publication)?;
+    write_json(&storage.join("current.json"), &publication)?;
     Ok(summary)
 }
 
@@ -1350,7 +1352,9 @@ mod tests {
         let guard = WriteGuard::acquire(tmp.path()).unwrap();
         assert!(WriteGuard::acquire(tmp.path()).is_err());
         drop(guard);
-        let path = tmp.path().join(".entmoot/write.lock");
+        let path = crate::workspace::storage_directory(tmp.path())
+            .unwrap()
+            .join("write.lock");
         assert!(
             path.is_file(),
             "lock identity must survive ordinary release"
@@ -1443,9 +1447,13 @@ mod tests {
         assert_eq!(first.stages.len(), 1);
         assert_eq!(first.stages[0].stage, "skipped");
         assert!(first.publication.store.is_file());
-        let pointer = dir.path().join(".entmoot/current.json");
+        let pointer = crate::workspace::storage_directory(dir.path())
+            .unwrap()
+            .join("current.json");
         let original = fs::read(&pointer).unwrap();
-        let publication = discover_publication(&dir.path().join(".entmoot/current")).unwrap();
+        let nested = dir.path().join("nested");
+        fs::create_dir(&nested).unwrap();
+        let publication = discover_publication(&nested).unwrap();
         assert_eq!(publication.current.graph, first.publication.graph);
         let graph = crate::load_graph_json(&first.publication.graph).unwrap();
         assert!(!graph
@@ -1678,7 +1686,9 @@ mod tests {
             "produced"
         );
         // Bad immutable artifact bytes must fail closed, preserving the pointer.
-        let pointer = dir.path().join(".entmoot/current.json");
+        let pointer = crate::workspace::storage_directory(dir.path())
+            .unwrap()
+            .join("current.json");
         let previous = fs::read(&pointer).unwrap();
         let manifest = third
             .stages
@@ -1742,7 +1752,10 @@ mod tests {
             serde_json::to_value(&published.nodes).unwrap()
         );
         assert_eq!(graph.snapshot_files, published.snapshot_files);
-        assert!(source.path().join(".entmoot/.gitignore").is_file());
+        assert!(crate::workspace::storage_directory(source.path())
+            .unwrap()
+            .join(".gitignore")
+            .is_file());
         let relocated = tempfile::tempdir().unwrap();
         fs::copy(
             source.path().join("app.py"),

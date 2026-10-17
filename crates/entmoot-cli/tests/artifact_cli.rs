@@ -33,23 +33,14 @@ fn fingerprint_command_emits_the_rust_reader_contract_without_creating_a_store()
 
 #[test]
 fn retention_cli_plans_without_deleting_then_applies_a_fenced_plan() {
-    // Durable state via ENTMOOT_DATA_DIR → `.tmp/test-<timestamp>` (never `<source>/.entmoot`).
-    let stamp = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_millis();
-    let home = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join(".tmp")
-        .join(format!("test-{stamp}"));
-    std::fs::create_dir_all(&home).unwrap();
-    let home = std::fs::canonicalize(&home).unwrap_or(home);
+    let data = tempfile::tempdir().unwrap();
+    let home = data.path();
     let directory = tempfile::tempdir().unwrap();
     let storage =
-        entmoot_engine::workspace::storage_directory_in(directory.path(), Some(&home));
+        entmoot_engine::workspace::storage_directory_in(directory.path(), Some(home)).unwrap();
     let retention = |args: &[&str]| {
         let mut cmd = cli();
-        cmd.env("ENTMOOT_DATA_DIR", &home).args(args);
+        cmd.env("ENTMOOT_DATA_DIR", home).args(args);
         cmd.output().unwrap()
     };
     for value in 0..4 {
@@ -85,7 +76,10 @@ fn retention_cli_plans_without_deleting_then_applies_a_fenced_plan() {
     );
     let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(value["remove_views"].as_array().unwrap().len(), 2);
-    assert_eq!(std::fs::read_dir(storage.join("current")).unwrap().count(), 4);
+    assert_eq!(
+        std::fs::read_dir(storage.join("current")).unwrap().count(),
+        4
+    );
     let output = retention(&[
         "storage-apply",
         "--root",
@@ -98,7 +92,10 @@ fn retention_cli_plans_without_deleting_then_applies_a_fenced_plan() {
         "{}",
         String::from_utf8_lossy(&output.stderr)
     );
-    assert_eq!(std::fs::read_dir(storage.join("current")).unwrap().count(), 2);
+    assert_eq!(
+        std::fs::read_dir(storage.join("current")).unwrap().count(),
+        2
+    );
     let output = retention(&[
         "storage-apply",
         "--root",
@@ -108,7 +105,6 @@ fn retention_cli_plans_without_deleting_then_applies_a_fenced_plan() {
     ]);
     assert!(!output.status.success());
     assert!(String::from_utf8_lossy(&output.stderr).contains("stale"));
-    let _ = std::fs::remove_dir_all(&home);
 }
 
 fn without_telemetry(value: &mut serde_json::Value) {
@@ -127,6 +123,87 @@ fn without_telemetry(value: &mut serde_json::Value) {
             }
         }
         _ => {}
+    }
+}
+
+#[test]
+fn explicit_index_and_attach_enforce_volume_budget_without_replacing_publication() {
+    for relocated in [false, true] {
+        let fixture = tempfile::tempdir().unwrap();
+        let source = fixture.path().join("source");
+        let data = fixture.path().join("data");
+        std::fs::create_dir(&source).unwrap();
+        std::fs::write(source.join("main.rs"), "fn main() {}\n").unwrap();
+        if relocated {
+            let namespace = entmoot_engine::workspace::workspace_namespace(&source, &data);
+            std::fs::create_dir_all(&namespace).unwrap();
+            std::fs::write(namespace.join("config.json"), serde_json::to_vec(&serde_json::json!({
+                "schema":"entmoot.config.v1", "mode":"local", "volume":fixture.path().join("custom-volume")
+            })).unwrap()).unwrap();
+        }
+        let output = cli()
+            .arg("--data-dir")
+            .arg(&data)
+            .args(["init", "--structural-only", "--root"])
+            .arg(&source)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let volume = entmoot_engine::workspace::storage_directory_in(&source, Some(&data)).unwrap();
+        let pointer = volume.join("current.json");
+        let before = std::fs::read(&pointer).unwrap();
+        let publication = entmoot_engine::workspace::read_publication(&pointer).unwrap();
+        let graph_path = &publication.current.graph;
+        let graph_before = std::fs::read(graph_path).unwrap();
+        let graph = load_graph_json(graph_path).unwrap();
+        let (manifest, _) = write_sarif_manifest(fixture.path(), &graph).unwrap();
+        std::fs::write(
+            volume.join("retention-policy.json"),
+            br#"{"keep_recent":2,"max_workspace_bytes":1}"#,
+        )
+        .unwrap();
+        let database = volume.join("knowledge.sqlite3");
+        let destination = fixture.path().join("refused.json");
+        for store in [&database, &publication.current.store] {
+            for operation in ["index", "attach"] {
+                let mut command = cli();
+                command
+                    .arg("--data-dir")
+                    .arg(&data)
+                    .arg(operation)
+                    .arg("--store")
+                    .arg(store)
+                    .arg("--out")
+                    .arg(&destination);
+                if operation == "index" {
+                    command.arg("--root").arg(&source);
+                } else {
+                    command
+                        .arg("--graph")
+                        .arg(graph_path)
+                        .arg("--artifact")
+                        .arg(&manifest);
+                }
+                let output = command.output().unwrap();
+                assert!(
+                    !output.status.success(),
+                    "{operation} bypassed admission for {}",
+                    store.display()
+                );
+                assert!(
+                    String::from_utf8_lossy(&output.stderr).contains("storage admission refused"),
+                    "{}",
+                    String::from_utf8_lossy(&output.stderr)
+                );
+                assert!(!destination.exists());
+                assert_eq!(std::fs::read(&pointer).unwrap(), before);
+                assert_eq!(std::fs::read(graph_path).unwrap(), graph_before);
+            }
+        }
     }
 }
 
@@ -1370,7 +1447,11 @@ fn transition_revalidation_is_atomic_replayable_and_keeps_historical_evidence() 
             .output()
             .unwrap()
     };
-    let ledger = directory.path().join("ledger.sqlite3");
+    let mut ledger_parent = directory.path().to_path_buf();
+    while ledger_parent.as_os_str().len() < 280 {
+        ledger_parent.push("nested-ledger-publication");
+    }
+    let ledger = ledger_parent.join("ledger.sqlite3");
     let output = execute(&request, &ledger);
     assert!(
         output.status.success(),

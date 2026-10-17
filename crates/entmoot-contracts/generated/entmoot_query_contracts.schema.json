@@ -66213,6 +66213,11 @@
               "type": "string"
             },
             {
+              "const": "config",
+              "description": "Exclusive workspace or global configuration slot was set.",
+              "type": "string"
+            },
+            {
               "const": "profile",
               "description": "Path recorded in this profile file.",
               "type": "string"

@@ -12,6 +12,7 @@
     "scripts/install_git_hooks.py",
     "scripts/pre_commit_check.py",
     "scripts/test_pre_commit_check.py",
+    "scripts/test_docs_workflow.py",
     "scripts/test_ownership.json",
     "scripts/test_ownership.py",
     "scripts/pr_structural_diff.py",

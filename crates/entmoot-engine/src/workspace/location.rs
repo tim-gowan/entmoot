@@ -1,8 +1,8 @@
 //! Local frontend storage selection. Portable queries never contain database paths.
 //!
-//! Durable state defaults under `~/.entmoot` (or `ENTMOOT_DATA_DIR`). Analyzed
-//! source trees are never written. Per-workspace `config.json` points at a volume
-//! and may override `ENTMOOT_*` slots when process env is unset.
+//! Durable state defaults under `~/.entmoot` (or `ENTMOOT_DATA_DIR`). This module
+//! selects storage independently of source trees. Per-workspace `config.json`
+//! points at a volume and supplies `ENTMOOT_*` slots when process env is unset.
 use super::{WorkspaceError, WorkspacePublication};
 use entmoot_contracts::{
     EntmootConfig, ENTMOOT_CONFIG_FILE, ENTMOOT_CONFIG_SCHEMA, ENTMOOT_DEFAULT_STORE,
@@ -94,6 +94,9 @@ pub fn load_config_file(path: &Path) -> Result<EntmootConfig, WorkspaceError> {
                     "remote storage is not implemented; set mode to local or choose a local volume",
                 ));
             }
+            if let Some(volume) = &config.volume {
+                validate_local_data_path(Path::new(volume))?;
+            }
             Ok(config)
         }
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
@@ -156,34 +159,42 @@ fn resolve_volume(namespace: &Path, config: &EntmootConfig) -> Result<PathBuf, W
     }
 }
 
-/// Compute the local storage volume without creating it when possible.
+/// Resolve the local storage volume without creating directories or config files.
 ///
-/// Always namespaced under the data root. Never returns `<source>/.entmoot`.
-pub fn storage_directory(root: &Path) -> PathBuf {
+/// Configuration is namespaced under the data root; an explicit volume can be elsewhere.
+/// Invalid global/workspace configuration fails before any store is selected.
+pub fn storage_directory(root: &Path) -> Result<PathBuf, WorkspaceError> {
     storage_directory_in(root, Some(&data_root()))
 }
 
-/// Pure path selection used by embedding applications and frontend discovery.
+/// Checked volume lookup used by embedding applications and frontend discovery.
 ///
 /// `data_directory` of `None` uses [`default_entmoot_home`]. When the workspace
-/// config exists, its `volume` is honored; otherwise the default `store/` sibling.
-pub fn storage_directory_in(root: &Path, data_directory: Option<&Path>) -> PathBuf {
+/// config is absent, the default is its `store/` sibling. Malformed, unreadable or
+/// remote configuration returns an error instead of redirecting reads or writes.
+pub fn storage_directory_in(
+    root: &Path,
+    data_directory: Option<&Path>,
+) -> Result<PathBuf, WorkspaceError> {
     let data = data_directory
         .map(Path::to_owned)
         .unwrap_or_else(default_entmoot_home);
+    let data = validate_local_data_path(&data)?;
+    load_config_file(&data.join(ENTMOOT_CONFIG_FILE))?;
     let namespace = workspace_namespace(root, &data);
     let config_path = namespace.join(ENTMOOT_CONFIG_FILE);
-    let config = load_config_file(&config_path).unwrap_or_else(|_| EntmootConfig::empty_local());
-    resolve_volume(&namespace, &config).unwrap_or_else(|_| namespace.join(ENTMOOT_DEFAULT_STORE))
+    let config = load_config_file(&config_path)?;
+    resolve_volume(&namespace, &config)
 }
 
 /// Resolve a single `ENTMOOT_*` value: process env → workspace config → global config.
+/// A present process value is exclusive, including an invalid empty path. Empty
+/// config slots are unset. Frontends validate config before invoking producers;
+/// this optional discovery lookup ignores configuration read errors.
 #[must_use]
 pub fn resolve_entmoot_override(key: &str, source_root: Option<&Path>) -> Option<String> {
     if let Ok(value) = std::env::var(key) {
-        if !value.is_empty() {
-            return Some(value);
-        }
+        return Some(value);
     }
     let data = data_root();
     if let Some(root) = source_root {
@@ -202,7 +213,7 @@ pub fn resolve_entmoot_override(key: &str, source_root: Option<&Path>) -> Option
     None
 }
 
-/// True when the exclusive override is configured (process or config slot).
+/// True when a process override or nonempty config slot is configured.
 #[must_use]
 pub fn entmoot_override_configured(key: &str, source_root: Option<&Path>) -> bool {
     resolve_entmoot_override(key, source_root).is_some()
@@ -210,6 +221,9 @@ pub fn entmoot_override_configured(key: &str, source_root: Option<&Path>) -> boo
 
 /// Canonicalize an override path: relative values resolve against process CWD.
 pub fn canonicalize_override_path(raw: &str) -> Result<PathBuf, String> {
+    if raw.is_empty() {
+        return Err("invalid_environment: override path is empty".into());
+    }
     let path = PathBuf::from(raw);
     let absolute = if path.is_absolute() {
         path
@@ -268,7 +282,7 @@ pub fn prepare_workspace(root: &Path) -> Result<WorkspacePublication, WorkspaceE
 pub fn prepare_discovered_workspace(start: &Path) -> Result<WorkspacePublication, WorkspaceError> {
     let start = fs::canonicalize(start)?;
     for ancestor in start.ancestors() {
-        let pointer = storage_directory(ancestor).join("current.json");
+        let pointer = storage_directory(ancestor)?.join("current.json");
         match fs::symlink_metadata(&pointer) {
             Ok(_) => return prepare_workspace(ancestor),
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
@@ -291,16 +305,16 @@ mod tests {
         fs::create_dir(&b).unwrap();
         let data = base.path().join("data");
         assert_ne!(
-            storage_directory_in(&a, Some(&data)),
-            storage_directory_in(&b, Some(&data))
+            storage_directory_in(&a, Some(&data)).unwrap(),
+            storage_directory_in(&b, Some(&data)).unwrap()
         );
         assert_eq!(
-            storage_directory_in(&a, Some(&data)),
-            storage_directory_in(&a.join("."), Some(&data))
+            storage_directory_in(&a, Some(&data)).unwrap(),
+            storage_directory_in(&a.join("."), Some(&data)).unwrap()
         );
         // Never source-local `.entmoot`.
         assert_eq!(
-            storage_directory_in(&a, Some(&data)),
+            storage_directory_in(&a, Some(&data)).unwrap(),
             workspace_namespace(&a, &data).join(ENTMOOT_DEFAULT_STORE)
         );
         assert!(!a.join(".entmoot").exists());
@@ -309,31 +323,48 @@ mod tests {
 
     #[test]
     fn bootstrap_writes_home_namespace_not_source_tree() {
-        let data = tempfile::tempdir().unwrap();
+        const CHILD: &str = "ENTMOOT_LOCATION_TEST_CHILD";
+        if std::env::var_os(CHILD).is_none() {
+            let data = tempfile::tempdir().unwrap();
+            let inherited = std::env::var_os("ENTMOOT_DATA_DIR");
+            let output = std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "workspace::location::tests::bootstrap_writes_home_namespace_not_source_tree",
+                ])
+                .env(CHILD, "1")
+                .env("ENTMOOT_DATA_DIR", data.path())
+                .output()
+                .unwrap();
+            assert!(
+                output.status.success(),
+                "{}\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+            assert_eq!(std::env::var_os("ENTMOOT_DATA_DIR"), inherited);
+            return;
+        }
+        let data = data_root();
         let source = tempfile::tempdir().unwrap();
         fs::write(source.path().join("app.py"), "def leaf(): pass\n").unwrap();
-        // configure_data_directory is process-global; use ENTMOOT_DATA_DIR for this test.
-        std::env::set_var("ENTMOOT_DATA_DIR", data.path());
         let first = prepare_workspace(source.path()).unwrap();
         let second = prepare_workspace(source.path()).unwrap();
         assert_eq!(first.current.graph, second.current.graph);
         assert!(!source.path().join(".entmoot").exists());
-        let storage = storage_directory_in(source.path(), Some(data.path()));
+        let storage = storage_directory_in(source.path(), Some(&data)).unwrap();
         assert!(storage.join("current.json").is_file());
-        assert!(workspace_namespace(source.path(), data.path())
+        assert!(workspace_namespace(source.path(), &data)
             .join(ENTMOOT_CONFIG_FILE)
             .is_file());
         let summary: super::super::WorkspaceSummary =
             serde_json::from_slice(&fs::read(&first.summary).unwrap()).unwrap();
         assert!(summary.structural_only);
-        let other = tempfile::tempdir().unwrap();
-        fs::write(other.path().join("app.py"), "def other(): pass\n").unwrap();
         // Damaged pointer under the correct namespace must not be silently replaced.
         let pointer = storage.join("current.json");
         fs::write(&pointer, "invalid").unwrap();
         assert!(prepare_workspace(source.path()).is_err());
         assert_eq!(fs::read(&pointer).unwrap(), b"invalid");
-        std::env::remove_var("ENTMOOT_DATA_DIR");
     }
 
     #[test]
@@ -352,7 +383,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(
-            storage_directory_in(source.path(), Some(data.path())),
+            storage_directory_in(source.path(), Some(data.path())).unwrap(),
             volume
         );
     }

@@ -51,6 +51,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    outputs:
+      deploy: ${{ steps.cfg.outputs.deploy }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -58,7 +60,6 @@ jobs:
       - name: Resolve docs parameters
         id: cfg
         env:
-          EVENT_NAME: ${{ github.event_name }}
           IN_OUT: ${{ inputs.out_dir }}
           IN_UPLOAD_PAGES: ${{ inputs.upload_pages }}
           IN_DEPLOY: ${{ inputs.deploy }}
@@ -67,22 +68,14 @@ jobs:
           IN_CACHE: ${{ inputs.rust_cache_key }}
         run: |
           set -euo pipefail
-          if [ "${EVENT_NAME}" = "workflow_call" ]; then
-            out="${IN_OUT:-.tmp/staging}"
-            upload_pages="${IN_UPLOAD_PAGES:-false}"
-            deploy="${IN_DEPLOY:-false}"
-            staging="${IN_STAGING:-true}"
-            artifact="${IN_ARTIFACT:-docs-staging}"
-            cache="${IN_CACHE:-docs-ubuntu}"
-          else
-            # CI / PR: stage only under .tmp/staging (no Pages deploy).
-            out=".tmp/staging"
-            upload_pages="false"
-            deploy="false"
-            staging="true"
-            artifact="docs-staging"
-            cache="docs-ubuntu"
-          fi
+          # Reusable workflows retain the caller's event (including tag push).
+          # Missing inputs on direct CI / PR runs select staging-only defaults.
+          out="${IN_OUT:-.tmp/staging}"
+          upload_pages="${IN_UPLOAD_PAGES:-false}"
+          deploy="${IN_DEPLOY:-false}"
+          staging="${IN_STAGING:-true}"
+          artifact="${IN_ARTIFACT:-docs-staging}"
+          cache="${IN_CACHE:-docs-ubuntu}"
           {
             echo "out_dir=${out}"
             echo "upload_pages=${upload_pages}"
@@ -124,7 +117,7 @@ jobs:
         with:
           path: ${{ steps.cfg.outputs.out_dir }}
   deploy:
-    if: github.event_name == 'workflow_call' && inputs.deploy && vars.PAGES_ENABLED == 'true'
+    if: needs.build.outputs.deploy == 'true' && vars.PAGES_ENABLED == 'true'
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10

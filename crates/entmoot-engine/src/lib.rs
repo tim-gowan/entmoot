@@ -265,7 +265,8 @@ fn build_topology_with_syntax_cache(
 
 /// Build a structural working-tree head, reusing unchanged-path inventory from `base`.
 ///
-/// Paths whose content digest still matches `base.snapshot_files` skip parse/hash.
+/// Compatible paths with matching content digests can reuse inventory. Unqualified
+/// bases and call-bearing graphs without qualified syntax cache records are rebuilt.
 /// Changed and added paths are rehashed; removed paths are dropped. Callers must
 /// still run [`workspace::verify_sources`] as the second full path/digest fence.
 pub fn build_topology_from_repo_reusing_base(
@@ -281,7 +282,10 @@ pub fn build_topology_from_repo_reusing_base(
     {
         return build_topology_from_repo_with_options(root, options);
     }
-    if root.join(".entmoot/current.json").is_file() {
+    if workspace::storage_directory(root)?
+        .join("current.json")
+        .is_file()
+    {
         let publication = workspace::discover_publication(root)?;
         return build_topology_with_syntax_cache(root, options, Some(&publication.current.store))
             .map(|(graph, _)| graph);

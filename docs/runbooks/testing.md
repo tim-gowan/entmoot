@@ -16,10 +16,14 @@ downstream packages. Missing ownership widens to workspace checks.
   `crates/entmoot-engine/tests/fixtures/callsites/` (`smoke/` denominators and
   per-construct leaves). Split ownership:
   - **Product claims** — `expectations_*.json` + engine `dispatch_expectations`
-    (`qualify_*` via crate APIs). Fields: `closed_dispatch`, `dispatch_gap`,
-    `policy_id`, `assumption_contains`, site/owner/target selectors, `outcomes`.
-    Historical/host `#[ignore]` rows stay for multi-toolchain and known
-    Windows jar/VFS flakes only; Open rows must not claim Closed.
+    (`qualify_*` via crate APIs). `dispatch_gap` is the shared category;
+    optional `dispatch_detail` is exact attributed detail. `target` requires one
+    callable; `allowed_targets` permits absence but rejects other/duplicate
+    callable targets. Select sites/owners independently and assert outcomes and
+    Closed policy/assumption fences.
+    Historical `#[ignore]` rows require explicit multi-toolchain provisioning;
+    Open rows must not claim Closed. Clang VFS and Java classpath controls run
+    in the ordinary native suite on both supported operating systems.
   - **Language-deep** — `callsites_*` keep producer/environment specials (canon,
     cfg/edition, package_api, raw sidecar, ESM/CJS quirks). Do not re-assert
     product Open/Closed rows already covered by expectations.
@@ -34,13 +38,14 @@ downstream packages. Missing ownership widens to workspace checks.
   `scripts/build_resolver_adapters.py` (and program builders) at the floor pins.
   Floor-backed Closed policies are listed in `tools/resolver-adapters/floors.toml`
   (producers emit Closed; join validates fences). Historical multi-toolchain /
-  Acorn rows stay `#[ignore]`. Campaigns stay opt-in.
+  Acorn rows stay `#[ignore]`.
 - Storage/application: engine store tests and CLI workspace/artifact suites
   exercise transactions, restart, producer isolation, historical reads and impact.
 - Live resolver controls: explicit validation against configured adapters. A
   missing tool or unsupported mode remains unavailable; do not report it as a
-  successful control. Campaign/eval harnesses (`campaign_harness`, `evals/`) stay
-  opt-in and outside precommit; they must not clone remote corpora for the gate.
+  successful control. Authored local campaign controls can be selected by test
+  ownership or explicit CI invocations. Remote corpus probes remain opt-in;
+  gates must not clone remote corpora.
 
 ## Claim-oriented assertions
 
@@ -58,6 +63,18 @@ enough to diagnose one invariant without dropping full graph, persistence, revis
 and CLI/MCP controls that establish composition. Property/metamorphic/differential
 checks should retain deterministic counterexamples and verify that the intended
 mutation changes the expected assertion. Update test ownership when targets change.
+
+Name tests for the scenario and observable outcome, and helpers for the claim
+they check. Assert typed categories before extensible detail; substring matches
+must not turn an unrelated category into the expected result. Allowing an empty
+target set must still reject unexpected nonempty targets. Failure messages should
+identify the fixture/site, expected relationship and actual evidence. Keep shared
+fixtures small; add abstraction only when it clarifies repeated domain meaning.
+
+Each fixture owns source, data root and cleanup. Pass paths/config explicitly;
+exercise process-global environment or CWD changes in a child process. Use
+absolute scratch paths across child working directories and never remove a caller's
+override or use the maintainer's real home store. Close stores before cleanup.
 
 Ordinary Rust tests belong in the corresponding crate. Calling them native Rust
 tests does not qualify another language's compiler semantics: authored provider
@@ -152,10 +169,17 @@ hydrates and serializes the original edges.
 After [adapter setup](resolver-adapters.md), live controls are `program_adapters`
 and `adapter_controls` in the CLI crate, plus engine `dispatch_expectations` /
 `callsites_*` (and CLI `producer_cli` loud missing-adapter). Producer suites need
-`--features producer` (or engine `resolved-rust-analyzer` / `resolved-oxc`); use
+`--features producer,native-tests` on the CLI, or engine `--all-features`; use
 `--include-ignored --test-threads=1` for adapter-backed and pending-Closed lanes.
 Authored selectors live under `fixtures/callsites/`. Precommit never fetches
 remote corpus blobs.
+
+Before relying on a filtered or feature-gated run, inspect `-- --list` with the
+same package, target and feature selection; confirm the intended controls execute.
+Zero selected tests do not qualify the behavior. Cargo `required-features` owns
+each target's native/producer requirements; generated ownership and installed
+adapter-control commands preserve them even when a package subsumes the target.
+Native CI reads profile/publication locations from init's returned store locator.
 
 ## Coverage phases and release lane ownership
 

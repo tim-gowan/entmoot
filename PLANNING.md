@@ -12,7 +12,8 @@ automatic workspace storage, source/native boundary queries, scoped completeness
 confined materialization, occurrence-preserving overlay and self-contained package
 fingerprints. Keep the README maturity table aligned with verified evidence.
 
-Remaining release authority is external: copy/commit/push to `tim-gowan/entmoot`,
+Resolve the qualification blockers below before release. External steps remain:
+copy/commit/push to `tim-gowan/entmoot`,
 confirm all five crate owners, configure the protected release environment and
 Pages, and require the exact tag's CI/native/docs gates. Do not claim publication
 from local packaging. Beta requires operator feedback, representative native
@@ -22,6 +23,21 @@ A remote location is a future transport boundary, not an implemented feature.
 Do not add a scheduler, global package catalog or merge provenance to deliver
 local automatic storage. First-use MCP inventory startup cost is measurable
 follow-up if large-source operator feedback warrants asynchronous preparation.
+
+## Current qualification blockers
+
+The storage, configuration/admission, obsolete fixture paths, process isolation,
+native-feature selection and permissive assertion defects from the 2026-10-16
+audit are repaired with regression controls. Adapter default precedence now
+matches checkout → PATH → home; process overrides remain exclusive, and readiness
+uses workspace config selections consistently with runtime resolution.
+
+Provision pinned sidecar/Program adapters explicitly for native qualification.
+Roslyn MSBuild project loading needs an approved host run when the sandbox denies
+its child named-pipe connection; ad-hoc C# success does not qualify that mode.
+Release still requires the exact candidate's structural/native CI and extracted-
+package gates on both supported operating systems. Local installation and
+historical passing receipts do not qualify a later revision.
 
 ## Active scope
 

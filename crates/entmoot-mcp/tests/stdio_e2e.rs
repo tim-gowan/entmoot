@@ -10,6 +10,54 @@ use rmcp::{
     ServiceExt,
 };
 
+#[test]
+fn invalid_storage_configuration_refuses_stdio_startup_without_bootstrapping() {
+    for bad in [
+        "broken JSON",
+        r#"{"schema":"entmoot.config.v1","mode":"remote"}"#,
+        r#"{"schema":"entmoot.config.v1","mode":"local","volume":"https://example.invalid/store"}"#,
+    ] {
+        for global in [false, true] {
+            let fixture = tempfile::tempdir().unwrap();
+            let source = fixture.path().join("source");
+            let data = fixture.path().join("data");
+            std::fs::create_dir(&source).unwrap();
+            std::fs::write(source.join("a.py"), "def leaf(): return 1\n").unwrap();
+            let namespace = entmoot_engine::workspace::workspace_namespace(&source, &data);
+            let config = if global {
+                data.join("config.json")
+            } else {
+                namespace.join("config.json")
+            };
+            std::fs::create_dir_all(config.parent().unwrap()).unwrap();
+            std::fs::write(&config, bad).unwrap();
+            let output = std::process::Command::new(env!("CARGO_BIN_EXE_entmoot-mcp"))
+                .arg("-C")
+                .arg(&source)
+                .arg("--data-dir")
+                .arg(&data)
+                .output()
+                .unwrap();
+            assert!(
+                !output.status.success(),
+                "accepted {bad:?}, global={global}"
+            );
+            let error = String::from_utf8_lossy(&output.stderr);
+            assert!(
+                error.contains(if bad == "broken JSON" {
+                    "invalid"
+                } else {
+                    "remote storage is not implemented"
+                }),
+                "{error}"
+            );
+            assert_eq!(std::fs::read_to_string(config).unwrap(), bad);
+            assert!(!namespace.join("store").exists());
+            assert_eq!(std::fs::read_dir(source).unwrap().count(), 1);
+        }
+    }
+}
+
 #[tokio::test]
 async fn automatic_workspace_and_boundary_query_survive_stdio_restart() {
     let fixture = tempfile::tempdir().unwrap();
@@ -21,8 +69,9 @@ async fn automatic_workspace_and_boundary_query_survive_stdio_restart() {
         "def work(object):\n    object.toString()\n",
     )
     .unwrap();
-    let pointer =
-        entmoot_engine::workspace::storage_directory_in(&source, Some(&data)).join("current.json");
+    let pointer = entmoot_engine::workspace::storage_directory_in(&source, Some(&data))
+        .unwrap()
+        .join("current.json");
     let mut previous = None;
     for _ in 0..2 {
         let transport = TokioChildProcess::new(
