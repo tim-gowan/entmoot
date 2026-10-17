@@ -70,6 +70,11 @@ must not turn an unrelated category into the expected result. Allowing an empty
 target set must still reject unexpected nonempty targets. Failure messages should
 identify the fixture/site, expected relationship and actual evidence. Keep shared
 fixtures small; add abstraction only when it clarifies repeated domain meaning.
+Digest-bearing text fixtures need explicit checkout line-ending rules in
+`.gitattributes`; the Python checkout control verifies their manifest digests
+with `core.autocrlf=true` in a disposable repository.
+Install Python check dependencies with
+`python -m pip install -r evals/harness/requirements.txt`.
 
 Each fixture owns source, data root and cleanup. Pass paths/config explicitly;
 exercise process-global environment or CWD changes in a child process. Use

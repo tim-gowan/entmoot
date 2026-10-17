@@ -1,5 +1,58 @@
 # Changelog
 
+## 2026-10-17: Release CI gate repairs
+
+- Serialize concurrent SQLite initialization with a bounded OS-owned lock;
+  retain schema/fingerprint fences and verify recovery after the owner exits.
+- Disambiguate native `cargo run` with `--bin entmoot` / `default-run` when the
+  producer helper binary is also present.
+- Install `cargo-deny` / `cargo-machete` from current install-action binaries and
+  build `cargo-dylint` with the workspace toolchain (avoids edition-2024
+  cargo-binstall parse failures).
+- Bound structural CI linker concurrency; keep digest-checked artifact fixtures
+  byte-stable across Windows checkouts; isolate Windows-platform unit tests from
+  host `shutil.which` behavior.
+- Collapse Windows 8.3 TEMP aliases for Java package-root matching, Clang closed
+  VFS retention, Roslyn digest keys and adapter-control path lookups.
+- Strip Windows verbatim (`\\?\`) prefixes after canonicalize/real-path so MSBuild,
+  libclang CompDB roots and relative joins stay ordinary drive paths.
+- Keep topology unit-test checkout roots absolute on Unix (`/checkout`); parse
+  Windows path basenames for `local/` repository ids on non-Windows hosts.
+- Use the active rustc for feature/test cfg controls (historical pins stay deferred);
+  build the CLI before resumable MCP replay so Windows link time cannot idle-expire
+  continuation tokens.
+- Shrink GHA link/debug working sets and defer historical Rust toolchain installs
+  until the historical control step to avoid ENOSPC on native runners.
+
+## 2026-10-17: Bounded workflow evaluation
+
+- Add pinned Express release workflows with independently authored runtime
+  controls, reusable source-verified SARIF observations, exact-reference checks
+  and production historical views. Keep evaluator grades separate from facts.
+- Share command/resource measurement across campaign runners, preserving failed
+  attempts, unavailable counters and exact newline/token accounting. Add paired
+  compact/export query measurements without inferring model or reasoning costs.
+- Isolate repository campaign data roots, retain resolved dependency locks and
+  reject stale source, changed tools and incomplete continuation. Preserve prior
+  native facts when attaching observations; require qualified inventory on retain.
+
+## 2026-10-16: Alpha.1 release candidate
+
+- Select the CLI by default for `cargo run`, including producer-enabled builds.
+- Preserve digest-bearing SARIF/JSONL fixture bytes in Windows checkouts, with a
+  real Git checkout regression in local hooks and repository CI.
+- Reduce CI debug-data volume while preserving file/line backtraces, and report
+  build storage to diagnose hosted-runner linker failures.
+- Advance all five crates and exact internal dependencies to `0.0.1-alpha.1`;
+  the failed `v0.0.1-alpha` tag remains unchanged.
+
+## 2026-10-16: Cross-platform release qualification
+
+- Isolate the Windows concurrency test's platform view from Python's shared
+  runtime, keeping real executable discovery valid on Linux.
+- Update the pinned CI installer to support the policy tools' Rust 2024 manifests.
+- Consolidate bootstrap/OIDC, tag and Pages procedures in the publishing guide.
+
 ## 2026-10-16: Release documentation workflow
 
 - Honor reusable docs inputs when the caller event is a tag push. Direct push/PR

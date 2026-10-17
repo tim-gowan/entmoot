@@ -437,15 +437,19 @@ impl SqliteKnowledgeRepository {
     /// Select an independent revision/build publication in a shared database.
     /// The key is a content digest of the publication input manifest; it never
     /// changes the meaning of occurrence-scoped addresses inside that view.
+    /// Writable startup holds a per-database initialization lock, released before
+    /// returning the repository. Contention has a five-second wait budget; ordinary
+    /// reads and transactions retain SQLite's concurrency rules.
     pub fn open_view(path: &Path, view: &str) -> Result<Self, KnowledgeRepositoryError> {
         if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
             std::fs::create_dir_all(parent)?;
         }
         let lease = crate::storage_lease::shared(path, true)?;
-        let mut repository = Self::from_connection_view(
-            Connection::open(crate::sqlite_startup::file_path(path))?,
-            view,
-        )?;
+        // Serialize before opening SQLite: overlapping first opens and closes can
+        // strand peers in a WAL protocol race even after reopening connections.
+        let sqlite_path = crate::sqlite_startup::file_path(path);
+        let _initialization = crate::storage_lease::initialization(&sqlite_path)?;
+        let mut repository = Self::from_connection_view(Connection::open(&sqlite_path)?, view)?;
         repository.lease = Some(lease);
         Ok(repository)
     }

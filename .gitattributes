@@ -16,6 +16,9 @@ evals/topology/impact_cases/golden/*.json text eol=lf
 
 # Generated contract schemas are compared via include_str!; keep LF on Windows.
 crates/entmoot-contracts/generated/*.json text eol=lf
+
+# Digest-checked artifact fixtures must keep exact bytes on every OS checkout.
+crates/entmoot-contracts/tests/fixtures/artifacts/** -text
 crates/entmoot-core/generated/grammars/** -text
 evals/topology/compatibility_cases/grammar_adoption_*.json -text
 evals/topology/compatibility_cases/location_coordinates_*.json -text

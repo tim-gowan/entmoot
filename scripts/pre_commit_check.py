@@ -497,7 +497,8 @@ def main() -> int:
         ("pre-commit Python tests", [sys.executable, "-m", "unittest",
             "scripts.test_pr_structural_diff", "scripts.test_test_ownership",
             "scripts.test_propose_test_ownership", "scripts.test_pre_commit_check",
-            "scripts.test_normalize_sarif_repo_paths", "scripts.test_docs_workflow"]),
+            "scripts.test_normalize_sarif_repo_paths", "scripts.test_docs_workflow",
+            "scripts.test_fixture_checkout"]),
         ("cargo fmt", ["cargo", "fmt", "--", "--check"]),
     ):
         code = run(cmd, label)

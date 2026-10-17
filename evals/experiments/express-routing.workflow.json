@@ -1,0 +1,63 @@
+{
+  "fixture": "../../crates/entmoot-cli/tests/fixtures/workflow-routing",
+  "source_files": [
+    "probe.cjs",
+    "cases.json"
+  ],
+  "observer": [
+    "{node}",
+    "{fixture}/probe.cjs",
+    "{source}",
+    "{fixture}/cases.json"
+  ],
+  "expectations": "expected.json",
+  "subject": "fixture/runtime-routing",
+  "provider_paths": [
+    "probe.cjs"
+  ],
+  "runtime_timeout_seconds": 20,
+  "query_repetitions": 3,
+  "generated_source_paths": ["package-lock.json"],
+  "cases": [
+    {
+      "repository": "express-4.18.2",
+      "version": "4.18.2",
+      "expected_set": "4"
+    },
+    {
+      "repository": "express-4.19.2",
+      "version": "4.19.2",
+      "expected_set": "4"
+    },
+    {
+      "repository": "express-4.20.0",
+      "version": "4.20.0",
+      "expected_set": "4"
+    },
+    {
+      "repository": "express-4.21.0",
+      "version": "4.21.0",
+      "expected_set": "4"
+    },
+    {
+      "repository": "express-4.21.2",
+      "version": "4.21.2",
+      "expected_set": "4"
+    },
+    {
+      "repository": "express-5.0.0",
+      "version": "5.0.0",
+      "expected_set": "5"
+    },
+    {
+      "repository": "express-5.0.1",
+      "version": "5.0.1",
+      "expected_set": "5"
+    },
+    {
+      "repository": "express-5.1.0",
+      "version": "5.1.0",
+      "expected_set": "5"
+    }
+  ]
+}

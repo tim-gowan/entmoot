@@ -100,7 +100,7 @@ Missing package evidence returns `incomplete_bind`; it is not a safe upgrade.
 
 ## Implementation maturity
 
-Reviewed 2026-10-16. Maintain this table with the owning controls whenever behavior
+Reviewed 2026-10-17. Maintain this table with the owning controls whenever behavior
 or qualification changes. **Alpha candidate** means implemented and locally
 controlled; **partial** means useful evidence with material gaps. No row claims
 exhaustive language semantics or runtime/security proof.
@@ -119,6 +119,7 @@ require [release qualification](PLANNING.md#current-qualification-blockers).
 | Source/native call boundaries | Partial | Distinct-site counts and retained native detail; repository/dependency/native-library completeness remains separately unestablished. [Boundary controls](crates/entmoot-engine/tests/call_boundaries.rs) |
 | Native binding/dispatch | Partial, per configuration | Repository/external/intrinsic/unknown observations; no universal closed-world claim. [Native qualification](.github/workflows/native.yml) |
 | Revision impact and scoped overlay | Alpha candidate | Scope/signature/multiplicity-aware presence deltas; not API compatibility. [Overlay owner](crates/entmoot-engine/src/overlay.rs) |
+| Provider observations and workflow evaluation | Partial, bounded cohort | Eight pinned Express releases, 96 runtime observations and 16 verified historical views. One framework family; no population or agent-cost qualification. [Study and limits](docs/runbooks/revision-evaluation.md#release-cohort-evidence-2026-10-17) |
 | Consumer/provider compatibility | Partial | Authored positive/negative controls; missing import/export scope remains incomplete. [Controls](crates/entmoot-engine/tests/package_compatibility.rs) |
 | Dependency materialization | Alpha candidate | Confined staged copying, opaque version keys, symlink rejection and resource bounds. [Safety owner](crates/entmoot-engine/src/materialize.rs) |
 | Test impact / unused candidates | Partial | Review and test-selection assistance; no coverage or dead-code proof. [Testing](docs/runbooks/testing.md) |

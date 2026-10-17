@@ -46,7 +46,7 @@ internal static class Program
         string root;
         try
         {
-            root = Path.GetFullPath(request.Root);
+            root = InputFence.RetainedPath(request.Root);
         }
         catch (Exception ex)
         {

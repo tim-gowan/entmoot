@@ -29,13 +29,37 @@ final class JavaInputs {
     /**
      * Prefer real paths when the host allows them. Some Windows TEMP roots deny
      * {@link Path#toRealPath()}; absolute normalize still fences the retained input.
+     * Real paths also collapse 8.3 TEMP aliases so package-root prefix checks match.
+     * Strip Windows verbatim ({@code \\?\}) prefixes so relative joins stay ordinary.
      */
     static Path resolved(Path path) throws IOException {
+        Path real;
         try {
-            return path.toRealPath();
+            real = path.toRealPath();
         } catch (java.nio.file.AccessDeniedException denied) {
-            return path.toAbsolutePath().normalize();
+            real = path.toAbsolutePath().normalize();
         }
+        return withoutVerbatim(real);
+    }
+
+    /** Best-effort retained path for compiler-reported URIs (never throws). */
+    static Path retained(Path path) {
+        try {
+            return resolved(path);
+        } catch (IOException error) {
+            return withoutVerbatim(path.toAbsolutePath().normalize());
+        }
+    }
+
+    static Path withoutVerbatim(Path path) {
+        String text = path.toString();
+        if (text.startsWith("\\\\?\\")) {
+            return Path.of(text.substring(4));
+        }
+        if (text.startsWith("//?/")) {
+            return Path.of(text.substring(4));
+        }
+        return path;
     }
 
     JavaInputs(Path root, List<Path> discovered, Main.Result result) throws IOException {
@@ -75,8 +99,10 @@ final class JavaInputs {
         }
         if (!List.of("8", "11", "17", "21", "25").contains(release))
             throw new IllegalArgumentException("unqualified javac release: " + release);
-        sources.replaceAll(file -> file.toAbsolutePath().normalize());
-        TreeSet<Path> distinct = new TreeSet<>(sources);
+        // Keep real paths so package-root startsWith matches (Windows 8.3 TEMP vs long path).
+        List<Path> retained = new ArrayList<>();
+        for (Path file : sources) retained.add(resolved(file));
+        TreeSet<Path> distinct = new TreeSet<>(retained);
         sources.clear(); sources.addAll(distinct);
         for (Path file : sources) { remember(file); rememberDirectory(file.getParent()); }
         for (Path file : classpath) {
@@ -179,7 +205,8 @@ final class JavaInputs {
         return text;
     }
     private String sourcePackage(Path file) {
-        List<String> matches = sourcePackages.entrySet().stream().filter(entry -> file.startsWith(entry.getKey()))
+        Path retained = retained(file);
+        List<String> matches = sourcePackages.entrySet().stream().filter(entry -> retained.startsWith(entry.getKey()))
             .map(Map.Entry::getValue).collect(java.util.stream.Collectors.toList());
         return matches.size() == 1 ? matches.get(0) : null;
     }
@@ -198,7 +225,7 @@ final class JavaInputs {
         String name = null, policy = BINARY;
         var source = trees.getPath(method);
         if (source != null) {
-            name = sourcePackage(Path.of(source.getCompilationUnit().getSourceFile().toUri()).toAbsolutePath().normalize());
+            name = sourcePackage(retained(Path.of(source.getCompilationUnit().getSourceFile().toUri())));
             policy = METHOD;
         } else {
             TypeElement owner = (TypeElement) method.getEnclosingElement();

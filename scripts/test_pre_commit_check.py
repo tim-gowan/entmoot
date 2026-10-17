@@ -2,6 +2,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 import unittest
 import os
 from unittest.mock import patch
@@ -167,17 +168,19 @@ class ValidationIsolationTests(unittest.TestCase):
     def test_windows_validation_bounds_default_linker_concurrency_and_preserves_override(self):
         from scripts.pre_commit_check import validation_environment
 
-        with patch('scripts.pre_commit_check.sys.platform', 'win32'), \
+        # Replace the consumer's platform view, not Python's shared sys module:
+        # shutil.which must keep using the actual host's platform APIs.
+        with patch('scripts.pre_commit_check.sys', SimpleNamespace(platform='win32')), \
                 patch('scripts.pre_commit_check.os.cpu_count', return_value=64):
             self.assertEqual(validation_environment({}).get('CARGO_BUILD_JOBS'), '6')
             self.assertEqual(validation_environment({'CARGO_BUILD_JOBS': '12'})['CARGO_BUILD_JOBS'], '12')
-        with patch('scripts.pre_commit_check.sys.platform', 'win32'), \
+        with patch('scripts.pre_commit_check.sys', SimpleNamespace(platform='win32')), \
                 patch('scripts.pre_commit_check.os.cpu_count', return_value=2):
             self.assertEqual(validation_environment({}).get('CARGO_BUILD_JOBS'), '2')
-        with patch('scripts.pre_commit_check.sys.platform', 'win32'), \
+        with patch('scripts.pre_commit_check.sys', SimpleNamespace(platform='win32')), \
                 patch('scripts.pre_commit_check.os.cpu_count', return_value=None):
             self.assertEqual(validation_environment({}).get('CARGO_BUILD_JOBS'), '1')
-        with patch('scripts.pre_commit_check.sys.platform', 'linux'):
+        with patch('scripts.pre_commit_check.sys', SimpleNamespace(platform='linux')):
             self.assertNotIn('CARGO_BUILD_JOBS', validation_environment({}))
 
     def test_child_git_commands_do_not_inherit_the_committing_index(self) -> None:

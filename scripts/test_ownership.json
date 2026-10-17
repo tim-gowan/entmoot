@@ -13,6 +13,7 @@
     "scripts/pre_commit_check.py",
     "scripts/test_pre_commit_check.py",
     "scripts/test_docs_workflow.py",
+    "scripts/test_fixture_checkout.py",
     "scripts/test_ownership.json",
     "scripts/test_ownership.py",
     "scripts/pr_structural_diff.py",
@@ -700,6 +701,46 @@
         {
           "kind": "file_prefix",
           "path": "evals/harness/npm_lock_inventory.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/measurement.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/test_measurement.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/workflow_campaign.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/test_workflow_campaign.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/provider_observations.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/test_provider_observations.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/workflow_report.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/benchmark_workflow.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/test_workflow_report.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/tests/fixtures/workflow-routing/"
         }
       ],
       "extensions": []

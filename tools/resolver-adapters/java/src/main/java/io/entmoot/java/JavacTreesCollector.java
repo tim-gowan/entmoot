@@ -40,6 +40,7 @@ final class JavacTreesCollector {
     private JavacTreesCollector() {}
 
     static void collect(Path root, List<Path> sources, Main.Result result, boolean canon) throws IOException {
+        final Path selectedRoot = JavaInputs.resolved(root);
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
             result.invalidEnvironment = true;
@@ -48,7 +49,7 @@ final class JavacTreesCollector {
         }
 
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-        JavaInputs inputs = new JavaInputs(root, sources, result);
+        JavaInputs inputs = new JavaInputs(selectedRoot, sources, result);
         try (StandardJavaFileManager fileManager =
                      compiler.getStandardFileManager(diagnostics, Locale.ROOT, StandardCharsets.UTF_8)) {
             fileManager.setLocationFromPaths(StandardLocation.CLASS_PATH, inputs.classpath);
@@ -84,8 +85,8 @@ final class JavacTreesCollector {
                 if (sourceFile == null) {
                     continue;
                 }
-                Path absolute = Path.of(sourceFile.toUri()).toAbsolutePath().normalize();
-                String relative = Main.relativePosix(root, absolute);
+                Path absolute = JavaInputs.retained(Path.of(sourceFile.toUri()));
+                String relative = Main.relativePosix(selectedRoot, absolute);
                 if (relative.isEmpty()) {
                     continue;
                 }
@@ -137,7 +138,7 @@ final class JavacTreesCollector {
                         if (positions.getEndPosition(unit, path.getLeaf()) < 0) return;
                         Main.CallTarget target = new Main.CallTarget();
                         target.kind = element instanceof TypeElement ? "type" : "callable";
-                        fillDeclarationSpan(element, trees, root, offsetMaps, target);
+                        fillDeclarationSpan(element, trees, selectedRoot, offsetMaps, target);
                         inputs.export(element, absolute, target);
                     }
                     @Override
@@ -162,7 +163,7 @@ final class JavacTreesCollector {
                         call.path = relative;
                         call.startByte = map.byteAtClamp((int) startChar);
                         call.endByte = map.byteAtClamp((int) endChar);
-                        call.owner = findOwner(path, unit, positions, map, root, offsetMaps);
+                        call.owner = findOwner(path, unit, positions, map, selectedRoot, offsetMaps);
 
                         Element element = trees.getElement(path);
                         if (element == null && select != null) {
@@ -186,7 +187,7 @@ final class JavacTreesCollector {
                         Main.CallTarget target = new Main.CallTarget();
                         target.symbol = ((TypeElement) method.getEnclosingElement()).getQualifiedName() + "#" + method;
                         target.kind = "callable";
-                        fillDeclarationSpan(method, trees, root, offsetMaps, target);
+                        fillDeclarationSpan(method, trees, selectedRoot, offsetMaps, target);
                         call.targets.add(target);
 
                         Element enclosing = method.getEnclosingElement();
@@ -307,7 +308,7 @@ final class JavacTreesCollector {
                 target.endByte = 0;
                 return;
             }
-            Path absolute = Path.of(sourceFile.toUri()).toAbsolutePath().normalize();
+            Path absolute = JavaInputs.retained(Path.of(sourceFile.toUri()));
             target.originFile = absolute.toString();
             String relative = Main.relativePosix(root, absolute);
             if (!relative.isEmpty()) {
@@ -354,7 +355,7 @@ final class JavacTreesCollector {
                 if (sourceFile == null) {
                     return null;
                 }
-                Path absolute = Path.of(sourceFile.toUri()).toAbsolutePath().normalize();
+                Path absolute = JavaInputs.retained(Path.of(sourceFile.toUri()));
                 String relative = Main.relativePosix(root, absolute);
                 if (relative.isEmpty()) {
                     return null;

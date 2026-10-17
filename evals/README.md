@@ -10,6 +10,13 @@ missing tools or incomplete bindings remain visible. Checkouts, builds, database
 and useful logs belong under `.tmp/<task>/`. Historical measurements are bounded
 observations, not current release gates.
 
+The [workflow evaluation protocol](PROTOCOL.md) separates implemented release
+controls from the proposed historical/agent survey. The bounded
+[Express routing cohort](experiments/express-routing.workflow.json) supplies
+independent runtime expectations, source-verified SARIF, historical production
+views and measured CLI operations. See the
+[execution procedure](../docs/runbooks/revision-evaluation.md#bounded-workflow-experiments).
+
 ## Dispatch demo
 
 [`demo/getrandom-structural.json`](demo/getrandom-structural.json) is a one-root

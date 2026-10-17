@@ -34,20 +34,36 @@ For `entmoot-contracts`, `entmoot-core`, `entmoot-engine`, `entmoot`, and
 - **Workflow filename:** `release.yml` (not the full path)
 - **Environment:** `crates-io`
 
-Then set repository variable `CRATES_IO_TRUSTED_PUBLISHING=true`.
+These settings require an existing crate. For the first publication, store a
+short-lived `CARGO_REGISTRY_TOKEN` in the `crates-io` environment with
+publish-new/publish-update access to the five names, and set
+`CRATES_IO_TRUSTED_PUBLISHING=false`. Use the same tag-driven release workflow.
+Once every crate exists, configure its Trusted Publisher, enable
+`CRATES_IO_TRUSTED_PUBLISHING=true`, and revoke/remove the bootstrap token.
 
 Docs: https://crates.io/docs/trusted-publishing
 
 ## How to cut a release
 
-1. Bump `workspace.package.version` in `Cargo.toml` on `main` and land CI green.
+1. Bump `workspace.package.version` and exact internal dependency versions on the
+   release branch. Let Cargo update the lockfile, then regenerate inputs with
+   `python scripts/prepare_release_inputs.py` and follow the
+   [validation gates](runbooks/local-alpha.md#validation-and-release-gates).
 2. Tag and push `v<version>` (must match `Cargo.toml`, e.g. `v0.0.1-alpha`).
-3. `release.yml` runs ci / native on that SHA, packages crates, creates the
+3. `release.yml` gates publication on ci / native / docs for that SHA, packages crates, creates the
    GitHub Release with `.crate` assets, publishes to crates.io, then runs the
-   shared `docs.yml` workflow (post-publish Pages when enabled). CI/PR docs
+   shared `docs.yml` workflow again for post-publish Pages when enabled. CI/PR docs
    stage under `.tmp/staging` via the same `docs.yml` defaults. `demo.yml` is
    opt-in corpus dispatch and is not part of Trusted Publishing or tag CD.
 4. Approve the **`crates-io`** environment if reviewers are required.
+
+Keep pushed release tags immutable. If a gate fails before publication, repair
+the candidate and use a new prerelease version/tag. Reconcile any partial registry
+publication before retrying; a version cannot be overwritten.
+
+Pages requires an Actions-based Pages site and `PAGES_ENABLED=true`. Private
+repositories need a supporting GitHub plan. Documentation qualification produces
+a staging artifact even when Pages hosting is unavailable.
 
 ## Manual dry-run / emergency bootstrap
 
@@ -71,14 +87,14 @@ python scripts/publish_release.py
 push tag v*
         │
         ▼
-   ci.yml + native.yml (workflow_call)
+   ci.yml + native.yml + docs.yml staging (workflow_call)
    (demo.yml is dispatch-only; not on this path)
         │
         ▼
    release.yml publish job (environment crates-io):
         check_release --tag → refuse if crates.io has version →
         package_smoke → gh release create (.crate) →
-        crates-io-auth-action (OIDC) → publish_release.py
+        OIDC (or initial-publish token) → publish_release.py
         │
         ▼
    docs.yml (workflow_call, after publish):

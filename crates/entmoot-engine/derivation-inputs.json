@@ -6331,11 +6331,11 @@
       "cap-std": "4.0.3",
       "entmoot-contracts": {
         "path": "../entmoot-contracts",
-        "version": "=0.0.1-alpha"
+        "version": "=0.0.1-alpha.1"
       },
       "entmoot-core": {
         "path": "../entmoot-core",
-        "version": "=0.0.1-alpha"
+        "version": "=0.0.1-alpha.1"
       },
       "gix": "0.87.1",
       "oxc": {
@@ -6439,7 +6439,7 @@
       "edition": "2021",
       "name": "entmoot-engine",
       "rust-version": "1.98",
-      "version": "0.0.1-alpha"
+      "version": "0.0.1-alpha.1"
     },
     "target": {
       "cfg(unix)": {

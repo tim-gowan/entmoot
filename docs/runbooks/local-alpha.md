@@ -106,17 +106,10 @@ failures and unsupported constructs remain different observations.
    on that tag's structural, native and docs jobs; inspect their actual results
    and the subsequent registry-install checks before declaring a release.
 
-New crate names require an initial API-token publication. Configure a short-lived
-`CARGO_REGISTRY_TOKEN` in `crates-io` with publish-new/publish-update access to the
-five workspace names, and set `CRATES_IO_TRUSTED_PUBLISHING=false` for bootstrap.
-Once all crates exist, configure each crate's Trusted Publishing for
-`tim-gowan/entmoot`, `release.yml`, environment `crates-io`; enable the variable
-and revoke/remove the bootstrap token. OIDC cannot create new crate names.
-
+The [publishing procedure](../publishing.md) owns first-publish token setup,
+subsequent OIDC configuration, immutable release tags and optional Pages hosting.
 Docs called by a release inherit its push event; supplied inputs select release
-output and Pages upload. Direct docs push/PR runs stage only. Pages deployment
-also requires an Actions-based Pages site and `PAGES_ENABLED=true`; a private
-repository needs a supporting GitHub plan. A successful artifact build alone
+output. Direct docs push/PR runs stage only. A successful artifact build alone
 does not mean the site was deployed.
 
 ### Local qualification and copy handoff (2026-10-16)
@@ -176,22 +169,14 @@ tag CD creates the GitHub Release and publishes to crates.io.
   when `PAGES_ENABLED=true`. Enable Pages with GitHub Actions as its source.
   Versioned docs match the package build; a GitHub Wiki is not a second source
   of truth.
-- `release.yml` (**sole CD**): on tag `v*`, runs ci/native on that SHA, asserts
+- `release.yml` (**sole CD**): on tag `v*`, runs ci/native/docs on that SHA, asserts
   tag↔version, creates the GitHub Release with `.crate` assets, Trusted
-  Publishing to crates.io, then docs. Bounded timeouts, minimal permissions,
+  Publishing to crates.io, then optional Pages deployment. Bounded timeouts, minimal permissions,
   verified immutable action pins. Trusted Publisher binding stays on this
   workflow filename + `crates-io`.
 - `publish.yml`: manual dry-run / bootstrap gate only (`publish=false` by
   default). Tags go through `release.yml`; do not use `publish.yml` as the
   primary release path.
-
-Create/register each crate and configure its trusted publisher for this repository,
-**`release.yml`**, and `crates-io` environment; then set
-`CRATES_IO_TRUSTED_PUBLISHING=true`. For bootstrap, an owner-scoped, short-lived
-`CARGO_REGISTRY_TOKEN` secret in that protected environment is supported. Never
-place credentials in source or logs. The release cannot roll back an already
-published version; a partial release requires operator reconciliation, not blind
-retry or treating an existing version as evidence of identical bytes.
 
 Cargo publication is immutable and packages must carry versioned dependencies;
 see [Cargo publishing](https://doc.rust-lang.org/cargo/reference/publishing.html).

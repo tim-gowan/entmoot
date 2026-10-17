@@ -11,6 +11,10 @@ publication instead of being copied into campaign storage.
   production occurrence correspondence and bounded caller accounting.
 - `revision_campaign`: shared transactional storage and input validation.
 - `knowledge_sql`: bounded read-only access to a qualified production store.
+- `workflow_campaign`: independent observers, source-verified provider fixtures,
+  exact-reference retrieval and production view retention over repository results.
+- `measurement` / `workflow_report`: shared process observations and descriptive
+  costs. Missing counters stay unknown; output tokens are not model usage.
 
 Run Cargo process controls with:
 
@@ -19,6 +23,7 @@ python -m pip install -r evals/harness/requirements.txt
 cargo test -p entmoot --test campaign_harness -- --ignored
 cargo test -p entmoot --features producer,native-tests --test campaign_harness revision_campaign_joins_actual_occurrences_and_preserves_unconsumed_frontiers -- --exact --ignored
 cargo test -p entmoot-engine --test revision_receipts campaign_accounting -- --ignored
+cargo test -p entmoot-engine --example retain_campaign_publication
 ```
 
 Tests author local Git sources and expectations independently. Real upstream

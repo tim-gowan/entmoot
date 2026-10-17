@@ -35,9 +35,20 @@ def emit(result: dict[str, Any]) -> None:
     sys.stdout.write("\n")
 
 
+def retained(path: Path, *, strict: bool = False) -> Path:
+    """Real path without Windows verbatim (`\\\\?\\`) prefixes that break CompDB joins."""
+    resolved = path.resolve(strict=strict) if strict else path.resolve()
+    text = str(resolved)
+    if text.startswith("\\\\?\\"):
+        return Path(text[4:])
+    if text.startswith("//?/"):
+        return Path(text[4:])
+    return resolved
+
+
 def relative_posix(root: Path, absolute: Path) -> str:
     try:
-        rel = absolute.resolve().relative_to(root.resolve())
+        rel = retained(absolute).relative_to(retained(root))
     except ValueError:
         return ""
     text = rel.as_posix()
@@ -500,7 +511,7 @@ class ClosedVfs:
     def __init__(self, filename):
         from blake3 import blake3
         self.hash = lambda data: "blake3:" + blake3(data).hexdigest()
-        self.path = Path(filename).resolve(strict=True)
+        self.path = retained(Path(filename), strict=True)
         self.document_bytes = self.path.read_bytes()
         self.document = json.loads(self.document_bytes)
         if self.document.get("version") != 0 or self.document.get("fallthrough") is not False:
@@ -517,16 +528,25 @@ class ClosedVfs:
                 raise ValueError("closed Clang VFS v1 accepts explicit file entries only")
             virtual = Path(entry["name"])
             physical = Path(entry["external-contents"])
-            if not virtual.is_absolute() or not physical.is_absolute() or virtual.resolve(strict=True) != physical.resolve(strict=True):
+            if not virtual.is_absolute() or not physical.is_absolute():
                 raise ValueError("VFS virtual source must name its exact retained physical file")
-            if virtual.is_symlink() or str(virtual) in self.contents:
+            virtual_real = retained(virtual, strict=True)
+            physical_real = retained(physical, strict=True)
+            # Windows TEMP often mixes 8.3 aliases with long paths; samefile/normcase.
+            if virtual_real != physical_real and not (
+                os.path.normcase(str(virtual_real)) == os.path.normcase(str(physical_real))
+                or (virtual_real.exists() and physical_real.exists() and os.path.samefile(virtual_real, physical_real))
+            ):
+                raise ValueError("VFS virtual source must name its exact retained physical file")
+            if virtual.is_symlink() or str(physical_real) in self.contents:
                 raise ValueError("duplicate or linked VFS input")
-            total_bytes += physical.stat().st_size
+            total_bytes += physical_real.stat().st_size
             if len(self.contents) >= 50000 or total_bytes > 512 * 1024 * 1024:
                 raise ValueError("closed Clang VFS input budget exceeded")
-            data = physical.read_bytes()
-            self.contents[str(virtual)] = data
-            self.digests[str(virtual)] = self.hash(data)
+            data = physical_real.read_bytes()
+            key = str(physical_real)
+            self.contents[key] = data
+            self.digests[key] = self.hash(data)
         if len(self.contents) > 50000 or sum(map(len, self.contents.values())) > 512 * 1024 * 1024:
             raise ValueError("closed Clang VFS input budget exceeded")
 
@@ -762,7 +782,7 @@ def main() -> int:
         return 0
 
     try:
-        root = Path(root_raw).resolve()
+        root = retained(Path(root_raw))
     except Exception as exc:  # noqa: BLE001
         emit(
             {

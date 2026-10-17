@@ -34,6 +34,25 @@ fn write(path: &Path, value: &Value) {
 
 #[test]
 #[ignore = "requires the Python campaign dependencies"]
+fn workflow_controls_preserve_measurements_source_fences_and_independent_claims() {
+    let result = python(
+        "unittest",
+        &[
+            "evals.harness.test_measurement",
+            "evals.harness.test_provider_observations",
+            "evals.harness.test_workflow_campaign",
+            "evals.harness.test_workflow_report",
+        ],
+    );
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+}
+
+#[test]
+#[ignore = "requires the Python campaign dependencies"]
 fn knowledge_reader_is_scoped_lazy_read_only_and_fingerprint_qualified() {
     let temp = tempfile::tempdir().unwrap();
     let db = temp.path().join("knowledge.sqlite3");
@@ -377,6 +396,7 @@ fn pinned_repositories_build_and_publish_at_bounded_dependency_depth() {
             "root":{"url":root,"revision":root_sha,"build":build,"lock":"package-lock.json"},
             "library":{"url":dep,"revision":dep_sha,"build":build,"lock":"package-lock.json"}
         },"packages":{"pkg:npm/library@1.0.0":"library", "pkg:npm/root@1.0.0":"root"},
+        "environment":{"ENTMOOT_DATA_DIR":tmp.path().join("caller-volume")},
         "checks":[
             {"name":"find-caller","arguments":["request","--graph","{graph:root}","--store","{store:root}","--request","{request}"],"request":{"operation":"find","request":{"kind":"subject","query":"caller","limit":2}}},
             {"name":"direct-boundary","arguments":["assess","compatibility","--consumer","{root:root}","--provider","{root:library}"]}
@@ -400,11 +420,14 @@ fn pinned_repositories_build_and_publish_at_bounded_dependency_depth() {
         )
     };
     let summary = successful(invoke("1", &run));
-    assert!(summary["checks"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .all(|row| row["status"] == "complete"));
+    assert!(
+        summary["checks"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| row["status"] == "complete"),
+        "{summary}"
+    );
     assert!(summary["checks"][0]["response"].is_object());
     assert_eq!(summary["repositories"].as_array().unwrap().len(), 2);
     assert!(summary["repositories"]
@@ -424,6 +447,20 @@ fn pinned_repositories_build_and_publish_at_bounded_dependency_depth() {
         .any(|row| row["package"] == "pkg:npm/transitive@2.0.0"));
     assert!(run.join("build/root/built.txt").is_file());
     assert!(summary["repositories"][0]["publication"].is_object());
+    assert!(
+        !tmp.path().join("caller-volume").exists(),
+        "campaign leaked into caller-selected storage"
+    );
+    for row in summary["repositories"].as_array().unwrap() {
+        let graph = Path::new(row["publication"]["graph"].as_str().unwrap());
+        assert!(graph.starts_with(run.join("data")), "{}", graph.display());
+        assert!(row["database_bytes"].as_u64().unwrap() > 0);
+        assert!(Path::new(row["dependency_lock"]["retained"].as_str().unwrap()).is_file());
+        assert!(row["dependency_lock"]["content_digest"]
+            .as_str()
+            .unwrap()
+            .starts_with("blake3:"));
+    }
     assert!(!run.join("sources/root/.entmoot").exists());
     let repeated = successful(invoke("1", &run));
     assert!(repeated["repositories"]

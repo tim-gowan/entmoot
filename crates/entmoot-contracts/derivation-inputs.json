@@ -6343,7 +6343,7 @@
       "edition": "2021",
       "name": "entmoot-contracts",
       "rust-version": "1.98",
-      "version": "0.0.1-alpha"
+      "version": "0.0.1-alpha.1"
     }
   }
 }

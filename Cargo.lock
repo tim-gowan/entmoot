@@ -927,7 +927,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -948,7 +948,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-contracts"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha.1"
 dependencies = [
  "blake3",
  "packageurl",
@@ -960,7 +960,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-core"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha.1"
 dependencies = [
  "assert_matches",
  "blake3",
@@ -989,7 +989,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-engine"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha.1"
 dependencies = [
  "blake3",
  "cap-std",
@@ -1025,7 +1025,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-mcp"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha.1"
 dependencies = [
  "anyhow",
  "axum",

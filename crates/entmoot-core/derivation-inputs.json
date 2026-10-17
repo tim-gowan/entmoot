@@ -6343,7 +6343,7 @@
       "blake3": "1.8.2",
       "entmoot-contracts": {
         "path": "../entmoot-contracts",
-        "version": "=0.0.1-alpha"
+        "version": "=0.0.1-alpha.1"
       },
       "ignore": "0.4.33",
       "rayon": "1.11.0",
@@ -6372,7 +6372,7 @@
       "edition": "2021",
       "name": "entmoot-core",
       "rust-version": "1.98",
-      "version": "0.0.1-alpha"
+      "version": "0.0.1-alpha.1"
     }
   }
 }

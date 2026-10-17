@@ -14,7 +14,9 @@ concurrency:
   group: native-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 env:
-  CARGO_BUILD_JOBS: 2
+  CARGO_BUILD_JOBS: 1
+  CARGO_PROFILE_TEST_DEBUG: line-tables-only
+  CARGO_PROFILE_DEV_DEBUG: line-tables-only
   PYTHONUTF8: '1'
   PYTHON_VERSION: '3.13'
   NODE_VERSION: '22'
@@ -87,12 +89,12 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           cargo build -p entmoot-contracts --example blake3_digest
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          rustup toolchain install 1.79.0 --profile minimal
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          rustup toolchain install 1.91 --profile minimal
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          rustup toolchain install 1.95.0 --profile minimal
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          # Bound disk on GHA before the heavy producer/test compile fan-out.
+          if (Test-Path target/debug/incremental) { Remove-Item -Recurse -Force target/debug/incremental }
+          if (Test-Path target/debug/examples) { Remove-Item -Recurse -Force target/debug/examples }
+          if (Test-Path target/debug/build) {
+            Get-ChildItem target/debug/build -Directory | Where-Object { $_.Name -notmatch '^(entmoot|libsqlite|blake3|tree-sitter|psm)' } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+          }
       - name: Native expansion and discrete version controls
         shell: pwsh
         run: |
@@ -114,7 +116,7 @@ jobs:
           $profileRoot = Join-Path $env:RUNNER_TEMP 'entmoot-adapter-profile'
           New-Item -ItemType Directory -Force -Path $profileRoot | Out-Null
           Set-Content -Path (Join-Path $profileRoot 'main.go') -Value "package main`nfunc main() {}`n"
-          $summaryJson = cargo run --locked -p entmoot --features $env:PRODUCER_FEATURES --quiet -- --json init --root $profileRoot
+          $summaryJson = cargo run --locked -p entmoot --bin entmoot --features $env:PRODUCER_FEATURES --quiet -- --json init --root $profileRoot
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           $summary = ($summaryJson -join "`n") | ConvertFrom-Json
           $locator = Get-Content -LiteralPath $summary.publication.store -Raw | ConvertFrom-Json
@@ -124,7 +126,7 @@ jobs:
             throw 'init did not write adapter-profile.json'
           }
           $publication = Join-Path $volume 'current.json'
-          cargo run --locked -p entmoot --features $env:PRODUCER_FEATURES --quiet -- status --publication $publication --source-root $profileRoot | Out-Null
+          cargo run --locked -p entmoot --bin entmoot --features $env:PRODUCER_FEATURES --quiet -- status --publication $publication --source-root $profileRoot | Out-Null
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           cargo test --locked -p entmoot --features "$($env:PRODUCER_FEATURES),native-tests" --test program_adapters -- --include-ignored --test-threads=1
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
@@ -145,9 +147,22 @@ jobs:
           name: native-${{ matrix.os }}
           path: ${{ env.ADAPTERS_OUT }}/build-receipt.json
           if-no-files-found: ignore
+      - name: Report build storage
+        if: always()
+        shell: bash
+        run: |
+          df -h .
+          if [ -d target ]; then du -sh target; fi
       - name: Historical Rust compiler control
         shell: pwsh
-        run: cargo test --locked -p entmoot --features "$($env:PRODUCER_FEATURES),native-tests" --test adapter_controls pinned_rust_compilers_preserve_trait_macro_and_generic_syntax -- --ignored --exact --test-threads=1
+        run: |
+          rustup toolchain install 1.79.0 --profile minimal
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          rustup toolchain install 1.91 --profile minimal
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          rustup toolchain install 1.95.0 --profile minimal
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo test --locked -p entmoot --features "$($env:PRODUCER_FEATURES),native-tests" --test adapter_controls pinned_rust_compilers_preserve_trait_macro_and_generic_syntax -- --ignored --exact --test-threads=1
       - name: Rehearse extracted native-enabled packages
         run: python scripts/package_smoke.py --producer
       - name: Build producer release CLI

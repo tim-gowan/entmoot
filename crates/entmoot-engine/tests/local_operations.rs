@@ -799,20 +799,37 @@ fn operation_reads_do_not_create_a_missing_store() {
 #[test]
 fn concurrent_first_open_does_not_mistake_another_initializer_for_foreign_storage() {
     let temp = tempfile::tempdir().unwrap();
-    let path = temp.path().join("new.db");
-    let barrier = std::sync::Arc::new(std::sync::Barrier::new(8));
-    let handles: Vec<_> = (0..8)
-        .map(|_| {
-            let path = path.clone();
-            let barrier = barrier.clone();
-            std::thread::spawn(move || {
-                barrier.wait();
-                SqliteKnowledgeRepository::open(&path).map(|_| ())
+    // Include immediate closes while other clients are still entering WAL mode.
+    // Independent fresh stores exercise the startup race, not just steady-state opens.
+    for round in 0..4 {
+        let path = temp.path().join(format!("new-{round}.db"));
+        let barrier = std::sync::Arc::new(std::sync::Barrier::new(8));
+        let handles: Vec<_> = (0..8)
+            .map(|_| {
+                let path = path.clone();
+                let barrier = barrier.clone();
+                std::thread::spawn(move || {
+                    barrier.wait();
+                    SqliteKnowledgeRepository::open(&path).map(|_| ())
+                })
             })
-        })
-        .collect();
-    let results: Vec<_> = handles.into_iter().map(|h| h.join().unwrap()).collect();
-    assert!(results.iter().all(Result::is_ok), "{results:?}");
+            .collect();
+        let results: Vec<_> = handles.into_iter().map(|h| h.join().unwrap()).collect();
+        assert!(
+            results.iter().all(Result::is_ok),
+            "round {round}: {results:?}"
+        );
+        let mut repository = SqliteKnowledgeRepository::open(&path).unwrap();
+        let submitted = repository
+            .submit_operations(&[spec("after-startup")], 1)
+            .unwrap();
+        drop(repository);
+        let reader = SqliteKnowledgeRepository::open_operations_read_only(&path).unwrap();
+        assert_eq!(
+            reader.operation(submitted[0].id.as_str()).unwrap().as_ref(),
+            Some(&submitted[0])
+        );
+    }
 }
 
 #[test]
