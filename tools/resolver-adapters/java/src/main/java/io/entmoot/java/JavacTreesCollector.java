@@ -40,6 +40,7 @@ final class JavacTreesCollector {
     private JavacTreesCollector() {}
 
     static void collect(Path root, List<Path> sources, Main.Result result, boolean canon) throws IOException {
+        root = JavaInputs.resolved(root);
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
             result.invalidEnvironment = true;
@@ -84,7 +85,7 @@ final class JavacTreesCollector {
                 if (sourceFile == null) {
                     continue;
                 }
-                Path absolute = Path.of(sourceFile.toUri()).toAbsolutePath().normalize();
+                Path absolute = JavaInputs.retained(Path.of(sourceFile.toUri()));
                 String relative = Main.relativePosix(root, absolute);
                 if (relative.isEmpty()) {
                     continue;
@@ -307,7 +308,7 @@ final class JavacTreesCollector {
                 target.endByte = 0;
                 return;
             }
-            Path absolute = Path.of(sourceFile.toUri()).toAbsolutePath().normalize();
+            Path absolute = JavaInputs.retained(Path.of(sourceFile.toUri()));
             target.originFile = absolute.toString();
             String relative = Main.relativePosix(root, absolute);
             if (!relative.isEmpty()) {
@@ -354,7 +355,7 @@ final class JavacTreesCollector {
                 if (sourceFile == null) {
                     return null;
                 }
-                Path absolute = Path.of(sourceFile.toUri()).toAbsolutePath().normalize();
+                Path absolute = JavaInputs.retained(Path.of(sourceFile.toUri()));
                 String relative = Main.relativePosix(root, absolute);
                 if (relative.isEmpty()) {
                     return null;

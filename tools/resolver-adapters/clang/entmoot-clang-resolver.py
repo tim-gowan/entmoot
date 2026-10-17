@@ -517,16 +517,25 @@ class ClosedVfs:
                 raise ValueError("closed Clang VFS v1 accepts explicit file entries only")
             virtual = Path(entry["name"])
             physical = Path(entry["external-contents"])
-            if not virtual.is_absolute() or not physical.is_absolute() or virtual.resolve(strict=True) != physical.resolve(strict=True):
+            if not virtual.is_absolute() or not physical.is_absolute():
                 raise ValueError("VFS virtual source must name its exact retained physical file")
-            if virtual.is_symlink() or str(virtual) in self.contents:
+            virtual_real = virtual.resolve(strict=True)
+            physical_real = physical.resolve(strict=True)
+            # Windows TEMP often mixes 8.3 aliases with long paths; samefile/normcase.
+            if virtual_real != physical_real and not (
+                os.path.normcase(str(virtual_real)) == os.path.normcase(str(physical_real))
+                or (virtual_real.exists() and physical_real.exists() and os.path.samefile(virtual_real, physical_real))
+            ):
+                raise ValueError("VFS virtual source must name its exact retained physical file")
+            if virtual.is_symlink() or str(physical_real) in self.contents:
                 raise ValueError("duplicate or linked VFS input")
-            total_bytes += physical.stat().st_size
+            total_bytes += physical_real.stat().st_size
             if len(self.contents) >= 50000 or total_bytes > 512 * 1024 * 1024:
                 raise ValueError("closed Clang VFS input budget exceeded")
-            data = physical.read_bytes()
-            self.contents[str(virtual)] = data
-            self.digests[str(virtual)] = self.hash(data)
+            data = physical_real.read_bytes()
+            retained = str(physical_real)
+            self.contents[retained] = data
+            self.digests[retained] = self.hash(data)
         if len(self.contents) > 50000 or sum(map(len, self.contents.values())) > 512 * 1024 * 1024:
             raise ValueError("closed Clang VFS input budget exceeded")
 

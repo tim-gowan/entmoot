@@ -10,6 +10,10 @@
 - Bound structural CI linker concurrency; keep digest-checked artifact fixtures
   byte-stable across Windows checkouts; isolate Windows-platform unit tests from
   host `shutil.which` behavior.
+- Collapse Windows 8.3 TEMP aliases for Java package-root matching, Clang closed
+  VFS retention, Roslyn digest keys and adapter-control path lookups.
+- Shrink GHA link/debug working sets and defer historical Rust toolchain installs
+  until the historical control step to avoid ENOSPC on native runners.
 
 ## 2026-10-16: Release documentation workflow
 

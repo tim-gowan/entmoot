@@ -226,7 +226,9 @@ public final class Main {
 
     static String relativePosix(Path root, Path absolute) {
         try {
-            Path relative = root.toAbsolutePath().normalize().relativize(absolute.toAbsolutePath().normalize());
+            Path base = JavaInputs.retained(root);
+            Path file = JavaInputs.retained(absolute);
+            Path relative = base.relativize(file);
             String text = relative.toString().replace('\\', '/');
             if (text.equals("..") || text.startsWith("../") || Paths.get(text).isAbsolute()) {
                 return "";

@@ -14,7 +14,9 @@ concurrency:
   group: native-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 env:
-  CARGO_BUILD_JOBS: 2
+  CARGO_BUILD_JOBS: 1
+  CARGO_PROFILE_TEST_DEBUG: line-tables-only
+  CARGO_PROFILE_DEV_DEBUG: line-tables-only
   PYTHONUTF8: '1'
   PYTHON_VERSION: '3.13'
   NODE_VERSION: '22'
@@ -87,12 +89,12 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           cargo build -p entmoot-contracts --example blake3_digest
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          rustup toolchain install 1.79.0 --profile minimal
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          rustup toolchain install 1.91 --profile minimal
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          rustup toolchain install 1.95.0 --profile minimal
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          # Bound disk on GHA before the heavy producer/test compile fan-out.
+          if (Test-Path target/debug/incremental) { Remove-Item -Recurse -Force target/debug/incremental }
+          if (Test-Path target/debug/examples) { Remove-Item -Recurse -Force target/debug/examples }
+          if (Test-Path target/debug/build) {
+            Get-ChildItem target/debug/build -Directory | Where-Object { $_.Name -notmatch '^(entmoot|libsqlite|blake3|tree-sitter|psm)' } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+          }
       - name: Native expansion and discrete version controls
         shell: pwsh
         run: |
@@ -147,7 +149,14 @@ jobs:
           if-no-files-found: ignore
       - name: Historical Rust compiler control
         shell: pwsh
-        run: cargo test --locked -p entmoot --features "$($env:PRODUCER_FEATURES),native-tests" --test adapter_controls pinned_rust_compilers_preserve_trait_macro_and_generic_syntax -- --ignored --exact --test-threads=1
+        run: |
+          rustup toolchain install 1.79.0 --profile minimal
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          rustup toolchain install 1.91 --profile minimal
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          rustup toolchain install 1.95.0 --profile minimal
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo test --locked -p entmoot --features "$($env:PRODUCER_FEATURES),native-tests" --test adapter_controls pinned_rust_compilers_preserve_trait_macro_and_generic_syntax -- --ignored --exact --test-threads=1
       - name: Rehearse extracted native-enabled packages
         run: python scripts/package_smoke.py --producer
       - name: Build producer release CLI

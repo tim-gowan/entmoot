@@ -18,13 +18,22 @@ fn write(root: &Path, name: &str, source: &str) -> PathBuf {
     let path = root.join(name);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
     std::fs::write(&path, source).unwrap();
-    path
+    // Prefer the host's long/real path so Windows 8.3 TEMP aliases match adapters.
+    std::fs::canonicalize(&path).unwrap_or(path)
 }
 
 fn document(root: &Path, name: &str, value: Value) -> String {
     write(root, name, &value.to_string())
         .to_string_lossy()
         .into_owned()
+}
+
+fn retained(path: &Path) -> PathBuf {
+    std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf())
+}
+
+fn path_key(path: &Path) -> String {
+    retained(path).to_string_lossy().into_owned()
 }
 
 fn run(command: &mut Command) {
@@ -36,7 +45,7 @@ fn run(command: &mut Command) {
     );
 }
 
-fn native(family: &str, input: Value, env: &[(&str, String)]) -> Value {
+fn native(family: &str, mut input: Value, env: &[(&str, String)]) -> Value {
     let key = format!("ENTMOOT_{family}_ADAPTER");
     let path =
         entmoot_engine::native_resolver::resolve_sidecar_family(&family.to_ascii_lowercase())
@@ -49,6 +58,9 @@ fn native(family: &str, input: Value, env: &[(&str, String)]) -> Value {
     // must not broaden scope or accidentally make a missing-classpath test pass.
     for (name, _) in std::env::vars().filter(|(name, _)| name.starts_with("ENTMOOT_")) {
         command.env_remove(name);
+    }
+    if let Some(root) = input.get("root").and_then(|value| value.as_str()) {
+        input["root"] = json!(path_key(Path::new(root)));
     }
     let mut child = command
         .envs(env.iter().map(|(k, v)| (*k, v)))
@@ -252,8 +264,44 @@ fn exports(value: &Value) -> Vec<&Value> {
 fn digest(value: &Value, path: &Path) {
     assert_eq!(
         value,
-        &json!(entmoot_contracts::blake3_hex(&std::fs::read(path).unwrap()))
+        &json!(entmoot_contracts::blake3_hex(&std::fs::read(path).unwrap())),
+        "digest for {}",
+        path.display()
     );
+}
+
+fn lookup_digest<'a>(digests: &'a Value, path: &Path, field: &str) -> &'a Value {
+    let digests = digests.as_object().unwrap_or_else(|| panic!("{field} object"));
+    let key = path_key(path);
+    if let Some(value) = digests.get(&key) {
+        return value;
+    }
+    let wanted = retained(path);
+    for (candidate, value) in digests {
+        let got = retained(Path::new(candidate));
+        if got == wanted
+            || got.to_string_lossy().eq_ignore_ascii_case(&wanted.to_string_lossy())
+        {
+            return value;
+        }
+    }
+    panic!(
+        "missing {field} for {} among {:?}",
+        path.display(),
+        digests.keys().collect::<Vec<_>>()
+    );
+}
+
+fn input_digest<'a>(build_context: &'a Value, path: &Path) -> &'a Value {
+    lookup_digest(&build_context["input_digests"], path, "input_digests")
+}
+
+fn source_input_digest<'a>(build_context: &'a Value, path: &Path) -> &'a Value {
+    lookup_digest(
+        &build_context["source_input_digests"],
+        path,
+        "source_input_digests",
+    )
 }
 fn clang_setup(root: &Path, source: &str, extra: &[&str]) -> Vec<(&'static str, String)> {
     write(root, "api.cpp", source);
@@ -404,13 +452,15 @@ fn go_named_types_tags_source_fences_and_test_scope() {
         .iter()
         .any(|r| r["symbol"].as_str().unwrap().ends_with(".Extra")
             || r["symbol"].as_str().unwrap().ends_with(".ExportedHelper")));
-    digest(
-        &first["build_context"]["source_input_digests"][file.to_str().unwrap()],
-        &file,
+    digest(source_input_digest(&first["build_context"], &file), &file);
+    assert!(
+        lookup_digest(
+            &first["build_context"]["source_input_digests"],
+            &tagged,
+            "source_input_digests",
+        )
+        .is_string()
     );
-    assert!(first["build_context"]["source_input_digests"]
-        .get(tagged.to_str().unwrap())
-        .is_some());
     let closed = rows(&first["calls"])
         .iter()
         .find(|r| r["path"] == "api_test.go" && r["dispatch"]["kind"] == "closed")
@@ -595,8 +645,8 @@ fn roslyn_evaluated_projects_import_digests_and_conflicting_exports() {
         BTreeSet::from(["One/Api.cs", "Two/Api.cs"])
     );
     assert_eq!(rows(&first["build_context"]["evaluated_projects"]).len(), 2);
-    let before = &first["build_context"]["input_digests"][props.to_str().unwrap()];
-    digest(before, &props);
+    let before = input_digest(&first["build_context"], &props).clone();
+    digest(&before, &props);
     write(
         root,
         "Directory.Build.props",
@@ -604,10 +654,7 @@ fn roslyn_evaluated_projects_import_digests_and_conflicting_exports() {
     );
     let changed = native("ROSLYN", json!({"root":root}), &[]);
     assert_eq!(changed["invalid_environment"], false);
-    assert_ne!(
-        before,
-        &changed["build_context"]["input_digests"][props.to_str().unwrap()]
-    );
+    assert_ne!(&before, input_digest(&changed["build_context"], &props));
     for (name, ty) in [("One", "int"), ("Two", "long")] {
         project(
             root,
@@ -633,16 +680,15 @@ fn roslyn_evaluated_projects_import_digests_and_conflicting_exports() {
 }
 
 fn java_env(root: &Path, release: &str) -> Vec<(&'static str, String)> {
+    let root = retained(root);
+    let mapping =
+        json!({"packages":[{"ecosystem":"java","name":"example/api","root": root.as_path()}]});
     vec![
         ("ENTMOOT_JAVA_RELEASE", release.into()),
         ("ENTMOOT_JAVA_CLASSPATH", String::new()),
         (
             "ENTMOOT_PACKAGE_API",
-            document(
-                root,
-                "packages.json",
-                json!({"packages":[{"ecosystem":"java","name":"example/api","root":root}]}),
-            ),
+            document(&root, "packages.json", mapping),
         ),
     ]
 }
@@ -750,7 +796,7 @@ fn javac_historical_modes_reject_newer_syntax_at_old_floor() {
         let value = native("JAVA",json!({"root":root}),&java_env(root,release));
         assert!(!exports(&value).is_empty());
         assert_eq!(value["build_context"]["source_release"],release);
-        digest(&value["build_context"]["input_digests"][file.to_str().unwrap()],&file);
+        digest(input_digest(&value["build_context"], &file), &file);
     }
     write(root, "Api.java", "public record Api(int value) {}");
     assert_eq!(
@@ -809,10 +855,7 @@ fn javac_binary_authority_requires_the_declared_classpath() {
         "javac.public_binary_method_contract.v1"
     );
     assert_eq!(refs[0]["target"]["package"]["name"], "example/api");
-    digest(
-        &value["build_context"]["input_digests"][jar.to_str().unwrap()],
-        &jar,
-    );
+    digest(input_digest(&value["build_context"], &jar), &jar);
     document(root, "java.json", json!({"release":"17","classpath":[]}));
     assert_eq!(
         native("JAVA", json!({"root":root}), &env)["invalid_environment"],
@@ -973,7 +1016,9 @@ fn clang_compilation_directories_keep_relative_header_origins_distinct() {
         BTreeSet::from(["first/api.c", "second/api.c"])
     );
     let normalize = |path: &str| {
-        let unified = path.replace('\\', "/");
+        let unified = retained(Path::new(path))
+            .to_string_lossy()
+            .replace('\\', "/");
         if cfg!(windows) {
             unified.to_ascii_lowercase()
         } else {
