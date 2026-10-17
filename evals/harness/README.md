@@ -17,10 +17,14 @@ publication instead of being copied into campaign storage.
   costs. Missing counters stay unknown; output tokens are not model usage.
 - `history_pilot`: bounded, seeded history/CI candidate sampling, independent Git
   source-byte grading and retained production views. CI metadata is not a bug oracle.
-- `agent_trials` / `trial_oracles`: paired local Codex decisions through bounded
+- `agent_trials` / `trial_oracles`: paired local agent decisions through bounded
   source/Git tools and optional Entmoot reads, with independent source oracles.
   Model usage, failed attempts and incomplete answers remain visible. See the
   [local pilot recipe](../../docs/runbooks/revision-evaluation.md#local-history-pilot-and-agent-calibration).
+- `agent_provider` / `codex_provider`: provider-neutral response/usage contract
+  and the current Codex CLI adapter. The runner does not parse vendor events or
+  assemble vendor flags. Additional providers implement the same bounded-action
+  contract; a fixture provider tests substitution without consuming model usage.
 - `pilot_report`: read-only summary of stored grades, operation resources and
   paired costs; no model calls, product queries or database mutation.
 

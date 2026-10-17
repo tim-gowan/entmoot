@@ -168,7 +168,10 @@ def checkout(spec: dict, destination: Path) -> None:
     if not OID.fullmatch(revision):
         raise ContractError('repository revisions must be full commit IDs')
     if not destination.exists():
-        _run(['git', 'clone', '--no-checkout', '--no-hardlinks', '--', spec['url'], str(destination)])
+        # Host line-ending defaults are not part of the pinned source recipe.
+        # Persist the policy only in this owned clone; authored attributes still apply.
+        _run(['git', 'clone', '--no-checkout', '--no-hardlinks', '--config', 'core.autocrlf=false',
+              '--config', 'core.eol=lf', '--', spec['url'], str(destination)])
         # A pinned commit may not be on the remote default branch.
         if subprocess.run(['git', '-C', str(destination), 'cat-file', '-e', revision + '^{commit}'], capture_output=True).returncode:
             _run(['git', '-C', str(destination), 'fetch', '--depth=1', 'origin', revision])
@@ -177,6 +180,11 @@ def checkout(spec: dict, destination: Path) -> None:
         # Reuse only this executor-owned checkout, restoring the configured pin.
         if git(destination, 'remote', 'get-url', 'origin') != spec['url']:
             raise ContractError('checkout identity differs from configured source')
+        for setting, expected in (('core.autocrlf', 'false'), ('core.eol', 'lf')):
+            selected = subprocess.run(['git', '-C', str(destination), 'config', '--local', '--get', setting],
+                                      capture_output=True)
+            if selected.returncode or selected.stdout.decode().strip() != expected:
+                raise ContractError('checkout text policy differs; use a fresh campaign directory')
         if subprocess.run(['git', '-C', str(destination), 'cat-file', '-e', revision + '^{commit}'], capture_output=True).returncode:
             _run(['git', '-C', str(destination), 'fetch', '--depth=1', 'origin', revision])
         # Annotated tags are not campaign pins; configs must store peeled commits.

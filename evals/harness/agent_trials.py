@@ -1,6 +1,6 @@
 """Paired local agent trials with bounded tools and independently frozen answers.
 
-Codex emits one typed action per call with its built-in execution tools disabled.
+The configured provider emits one typed action per call without executing tools.
 The host exposes the same source/Git tools to both arms; only the Entmoot arm has
 Entmoot reads. Oracle files and experiment reports never enter model context.
 """
@@ -20,6 +20,7 @@ import time
 import jsonschema
 
 from evals.harness.contracts import ContractError
+from evals.harness.agent_provider import AgentProvider, USAGE_FIELDS, load_provider, sum_usage
 from evals.harness.history_pilot import grade_delta, write
 from evals.harness.measurement import command, output_measurement
 from evals.harness.repository_campaign import beneath
@@ -51,47 +52,6 @@ ACTION_SCHEMA = {
     },
     'required': ['operation', 'side', 'query', 'path', 'offset', 'complete', 'changes', 'call_sites', 'evidence', 'limitations'],
 }
-USAGE_FIELDS = ('input_tokens', 'cached_input_tokens', 'cache_write_input_tokens',
-                'output_tokens', 'reasoning_output_tokens')
-
-
-def reported_usage(raw: bytes) -> dict:
-    events = [json.loads(line) for line in raw.decode('utf-8').splitlines() if line.strip()]
-    completions = [event for event in events if event.get('type') == 'turn.completed']
-    if len(completions) != 1:
-        raise ContractError('model usage requires exactly one completed turn')
-    usage = completions[0].get('usage', {})
-    for key in USAGE_FIELDS:
-        value = usage.get(key)
-        if value is not None and (type(value) is not int or value < 0):
-            raise ContractError('invalid reported model usage: ' + key)
-    return {key: usage.get(key) for key in USAGE_FIELDS}
-
-
-def model_result(raw: bytes) -> tuple[dict, dict]:
-    """Require a completed turn; partial usage and forbidden tool use stay visible."""
-    events = [json.loads(line) for line in raw.decode('utf-8').splitlines() if line.strip()]
-    completions = [event for event in events if event.get('type') == 'turn.completed']
-    if len(completions) != 1 or any(e.get('type') in ('turn.failed', 'error') for e in events):
-        raise ContractError('model did not complete exactly one turn')
-    items = [event['item'] for event in events if event.get('type') == 'item.completed']
-    if any(item.get('type') not in ('agent_message', 'reasoning') for item in items):
-        raise ContractError('model used a built-in tool outside the controlled trial interface')
-    messages = [item['text'] for item in items if item.get('type') == 'agent_message']
-    if not messages:
-        raise ContractError('completed turn has no answer')
-    answer = json.loads(messages[-1])
-    jsonschema.validate(answer, ACTION_SCHEMA)
-    return answer, reported_usage(raw)
-
-
-def sum_usage(rows: list[dict]) -> dict:
-    # Cached tokens are subsets of input, reasoning a subset of output. Never add
-    # either subset a second time to input+output or infer missing usage as zero.
-    return {key: sum(row[key] for row in rows) if rows and all(row.get(key) is not None for row in rows) else None
-            for key in USAGE_FIELDS}
-
-
 def grade_answer(expected: dict, answer: dict | None, issued: dict[str, dict]) -> dict:
     if answer is None:
         return {'passed': False, 'reason': 'no_final_answer'}
@@ -121,16 +81,6 @@ def select_tasks(report: dict, order: list[str], limit: int, seed: int) -> list[
             if index < len(groups[repo]) and len(tasks) < limit:
                 tasks.append(groups[repo][index])
     return tasks
-
-
-def model_arguments(codex: Path, schema: Path, spec: dict) -> list[str]:
-    args = [str(codex), 'exec', '--ignore-user-config', '--skip-git-repo-check', '--ephemeral', '--json',
-            '--sandbox', 'read-only', '-c', 'approval_policy="never"', '-c', 'web_search="disabled"',
-            '-c', 'project_doc_max_bytes=0', '--model', spec['model'],
-            '-c', 'model_reasoning_effort=' + json.dumps(spec['reasoning_effort'])]
-    for feature in ('shell_tool', 'unified_exec', 'apps', 'plugins', 'multi_agent'):
-        args.extend(['--disable', feature])
-    return args + ['--output-schema', str(schema), '-']
 
 
 class TrialTools:
@@ -241,7 +191,7 @@ class TrialTools:
         return observation
 
 
-def attempt(task: dict, views: dict, pilot: Path, root: Path, cli: Path, codex: Path,
+def attempt(task: dict, views: dict, pilot: Path, root: Path, cli: Path, provider: AgentProvider,
             arm: str, spec: dict, tokenizer, repetition: int = 0) -> dict:
     root.mkdir(parents=True, exist_ok=False)
     schema = root / 'action.schema.json'
@@ -288,17 +238,18 @@ def attempt(task: dict, views: dict, pilot: Path, root: Path, cli: Path, codex: 
             break
         prompt_path = root / f'prompt-{turn}.json'
         prompt_path.write_text(prompt, encoding='utf-8')
-        measured = command(model_arguments(codex, schema, spec), root, root / 'commands', f'model-{turn}',
-                           os.environ.copy(), remaining, tokenizer=tokenizer, stdin_path=prompt_path)
-        processes.append(measured)
-        if measured['status'] != 'complete':
-            stop = 'model_' + measured['status']
+        response = provider.respond(prompt_path, schema, root, remaining, tokenizer)
+        processes.append(response.measurement)
+        if response.usage is not None:
+            usage.append(response.usage)
+        if response.status != 'complete':
+            stop = 'invalid_model_response' if response.status == 'invalid_response' else 'model_' + response.status
+            error_detail = response.error
             break
         try:
-            raw = Path(measured['stdout']).read_bytes()
-            usage.append(reported_usage(raw))
-            action, _ = model_result(raw)
-        except (ContractError, ValueError, jsonschema.ValidationError) as error:
+            action = response.action
+            jsonschema.validate(action, ACTION_SCHEMA)
+        except jsonschema.ValidationError as error:
             stop, error_detail = 'invalid_model_response', str(error)[:2000]
             break
         if action['operation'] == 'finish':
@@ -372,9 +323,10 @@ def report(attempts: list[dict], planned: int) -> dict:
                 'Repeated tasks and related revisions are clustered; no ecosystem confidence interval is claimed.']}
 
 
-def run(config: Path, pilot: Path, root: Path, cli: Path, codex: Path, task_limit=None, repetitions=None, max_attempts=None):
+def run(config: Path, pilot: Path, root: Path, cli: Path, provider_executable: Path | None = None,
+        task_limit=None, repetitions=None, max_attempts=None):
     spec = json.loads(config.read_bytes())
-    required = {'id', 'seed', 'model', 'reasoning_effort', 'task_limit', 'repetitions', 'max_attempts', 'max_turns',
+    required = {'id', 'seed', 'provider', 'task_limit', 'repetitions', 'max_attempts', 'max_turns',
                 'attempt_seconds', 'max_reported_tokens', 'max_context_characters', 'tool_output_characters',
                 'tokenizer', 'repository_order', 'python_call_selectors'}
     if set(spec) != required:
@@ -382,14 +334,16 @@ def run(config: Path, pilot: Path, root: Path, cli: Path, codex: Path, task_limi
     for key, value in [('task_limit', task_limit), ('repetitions', repetitions), ('max_attempts', max_attempts)]:
         if value is not None:
             spec[key] = value
-    for key in required - {'id', 'seed', 'model', 'reasoning_effort', 'tokenizer', 'repository_order', 'python_call_selectors'}:
+    for key in required - {'id', 'seed', 'provider', 'tokenizer', 'repository_order', 'python_call_selectors'}:
         if type(spec[key]) is not int or spec[key] <= 0:
             raise ContractError('positive integer trial budget required: ' + key)
     if spec['task_limit'] * spec['repetitions'] * 2 > spec['max_attempts']:
         raise ContractError('paired schedule exceeds max_attempts; reduce tasks or repetitions')
     import tiktoken
     tokenizer = tiktoken.get_encoding(spec['tokenizer'])
+    provider = load_provider(spec['provider'], provider_executable)
     root.mkdir(parents=True, exist_ok=False)
+    provider.prepare(root)
     study = json.loads((pilot / 'report.json').read_bytes())
     inputs = json.loads((pilot / 'inputs.json').read_bytes())
     if material_digest(cli) != inputs['tools']['cli']:
@@ -421,23 +375,23 @@ def run(config: Path, pilot: Path, root: Path, cli: Path, codex: Path, task_limi
                 task['expected_calls'].extend(calls)
                 task['oracle_materials'][side] = materials
     write(root / 'oracles.json', tasks)
-    tools = {'cli': material_digest(cli), 'codex': material_digest(codex)}
+    tools = {'cli': material_digest(cli), 'provider': provider.identity()}
     write(root / 'inputs.json', {'configuration': spec, 'tools': tools,
           'pilot_report_digest': material_digest(pilot / 'report.json'),
           'runner_digest': material_digest(Path(__file__)), 'oracle_module_digest': material_digest(Path(__file__).with_name('trial_oracles.py')),
+          'provider_contract_digest': material_digest(Path(__file__).with_name('agent_provider.py')),
           'oracle_digest': material_digest(root / 'oracles.json'),
           'tokenizer': {'name': spec['tokenizer'], 'package_version': version('tiktoken')},
-          'host': {'platform': platform.platform(), 'python': sys.version},
-          'model_identity': 'requested alias; server weights/system prompt are not independently pinned'})
-    command([str(codex), '--version'], root, root / 'commands', 'codex-version', os.environ.copy(), 10)
+          'host': {'platform': platform.platform(), 'python': sys.version}})
     attempts = []
     for repetition in range(spec['repetitions']):
         for index, task in enumerate(tasks):
             arms = ('baseline', 'entmoot') if (index + repetition) % 2 == 0 else ('entmoot', 'baseline')
             for arm in arms:
-                if material_digest(cli) != tools['cli'] or material_digest(codex) != tools['codex']:
+                provider.verify_unchanged()
+                if material_digest(cli) != tools['cli']:
                     raise ContractError('trial executable changed during run')
-                result = attempt(task, views, pilot, root / f'{index}-{repetition}-{arm}', cli, codex, arm, spec, tokenizer, repetition)
+                result = attempt(task, views, pilot, root / f'{index}-{repetition}-{arm}', cli, provider, arm, spec, tokenizer, repetition)
                 attempts.append(result)
                 write(root / 'attempts.json', attempts)
                 write(root / 'report.json', report(attempts, spec['task_limit'] * spec['repetitions'] * 2))
@@ -470,7 +424,7 @@ def main():
     parser.add_argument('--pilot', type=Path)
     parser.add_argument('--run-dir', type=Path, required=True)
     parser.add_argument('--cli', type=Path)
-    parser.add_argument('--codex', type=Path, default=Path(shutil.which('codex') or 'codex'))
+    parser.add_argument('--provider-executable', type=Path, help='explicit executable for the configured provider')
     parser.add_argument('--task-limit', type=int)
     parser.add_argument('--repetitions', type=int)
     parser.add_argument('--max-attempts', type=int)
@@ -480,7 +434,7 @@ def main():
     else:
         if not all((args.config, args.pilot, args.cli)):
             parser.error('run requires --config, --pilot and --cli')
-        result = run(args.config, args.pilot.resolve(), args.run_dir.resolve(), args.cli.resolve(), args.codex.resolve(),
+        result = run(args.config, args.pilot.resolve(), args.run_dir.resolve(), args.cli.resolve(), args.provider_executable,
                      args.task_limit, args.repetitions, args.max_attempts)
     print(json.dumps({'executed_attempts': result['executed_attempts']}))
 

@@ -1,8 +1,7 @@
 {
   "id": "history-source-review-trials",
   "seed": 20261017,
-  "model": "gpt-6-astra",
-  "reasoning_effort": "xhigh",
+  "provider": {"kind": "codex_cli", "model": "gpt-6-astra", "reasoning_effort": "xhigh"},
   "task_limit": 6,
   "repetitions": 1,
   "max_attempts": 12,

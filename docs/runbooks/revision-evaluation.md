@@ -202,13 +202,20 @@ language dependencies and does not qualify typed dispatch or behavioral impact.
 Keep the shared database, view locators, source acquisitions, commands and frozen
 inputs together when moving the local study. The run command can reacquire pinned
 objects when the original frame's mirror directory is absent.
+Owned clones set local `core.autocrlf=false` and `core.eol=lf` before checkout,
+preserving authored attributes while excluding host defaults. Reuse rejects a
+different checkout text policy; use a fresh run instead of rewriting prior study
+sources. Explicit repository checkout transforms can still differ from raw Git
+blobs and must remain visible to the oracle.
 
 The [agent configuration](../../evals/experiments/local-trials.json) defaults to
 six paired tasks, one repetition and at most twelve attempts, each capped at two
-minutes. It records the selected model and reasoning setting; review these for
+minutes. Its `provider` configuration records the adapter, model and reasoning
+setting; review these for
 the local account before running. The checked-in values match the calibration
 environment, not a claim about the best available model. A local authenticated
-Codex executable is required; model calls use that account's allowance.
+Codex executable is required for the implemented `codex_cli` adapter; model calls
+use that account's allowance. `--provider-executable` selects an explicit path.
 
 ```text
 python -m evals.harness.agent_trials run --config evals/experiments/local-trials.json --pilot .tmp/pilot/study --run-dir .tmp/pilot/trials --cli target/debug/entmoot
@@ -222,6 +229,14 @@ also has `find`, `inspect`, `boundaries` and an initial `relay-impact` page. Bui
 model execution tools are disabled. The host executes validated JSON actions and
 keeps oracle files out of model context. This is a constrained action experiment,
 not a security sandbox or a full CLI/MCP session benchmark.
+
+The trial loop depends on `AgentProvider`, which returns a decoded action,
+normalized usage, status and measurement. Invocation flags, response events,
+tool-isolation checks and executable identity belong to the provider adapter;
+the loop owns action validation, budgets, tools and grading. A non-Codex fixture
+provider exercises that boundary without model calls. Only Codex has a live
+adapter today; other providers need their own adapter and qualification before
+comparative claims. Unknown provider selections fail rather than falling back.
 
 File-review tasks use Git as a strong baseline. Python callsite tasks use an
 independent `ast` oracle: direct-name/attribute calls with a selected spelling

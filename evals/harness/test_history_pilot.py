@@ -1,9 +1,15 @@
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
 
 import blake3
 
 from evals.harness.contracts import ContractError
-from evals.harness.history_pilot import blob_digests, grade_delta, grade_inventory, select, source_delta
+from evals.harness.history_pilot import blob_digests, grade_delta, grade_episode, grade_inventory, select, source_delta
 
 
 class HistorySamplingTests(unittest.TestCase):
@@ -43,6 +49,52 @@ class HistorySamplingTests(unittest.TestCase):
         for malformed in (raw[:-1], b'a tree 0\n\n', b'a blob 999\nx\n'):
             with self.subTest(raw=malformed), self.assertRaises(ContractError):
                 blob_digests(malformed)
+
+    def test_missing_byte_oracle_is_unavailable_not_a_product_failure(self):
+        episode = {'repository': 'r', 'base': 'a', 'head': 'b'}
+        files = {'r-a': {'a.py': 'same'}, 'r-b': {'a.py': 'same'}}
+        inventory = {'r-a': {'passed': True}}
+        self.assertEqual(grade_episode(episode, files, files, inventory)['status'], 'unavailable')
+        inventory['r-b'] = {'passed': False}
+        self.assertEqual(grade_episode(episode, files, files, inventory)['status'], 'failed')
+        inventory['r-b'] = {'passed': True}
+        self.assertEqual(grade_episode(episode, files, files, inventory)['status'], 'passed')
+
+    def test_checkout_ignores_host_eol_defaults_and_preserves_authored_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source, destination = root / 'source', root / 'checkout'
+            source.mkdir()
+            config = root / 'host.gitconfig'
+            config.write_text('[core]\n autocrlf = true\n eol = crlf\n hooksPath = empty-hooks\n')
+            environment = {**os.environ, 'GIT_CONFIG_GLOBAL': str(config), 'GIT_CONFIG_NOSYSTEM': '1'}
+            def git(*args):
+                return subprocess.check_output(['git', '-C', str(source), '-c', 'core.autocrlf=false',
+                    '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', *args], env=environment)
+            git('init', '--quiet')
+            (source / '.gitattributes').write_bytes(b'raw.py -text\n')
+            (source / 'raw.py').write_bytes(b'authored = 1\r\n')
+            (source / 'source.py').write_bytes(b'first = 1\nsecond = 2\n')
+            git('add', '.')
+            git('commit', '--quiet', '--no-gpg-sign', '-m', 'source')
+            spec = root / 'spec.json'
+            spec.write_text(json.dumps({'url': str(source), 'revision': git('rev-parse', 'HEAD').decode().strip()}))
+            invocation = [sys.executable, '-c',
+                'import json,sys; from pathlib import Path; from evals.harness.repository_campaign import checkout; '
+                'checkout(json.loads(Path(sys.argv[1]).read_bytes()), Path(sys.argv[2]))', str(spec), str(destination)]
+            result = subprocess.run(invocation, env=environment, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr.decode(errors='replace'))
+            self.assertEqual((destination / 'source.py').read_bytes(), b'first = 1\nsecond = 2\n')
+            self.assertEqual((destination / 'raw.py').read_bytes(), b'authored = 1\r\n')
+            result = subprocess.run(invocation, env=environment, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr.decode(errors='replace'))
+            self.assertEqual((destination / 'source.py').read_bytes(), b'first = 1\nsecond = 2\n')
+            subprocess.run(['git', '-C', str(destination), 'config', 'core.autocrlf', 'true'],
+                           env=environment, check=True)
+            result = subprocess.run(invocation, env=environment, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('use a fresh campaign directory', result.stderr.decode())
+            self.assertEqual((destination / 'source.py').read_bytes(), b'first = 1\nsecond = 2\n')
 
 
 if __name__ == '__main__':

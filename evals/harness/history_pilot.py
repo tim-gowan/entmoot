@@ -91,6 +91,20 @@ def grade_inventory(expected: dict, observed: dict) -> dict:
             'unexpected': unexpected, 'different': different, 'expected_files': len(expected)}
 
 
+def grade_episode(episode: dict, trees: dict, observed: dict, inventories: dict) -> dict:
+    base, head = (episode['repository'] + '-' + episode[side] for side in ('base', 'head'))
+    row = dict(episode, expected=source_delta(trees[base], trees[head]))
+    if all(key in observed and key in inventories for key in (base, head)):
+        row['observed'] = source_delta(observed[base], observed[head])
+        row['grade'] = grade_delta(row['expected'], row['observed'])
+        row['inventory_grades'] = {'base': inventories.get(base), 'head': inventories.get(head)}
+        good_inventory = all(inventories.get(key, {}).get('passed', False) for key in (base, head))
+        row['status'] = 'passed' if row['grade']['passed'] and good_inventory else 'failed'
+    else:
+        row['status'] = 'unavailable'
+    return row
+
+
 def blob_digests(raw: bytes) -> dict:
     """Decode Git's length-delimited batch output, independent of Entmoot storage."""
     offset, result = 0, {}
@@ -271,11 +285,10 @@ def run(selection: Path, root: Path, cli: Path, retain: Path) -> dict:
         try:
             retained = json.loads(commands.run([str(retain), str(request)], key + '-retain'))
             graph = json.loads(Path(publication['graph']).read_bytes())
-            extensions = configured[next(ep['repository'] for ep in frozen['episodes']
-                                         if key.startswith(ep['repository'] + '-'))]['extensions']
+            repo = key.rsplit('-', 1)[0]
+            extensions = configured[repo]['extensions']
             observed[key] = {item['path']: item['content_digest'] for item in graph['snapshot_files']
                              if Path(item['path']).suffix in extensions}
-            repo = next(ep['repository'] for ep in frozen['episodes'] if key.startswith(ep['repository'] + '-'))
             blob_input = root / 'requests' / (key + '.blobs')
             blob_input.write_text('\n'.join(sorted(set(trees[key].values()))) + '\n', encoding='ascii')
             raw_blobs = commands.run(['git', '--git-dir', mirrors[repo], 'cat-file', '--batch'],
@@ -288,19 +301,7 @@ def run(selection: Path, root: Path, cli: Path, retain: Path) -> dict:
         except (ContractError, OSError, ValueError) as error:
             excluded.append({'revision': key, 'reason': str(error)})
         write(root / 'views.json', views)
-    episodes = []
-    for episode in frozen['episodes']:
-        base, head = (episode['repository'] + '-' + episode[side] for side in ('base', 'head'))
-        row = dict(episode, expected=source_delta(trees[base], trees[head]))
-        if base in observed and head in observed:
-            row['observed'] = source_delta(observed[base], observed[head])
-            row['grade'] = grade_delta(row['expected'], row['observed'])
-            row['inventory_grades'] = {'base': inventories.get(base), 'head': inventories.get(head)}
-            good_inventory = all(inventories.get(key, {}).get('passed', False) for key in (base, head))
-            row['status'] = 'passed' if row['grade']['passed'] and good_inventory else 'failed'
-        else:
-            row['status'] = 'unavailable'
-        episodes.append(row)
+    episodes = [grade_episode(episode, trees, observed, inventories) for episode in frozen['episodes']]
     result = {'episodes': episodes, 'counts': dict(Counter(row['status'] for row in episodes)),
               'requested_episodes': len(spec['repositories']) * sum(spec['quotas'].values()),
               'selected_episodes': len(episodes), 'retained_views': len(views), 'excluded': excluded,

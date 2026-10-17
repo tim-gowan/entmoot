@@ -752,6 +752,14 @@
         },
         {
           "kind": "file_prefix",
+          "path": "evals/harness/agent_provider.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/codex_provider.py"
+        },
+        {
+          "kind": "file_prefix",
           "path": "evals/harness/test_agent_trials.py"
         },
         {

@@ -2,9 +2,11 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
-from evals.harness.agent_trials import (TrialTools, grade_answer, model_arguments,
-                                       model_result, report, reported_usage, select_tasks, sum_usage)
+from evals.harness.agent_trials import TrialTools, attempt, grade_answer, report, select_tasks
+from evals.harness.agent_provider import ProviderTurn, load_provider, sum_usage
+from evals.harness.codex_provider import CodexProvider, model_arguments, model_result, reported_usage
 from evals.harness.contracts import ContractError
 
 
@@ -20,7 +22,7 @@ class AgentTrialTests(unittest.TestCase):
         raw = '\n'.join(json.dumps(event) for event in [
             {'type': 'item.completed', 'item': {'type': 'agent_message', 'text': json.dumps(answer())}},
             {'type': 'turn.completed', 'usage': usage}]).encode()
-        result, measured = model_result(raw)
+        result, measured = model_result(raw), reported_usage(raw)
         self.assertEqual(result, answer())
         totals = sum_usage([measured, measured])
         self.assertEqual(totals['input_tokens'] + totals['output_tokens'], 240)
@@ -109,6 +111,71 @@ class AgentTrialTests(unittest.TestCase):
         self.assertEqual(result['arms']['entmoot']['unmeasured_usage_calls'], 1)
         with self.assertRaises(ContractError):
             report([base, base], 4)
+
+    def test_trial_loop_accepts_a_non_codex_provider_without_exposing_the_oracle(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'publications/sources/r-b'
+            source.mkdir(parents=True)
+            (source / 'app.py').write_text('def handler():\n    get_connection()\n')
+            expected = {'side': 'head', 'path': 'app.py', 'line': 2,
+                        'enclosing_scope': 'handler', 'callee_spelling': 'get_connection'}
+            actions = [answer(operation='read', path='app.py'),
+                       answer(changes={'added': [], 'deleted': [], 'modified': []},
+                              call_sites=[expected], evidence=['head:read:0'])]
+
+            class FixtureProvider:
+                def identity(self):
+                    return {'kind': 'authored_test_fixture'}
+
+                def prepare(self, directory):
+                    pass
+
+                def verify_unchanged(self):
+                    pass
+
+                def respond(self, prompt, schema, directory, timeout_seconds, tokenizer):
+                    context = json.loads(prompt.read_bytes())
+                    self_test.assertNotIn('oracle_materials', context['question'])
+                    self_test.assertNotIn('expected_calls', context['question'])
+                    self_test.assertGreater(timeout_seconds, 0)
+                    return ProviderTurn('complete', actions.pop(0),
+                        {'input_tokens': 100, 'output_tokens': 20}, {'status': 'complete'})
+
+            self_test = self
+            task = {'id': 'r-b', 'repository': 'r', 'base': 'a', 'head': 'b', 'kind': 'python_calls',
+                    'selector': 'get_connection', 'extensions': ['.py'], 'expected_calls': [expected]}
+            spec = {'max_turns': 3, 'attempt_seconds': 120, 'max_context_characters': 80000,
+                    'tool_output_characters': 16000, 'max_reported_tokens': 120000}
+            result = attempt(task, {}, root, root / 'attempt', Path('unused'), FixtureProvider(),
+                             'baseline', spec, None, repetition=2)
+            self.assertTrue(result['grade']['passed'])
+            self.assertEqual(result['usage']['input_tokens'], 200)
+            self.assertIsNone(result['usage']['reasoning_output_tokens'])
+            self.assertEqual(json.loads((root / 'attempt/attempt.json').read_bytes())['repetition'], 2)
+
+    def test_unknown_provider_never_falls_back_to_codex(self):
+        with self.assertRaisesRegex(ContractError, 'unsupported agent provider'):
+            load_provider({'kind': 'unqualified_provider'})
+
+    def test_provider_retains_reported_usage_after_a_transport_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            executable, stdout = root / 'provider.exe', root / 'stdout'
+            executable.write_bytes(b'fixture executable, never launched')
+            stdout.write_bytes(b'{"type":"turn.completed","usage":{"input_tokens":51,"output_tokens":7}}\n')
+            provider = CodexProvider({'kind': 'codex_cli', 'model': 'fixture', 'reasoning_effort': 'high'}, executable)
+            measured = {'status': 'failed', 'stdout': str(stdout), 'launch_error': None}
+            with patch('evals.harness.codex_provider.command', return_value=measured):
+                result = provider.respond(root / 'prompt.json', root / 'schema.json', root, 1, None)
+            self.assertEqual(result.status, 'failed')
+            self.assertEqual(result.usage['input_tokens'], 51)
+            self.assertIsNone(result.action)
+
+    def test_non_object_provider_events_and_usage_fail_explicitly(self):
+        for raw in (b'[]\n', b'{"type":"turn.completed","usage":null}\n'):
+            with self.subTest(raw=raw), self.assertRaises(ContractError):
+                reported_usage(raw)
 
 
 if __name__ == '__main__':
