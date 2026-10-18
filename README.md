@@ -50,7 +50,7 @@ From this checkout (Rust toolchain selected by `rust-toolchain.toml`):
 ```text
 cargo install --path crates/entmoot-cli --locked
 cargo install --path crates/entmoot-mcp --locked
-entmoot -C /path/to/project find work
+entmoot -C /path/to/project find entmoot_smoke_fn
 entmoot -C /path/to/project status
 entmoot -C /path/to/project boundaries --callee "*.toString()" --outcome unsupported
 ```
@@ -69,7 +69,7 @@ Later reads reuse the current immutable publication.
 No database setup is required. Remote storage is not implemented.
 
 ```text
-entmoot find work
+entmoot find entmoot_smoke_fn
 entmoot inspect <id-returned-by-find>
 entmoot callers <id-returned-by-find>
 entmoot callees <id-returned-by-find>
@@ -114,11 +114,11 @@ syntax. These entry points cover the operator workflows:
 
 | Question or action | Commands / starting syntax |
 |---|---|
-| Find code and verify its source | `find work`, `inspect <id>`, `read-source src/main.rs --start-line 1 --end-line 30` |
+| Find code and verify its source | `find entmoot_smoke_fn`, `inspect <id>`, `read-source src/main.rs --start-line 1 --end-line 30` |
 | Navigate represented calls and open work | `callers <id>`, `callees <id>`, `boundaries --reason indirect_call`; `neighborhood`, `trace-seeded-paths`, `call-components` for bounded graph views |
 | Understand inventory and evidence coverage | `status`, `inventory`, `audit-calls`; `artifact` and `query` for retained evidence |
 | Refresh or enrich knowledge explicitly | `init`, `bind`, `attach`; `deps` for declared dependency subjects |
-| Investigate a change or upgrade | `impact`, `relay-impact`, `assess`, `revalidate`; [impact](docs/runbooks/impact.md) and [compatibility](docs/runbooks/compatibility.md) explain their distinct guarantees |
+| Investigate a change or upgrade | `impact`, `assess overlay`, `relay-impact`, `assess`, `revalidate`; [impact](docs/runbooks/impact.md) and [compatibility](docs/runbooks/compatibility.md) explain their distinct guarantees |
 | Inspect identities and review clone candidates | `hash --help`, `policy`, `assess clones`; use a `CloneRequest` for explicit budgets and filters in the [worked examples](docs/runbooks/revision-evaluation.md) |
 | Plan or execute attributed work | `plan-analysis`, `work`, `validate-tests`; planning never launches a compiler or scanner |
 | Manage retained state and local collaboration | `storage-plan`, reviewed `storage-apply`, `collaborate`; `fingerprint` identifies compatible readers |

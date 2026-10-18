@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-18: Align operator docs with verified find and profile paths
+
+- README quickstart uses `find entmoot_smoke_fn` instead of path-colliding
+  `find work` (substring search matches absolute repo labels under
+  `/home/runner/work/…`). Investigate row names `assess overlay`.
+- `StatusReport::adapter_profile` rustdoc points at `adapter-profile.json` in the
+  selected storage volume, not a source-tree `.entmoot` path.
+
 ## 2026-10-18: Gate path-colliding find queries in pre-commit
 
 - Pre-commit rejects `find` query literals that collide with common absolute-path

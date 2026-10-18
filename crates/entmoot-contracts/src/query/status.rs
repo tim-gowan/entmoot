@@ -196,10 +196,11 @@ pub struct StatusReport {
     pub active_budgets: Vec<NamedCount>,
     /// Bounded suggested follow-up selectors.
     pub suggested_selectors: Vec<SuggestedSelector>,
-    /// Workspace adapter profile when `.entmoot/adapter-profile.json` is present.
+    /// Workspace adapter profile from `adapter-profile.json` in the selected
+    /// storage volume when present.
     ///
-    /// Absent when the publication root has no profile yet; absence is not a
-    /// negative conclusion about source languages.
+    /// Absent when that volume has no profile yet; absence is not a negative
+    /// conclusion about source languages.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub adapter_profile: Option<AdapterProfile>,
     /// Explicit interpretation constraints for consumers.

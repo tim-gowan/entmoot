@@ -69071,7 +69071,7 @@
               "type": "null"
             }
           ],
-          "description": "Workspace adapter profile when `.entmoot/adapter-profile.json` is present.\n\nAbsent when the publication root has no profile yet; absence is not a\nnegative conclusion about source languages."
+          "description": "Workspace adapter profile from `adapter-profile.json` in the selected\nstorage volume when present.\n\nAbsent when that volume has no profile yet; absence is not a negative\nconclusion about source languages."
         },
         "call_graph_completeness": {
           "$ref": "#/$defs/CallGraphCompleteness",
