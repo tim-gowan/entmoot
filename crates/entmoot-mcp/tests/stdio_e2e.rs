@@ -10,6 +10,65 @@ use rmcp::{
     ServiceExt,
 };
 
+#[tokio::test]
+async fn typed_subject_tool_matches_portable_request_after_restart() {
+    use serde_json::json;
+    let fixture = tempfile::tempdir().unwrap();
+    let source = fixture.path().join("source");
+    let data = fixture.path().join("data");
+    std::fs::create_dir(&source).unwrap();
+    std::fs::write(source.join("main.rs"), "struct Request;\nfn handle_good(request: Request) {}\nfn handle_cross(request: usize, other: Request) {}\n").unwrap();
+    let request = json!({"kind":"subject","selector":{
+        "name":{"mode":"contains","value":"handle"},
+        "callable":{"parameters":[{"name":{"mode":"exact","value":"request"},"declared_type_syntax":{"mode":"contains","value":"Request"}}]}
+    }});
+    for _ in 0..2 {
+        let transport = TokioChildProcess::new(
+            tokio::process::Command::new(env!("CARGO_BIN_EXE_entmoot-mcp")).configure(|cmd| {
+                cmd.arg("-C").arg(&source).arg("--data-dir").arg(&data);
+            }),
+        )
+        .unwrap();
+        let client = ().serve(transport).await.unwrap();
+        let response = client
+            .call_tool(
+                CallToolRequestParams::new("find")
+                    .with_arguments(serde_json::from_value(request.clone()).unwrap()),
+            )
+            .await
+            .unwrap();
+        assert_ne!(response.is_error, Some(true), "{response:?}");
+        let found = response.structured_content.unwrap();
+        assert_eq!(found["selection"]["matched"], 1);
+        let subject = found["items"][0]["subject"].as_str().unwrap();
+        assert_eq!(
+            found["subjects"][subject]["display_ref"],
+            "main.rs::handle_good"
+        );
+        assert_eq!(
+            found["subjects"][subject]["selection_match"]["parameter_positions"],
+            json!([[0]])
+        );
+        let shared = client
+            .call_tool(
+                CallToolRequestParams::new("query").with_arguments(
+                    serde_json::from_value(
+                        json!({"request":{"operation":"find","request":request}}),
+                    )
+                    .unwrap(),
+                ),
+            )
+            .await
+            .unwrap()
+            .structured_content
+            .unwrap();
+        assert_eq!(shared["selection"], found["selection"]);
+        assert_eq!(shared["subjects"], found["subjects"]);
+        client.cancel().await.unwrap();
+    }
+    assert_eq!(std::fs::read_dir(source).unwrap().count(), 1);
+}
+
 #[test]
 fn invalid_storage_configuration_refuses_stdio_startup_without_bootstrapping() {
     for bad in [
@@ -936,9 +995,14 @@ async fn stdio_server_lists_and_calls_navigation_tools() {
         .await
         .unwrap();
     assert_eq!(result.is_error, Some(true));
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["kind"],
-        "invalid_request"
+    // Required fields are rejected by the shared typed MCP argument decoder.
+    let error = serde_json::to_value(&result).unwrap();
+    assert!(
+        error["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("missing field `line`"),
+        "{error}"
     );
 
     let arguments =

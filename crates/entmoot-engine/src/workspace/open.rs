@@ -702,6 +702,7 @@ mod tests {
         bundle
             .engine
             .find(crate::FindQuery::Subject {
+                selector: None,
                 query: Some("work".into()),
                 path: None,
                 line: None,

@@ -54,6 +54,12 @@ pub struct RoleSelectionReceipt {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SeededPathRequest {
+    /// Shared discovery exclusions, including seed origins and destinations.
+    #[serde(default)]
+    pub prune: super::TraversalPrune,
+    /// Shared exact-scope per-hop admission in discovery and returned witnesses.
+    #[serde(default)]
+    pub evidence_filter: super::HopEvidenceFilter,
     /// Information delivery; search/selection budgets below retain their meaning.
     #[serde(default)]
     pub output: super::OutputOptions,
@@ -78,6 +84,8 @@ pub struct SeededPathRequest {
 impl Default for SeededPathRequest {
     fn default() -> Self {
         Self {
+            prune: Default::default(),
+            evidence_filter: super::HopEvidenceFilter::Any,
             output: super::OutputOptions::default(),
             from_role: "source".into(),
             to_role: "sink".into(),
@@ -130,6 +138,18 @@ pub struct SeededRoute {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SeededPathReport {
+    /// Pruning selector accounting over the full materialized inventory.
+    /// Unknown candidates remain traversable; they are not proven nonmatches.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prune_selection: Option<super::SelectionReceipt>,
+
+    /// Discovery edge visits rejected by explicit pruning.
+    #[serde(default)]
+    pub pruned_edges: usize,
+    /// Discovery edge visits rejected by per-hop evidence admission.
+    #[serde(default)]
+    pub evidence_filtered_edges: usize,
+
     /// Versioned attachment and discovery method.
     pub method_id: String,
     /// Exact inventory snapshot.

@@ -4,6 +4,9 @@ fn help_and_argument_errors_work_on_the_process_stack() {
     for args in [
         vec!["--help"],
         vec!["query", "--help"],
+        vec!["find", "--help"],
+        vec!["path", "--help"],
+        vec!["neighborhood", "--help"],
         vec!["impact", "--help"],
         vec!["assess", "clones", "--help"],
         vec!["assess", "unused", "--help"],

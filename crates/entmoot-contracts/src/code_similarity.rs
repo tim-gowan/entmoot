@@ -39,6 +39,8 @@ pub struct CloneFingerprints {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(default, deny_unknown_fields)]
 pub struct CloneRequest {
+    /// Explicit shared path semantics. Mutually exclusive with legacy path prefix.
+    pub path_selector: Option<crate::query::PathSelector>,
     pub canonical: bool,
     pub path: Option<String>,
     pub min_tokens: usize,
@@ -52,6 +54,7 @@ pub struct CloneRequest {
 impl Default for CloneRequest {
     fn default() -> Self {
         Self {
+            path_selector: None,
             canonical: false,
             path: None,
             min_tokens: 30,

@@ -10,6 +10,9 @@ impl QueryEngine {
     /// each discovered pair is checked by the existing scoped bidirectional query.
     /// Co-location and absent represented routes are not dataflow conclusions.
     pub fn trace_seeds(&self, request: SeededPathRequest) -> Result<SeededPathReport, QueryError> {
+        let mut admission =
+            super::admission::EdgeAdmission::new(self, &request.prune, request.evidence_filter)?;
+        let repository = self.repository()?;
         super::validate_walk_budget(request.walk)?;
         if request.from_role.trim().is_empty()
             || request.to_role.trim().is_empty()
@@ -29,6 +32,8 @@ impl QueryEngine {
             request.include_hypotheses,
         );
         let mut report = SeededPathReport {
+            prune_selection: admission.prune_selection.clone(),
+            pruned_edges: 0, evidence_filtered_edges: 0,
             method_id: "entmoot.seeded-call-routes.v2".into(),
             snapshot: self.graph.snapshot.clone().into(),
             matching_assertions: selection.matching,
@@ -69,7 +74,11 @@ impl QueryEngine {
             if targets.is_empty() {
                 break;
             }
-            let keys = self.walk_endpoint_keys(&origin);
+            let keys: Vec<_> = self
+                .walk_endpoint_keys(&origin)
+                .into_iter()
+                .filter(|key| !admission.excludes_address(key))
+                .collect();
             let mut seen: HashSet<_> = keys.iter().cloned().collect();
             let mut queue: VecDeque<_> = keys.into_iter().map(|k| (k, 0usize)).collect();
             while let Some((key, depth)) = queue.pop_front() {
@@ -111,6 +120,9 @@ impl QueryEngine {
                     if edge.predicate != RelationKind::Calls {
                         continue;
                     }
+                    if !admission.allows(*index, edge, Some(&repository))? {
+                        continue;
+                    }
                     let next = address_identity_key(&edge.object);
                     if seen.insert(next.clone()) {
                         queue.push_back((next, depth + 1));
@@ -118,8 +130,12 @@ impl QueryEngine {
                 }
             }
         }
+        report.pruned_edges = admission.pruned_edges;
+        report.evidence_filtered_edges = admission.evidence_filtered_edges;
         for (from, to) in pairs {
             let query = self.traverse(TraverseQuery::Path {
+                evidence_filter: request.evidence_filter,
+                prune: request.prune.clone(),
                 resumable: false,
                 continuation: None,
                 start: from.clone(),
@@ -189,6 +205,25 @@ mod tests {
         let route = serde_json::to_value(&result.routes[0].query).unwrap();
         assert_eq!(route["paths"][0]["hop_count"], 2);
         assert_eq!(route["paths"][0]["classification"], "candidate");
+        let pruned = engine
+            .trace_seeds(SeededPathRequest {
+                prune: entmoot_contracts::query::TraversalPrune {
+                    subjects: vec!["b".into()],
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .unwrap();
+        assert!(pruned.routes.is_empty());
+        assert_eq!(pruned.pruned_edges, 1);
+        let resolved = engine
+            .trace_seeds(SeededPathRequest {
+                evidence_filter: entmoot_contracts::query::HopEvidenceFilter::ResolvedOnly,
+                ..Default::default()
+            })
+            .unwrap();
+        assert!(resolved.routes.is_empty());
+        assert_eq!(resolved.evidence_filtered_edges, 1);
         let reverse = engine
             .trace_seeds(SeededPathRequest {
                 from_role: "sink".into(),

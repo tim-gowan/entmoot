@@ -93,6 +93,20 @@ pub struct TraversePath {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct TraverseSearchReceipt {
+    /// Pruning selector accounting over the full materialized inventory.
+    /// Unknown candidates remain traversable; they are not proven nonmatches.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prune_selection: Option<super::SelectionReceipt>,
+
+    /// Examined edges rejected by explicit exclusions.
+    #[serde(default)]
+    pub pruned_edges: usize,
+    /// Examined edges rejected by the exact-scope evidence requirement.
+    #[serde(default)]
+    pub evidence_filtered_edges: usize,
+    /// Claims read during edge admission, separate from witness hydration.
+    #[serde(default)]
+    pub admission_claims_examined: usize,
     /// Current slice identity, usable for exact replay while retained.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub slice_token: Option<String>,
@@ -200,6 +214,9 @@ pub struct NeighborhoodHit {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct TraverseNeighborhoodResult {
+    /// Returned-endpoint selection accounting over discovered endpoints.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub endpoint_selection: Option<crate::query::SelectionReceipt>,
     /// Indexed snapshot.
     pub snapshot: SchemaJson<crate::SourceSnapshot>,
     /// Exact root selector.

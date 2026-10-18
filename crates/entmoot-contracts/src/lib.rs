@@ -99,8 +99,8 @@ pub use attachment::{
 };
 pub use capability::{CapabilityObservation, CapabilityOutcome, EvidenceCapability};
 pub use code_contract::{
-    CodeContract, DeclaredContract, DeclaredExpression, DeclaredMember, DeclaredParameter,
-    DeclaredType, MemberKind, ParameterKind,
+    CodeContract, CodeContractRecord, DeclaredContract, DeclaredExpression, DeclaredMember,
+    DeclaredParameter, DeclaredType, MemberKind, ParameterKind,
 };
 pub use component::{
     reference_outcome, AdvisoryAffectedPackage, AdvisoryRange, AdvisoryRangeEvent, AffectedVersion,

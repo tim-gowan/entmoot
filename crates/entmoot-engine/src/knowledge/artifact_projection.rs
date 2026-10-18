@@ -88,6 +88,7 @@ impl KnowledgeStore {
         // Name every collection: a new collection must make an explicit choice
         // about artifact ownership instead of silently inheriting a broad default.
         Self {
+            code_contracts: vec![],
             declaration_sites: vec![],
             call_sites: vec![],
             coverages: vec![],

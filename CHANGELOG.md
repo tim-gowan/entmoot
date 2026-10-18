@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-10-17: Shared selection, durable signatures and traversal admission
+
+- Add a concise data/command abstraction rule referenced from AGENTS. Rust
+  contracts own selectors, validation, defaults and receipt shape; CLI/MCP
+  compose shared read operations.
+- Share entity kinds, explicit exact/substring/edit-distance matches,
+  exact/subtree/glob paths and correlated written-parameter predicates across
+  find, inventory, neighborhood endpoints, boundary and clone path filters.
+  Counts preserve missing/unsupported facts; match positions survive compact output.
+- Persist complete source-declared contracts as source-fenced knowledge records
+  and rehydrate them independently of topology. Identity retains source detail;
+  competing observations never silently select one signature.
+- Share evidence admission and discovery pruning across path frontiers,
+  neighborhoods, seeded discovery and impact relay; bind filters into caches and
+  continuations. Filtered traversal preserves original edges and scopes.
+- Add CLI path and typed find flags, shared traversal budgets/checkpoints,
+  portable examples and typed MCP find/inspect decoding. Irrelevant tool fields
+  now fail validation. Missing required find/inspect fields use MCP argument
+  errors naming the field; valid requests retain structured service errors.
+  Standalone resumable walks require durable checkpoints;
+  MCP traverse evidence-detail defaults now follow the shared budget.
+- Use globset and cutoff-aware RapidFuzz for matching. Retain the existing bounded
+  substring candidate index after a slower SQLite FTS5 comparison. Storage and
+  implementation fingerprints change through their normal derivation; incompatible
+  publications require explicit rebuilding, never silent reset.
+
 ## 2026-10-17: Solo-developer GitHub ruleset and public-repo bleed hardening
 
 - Retarget the `main` ruleset to the default branch only: PR required (0 reviews),

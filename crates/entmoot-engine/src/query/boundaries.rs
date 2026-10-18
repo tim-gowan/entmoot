@@ -12,31 +12,29 @@ fn token(value: &impl serde::Serialize) -> Result<String, QueryError> {
         .to_owned())
 }
 
-// Bounded wildcard matcher: only '*' is special, never regex or type inference.
+// Preserve the public star-only syntax while delegating matching to globset.
+fn compile_callee(pattern: &str) -> Result<globset::GlobMatcher, QueryError> {
+    if pattern.len() > 1024 {
+        return Err(QueryError::InvalidInput(
+            "callee pattern exceeds 1024 bytes".into(),
+        ));
+    }
+    let pattern = pattern.strip_suffix("()").unwrap_or(pattern);
+    let escaped = pattern
+        .split('*')
+        .map(globset::escape)
+        .collect::<Vec<_>>()
+        .join("*");
+    Ok(globset::GlobBuilder::new(&escaped)
+        .literal_separator(false)
+        .backslash_escape(true)
+        .build()
+        .map_err(|e| QueryError::InvalidInput(format!("invalid callee pattern: {e}")))?
+        .compile_matcher())
+}
+#[cfg(test)]
 fn matches_callee(pattern: &str, value: &str) -> bool {
-    let pattern = pattern.strip_suffix("()").unwrap_or(pattern).as_bytes();
-    let value = value.as_bytes();
-    let (mut p, mut v, mut star, mut retry) = (0, 0, None, 0);
-    while v < value.len() {
-        if p < pattern.len() && pattern[p] == value[v] {
-            p += 1;
-            v += 1;
-        } else if p < pattern.len() && pattern[p] == b'*' {
-            star = Some(p);
-            p += 1;
-            retry = v;
-        } else if let Some(s) = star {
-            retry += 1;
-            v = retry;
-            p = s + 1;
-        } else {
-            return false;
-        }
-    }
-    while p < pattern.len() && pattern[p] == b'*' {
-        p += 1;
-    }
-    p == pattern.len()
+    compile_callee(pattern).unwrap().is_match(value)
 }
 
 impl QueryEngine {
@@ -44,6 +42,11 @@ impl QueryEngine {
         &self,
         request: &CallBoundaryRequest,
     ) -> Result<Value, QueryError> {
+        let path_filter = super::selection::CompiledPath::from_request(
+            request.path_selector.as_ref(),
+            request.path.as_deref(),
+        )?;
+        let callee_filter = request.callee.as_deref().map(compile_callee).transpose()?;
         let limit = request.limit.unwrap_or(50);
         if !(1..=1000).contains(&limit) || request.callee.as_ref().is_some_and(|s| s.len() > 1024) {
             return Err(QueryError::InvalidInput(
@@ -145,14 +148,12 @@ impl QueryEngine {
             let Some(syntax) = &node.call_site else {
                 continue;
             };
-            if request
-                .callee
+            if callee_filter
                 .as_ref()
-                .is_some_and(|p| !matches_callee(p, &syntax.callee))
-                || request
-                    .path
+                .is_some_and(|p| !p.is_match(&syntax.callee))
+                || path_filter
                     .as_ref()
-                    .is_some_and(|p| !node.path.as_deref().is_some_and(|path| path.starts_with(p)))
+                    .is_some_and(|p| !node.path.as_deref().is_some_and(|path| p.matches(path)))
             {
                 continue;
             }

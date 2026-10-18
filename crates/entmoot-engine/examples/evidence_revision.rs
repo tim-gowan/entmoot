@@ -250,6 +250,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ) = (&edge.subject, &edge.object)
         {
             paths.push(engine.traverse(entmoot_engine::TraverseQuery::Path {
+                evidence_filter: Default::default(),
+                prune: Default::default(),
                 resumable: false,
                 continuation: None,
                 start: start.clone(),

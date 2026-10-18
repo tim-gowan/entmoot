@@ -100,6 +100,7 @@ impl Side {
 /// All mutable discovery state; a slice stops at an exact original adjacency position.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub(super) struct PathSearch {
+    admission: super::admission::EdgeAdmission,
     left: Side,
     right: Side,
     allowed: HashSet<RelationKind>,
@@ -114,6 +115,7 @@ pub(super) struct PathSearch {
 }
 
 impl PathSearch {
+    #[cfg(test)]
     pub fn new(
         engine: &QueryEngine,
         start: &[String],
@@ -121,11 +123,43 @@ impl PathSearch {
         allowed: HashSet<RelationKind>,
         allow_zero: bool,
     ) -> Self {
+        Self::with_admission(
+            engine,
+            start,
+            target,
+            allowed,
+            allow_zero,
+            super::admission::EdgeAdmission::default(),
+        )
+    }
+
+    pub fn with_admission(
+        engine: &QueryEngine,
+        start: &[String],
+        target: &[String],
+        allowed: HashSet<RelationKind>,
+        allow_zero: bool,
+        admission: super::admission::EdgeAdmission,
+    ) -> Self {
         let ids = &engine.indexes.relations.ids;
-        let start: Vec<_> = start.iter().filter_map(|k| ids.get(k).copied()).collect();
-        let target: Vec<_> = target.iter().filter_map(|k| ids.get(k).copied()).collect();
+        let start: Vec<_> = start
+            .iter()
+            .filter(|k| !admission.excludes_address(k))
+            .filter_map(|k| ids.get(k).copied())
+            .collect();
+        let target: Vec<_> = target
+            .iter()
+            .filter(|k| !admission.excludes_address(k))
+            .filter_map(|k| ids.get(k).copied())
+            .collect();
         let index_started = std::time::Instant::now();
-        let (overlay, work) = engine.shortcut_overlay(&allowed);
+        // Filtered walks inspect original occurrences: a shortcut must never skip
+        // evidence checks or an excluded interior. Unfiltered walks keep acceleration.
+        let (overlay, work) = if admission.is_unfiltered() {
+            engine.shortcut_overlay(&allowed)
+        } else {
+            (None, 0)
+        };
         let index_micros = u64::try_from(index_started.elapsed().as_micros()).unwrap_or(u64::MAX);
         tracing::debug!(
             index_micros,
@@ -150,6 +184,7 @@ impl PathSearch {
             }
         }
         Self {
+            admission,
             left: Side::roots(&start),
             right: Side::roots(&target),
             allowed,
@@ -158,7 +193,7 @@ impl PathSearch {
             pending: None,
             shortest: None,
             allow_zero,
-            done: disconnected,
+            done: disconnected || start.is_empty() || target.is_empty(),
             counters: WalkCounters {
                 index_examined_edges: work,
                 index_micros,
@@ -207,7 +242,9 @@ impl PathSearch {
     pub fn retained_bytes(&self) -> usize {
         // Includes spare hash/vector capacity and queue entries; overlays have a
         // separate bounded owner and are shared rather than charged per search.
-        1024 + (self.left.records.len() + self.right.records.len()) * 512
+        self.admission.retained_bytes()
+            + 1024
+            + (self.left.records.len() + self.right.records.len()) * 512
             + (self.left.queue.len() + self.right.queue.len()) * 64
             + self
                 .cuts
@@ -216,8 +253,13 @@ impl PathSearch {
                 .sum::<usize>()
     }
 
-    pub fn advance(&mut self, engine: &QueryEngine, budget: BoundedWalkBudget) {
-        self.advance_with_limit(engine, budget, usize::MAX);
+    pub fn advance(
+        &mut self,
+        engine: &QueryEngine,
+        budget: BoundedWalkBudget,
+    ) -> Result<(), super::QueryError> {
+        self.advance_with_limit(engine, budget, usize::MAX)?;
+        Ok(())
     }
 
     pub fn advance_with_limit(
@@ -225,7 +267,14 @@ impl PathSearch {
         engine: &QueryEngine,
         budget: BoundedWalkBudget,
         memory_limit: usize,
-    ) -> bool {
+    ) -> Result<bool, super::QueryError> {
+        // Pure topology discovery needs no evidence store, including when
+        // pruning exact addresses or occurrences.
+        let repository = self
+            .admission
+            .needs_evidence()
+            .then(|| engine.repository())
+            .transpose()?;
         let mut memory_available = true;
         let mut work = WalkCounters::default();
         while !self.done {
@@ -315,6 +364,9 @@ impl PathSearch {
             self.pending = Some((forward, id, offset + 1, fanout));
             let edge = &engine.graph.relation_edges[edge_id];
             if !self.allowed.is_empty() && !self.allowed.contains(&edge.predicate) {
+                continue;
+            }
+            if !self.admission.allows(edge_id, edge, repository.as_ref())? {
                 continue;
             }
             if budget.max_edges_per_node > 0 && fanout >= budget.max_edges_per_node {
@@ -419,7 +471,11 @@ impl PathSearch {
         self.counters.expansion_budget_exhausted = work.expansion_budget_exhausted;
         self.counters.edge_budget_exhausted = work.edge_budget_exhausted;
         self.counters.fanout_truncated |= work.fanout_truncated;
-        memory_available
+        self.counters.prune_selection = self.admission.prune_selection.clone();
+        self.counters.pruned_edges = self.admission.pruned_edges;
+        self.counters.evidence_filtered_edges = self.admission.evidence_filtered_edges;
+        self.counters.admission_claims_examined = self.admission.evidence_claims_examined;
+        Ok(memory_available)
     }
 
     pub fn discovery(&self, engine: &QueryEngine, budget: BoundedWalkBudget) -> WalkDiscovery {
@@ -495,6 +551,7 @@ impl PathSearch {
 }
 
 impl QueryEngine {
+    #[cfg(test)]
     pub(super) fn discover_walk(
         &self,
         start: &str,
@@ -503,7 +560,7 @@ impl QueryEngine {
         target_keys: &[String],
         allowed: &HashSet<RelationKind>,
         budget: BoundedWalkBudget,
-    ) -> WalkDiscovery {
+    ) -> Result<WalkDiscovery, super::QueryError> {
         let mut search = PathSearch::new(
             self,
             start_keys,
@@ -511,7 +568,7 @@ impl QueryEngine {
             allowed.clone(),
             start == target,
         );
-        search.advance(self, budget);
-        search.discovery(self, budget)
+        search.advance(self, budget)?;
+        Ok(search.discovery(self, budget))
     }
 }

@@ -79,6 +79,10 @@ records delivered work. Known defects belong in PLANNING, not weaker contracts.
 
 ## Interface design
 
+Apply [data and command abstractions](.agents/rules/data-command-abstractions.mdc)
+when changing records, ETL, selectors, queries or CLI/MCP: shared typed owners,
+explicit filter placement, bounded receipts and established library primitives.
+
 - Start with an operator question and reuse the shared engine operation. CLI verbs
   use kebab-case; wire fields and MCP operations keep their existing snake_case
   convention. Name selectors for their entity and scope; distinguish IDs, names,

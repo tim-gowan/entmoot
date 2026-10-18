@@ -80,23 +80,48 @@ impl QueryRequest {
 
 /// Expansion and result budgets for typed relation traversal.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
+#[serde(default, deny_unknown_fields)]
 pub struct BoundedWalkBudget {
     /// Maximum directed hops in a returned path.
+    #[schemars(range(min = 1, max = 256))]
     pub max_hops: usize,
     /// Maximum nodes expanded during search.
+    #[schemars(range(min = 1, max = 100000))]
     pub max_expansions: usize,
     /// Maximum total edges examined across both directed frontiers.
     #[serde(default = "default_walk_edges")]
+    #[schemars(range(min = 1, max = 1000000))]
     pub max_examined_edges: usize,
     /// Maximum predicate-matching edges per expanded node; zero removes this local cap.
+    #[schemars(range(min = 0, max = 1000000))]
     pub max_edges_per_node: usize,
     /// Maximum paths returned to the caller.
+    #[schemars(range(min = 1, max = 20))]
     pub max_results: usize,
     /// Maximum entries per hop in each assertion, unresolved-call, and claim-id
     /// detail list (0..=100). Counts, truncation, and classification remain intact.
     #[serde(default = "default_walk_evidence")]
+    #[schemars(range(min = 0, max = 100))]
     pub max_evidence_per_hop: usize,
+}
+
+impl BoundedWalkBudget {
+    /// Validate the shared limits before allocating search state.
+    ///
+    /// # Errors
+    /// Returns an error if any explicit budget is outside its documented bounds.
+    pub fn validate(&self) -> Result<(), String> {
+        if !(1..=256).contains(&self.max_hops)
+            || !(1..=100_000).contains(&self.max_expansions)
+            || !(1..=1_000_000).contains(&self.max_examined_edges)
+            || self.max_edges_per_node > 1_000_000
+            || !(1..=20).contains(&self.max_results)
+            || self.max_evidence_per_hop > 100
+        {
+            return Err("walk budget requires max_hops 1..=256, max_expansions 1..=100000, max_examined_edges 1..=1000000, max_edges_per_node 0..=1000000 (0 disables local cap), max_results 1..=20, and max_evidence_per_hop 0..=100".into());
+        }
+        Ok(())
+    }
 }
 
 impl Default for BoundedWalkBudget {
@@ -138,6 +163,9 @@ pub enum FindQuery {
     },
     /// Resolve text, path, and optional line to inventory subjects.
     Subject {
+        /// Structured inventory predicates, intersected with legacy query/path fields.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        selector: Option<super::SubjectSelector>,
         /// Free-text or durable id selector: node id, `address_id`,
         /// `logic_address`, `display_ref`, label/FQN text, or an exact
         /// `structural_hash` (`blake3:<64-hex>` or bare 64-hex). Hash match is
@@ -355,6 +383,12 @@ pub enum TraverseQuery {
     /// Every hop passes the filter. Context changes require an explicit resource
     /// observed-as bridge; witnesses never cross snapshots or implicit build contexts.
     Neighborhood {
+        /// Exclusions applied during discovery, including intermediate subjects.
+        #[serde(default)]
+        prune: super::TraversalPrune,
+        /// Returned endpoints only; intermediate subjects remain searchable.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        endpoint_selector: Option<Box<super::SubjectSelector>>,
         /// Exact inventory selector; ambiguous selectors return an explicit gap.
         start: String,
         /// Incoming dependents or outgoing dependencies.
@@ -377,6 +411,12 @@ pub enum TraverseQuery {
     },
     /// Find bounded directed paths between two subjects.
     Path {
+        /// Exact per-hop evidence admission, shared with neighborhood.
+        #[serde(default)]
+        evidence_filter: HopEvidenceFilter,
+        /// Exclusions applied during both directed frontiers.
+        #[serde(default)]
+        prune: super::TraversalPrune,
         /// Start subject selector.
         start: String,
         /// Target subject selector.
@@ -426,10 +466,11 @@ impl TraverseQuery {
 }
 
 /// Evidence filter for each relation occurrence in a neighborhood witness.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum HopEvidenceFilter {
     /// Retain every represented edge, including unclaimed and refuted edges.
+    #[default]
     Any,
     /// Require at least one exact-scope active resolution claim, with every
     /// applicable state artifact-resolved, semantic-resolved or validated.

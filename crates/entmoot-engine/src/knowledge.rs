@@ -35,10 +35,31 @@ pub(crate) fn validate_declaration_site(
     Ok(())
 }
 
+pub(crate) fn validate_code_contract(
+    record: &entmoot_contracts::CodeContractRecord,
+) -> Result<(), String> {
+    record.validate()?;
+    let address =
+        crate::display_ref::parse_logic_address(&record.contract.site.occurrence.logic_address)
+            .ok_or("invalid code contract logic address")?;
+    if address.path != record.path
+        || address.symbol != record.contract.name
+        || address
+            .start_byte
+            .is_some_and(|start| start != record.contract.site.span.start_byte)
+    {
+        return Err("code contract address disagrees with source observation".into());
+    }
+    Ok(())
+}
+
 /// Knowledge plane records that must survive topology cache deletion.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct KnowledgeStore {
+    /// Source-of-record signatures and object boundaries, scoped to exact source bytes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub code_contracts: Vec<entmoot_contracts::CodeContractRecord>,
     /// Immutable source-committed named declaration/initializer observations.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub declaration_sites: Vec<entmoot_contracts::DeclarationSiteRecord>,
@@ -136,6 +157,25 @@ impl KnowledgeStore {
             })
             .collect();
         declaration_sites.sort_by(|a, b| a.site_id.cmp(&b.site_id));
+        let mut code_contracts: Vec<_> = graph
+            .nodes
+            .iter()
+            .filter_map(|node| {
+                let path = node.path.as_deref()?;
+                let mut record = entmoot_contracts::CodeContractRecord {
+                    record_id: String::new(),
+                    snapshot: graph.snapshot.clone(),
+                    path: path.into(),
+                    content_digest: entmoot_contracts::ContentDigest::from_trusted(
+                        (*digests.get(path)?).clone(),
+                    ),
+                    contract: node.code_contract.clone()?,
+                };
+                record.record_id = record.derive_id();
+                Some(record)
+            })
+            .collect();
+        code_contracts.sort_by(|a, b| a.record_id.cmp(&b.record_id));
         let propositions = graph
             .relation_edges
             .iter()
@@ -158,6 +198,7 @@ impl KnowledgeStore {
             component_vulnerabilities: graph.component_vulnerabilities.clone(),
             bom_compositions: graph.bom_compositions.clone(),
             locations: graph.locations.clone(),
+            code_contracts,
             traces: graph.traces.clone(),
             trace_steps: graph.trace_steps.clone(),
             attachments: graph.attachments.clone(),
@@ -183,6 +224,7 @@ impl KnowledgeStore {
         // syntax only from visible, snapshot-matched source-of-record rows below.
         for node in &mut inventory.nodes {
             node.declaration = None;
+            node.code_contract = None;
         }
         inventory.coverages = self
             .coverages
@@ -258,6 +300,46 @@ impl KnowledgeStore {
             node.call_site = Some(marker.clone());
             inventory.upsert_node(node);
         }
+        let mut contract_nodes: BTreeMap<_, Vec<usize>> = BTreeMap::new();
+        for (index, node) in inventory.nodes.iter().enumerate() {
+            if let (Some(path), Some(address), Some(start), Some(end)) =
+                (&node.path, &node.address_id, node.start_byte, node.end_byte)
+            {
+                contract_nodes
+                    .entry((path.clone(), address.clone(), start, end))
+                    .or_default()
+                    .push(index);
+            }
+        }
+        let mut observations = BTreeMap::new();
+        for record in &self.code_contracts {
+            if record.snapshot != inventory.snapshot
+                || validate_code_contract(record).is_err()
+                || digests.get(&record.path).map(String::as_str)
+                    != Some(record.content_digest.as_str())
+            {
+                continue;
+            }
+            let key = (
+                record.path.clone(),
+                record.contract.site.occurrence.address_id.to_string(),
+                record.contract.site.span.start_byte,
+                record.contract.site.span.end_byte,
+            );
+            let observation = observations.entry(key).or_insert(Some(&record.contract));
+            if observation.is_some_and(|previous| previous != &record.contract) {
+                // Retain competing durable observations, but do not choose one
+                // as the signature used for selection on this projection.
+                *observation = None;
+            }
+        }
+        for (key, observation) in observations {
+            if let Some(indices) = contract_nodes.get(&key) {
+                for &index in indices {
+                    inventory.nodes[index].code_contract = observation.cloned();
+                }
+            }
+        }
         inventory.input_roots = self.input_roots.clone();
         inventory.artifacts = self.artifacts.clone();
         inventory.capabilities = self.capabilities.clone();
@@ -311,6 +393,13 @@ impl KnowledgeStore {
     /// Semantic fingerprint for PT-27 equality (ignores UI-only node display fields).
     pub fn semantic_fingerprint(&self) -> String {
         let mut parts = Vec::new();
+        let mut contracts: Vec<_> = self
+            .code_contracts
+            .iter()
+            .map(|r| r.record_id.as_str())
+            .collect();
+        contracts.sort_unstable();
+        parts.push(format!("code_contracts:{}", contracts.join(",")));
         let mut declarations: Vec<_> = self
             .declaration_sites
             .iter()

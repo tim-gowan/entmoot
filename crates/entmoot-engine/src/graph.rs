@@ -21,18 +21,7 @@ use crate::display_ref::DisplayRefKind;
 /// bump versions; until then this greenfield repo stays on `logic.graph.v1`.
 pub const TOPOLOGY_SCHEMA_VERSION: &str = "logic.graph.v1";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum NodeKind {
-    Repo,
-    File,
-    ModuleStub,
-    Callable,
-    Declaration,
-    CallStub,
-    ControlSite,
-    Resource,
-}
+pub use entmoot_contracts::query::InventoryKind as NodeKind;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]

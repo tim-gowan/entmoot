@@ -7,6 +7,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct CallBoundaryRequest {
+    /// Explicit shared path semantics. Mutually exclusive with legacy path prefix.
+    #[serde(default)]
+    pub path_selector: Option<super::PathSelector>,
     /// Syntactic callee pattern. Only `*` is a wildcard; an optional trailing `()` is ignored.
     #[serde(default)]
     pub callee: Option<String>,
