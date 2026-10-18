@@ -1,0 +1,617 @@
+{
+  "kind": "operation_schema_memory_audit",
+  "date": "2026-10-18",
+  "source_revision": "6ebaf50a095f2b45030ff47b7e3f1a5e86dc0516",
+  "scope": "Remaining operation record shapes, durable physical schemas and their consuming/derived representations after the structural IR-first change. Review only; proposals are not implemented or performance-qualified.",
+  "measurement": {
+    "kind": "compiled_inline_type_layout",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-pc-windows-msvc\nrelease: 1.98.0\nLLVM version: 22.1.8",
+    "command": "cargo run --manifest-path .tmp/operation-schema-audit/probe/Cargo.toml --offline --quiet",
+    "profile": "dev (size_of only; no timing or allocation instrumentation)",
+    "probe_manifest": "[package]\nname = \"entmoot-operation-schema-probe\"\nversion = \"0.0.0\"\nedition = \"2021\"\n\n[workspace]\n\n[dependencies]\nentmoot-contracts = { path = \"../../../crates/entmoot-contracts\" }\nentmoot-topology = { path = \"../../../crates/entmoot-topology\" }\nserde_json = \"1.0.148\"\n",
+    "probe_source": "use entmoot_contracts::*;\nuse std::mem::size_of;\n\nfn main() {\n    let mut sizes = std::collections::BTreeMap::new();\n    macro_rules! record {\n        ($($ty:ty),+ $(,)?) => { $(sizes.insert(stringify!($ty), size_of::<$ty>());)+ };\n    }\n    record!(Address, SourceSnapshot, Scope, ProducerRef, Provenance, Proposition,\n        RelationEdge, RelationClaim, RelationClaimValue, AssessmentObservation,\n        UnresolvedRelation, ResolvedIdentityRecord, ResolverObservation, ResolverTarget,\n        ArtifactManifest, KnowledgeRecordRef, ArtifactInputReceipt,\n        ProviderCallableRef, Option<ProviderCallableRef>, ResolverDeclaration,\n        Option<ResolverDeclaration>, SubjectId, DerivationRecord, Option<DerivationRecord>,\n        ArtifactRevalidationReceipt, RevalidationUnitReceipt,\n        OperationSpec, OperationRecord,\n        entmoot_contracts::query::QueryResult,\n        entmoot_contracts::query::QueryPayload,\n        entmoot_contracts::query::CompactItem,\n        entmoot_topology::TopologyNode, entmoot_topology::StructuralEdge);\n    println!(\"{}\", serde_json::to_string_pretty(&sizes).unwrap());\n}\n",
+    "probe_lock_sha256": "42a83cc240e17feba30b844fdd3919309bb09d85f7ebe145b506d9de42f20710",
+    "inline_bytes": {
+      "Address": 96,
+      "ArtifactInputReceipt": 808,
+      "ArtifactManifest": 816,
+      "ArtifactRevalidationReceipt": 1008,
+      "AssessmentObservation": 184,
+      "DerivationRecord": 168,
+      "KnowledgeRecordRef": 48,
+      "OperationRecord": 384,
+      "OperationSpec": 208,
+      "Option<DerivationRecord>": 168,
+      "Option<ProviderCallableRef>": 184,
+      "Option<ResolverDeclaration>": 56,
+      "ProducerRef": 144,
+      "Proposition": 272,
+      "Provenance": 120,
+      "ProviderCallableRef": 184,
+      "RelationClaim": 960,
+      "RelationClaimValue": 184,
+      "RelationEdge": 416,
+      "ResolvedIdentityRecord": 240,
+      "ResolverDeclaration": 56,
+      "ResolverObservation": 368,
+      "ResolverTarget": 504,
+      "RevalidationUnitReceipt": 3248,
+      "Scope": 120,
+      "SourceSnapshot": 176,
+      "SubjectId": 96,
+      "UnresolvedRelation": 592,
+      "entmoot_contracts::query::CompactItem": 80,
+      "entmoot_contracts::query::QueryPayload": 472,
+      "entmoot_contracts::query::QueryResult": 1232,
+      "entmoot_topology::StructuralEdge": 80,
+      "entmoot_topology::TopologyNode": 440
+    },
+    "limitations": [
+      "Rust layouts are target/compiler dependent and are not wire layouts.",
+      "size_of excludes heap-owned bytes, allocation count, fragmentation, C/native allocations, stacks and mapped pages.",
+      "This audit did not measure operation peaks, variant occupancy, proposed savings, disk compression ratios or release latency.",
+      "Earlier allocation reports qualify only their pinned revisions and workloads."
+    ]
+  },
+  "findings": [
+    {
+      "id": "publication_batches",
+      "priority": "high",
+      "sources": [
+        {
+          "path": "crates/entmoot-topology/src/knowledge.rs",
+          "line": 114
+        },
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/store_batches.rs",
+          "line": 11
+        },
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/buffered.rs",
+          "line": 154
+        }
+      ],
+      "authoritative_or_required": "Typed source records, immutable payload commitments, owner membership and dependencies.",
+      "derived_or_temporary": "KnowledgeStore projection, batch-local metadata copies and publication-wide typed batch vector.",
+      "observed_source_behavior": "extract_from_graph clones the graph facts; the batch iterator owns that projection and metadata maps; buffered publication collects every typed batch before cross-batch validation and SQL.",
+      "proposed_change": "Stage canonical rows once through the existing store owner. Keep compact commitments and indexed validation facts; validate forward references across the complete staged set, then publish atomically. Hydrate one bounded batch rather than retaining all typed stores.",
+      "safe_unit_and_barrier": "Row/batch staging is independent; complete membership/dependency validation is the publication barrier.",
+      "preserve": [
+        "Exact immutable collisions and dependency sets",
+        "Owner replacement and visibility propagation",
+        "No-change outcomes",
+        "Pinned history, rollback, stale generations and recovery"
+      ],
+      "measurement_status": "Prior frozen 512-file diagnostic measured 310355896 live Rust bytes after knowledge extraction and 408065720 after preparation; remaining typed retention is a measured contributor, not a measured saving for this proposal."
+    },
+    {
+      "id": "reload_projection",
+      "priority": "high",
+      "sources": [
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/inventory.rs",
+          "line": 112
+        },
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/inventory.rs",
+          "line": 135
+        },
+        {
+          "path": "crates/entmoot-topology/src/knowledge.rs",
+          "line": 222
+        },
+        {
+          "path": "crates/entmoot-topology/src/knowledge.rs",
+          "line": 356
+        }
+      ],
+      "authoritative_or_required": "Inventory membership, source digests, visible snapshot-matched syntax records and attributed evidence.",
+      "derived_or_temporary": "Hydrated node marker copies and KnowledgeStore-to-graph clones.",
+      "observed_source_behavior": "Reload first hydrates node payloads, then a full selected KnowledgeStore. apply_to_inventory borrows that store and clones collections into the graph; declaration/contract node payloads are cleared and reattached from source-of-record rows.",
+      "proposed_change": "Add a consuming projection path at the existing owner, moving loaded collections into the graph. Use a verified navigation skeleton to avoid decoding syntax payloads that will be discarded, while still checking their inventory commitment.",
+      "safe_unit_and_barrier": "One verified record at a time; one pinned publication/visibility transaction for the projection.",
+      "preserve": [
+        "Do not resurrect invisible syntax",
+        "Snapshot and source digest checks",
+        "Canonical ordering and digest parity",
+        "Missing/corrupt rows fail visibly",
+        "Cold evidence remains retrievable"
+      ],
+      "measurement_status": "Copy lifetimes are source-confirmed; current reload peak and savings are unmeasured. The old 6.13GB full reload predates node compaction and is not a current baseline."
+    },
+    {
+      "id": "artifact_attachment",
+      "priority": "high",
+      "sources": [
+        {
+          "path": "crates/entmoot-evidence/src/ingest.rs",
+          "line": 25
+        },
+        {
+          "path": "crates/entmoot-evidence/src/ingest.rs",
+          "line": 62
+        },
+        {
+          "path": "crates/entmoot-evidence/src/ingest.rs",
+          "line": 113
+        },
+        {
+          "path": "crates/entmoot-store/src/inventory.rs",
+          "line": 636
+        },
+        {
+          "path": "crates/entmoot-contracts/src/artifact_data.rs",
+          "line": 107
+        }
+      ],
+      "authoritative_or_required": "Verified artifact identity, normalized provider facts, source fences, series replacement and independent evidence support.",
+      "derived_or_temporary": "NormalizedArtifact vectors, selected source text corpus, attachment indexes and candidate graph.",
+      "observed_source_behavior": "Ingestion reads the full artifact, normalizes it, retains all requested source texts, and clones the entire graph before validating and swapping the candidate. On-disk payload sharing does not remove this graph copy.",
+      "proposed_change": "Stage a validated artifact delta using the existing artifact/knowledge owners. Join locations by file, then validate replacements and derived claims against an overlay or staged publication before the final swap. Avoid a full graph clone without exposing partial mutation.",
+      "safe_unit_and_barrier": "Source/location work can be file-owned; complete artifact cross-references, series replacement and publication remain barriers.",
+      "preserve": [
+        "Invalid artifacts leave the original graph unchanged",
+        "Independent versus derived support",
+        "Ambiguity, unresolved locations and native vocabulary",
+        "Native evidence never changes structural IDs",
+        "Replace-series and reingestion parity"
+      ],
+      "measurement_status": "Source-confirmed whole-graph clone; no new artifact-ingestion RSS measurement."
+    },
+    {
+      "id": "native_family_results",
+      "priority": "high",
+      "sources": [
+        {
+          "path": "crates/entmoot-native/src/native_resolver/pipeline.rs",
+          "line": 244
+        },
+        {
+          "path": "crates/entmoot-native/src/native_resolver/pipeline.rs",
+          "line": 338
+        },
+        {
+          "path": "crates/entmoot-native/src/native_resolver/pipeline.rs",
+          "line": 364
+        },
+        {
+          "path": "crates/entmoot-native/src/execution.rs",
+          "line": 22
+        },
+        {
+          "path": "crates/entmoot-workspace/src/workspace.rs",
+          "line": 409
+        },
+        {
+          "path": "crates/entmoot-workspace/src/workspace.rs",
+          "line": 427
+        },
+        {
+          "path": "crates/entmoot-ops/src/binding_operations.rs",
+          "line": 232
+        }
+      ],
+      "authoritative_or_required": "Provider evidence, exact raw/artifact digests where consumed, receipts, and optional canon expression facts.",
+      "derived_or_temporary": "Each producer graph, NativeRawObservation, ResolverArtifact, two complete encoded byte vectors and all completed family results.",
+      "observed_source_behavior": "The existing two-worker pool bounds active producers but ordered_map collects all results. Each producer loads a graph, serializes raw and normalized artifacts, then returns both typed payloads. The workspace consumer uses receipt/paths and optional raw canon facts, while later attachment reparses the artifact. Durable binding also allocates a graph-sized JSON Vec before writing its helper input.",
+      "proposed_change": "Return a lightweight production receipt/paths and explicitly requested canon facts; retain a detailed result only for callers needing it. Stream canonical output and hashes into the existing atomic temporary directory. Stream helper graph serialization. Consume completed family handles without retaining unused typed artifacts.",
+      "safe_unit_and_barrier": "Keep current family/provider compilation boundaries and shared worker cap; compact completion handles do not require a new scheduler. Preserve ordered attachment/publication.",
+      "preserve": [
+        "Same raw/artifact bytes and receipt lengths/digests",
+        "Atomic output directory visibility",
+        "Source recheck and budget outcomes",
+        "Native partial/environment states",
+        "Completed-family recovery and process isolation"
+      ],
+      "measurement_status": "Source-confirmed multiplicative lifetimes; per-provider native heap/RSS and cross-family savings are unmeasured."
+    },
+    {
+      "id": "git_capture_and_integration",
+      "priority": "high",
+      "sources": [
+        {
+          "path": "crates/entmoot-store/src/checkpoints/git.rs",
+          "line": 9
+        },
+        {
+          "path": "crates/entmoot-ops/src/collaboration_git/capture.rs",
+          "line": 87
+        },
+        {
+          "path": "crates/entmoot-ops/src/collaboration_git/capture.rs",
+          "line": 213
+        },
+        {
+          "path": "crates/entmoot-ops/src/collaboration_git/capture.rs",
+          "line": 267
+        },
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/operations/git_capture.rs",
+          "line": 55
+        },
+        {
+          "path": "crates/entmoot-ops/src/collaboration_git/integration.rs",
+          "line": 145
+        }
+      ],
+      "authoritative_or_required": "Raw source bytes, modes, path membership, frozen parent/index/HEAD observation, retained pack commitments and CAS publication.",
+      "derived_or_temporary": "RetainedGitCapture.blobs corpus map and second verification corpus; in-memory compressed pack buffers.",
+      "observed_source_behavior": "Capture collects every blob in BTreeMap<String, Vec<u8>>. While retaining it, a second files() call builds another complete blob map just to compare its manifest. Capture permits up to 1GiB of input bytes; this is not a 1GiB RSS cap. Reload also hydrates all capture blobs. Integration delta returns a complete pack Vec.",
+      "proposed_change": "First separate manifest-only reobservation from retained-byte collection. Then stage capture blobs in private files or existing source-object storage and stream verified blobs into the single CAS transaction/private Git object database. Stream pack production and restoration through temporary files where measured pack sizes warrant it.",
+      "safe_unit_and_barrier": "One source blob or pack chunk at a time; final source/index/HEAD/path-set rechecks, member validation and atomic capture/checkpoint publication remain barriers.",
+      "preserve": [
+        "Raw bytes, modes, Unicode, symlinks and binary inputs",
+        "No source refs/index mutation or clean filters",
+        "Mutation during both observations",
+        "Capture/history pins, deterministic restart commits",
+        "Pack limit, stale worker and rollback checks"
+      ],
+      "measurement_status": "Two retained corpora are source-confirmed; actual peak depends on unique content, file sizes and budgets. No new capture/integration memory run."
+    },
+    {
+      "id": "impact_conflicts_and_test_selection",
+      "priority": "high",
+      "sources": [
+        {
+          "path": "crates/entmoot-ops/src/collaboration.rs",
+          "line": 460
+        },
+        {
+          "path": "crates/entmoot-ops/src/collaboration.rs",
+          "line": 553
+        },
+        {
+          "path": "crates/entmoot-topology/src/impact.rs",
+          "line": 794
+        },
+        {
+          "path": "crates/entmoot-query/src/query/assessments.rs",
+          "line": 90
+        },
+        {
+          "path": "crates/entmoot-query/src/query/status.rs",
+          "line": 777
+        }
+      ],
+      "authoritative_or_required": "Frozen views, correspondence policies, changed occurrences/bindings, evidence dispositions and conservative limitations.",
+      "derived_or_temporary": "Full retained graphs, full RevisionImpactManifest objects, cloned binding groups, and derived path/address sets.",
+      "observed_source_behavior": "Conflict runs retain base/left/right and calculate two full impact manifests for path/occurrence intersections and limitations. Test selection builds a complete manifest although it uses changed paths and gaps. Changed-subject navigation hydrates a complete head in addition to the hot graph. Binding comparison groups clone every identity before selecting changes.",
+      "proposed_change": "Factor operation-specific comparisons from the existing impact owner: borrowed/sorted identity groups and typed changed-path/occurrence projections with their required limitations. Reuse the frozen base/left delta across peer comparisons. Fetch additional evidence only for operations whose claims need it.",
+      "safe_unit_and_barrier": "Path/occurrence/identity groups can be merged in order; correspondence, policy and missing-evidence checks precede conclusions. Preserve multi-view coherence.",
+      "preserve": [
+        "No unloaded evidence interpreted as absence",
+        "Body/boundary/binding distinctions",
+        "Aliases, moved subjects and ambiguous correspondence",
+        "Parallel occurrences and evidence semantics",
+        "Existing unknown and partial outcomes"
+      ],
+      "measurement_status": "Source-confirmed overproduction and clones; relative contribution to conflict/test-selection RSS is unmeasured."
+    },
+    {
+      "id": "query_cursor_and_delivery",
+      "priority": "high_quick_change",
+      "sources": [
+        {
+          "path": "crates/entmoot-query/src/query/output.rs",
+          "line": 115
+        },
+        {
+          "path": "crates/entmoot-query/src/query/output.rs",
+          "line": 203
+        },
+        {
+          "path": "crates/entmoot-query/src/query/output.rs",
+          "line": 323
+        },
+        {
+          "path": "crates/entmoot-query/src/query.rs",
+          "line": 1291
+        }
+      ],
+      "authoritative_or_required": "Semantic request, comparison identity, publication/visibility fences, deterministic ordering and usable output continuation.",
+      "derived_or_temporary": "Whole comparison-graph serialization, candidate collections and delivered-page copies.",
+      "observed_source_behavior": "Compact changed-subject cursor hashing serializes (request, comparison graph) into a Vec. Page byte limits apply after query computation; compact delivery sizes cloned page prefixes, and some find/inspect paths collect all candidates before selecting a page.",
+      "proposed_change": "Stream the existing cursor tuple into BLAKE3 with byte-for-byte hash parity. Separately rank compact references and count matches before hydrating selected details; keep byte sizing on borrowed page views. Do not equate output limits with execution-memory bounds.",
+      "safe_unit_and_barrier": "One candidate reference/detail page; retain the same ranking/count semantics and publication-pinned cursor.",
+      "preserve": [
+        "Old cursor hash equivalence for unchanged serialization",
+        "Filter/request/evidence invalidation",
+        "Stable ordering, exact totals where promised and usable next page",
+        "No discovery advancement from output pagination"
+      ],
+      "measurement_status": "Whole-graph Vec is source-confirmed; no new query peak or latency measurement. Streaming preserves the existing cursor format; replacing graph content with a different identifier would require separate compatibility work."
+    },
+    {
+      "id": "runtime_indexes",
+      "priority": "medium_measure_first",
+      "sources": [
+        {
+          "path": "crates/entmoot-topology/src/graph.rs",
+          "line": 249
+        },
+        {
+          "path": "crates/entmoot-query/src/query.rs",
+          "line": 84
+        },
+        {
+          "path": "crates/entmoot-query/src/query.rs",
+          "line": 405
+        },
+        {
+          "path": "crates/entmoot-query/src/query/adjacency.rs",
+          "line": 1
+        }
+      ],
+      "authoritative_or_required": "Original occurrence identities, scope/evidence qualifications and original parallel edges.",
+      "derived_or_temporary": "String-key maps, Vec<Vec<usize>> postings and overlapping selector/address/path indexes.",
+      "observed_source_behavior": "Topology indexes own copied string keys; QueryIndexes constructs additional string/posting maps and per-node vectors. Bounded shortcuts, substring postings and continuations do not cap the base graph or these indexes.",
+      "proposed_change": "Profile indexes separately, then reuse generation-local dense handles and interned strings and consider flat offset/posting arrays. Extend current dense relation adjacency rather than introducing a parallel identity system.",
+      "safe_unit_and_barrier": "Immutable publication generation; any narrowing of integer widths needs checked cardinality and fallback/rejection, never truncation.",
+      "preserve": [
+        "Independent stable wire IDs and canonical bytes",
+        "Parallel evidence edges and ambiguous attachments",
+        "Selector/Unicode/order parity",
+        "Overflow behavior and old-generation continuations"
+      ],
+      "measurement_status": "Old full graph index-drop control released about 897MB before compaction. That measured topology indexes, not the additional current QueryIndexes; a current per-index breakdown remains needed."
+    },
+    {
+      "id": "revalidation_policy_preparation",
+      "priority": "medium",
+      "sources": [
+        {
+          "path": "crates/entmoot-ops/src/revalidation_operations.rs",
+          "line": 25
+        },
+        {
+          "path": "crates/entmoot-ops/src/revalidation_operations.rs",
+          "line": 147
+        },
+        {
+          "path": "crates/entmoot-store/src/revalidation.rs",
+          "line": 277
+        },
+        {
+          "path": "crates/entmoot-store/src/revalidation.rs",
+          "line": 288
+        },
+        {
+          "path": "crates/entmoot-store/src/revalidation.rs",
+          "line": 563
+        },
+        {
+          "path": "crates/entmoot-contracts/src/revalidation.rs",
+          "line": 104
+        }
+      ],
+      "authoritative_or_required": "Input roots, declared paths, artifact evidence, independent/derived support, applicability state and analysis decision.",
+      "derived_or_temporary": "Two full views, per-policy evidence/applicability copies, repeated reference/dependency/path lists and three nested receipt slots.",
+      "observed_source_behavior": "Every run loads full base/head graphs. prepare() builds prior and optional fresh typed evidence plus receipts before the caller checks its record allowance. RevalidationUnitReceipt reserves 3248 inline bytes including an 808-byte optional reingested receipt, but graph/evidence lifetimes are likely larger.",
+      "proposed_change": "Use repository-selected artifact/support projections from pinned views and compact preflight counts before materialization. Stage and publish one policy while preserving cross-artifact independent support. Page evidence-reference detail on reads where contracts allow; do not replace exact membership with only a count.",
+      "safe_unit_and_barrier": "Existing artifact/policy checkpoint unit; dependency closure and decision validation precede its atomic ledger write.",
+      "preserve": [
+        "Changed/new/deleted declared inputs and negative lookups",
+        "Retained provider evidence versus invalidated applicability",
+        "Unselected artifacts, cumulative budgets, pause/restart and stale workers"
+      ],
+      "measurement_status": "Inline size measured; operation peak and savings unmeasured. Record count is not a byte or RSS bound."
+    },
+    {
+      "id": "canon_and_clone_shards",
+      "priority": "medium",
+      "sources": [
+        {
+          "path": "crates/entmoot-ops/src/canon.rs",
+          "line": 75
+        },
+        {
+          "path": "crates/entmoot-ops/src/canon.rs",
+          "line": 444
+        },
+        {
+          "path": "crates/entmoot-ops/src/canon.rs",
+          "line": 513
+        },
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/operations/file_progress.rs",
+          "line": 347
+        },
+        {
+          "path": "crates/entmoot-query/src/query/clones.rs",
+          "line": 117
+        },
+        {
+          "path": "crates/entmoot-query/src/query/clones.rs",
+          "line": 203
+        }
+      ],
+      "authoritative_or_required": "Source-qualified file claims, forms/terms, native context, cumulative limits and graph membership.",
+      "derived_or_temporary": "Plan-owned contract/fact copies, all final outcomes, encoded file bytes and clone-group candidate memberships.",
+      "observed_source_behavior": "Canon already has file shards and clone reads hydrate one shard at a time with file/pattern limits. Ordinary production collects all outcomes; durable completion rehydrates all outcomes. The 4MB per-file/64MB cumulative encoded limits are checked after forms and a complete encoded Vec exist. Clone queries hydrate full terms even when only complete-form fingerprints/patterns are needed.",
+      "proposed_change": "Reuse the IR-first approach within the existing canon checkpoint owner: finalize from verified file commitments plus one shard at a time, borrow plan inputs, and add a compact persisted read projection for clone fingerprints/membership only if measured. Enforce work/allocation admission before building oversized terms while preserving explicit budget outcomes.",
+      "safe_unit_and_barrier": "Existing file shard; complete graph-manifest membership and cumulative context/budgets remain barriers. Clone grouping remains global within the examined budget.",
+      "preserve": [
+        "Candidates never proofs",
+        "Partial forms excluded",
+        "Per-file snapshot/source/context checks",
+        "Resume does not reset pattern/byte allowances",
+        "Exact/syntax/alpha/canonical distinctions and deterministic grouping"
+      ],
+      "measurement_status": "Source-confirmed finalization/hydration costs. Existing query ranking uses compact memberships and only clones delivered group members; do not regress it. No new canon peak measurement."
+    },
+    {
+      "id": "read_source_buffers",
+      "priority": "medium",
+      "sources": [
+        {
+          "path": "crates/entmoot-store/src/source_store/mod.rs",
+          "line": 82
+        },
+        {
+          "path": "crates/entmoot-store/src/source_store/gix_store.rs",
+          "line": 89
+        },
+        {
+          "path": "crates/entmoot-query/src/query/read.rs",
+          "line": 33
+        },
+        {
+          "path": "crates/entmoot-query/src/query/read.rs",
+          "line": 48
+        }
+      ],
+      "authoritative_or_required": "Exact full-file digest, indexed snapshot, source drift/encoding outcome and bounded line excerpt.",
+      "derived_or_temporary": "Complete source byte Vec and one string-slice entry per line.",
+      "observed_source_behavior": "read-source obtains the complete SourceFile and collects every line into Vec<&str> before selecting at most 400 lines and 64KiB of text. Gix additionally copies decoded blob data. The response bound is not an input-memory bound.",
+      "proposed_change": "First count/select lines with an iterator without allocating a full line table. Add backend streaming or verified range reads only if large-file profiles justify it; finish whole-file digest and encoding verification before exposing the excerpt. Git decompression may still require backend-sized buffers.",
+      "safe_unit_and_barrier": "One source file; full-file verification remains the delivery barrier.",
+      "preserve": [
+        "Drift reporting even outside requested lines",
+        "Full UTF-8 validity",
+        "CRLF, final newline, empty files and out-of-range behavior",
+        "Same byte/line limits and gaps"
+      ],
+      "measurement_status": "Source-confirmed O(file bytes + line count) input memory; large-file peak unmeasured."
+    },
+    {
+      "id": "sparse_contract_layouts",
+      "priority": "conditional_measure_occupancy",
+      "sources": [
+        {
+          "path": "crates/entmoot-contracts/src/relation.rs",
+          "line": 385
+        },
+        {
+          "path": "crates/entmoot-contracts/src/relation.rs",
+          "line": 565
+        },
+        {
+          "path": "crates/entmoot-contracts/src/resolver_artifact.rs",
+          "line": 143
+        },
+        {
+          "path": "crates/entmoot-contracts/src/revalidation.rs",
+          "line": 104
+        }
+      ],
+      "authoritative_or_required": "All existing typed facts and optional-presence semantics.",
+      "derived_or_temporary": "Unused inline storage for large enum alternatives and sparse optional fields.",
+      "observed_source_behavior": "On this x86_64 Windows build RelationClaim is 960 bytes; RelationClaimValue is 184 even for resolution_state, and Option<DerivationRecord> is 168. ResolverTarget is 504 including Option<ProviderCallableRef> at 184. RevalidationUnitReceipt is 3248. These are inline slots, excluding strings/vectors and allocator overhead.",
+      "proposed_change": "Measure variant/Some occupancy on representative structural/native/canon records. Benchmark boxing the assessment variant and sparse derivation/provider-callable/receipt payloads, or use an internal compact read model. Intern repeated scope/producer/snapshot/address strings within immutable generations where profitable. Preserve canonical public serialization and identity framing.",
+      "safe_unit_and_barrier": "One typed record or immutable generation; never globally merge occurrences because payload content matches.",
+      "preserve": [
+        "Wire/schema/canonical digest parity",
+        "Some/None and future-detail distinctions",
+        "Exact identity/provenance after reload",
+        "Allocation count/locality as well as live bytes"
+      ],
+      "measurement_status": "Sizes measured with size_of, not occupancy or heap savings. QueryResult is 1232 bytes but generally one envelope per result; large size alone does not establish a useful optimization."
+    },
+    {
+      "id": "operation_control_rows",
+      "priority": "low_until_profiled",
+      "sources": [
+        {
+          "path": "crates/entmoot-contracts/src/operations.rs",
+          "line": 40
+        },
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/operations.rs",
+          "line": 110
+        },
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/operations.rs",
+          "line": 400
+        },
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/operations.rs",
+          "line": 587
+        },
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/operations.rs",
+          "line": 919
+        }
+      ],
+      "authoritative_or_required": "Frozen operation spec/input, lease generation, semantic checkpoint, outcome and retained outputs.",
+      "derived_or_temporary": "Repeated whole-row JSON bytes/trees during control updates.",
+      "observed_source_behavior": "Lease renewal decodes and reserializes the complete OperationRecord body, including immutable input. Control rows have a 16MiB encoded ceiling; output reads already use SQL LIMIT, sequence continuation and a byte allowance. Analysis work transitions select one item rather than loading the whole queue.",
+      "proposed_change": "Only if profiles show large control rows, separate immutable spec/input from small indexed mutable lease/progress fields behind the current repository owner and reassemble the same API record. Keep paginated output rows and current scheduler; no new orchestration is justified by this audit.",
+      "safe_unit_and_barrier": "Existing operation row and CAS transaction.",
+      "preserve": [
+        "Idempotency includes frozen input",
+        "Live lease/generation and sequence CAS",
+        "Checksum/expiry and pinned views",
+        "Coherent status/output pagination and atomic evidence checkpoints"
+      ],
+      "measurement_status": "Source-confirmed repeated serialization; queue/control memory is unmeasured and lower priority than view/corpus copies."
+    }
+  ],
+  "existing_owners_to_preserve": [
+    {
+      "sources": [
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/layout.rs",
+          "line": 97
+        },
+        {
+          "path": "crates/entmoot-store/src/knowledge_db/inventory.rs",
+          "line": 7
+        }
+      ],
+      "observation": "SQLite already shares immutable payloads, selected metadata, paths, definitions and source bytes. First measure live/history payloads, ownership/dependency rows, indexes and WAL separately. Do not introduce a second storage schema or remove historical facts based only on repeated JSON fields."
+    },
+    {
+      "sources": [
+        {
+          "path": "crates/entmoot-query/src/query/continuation.rs",
+          "line": 136
+        },
+        {
+          "path": "crates/entmoot-query/src/query/walk_cache.rs",
+          "line": 62
+        }
+      ],
+      "observation": "Continuation and accelerator owners already account retained capacity and expose explicit exhaustion. Preserve those limits and original-edge witnesses; they do not cover base graph/index memory."
+    },
+    {
+      "sources": [
+        {
+          "path": "crates/entmoot-ops/src/test_validation.rs",
+          "line": 170
+        }
+      ],
+      "observation": "Test execution already uses a temporary output file and only retains a 4096-byte failure tail. Do not replace it with captured full stdout or add log retention without a concrete need."
+    }
+  ],
+  "recommended_sequence": [
+    "Make small parity-preserving fixes first: stream comparison cursor/helper graph hashes/writes; manifest-only Git capture recheck; consuming reload projection; compact native completion results.",
+    "Remove publication-wide typed retention and full-graph artifact rollback clones through existing staging/publication owners. Profile preparation, validation, transaction and reload separately.",
+    "Introduce operation-specific impact/revalidation read projections, preserving exact scopes/support/limitations; reuse frozen comparison inputs.",
+    "Measure current base graph/query indexes and schema occupancy before dense-index and optional-payload changes. Extend existing owners, not queues or a new orchestration layer.",
+    "Qualify ordinary/recovery paths with frozen representative structural, native, artifact-heavy, multi-view and large-file inputs before raising concurrency or claiming scale readiness."
+  ],
+  "stage_measurements_for_follow_up": {
+    "operations": [
+      "reload",
+      "artifact attachment",
+      "native family normalization/output/return/attach",
+      "Git capture/recheck/reload",
+      "integration pack/restart",
+      "impact/conflict/test selection",
+      "revalidation prepare/checkpoint",
+      "canon finalization/clone read",
+      "source read"
+    ],
+    "record_at_each_barrier": [
+      "Rust live/peak and allocation count",
+      "sampled RSS including child processes where applicable",
+      "authoritative input bytes/records",
+      "derived records/index capacity",
+      "staged disk bytes and read/write volume",
+      "wall/CPU time",
+      "published commitment/result parity and recovery outcome"
+    ],
+    "protocol": "Use the existing evals.harness.measurement.command process owner and the prior calibrated allocator diagnostic for actual runs; do not infer savings from serialized output size or worker count."
+  }
+}

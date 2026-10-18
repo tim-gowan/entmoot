@@ -62,6 +62,60 @@ a 200ms grace period, usually in 17,504-byte steps; this smaller issue is not fi
 by the representation changes. These allocation probes do not
 qualify latency or account for all native allocations in the failed initial run.
 
+### Remaining operation memory audit
+
+The [2026-10-18 schema/consumer audit](evals/experiments/operation-schema-memory-2026-10-18.json)
+at `6ebaf50` records 13 opportunities and 33 compiled inline type sizes. Apart
+from the earlier publisher diagnostic, priorities below follow source ownership
+and simultaneous lifetimes; their savings and operation peaks are unmeasured.
+Output/record limits and worker counts do not establish an RSS bound.
+
+- **Reload and publication:** consume loaded knowledge when projecting it into
+  a graph; avoid hydrating syntax that is immediately discarded and reattached.
+  Remove publication-wide typed batch retention through the existing staging
+  owner, with complete cross-batch validation before atomic publication.
+- **Artifact attachment and native binding:** replace whole-graph rollback clones
+  with a validated staged delta. Native results should return receipts/paths and
+  requested canon facts instead of retaining raw and normalized payloads across
+  all completed families. Stream artifact/helper graph writes and hashes through
+  existing atomic output owners; keep provider execution and attachment ordered.
+- **Git capture/integration:** separate manifest-only source reobservation from
+  byte collection. The second verification currently collects another complete
+  blob map while the first is retained. Stage/read blobs and large packs through
+  existing source/checkpoint owners, preserving final source/index/HEAD checks,
+  raw bytes, deterministic restart and the publication CAS.
+- **Impact, conflicts, changed subjects and test selection:** derive only the
+  required paths/occurrences/bindings and limitations at the shared impact owner.
+  Reuse frozen base/left deltas across peers and borrow binding groups. Current
+  consumers construct complete manifests/views for much narrower questions.
+  Compact changed-subject cursor hashing also allocates the serialized comparison
+  graph; streaming the same tuple can preserve its digest without that buffer.
+- **Revalidation:** load selected artifact/support records from pinned views and
+  preflight compact counts before preparing full policy evidence. Preserve
+  independent/derived support, applicability transitions and exact membership;
+  the current record allowance is checked after materialization.
+- **Canon/clones and source reads:** retain existing file shards, compact group
+  ranking and cumulative limits. Stream final canon assembly instead of hydrating
+  all outcomes; admit work before oversized term construction. Clone reads can
+  use verified pattern/fingerprint projections without loading every term.
+  Source reads need no all-lines vector; bounded excerpts still require complete
+  digest and encoding verification, including bytes outside the requested range.
+- **Compact layouts/indexes after occupancy measurement:** relation claims occupy
+  960 inline bytes, including a 184-byte value slot and a 168-byte optional
+  derivation slot; resolver targets occupy 504 bytes. Benchmark sparse payload
+  boxing and generation-local interning/dense postings with allocation counts
+  and lookup costs. Reuse existing dense adjacency; retain distinct occurrence,
+  evidence and scope identities and checked cardinality conversions.
+
+First apply small changes that preserve bytes and digests, then reduce whole-view and
+publication lifetimes before raising concurrency. Measure preparation,
+validation, publication, reload and recovery separately on frozen representative
+inputs. Existing SQLite payload/metadata/source sharing, bounded continuations,
+paginated operation outputs and file-backed test diagnostics are useful owners
+to preserve. Whole operation-control JSON rewrites are a lower priority until
+profiles show them dominating. Monorepo latency remains unqualified; no new
+scheduler or storage protocol is proposed, and validation/retention remain required.
+
 ## Current qualification blockers
 
 The storage, configuration/admission, obsolete fixture paths, process isolation,
