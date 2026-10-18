@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-17: Solo-developer GitHub ruleset and public-repo bleed hardening
+
+- Retarget the `main` ruleset to the default branch only: PR required (0 reviews),
+  required Linux CI/native checks, Admin bypass via pull request only. `crates-io`
+  and Pages deploy policies accept `v*` tags; Pages uses Actions builds.
+- Enable secret scanning, push protection, vulnerability alerts, and Actions SHA
+  pinning on this repository and other public `tim-gowan` repos; remove Endor API
+  secrets that had been stored on the public `juice-shop` fork.
+
 ## 2026-10-17: Assemble CI host environments as a discrete step
 
 - Add `.github/actions/assemble-ci-env` to restore, probe and install lane-scoped

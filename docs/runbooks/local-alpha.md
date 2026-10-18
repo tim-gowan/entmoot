@@ -149,7 +149,9 @@ been published. Re-run qualification after any implementation change.
 ### GitHub Actions
 
 Lane model: local pre-commit is fast and ownership-scoped; CI is authoritative;
-tag CD creates the GitHub Release and publishes to crates.io.
+tag CD creates the GitHub Release and publishes to crates.io. Direct pushes to
+`main` are blocked (PR + required checks); release publishes only from `v*` tags
+through the `crates-io` environment.
 
 - **Pre-commit** (`scripts/pre_commit_check.py`): developer accelerator—policy,
   fmt, ownership-scoped clippy/test. Not a substitute for CI; never teach

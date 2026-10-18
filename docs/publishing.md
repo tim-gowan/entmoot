@@ -19,10 +19,14 @@ coupling is the Trusted Publisher config—not the git remote URL.
 
 ## One-time setup
 
-### 1. GitHub Environment
+### 1. GitHub Environment and branch ruleset
 
-Environment name must be exactly `crates-io`. Recommended protections: required
-reviewers; allow the tags used for release (`v*`).
+Environment name must be exactly `crates-io`. Deployment branch policy is tags
+matching `v*` only (not arbitrary branches). Solo-developer ruleset on `main`:
+pull request required (0 approving reviews), required Linux CI/native checks,
+no force-push/delete, Admin bypass only via pull request. Feature branches are
+unrestricted. Signed-commit enforcement waits until GitHub shows Verified for
+the local signing key.
 
 ### 2. crates.io Trusted Publisher (each crate)
 
