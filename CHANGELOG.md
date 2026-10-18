@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-18: Reclaim dependency materialize locks after failed copies
+
+- Acquire `materialize.lock` with a short `WouldBlock` retry and unlock
+  explicitly on drop so a failed budget-limited copy cannot leave the next
+  materialization blocked on the same dependencies directory.
+
 ## 2026-10-18: Reclaim storage lifecycle leases after abrupt peer exit
 
 - Retry lifecycle `.lease` `WouldBlock` briefly (same budget as startup
