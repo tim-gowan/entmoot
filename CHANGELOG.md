@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-18: Refresh package derivation inputs after query-selector merge
+
+- Regenerate `derivation-inputs.json` for contracts, core and engine so the
+  policy release-input fence matches the merged selector/admission sources.
+
 ## 2026-10-18: Align operator docs with verified find and profile paths
 
 - README quickstart uses `find entmoot_smoke_fn` instead of path-colliding
