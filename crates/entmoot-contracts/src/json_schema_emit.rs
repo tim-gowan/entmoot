@@ -96,6 +96,7 @@ pub fn emit_contract_schemas_json() -> Result<String, serde_json::Error> {
     def::<crate::NormalizationValidationReport>(&mut defs, "NormalizationValidationReport")?;
     def::<crate::FileMarkers>(&mut defs, "FileMarkers")?;
     def::<crate::CodeContract>(&mut defs, "CodeContract")?;
+    def::<crate::CodeContractRecord>(&mut defs, "CodeContractRecord")?;
     def::<crate::CallSitePorts>(&mut defs, "CallSitePorts")?;
     def::<crate::CallSiteRecord>(&mut defs, "CallSiteRecord")?;
     def::<crate::DeclarationSiteRecord>(&mut defs, "DeclarationSiteRecord")?;

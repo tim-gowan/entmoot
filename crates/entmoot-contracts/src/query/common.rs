@@ -183,6 +183,9 @@ impl ResultBounds {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SubjectCandidate {
+    /// Match explanation for an explicit selector.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selection_match: Option<super::SelectionMatch>,
     /// Stable topology/inventory node id.
     pub node_id: String,
     /// Wire subject kind (`callable`, `call_stub`, `file`, …).

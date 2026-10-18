@@ -308,6 +308,7 @@ mod tests {
                                 ..Default::default()
                             },
                         )
+                        .unwrap()
                     };
                     let a = run(&fast);
                     let b = run(&slow);
@@ -386,6 +387,7 @@ mod tests {
                 let keys = |e: &QueryEngine, s: &str| e.walk_endpoint_keys(s);
                 let run = |e: &QueryEngine| {
                     e.discover_walk(&from, &to, &keys(e, &from), &keys(e, &to), &allowed, budget)
+                        .unwrap()
                 };
                 let a = run(&accelerated);
                 let b = run(&reference);
@@ -453,17 +455,19 @@ mod tests {
             ..options
         });
         let run = |engine: &QueryEngine| {
-            engine.discover_walk(
-                "0",
-                "120",
-                &engine.walk_endpoint_keys("0"),
-                &engine.walk_endpoint_keys("120"),
-                &[RelationKind::Calls].into_iter().collect(),
-                BoundedWalkBudget {
-                    max_hops: 128,
-                    ..Default::default()
-                },
-            )
+            engine
+                .discover_walk(
+                    "0",
+                    "120",
+                    &engine.walk_endpoint_keys("0"),
+                    &engine.walk_endpoint_keys("120"),
+                    &[RelationKind::Calls].into_iter().collect(),
+                    BoundedWalkBudget {
+                        max_hops: 128,
+                        ..Default::default()
+                    },
+                )
+                .unwrap()
         };
         let expected = run(&slow);
         let first = run(&fast);

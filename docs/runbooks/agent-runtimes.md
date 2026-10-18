@@ -24,6 +24,41 @@ For explicit revision pairs, select the base/head publications instead of a
 working-tree comparison. Reads do not run producers. There is no required host
 telemetry, agent trace, model experiment or receipt archive.
 
+## Select subjects, then traverse
+
+Use `entmoot find --name-contains handle --parameter-name request
+--parameter-type-contains Request` to find a callable with both constraints on
+one written parameter. Add `--kind`, `--language`, `--path-prefix` or
+`--path-glob` to narrow discovery. `--name-exact` requests equality;
+`entmoot find handl --name-distance 1` explicitly requests whole-name edit
+distance. A fuzzy match is not identity, and type syntax is not compiler type
+equivalence. Inspect a returned subject for its complete declared contract.
+
+The MCP `find` tool accepts the same `FindQuery` fields, including
+`selector.callable.parameters`. `find` and `inspect` now reject fields
+irrelevant to the selected variant instead of silently ignoring them.
+Use `entmoot request --example find-parameter` for a portable request;
+`request --request <json>` and MCP `query` support all typed selectors.
+
+Use the exact returned subject IDs with `entmoot path <origin> <destination>
+--predicate calls --evidence resolved-only`. Path defaults to all represented
+predicates and any evidence, matching MCP `traverse`. CLI neighborhood retains its
+task defaults: callers, calls and resolved-only; `--include-candidates` expands
+admission. `--exclude-subject`, `--exclude-edge` and `--exclude-occurrence`
+prune discovery. Neighborhood `--endpoint-name-contains` and
+`--endpoint-parameter-type-contains` filter returned endpoints while allowing
+nonmatching intermediates. The portable requests also accept reusable
+`endpoint_selector` and `prune.matching_subjects`. Generate starting envelopes
+with `request --example path` or `request --example neighborhood`.
+
+Graph work budgets, witness/result limits and output pages are independent.
+Inspect `selection` and `search_receipt`; zero results with unknown facts or
+an exhausted frontier do not establish absence. Finish `output.after` pages
+before advancing search `continuation`. Standalone path and neighborhood
+searches require `--resumable --durable` to continue across invocations.
+A backend uses its configured continuation lifetime and durability. Keep the
+original endpoints, selectors, evidence policy and publication when resuming.
+
 ## Optional durable producer recovery
 
 Ordinary navigation needs no scheduler configuration. Local clients using explicit

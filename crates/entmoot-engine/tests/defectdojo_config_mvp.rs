@@ -403,6 +403,8 @@ fn defectdojo_mvp_connects_every_deployed_process_to_database_and_broker() {
     for max_hops in 1..=4 {
         let walk = query
             .traverse(TraverseQuery::Path {
+                evidence_filter: Default::default(),
+                prune: Default::default(),
                 resumable: false,
                 continuation: None,
                 start: ingress.occurrence_id.clone(),
@@ -452,6 +454,8 @@ fn defectdojo_mvp_connects_every_deployed_process_to_database_and_broker() {
     ] {
         let neighborhood = query
             .traverse(TraverseQuery::Neighborhood {
+                endpoint_selector: None,
+                prune: Default::default(),
                 resumable: false,
                 continuation: None,
                 start: start.into(),
@@ -507,6 +511,8 @@ fn defectdojo_mvp_connects_every_deployed_process_to_database_and_broker() {
         let incompatible = QueryEngine::new(incompatible, directory.path().join("query.sqlite3"));
         let walk = incompatible
             .traverse(TraverseQuery::Path {
+                evidence_filter: Default::default(),
+                prune: Default::default(),
                 resumable: false,
                 continuation: None,
                 start: ingress.occurrence_id.clone(),
@@ -536,6 +542,8 @@ fn defectdojo_mvp_connects_every_deployed_process_to_database_and_broker() {
         ] {
             let walk = incompatible
                 .traverse(TraverseQuery::Neighborhood {
+                    endpoint_selector: None,
+                    prune: Default::default(),
                     resumable: false,
                     continuation: None,
                     start: start.into(),

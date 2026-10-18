@@ -68,6 +68,8 @@ impl QueryEngine {
             let (callers, gaps) = if let Some(id) = &callable.head_node_id {
                 let response = self.deliver_query(QueryRequest::Traverse {
                     request: TraverseQuery::Neighborhood {
+                        endpoint_selector: request.endpoint_selector.clone().map(Box::new),
+                        prune: request.prune.clone(),
                         resumable: false,
                         continuation: None,
                         start: id.clone(),

@@ -1669,6 +1669,52 @@
           "test": "workspace_defaults"
         }
       ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "subject_selection"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/subject_selection.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/query/selectors.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/code_contract.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/query/selection.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/query/admission.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/src/navigation_walk.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-mcp"
+        },
+        {
+          "package": "entmoot",
+          "test": "workspace_defaults"
+        }
+      ]
     }
   ],
   "resolver_owners": [

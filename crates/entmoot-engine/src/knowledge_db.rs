@@ -368,6 +368,7 @@ impl SqliteKnowledgeRepository {
     ) -> Result<KnowledgeStore, KnowledgeRepositoryError> {
         let query_only = projection == ReadProjection::Query;
         let store = KnowledgeStore {
+            code_contracts: self.load_collection("code_contracts")?,
             declaration_sites: self.load_collection("declaration_sites")?,
             call_sites: self.load_collection("call_sites")?,
             coverages: self.load_collection("coverages")?,
@@ -2209,6 +2210,14 @@ fn for_each_store_row(
         let mut row = StoredRow::new("call_sites", site)?;
         row.record_id = site.site_id.clone();
         row.subject_id = Some(site.path.clone());
+        emit!(row);
+    }
+    for record in &store.code_contracts {
+        crate::knowledge::validate_code_contract(record)
+            .map_err(|e| invalid_record("code_contracts", e))?;
+        let mut row = StoredRow::new("code_contracts", record)?;
+        row.record_id = record.record_id.clone();
+        row.subject_id = Some(record.path.clone());
         emit!(row);
     }
     for site in &store.declaration_sites {

@@ -227,6 +227,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let started = Instant::now();
             result = service
                 .traverse(TraverseQuery::Path {
+                    evidence_filter: Default::default(),
+                    prune: Default::default(),
                     resumable: false,
                     continuation: None,
                     start: "spine-0".into(),

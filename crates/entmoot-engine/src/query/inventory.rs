@@ -11,11 +11,23 @@ use crate::NodeKind;
 impl QueryEngine {
     /// Page materialized inventory subjects for review.
     pub fn inventory(&self, request: InventoryRequest) -> Result<InventoryReport, QueryError> {
+        let compiled = request
+            .selector
+            .as_ref()
+            .map(super::selection::CompiledSelector::new)
+            .transpose()?;
+        let mut selection = entmoot_contracts::query::SelectionReceipt::default();
+        let mut explanations = std::collections::HashMap::new();
         let limit = request.limit.clamp(1, MAX_INVENTORY_LIMIT);
         let offset = request.offset;
         let mut kinds = request.kinds.clone();
         if kinds.is_empty() {
-            kinds.push("callable".into());
+            kinds = request
+                .selector
+                .as_ref()
+                .filter(|s| !s.kinds.is_empty())
+                .map(|s| s.kinds.iter().map(|k| k.as_str().to_owned()).collect())
+                .unwrap_or_else(|| vec!["callable".into()]);
         }
         kinds.sort();
         kinds.dedup();
@@ -30,13 +42,22 @@ impl QueryEngine {
         let path_prefix = request
             .path
             .as_deref()
-            .map(str::trim)
-            .filter(|value| !value.is_empty())
-            .map(|value| value.trim_start_matches('/').to_owned());
+            .map(entmoot_contracts::normalize_repo_path)
+            .transpose()
+            .map_err(|e| QueryError::InvalidInput(e.to_string()))?;
+        let path = path_prefix
+            .as_ref()
+            .map(|p| {
+                super::selection::CompiledPath::new(
+                    &entmoot_contracts::query::PathSelector::Subtree(p.clone()),
+                )
+            })
+            .transpose()?;
 
         let applied = InventoryRequest {
+            selector: request.selector,
             kinds: kinds.clone(),
-            path: path_prefix.clone(),
+            path: path_prefix,
             offset,
             limit,
         };
@@ -57,12 +78,28 @@ impl QueryEngine {
             .nodes
             .iter()
             .filter(|node| allowed.contains(&node.kind))
-            .filter(|node| match (&path_prefix, &node.path) {
-                (None, _) => true,
-                (Some(prefix), Some(path)) => {
-                    path == prefix || path.starts_with(&format!("{prefix}/"))
+            .filter(|node| {
+                path.as_ref()
+                    .is_none_or(|p| node.path.as_deref().is_some_and(|value| p.matches(value)))
+            })
+            .filter(|node| {
+                let Some(compiled) = &compiled else {
+                    return true;
+                };
+                selection.examined += 1;
+                let (state, explanation) = compiled.matches(node);
+                match state {
+                    super::selection::MatchState::Yes => {
+                        selection.matched += 1;
+                        explanations.insert(node.id.as_str(), explanation);
+                        true
+                    }
+                    super::selection::MatchState::Unknown => {
+                        selection.unknown += 1;
+                        false
+                    }
+                    super::selection::MatchState::No => false,
                 }
-                (Some(_), None) => false,
             })
             .collect();
         matched.sort_by(|left, right| {
@@ -77,10 +114,15 @@ impl QueryEngine {
             .into_iter()
             .skip(offset)
             .take(limit)
-            .map(|node| subject_card(node, 0))
+            .map(|node| {
+                let mut card = subject_card(node, 0);
+                card.selection_match = explanations.remove(node.id.as_str());
+                card
+            })
             .collect::<Vec<_>>();
         let returned = page.len();
         report.items = page;
+        report.selection = compiled.as_ref().map(|_| selection);
         report.bounds = ResultBounds::window(offset, limit, returned, total);
         if allowed.contains(&NodeKind::Declaration) {
             report
@@ -95,23 +137,14 @@ impl QueryEngine {
 }
 
 fn parse_kind(value: &str) -> Option<NodeKind> {
-    match value.trim() {
-        "repo" => Some(NodeKind::Repo),
-        "file" => Some(NodeKind::File),
-        "module_stub" => Some(NodeKind::ModuleStub),
-        "callable" => Some(NodeKind::Callable),
-        "declaration" => Some(NodeKind::Declaration),
-        "call_stub" => Some(NodeKind::CallStub),
-        "control_site" => Some(NodeKind::ControlSite),
-        "resource" => Some(NodeKind::Resource),
-        _ => None,
-    }
+    serde_json::from_value(serde_json::Value::String(value.trim().to_owned())).ok()
 }
 
-fn subject_card(node: &crate::TopologyNode, match_score: u8) -> SubjectCandidate {
+pub(super) fn subject_card(node: &crate::TopologyNode, match_score: u8) -> SubjectCandidate {
     SubjectCandidate {
+        selection_match: None,
         node_id: node.id.clone(),
-        kind: kind_name(node.kind).into(),
+        kind: node.kind.as_str().into(),
         label: node.label.clone(),
         path: node.path.clone(),
         start_line: node.start_line,
@@ -121,19 +154,6 @@ fn subject_card(node: &crate::TopologyNode, match_score: u8) -> SubjectCandidate
         logic_address: node.logic_address.clone(),
         structural_hash: node.structural_hash.clone(),
         match_score,
-    }
-}
-
-fn kind_name(kind: NodeKind) -> &'static str {
-    match kind {
-        NodeKind::Repo => "repo",
-        NodeKind::File => "file",
-        NodeKind::ModuleStub => "module_stub",
-        NodeKind::Callable => "callable",
-        NodeKind::Declaration => "declaration",
-        NodeKind::CallStub => "call_stub",
-        NodeKind::ControlSite => "control_site",
-        NodeKind::Resource => "resource",
     }
 }
 
@@ -167,6 +187,7 @@ mod tests {
         let engine = QueryEngine::new(graph, store);
         let report = engine
             .inventory(InventoryRequest {
+                selector: None,
                 kinds: vec!["callable".into()],
                 path: Some("a.rs".into()),
                 offset: 0,
@@ -179,6 +200,7 @@ mod tests {
 
         let page = engine
             .inventory(InventoryRequest {
+                selector: None,
                 kinds: vec!["callable".into()],
                 path: None,
                 offset: 1,

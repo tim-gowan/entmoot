@@ -1,11 +1,9 @@
 //! Task-shaped frontend for the existing read-only neighborhood contract.
-use std::path::PathBuf;
 
 use anyhow::Result;
 use clap::{Args, ValueEnum};
 use entmoot_contracts::query::{
-    BoundedWalkBudget, CallDirection, HopEvidenceFilter, ProviderRoleSelector, QueryService,
-    TraverseQuery,
+    CallDirection, HopEvidenceFilter, ProviderRoleSelector, TraverseQuery,
 };
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -19,22 +17,22 @@ enum Direction {
 /// Neighborhood witnesses from one exact inventory subject. A call route is not dataflow.
 #[derive(Debug, Args)]
 pub(super) struct NeighborhoodArgs {
+    /// Returned callable names containing this literal; intermediates remain searchable.
+    #[arg(long)]
+    endpoint_name_contains: Option<String>,
+    /// Returned callables with an explicit declared parameter type containing this literal.
+    #[arg(long)]
+    endpoint_parameter_type_contains: Option<String>,
+    #[command(flatten)]
+    prune: super::navigation_walk::PruneArgs,
+    #[command(flatten)]
+    budget: super::navigation_walk::WalkBudgetArgs,
+    #[command(flatten)]
+    execution: super::navigation_walk::WalkExecutionArgs,
     #[command(flatten)]
     output: super::output::InformationArgs,
     /// Exact node ID, occurrence address or display reference (use request/find first).
     subject: String,
-    /// Retain the bounded frontier so later requests can continue this search.
-    #[arg(long)]
-    resumable: bool,
-    /// Save frontier and replay state so standalone invocations can resume after restart.
-    #[arg(long, requires = "resumable")]
-    durable: bool,
-    /// Retain durable checkpoints this long between slices (standalone only).
-    #[arg(long, requires = "durable", value_parser = clap::value_parser!(u64).range(1..))]
-    continuation_idle_seconds: Option<u64>,
-    /// Opaque next-slice token from the same backend generation.
-    #[arg(long, requires = "resumable")]
-    continuation: Option<String>,
     #[arg(long, value_enum, default_value = "callers")]
     direction: Direction,
     /// Optional terminal role. Unlabeled intermediate nodes remain searchable.
@@ -49,39 +47,45 @@ pub(super) struct NeighborhoodArgs {
     /// Relation wire name; repeat to allow additional predicates.
     #[arg(long = "predicate", default_value = "calls")]
     predicates: Vec<String>,
-    #[arg(long)]
-    graph: Option<PathBuf>,
-    #[arg(long, conflicts_with = "graph")]
-    publication: Option<PathBuf>,
-    #[arg(long)]
-    store: Option<PathBuf>,
-    #[arg(long, default_value_t = BoundedWalkBudget::default().max_hops)]
-    max_hops: usize,
-    #[arg(long, default_value_t = BoundedWalkBudget::default().max_expansions)]
-    max_expansions: usize,
-    #[arg(long, default_value_t = BoundedWalkBudget::default().max_examined_edges)]
-    max_examined_edges: usize,
-    /// Zero removes the local fanout cap; global work limits still apply.
-    #[arg(long, default_value_t = BoundedWalkBudget::default().max_edges_per_node)]
-    max_edges_per_node: usize,
-    #[arg(long, default_value_t = BoundedWalkBudget::default().max_results)]
-    max_results: usize,
-    #[arg(long, default_value_t = BoundedWalkBudget::default().max_evidence_per_hop)]
-    max_evidence_per_hop: usize,
     #[arg(long, default_value_t = 20_000)]
     max_role_assertions: usize,
 }
 
 fn query(args: &NeighborhoodArgs) -> Result<entmoot_contracts::query::QueryRequest> {
+    use entmoot_contracts::query::{
+        CallableSelector, InventoryKind, ParameterSelector, SubjectSelector, TextCase, TextMatch,
+    };
+    let contains = |value: &String| TextMatch::Contains {
+        value: value.clone(),
+        case: TextCase::Sensitive,
+    };
+    let endpoint_selector =
+        (args.endpoint_name_contains.is_some() || args.endpoint_parameter_type_contains.is_some())
+            .then(|| SubjectSelector {
+                kinds: vec![InventoryKind::Callable],
+                name: args.endpoint_name_contains.as_ref().map(contains),
+                callable: args.endpoint_parameter_type_contains.as_ref().map(|value| {
+                    CallableSelector {
+                        parameters: vec![ParameterSelector {
+                            declared_type_syntax: Some(contains(value)),
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }
+                }),
+                ..Default::default()
+            });
     let request = TraverseQuery::Neighborhood {
-        resumable: args.resumable,
-        continuation: args.continuation.clone(),
+        endpoint_selector: endpoint_selector.map(Box::new),
+        prune: args.prune.request(),
+        resumable: args.execution.resumable,
+        continuation: args.execution.continuation.clone(),
         start: args.subject.clone(),
         direction: match args.direction {
             Direction::Callers => CallDirection::Callers,
             Direction::Callees => CallDirection::Callees,
         },
-        predicates: args.predicates.clone(),
+        predicates: super::navigation_walk::predicates(&args.predicates)?,
         evidence_filter: if args.include_candidates {
             HopEvidenceFilter::Any
         } else {
@@ -92,14 +96,7 @@ fn query(args: &NeighborhoodArgs) -> Result<entmoot_contracts::query::QueryReque
             include_hypotheses: args.include_hypotheses,
             max_assertions: args.max_role_assertions,
         }),
-        budget: BoundedWalkBudget {
-            max_hops: args.max_hops,
-            max_expansions: args.max_expansions,
-            max_examined_edges: args.max_examined_edges,
-            max_edges_per_node: args.max_edges_per_node,
-            max_results: args.max_results,
-            max_evidence_per_hop: args.max_evidence_per_hop,
-        },
+        budget: args.budget.request(),
     };
     let mut output = entmoot_contracts::query::OutputOptions::default();
     args.output.apply(&mut output)?;
@@ -108,34 +105,12 @@ fn query(args: &NeighborhoodArgs) -> Result<entmoot_contracts::query::QueryReque
 
 impl NeighborhoodArgs {
     pub(super) fn backend_request(&self) -> Result<entmoot_contracts::query::QueryRequest> {
-        if self.durable {
-            anyhow::bail!("backend durability is configured when starting the server with --durable-continuations; use --standalone for local --durable checkpoints");
-        }
-        if self.graph.is_some() || self.publication.is_some() || self.store.is_some() {
-            anyhow::bail!("backend neighborhood uses the server's publication; remove local graph/store options or use --standalone");
-        }
+        self.execution.validate_backend()?;
         query(self)
     }
 }
 
 pub(super) fn run(args: NeighborhoodArgs) -> Result<()> {
     let request = query(&args)?;
-    let (graph, store, _) =
-        super::resolve_read_paths(args.graph, args.publication, args.store, None)?;
-    let store = store.unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph));
-    let opened =
-        entmoot_engine::workspace::open_query_bundle_paths(&graph, &store, None, None, false)
-            .map_err(|error| anyhow::anyhow!(error.to_string()))?;
-    let engine = if args.durable {
-        let engine = opened.engine.with_durable_continuations();
-        match args.continuation_idle_seconds {
-            Some(seconds) => engine.with_durable_continuation_lifetime(seconds),
-            None => engine,
-        }
-    } else {
-        opened.engine
-    };
-    let result = QueryService::execute(&engine, request).map_err(super::report_query_error)?;
-    super::output::emit(&result)?;
-    Ok(())
+    args.execution.run(request)
 }

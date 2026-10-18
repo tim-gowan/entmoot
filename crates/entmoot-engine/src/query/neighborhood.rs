@@ -13,6 +13,9 @@ struct FrontierState {
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub(super) struct NeighborhoodSearch {
+    admission: super::admission::EdgeAdmission,
+    endpoint_selector: Option<entmoot_contracts::query::SubjectSelector>,
+    endpoint_selection: entmoot_contracts::query::SelectionReceipt,
     start: String,
     direction: CallDirection,
     predicates: Vec<String>,
@@ -28,10 +31,8 @@ pub(super) struct NeighborhoodSearch {
     discovered: HashSet<usize>,
     pub counters: WalkCounters,
     predicate_filtered: usize,
-    evidence_filtered: usize,
     scope_filtered: usize,
     depth_frontier: HashSet<usize>,
-    qualified_edges: HashMap<usize, bool>,
     pending: Option<(usize, usize, usize)>,
     pub done: bool,
     fixed_bytes: usize,
@@ -40,14 +41,30 @@ pub(super) struct NeighborhoodSearch {
 }
 
 impl NeighborhoodSearch {
-    pub fn new(
-        engine: &QueryEngine,
-        start: &str,
-        direction: CallDirection,
-        predicates: &[String],
-        evidence_filter: HopEvidenceFilter,
-        endpoint_role: Option<&ProviderRoleSelector>,
-    ) -> Result<Self, QueryError> {
+    pub fn new(engine: &QueryEngine, request: &TraverseQuery) -> Result<Self, QueryError> {
+        let TraverseQuery::Neighborhood {
+            start,
+            direction,
+            predicates,
+            evidence_filter,
+            endpoint_role,
+            prune,
+            endpoint_selector,
+            ..
+        } = request
+        else {
+            return Err(QueryError::InvalidInput(
+                "expected a neighborhood request".into(),
+            ));
+        };
+        let direction = *direction;
+        let evidence_filter = *evidence_filter;
+        let endpoint_role = endpoint_role.as_ref();
+        let endpoint_selector = endpoint_selector.as_deref();
+        let admission = super::admission::EdgeAdmission::new(engine, prune, evidence_filter)?;
+        endpoint_selector
+            .map(super::selection::CompiledSelector::new)
+            .transpose()?;
         parse_walk_predicates(predicates)?;
         let selection = endpoint_role
             .map(|selector| {
@@ -76,7 +93,11 @@ impl NeighborhoodSearch {
         }
         let roots = engine.exact_subject_nodes(start);
         let root_keys = if roots.len() == 1 {
-            engine.walk_endpoint_keys(start)
+            engine
+                .walk_endpoint_keys(start)
+                .into_iter()
+                .filter(|key| !admission.excludes_address(key))
+                .collect()
         } else {
             vec![]
         };
@@ -124,6 +145,11 @@ impl NeighborhoodSearch {
                 .map(|(k, v)| k.capacity() + v.capacity() * 8 + 64)
                 .sum::<usize>();
         let fixed_bytes = fixed_bytes
+            + endpoint_selector
+                .map(super::output::byte_len)
+                .transpose()?
+                .unwrap_or(0)
+                * 8
             + start.len() * 2
             + root_keys
                 .iter()
@@ -139,6 +165,9 @@ impl NeighborhoodSearch {
                 .unwrap_or(0)
                 * 8;
         Ok(Self {
+            admission,
+            endpoint_selector: endpoint_selector.cloned(),
+            endpoint_selection: Default::default(),
             start: start.into(),
             direction,
             predicates: predicates.to_vec(),
@@ -154,10 +183,8 @@ impl NeighborhoodSearch {
             discovered,
             counters: WalkCounters::default(),
             predicate_filtered: 0,
-            evidence_filtered: 0,
             scope_filtered: 0,
             depth_frontier: HashSet::new(),
-            qualified_edges: HashMap::new(),
             pending: None,
             done: false,
             fixed_bytes,
@@ -171,7 +198,7 @@ impl NeighborhoodSearch {
             + 1024
             + self.states.len() * 512
             + self.unresolved.len() * 256
-            + self.qualified_edges.len() * 64
+            + self.admission.retained_bytes()
     }
 
     pub fn advance(
@@ -182,6 +209,16 @@ impl NeighborhoodSearch {
         memory_limit: usize,
     ) -> Result<Value, QueryError> {
         let started = std::time::Instant::now();
+        let admission_before = (
+            self.admission.pruned_edges,
+            self.admission.evidence_filtered_edges,
+            self.admission.evidence_claims_examined,
+        );
+        let endpoint_selector = self
+            .endpoint_selector
+            .as_ref()
+            .map(super::selection::CompiledSelector::new)
+            .transpose()?;
         let allowed = parse_walk_predicates(&self.predicates)?;
         let forward = self.direction == CallDirection::Callees;
         let mut evidence_micros = 0u64;
@@ -195,7 +232,7 @@ impl NeighborhoodSearch {
                 + 2048
                 + self.states.len() * 512
                 + self.unresolved.len() * 256
-                + self.qualified_edges.len() * 64
+                + self.admission.retained_bytes()
                 > memory_limit
             {
                 return Err(QueryError::Unavailable("neighborhood continuation exceeded retained memory; narrow the selector or depth".into()));
@@ -246,6 +283,9 @@ impl NeighborhoodSearch {
                 self.predicate_filtered += 1;
                 continue;
             }
+            if !self.admission.allows(index, edge, Some(repository))? {
+                continue;
+            }
             if budget.max_edges_per_node > 0 && fanout == budget.max_edges_per_node {
                 counters.fanout_truncated = true;
                 self.pending = None;
@@ -258,40 +298,6 @@ impl NeighborhoodSearch {
                 self.scope_filtered += 1;
                 continue;
             };
-            if self.evidence_filter == HopEvidenceFilter::ResolvedOnly {
-                let qualifies = if let Some(qualifies) = self.qualified_edges.get(&index) {
-                    *qualifies
-                } else {
-                    let evidence_started = std::time::Instant::now();
-                    let claims = repository
-                        .relation_claims_for_edges(&[edge])?
-                        .pop()
-                        .unwrap_or_default();
-                    evidence_micros = evidence_micros.saturating_add(
-                        u64::try_from(evidence_started.elapsed().as_micros()).unwrap_or(u64::MAX),
-                    );
-                    evidence_claims_examined += claims.len();
-                    let resolution_states: Vec<_> = claims
-                        .iter()
-                        .filter_map(|claim| applicable_resolution_state(claim, edge))
-                        .collect();
-                    let qualifies = !resolution_states.is_empty()
-                        && resolution_states.iter().all(|state| {
-                            matches!(
-                                state,
-                                ResolutionState::ArtifactResolved
-                                    | ResolutionState::SemanticResolved
-                                    | ResolutionState::Validated
-                            )
-                        });
-                    self.qualified_edges.insert(index, qualifies);
-                    qualifies
-                };
-                if !qualifies {
-                    self.evidence_filtered += 1;
-                    continue;
-                }
-            }
             let endpoint = if self.direction == CallDirection::Callers {
                 &edge.subject
             } else {
@@ -337,7 +343,31 @@ impl NeighborhoodSearch {
                 .anchors_by_key
                 .get(endpoint_key)
                 .map_or(&[][..], Vec::as_slice);
-            if fresh && (self.selection.is_none() || !anchor_indexes.is_empty()) {
+            let endpoint_matches = if let Some(selector) = &endpoint_selector {
+                if fresh {
+                    self.endpoint_selection.examined += 1;
+                    let indexes = engine.indexes.nodes_by_address.get(endpoint_key);
+                    let mut unknown = indexes.is_none_or(Vec::is_empty);
+                    let mut matched = false;
+                    for &index in indexes.into_iter().flatten() {
+                        let state = selector.matches(&engine.graph.nodes[index]).0;
+                        matched |= state == super::selection::MatchState::Yes;
+                        unknown |= state == super::selection::MatchState::Unknown;
+                    }
+                    if matched {
+                        self.endpoint_selection.matched += 1;
+                    } else if unknown {
+                        self.endpoint_selection.unknown += 1;
+                    }
+                    matched
+                } else {
+                    false
+                }
+            } else {
+                true
+            };
+            if fresh && endpoint_matches && (self.selection.is_none() || !anchor_indexes.is_empty())
+            {
                 let mut next_path = vec![index];
                 let mut cursor = state_index;
                 while let Some((parent, edge)) = self.states[cursor].parent {
@@ -484,15 +514,20 @@ impl NeighborhoodSearch {
             "status": if truncated { "truncated" } else if conflicted { "conflict" } else if hits.is_empty() { "unknown" } else { "known" },
             "bounds": ResultBounds { offset: self.delivered - hits.len(), limit: budget.max_results, total_matches: self.delivered, truncated },
             "items": hits, "role_selection": role_selection,
+            "endpoint_selection": self.endpoint_selector.as_ref().map(|_| &self.endpoint_selection),
             "unresolved_calls": self.unresolved.iter().take(budget.max_evidence_per_hop).map(|(_,i)| &engine.graph.unresolved_relations[*i]).collect::<Vec<_>>(),
             "unresolved_call_bounds": unresolved_bounds,
             "gaps": gaps,
             "predicate_filtered_edges": self.predicate_filtered,
-            "evidence_filtered_edges": self.evidence_filtered,
+            "evidence_filtered_edges": self.admission.evidence_filtered_edges,
             "scope_filtered_edges": self.scope_filtered,
             "depth_frontier_count": self.depth_frontier.len(),
             "result_budget_exhausted": result_budget_exhausted,
             "search_receipt": {
+                "prune_selection": self.admission.prune_selection,
+                "pruned_edges": self.admission.pruned_edges - admission_before.0,
+                "evidence_filtered_edges": self.admission.evidence_filtered_edges - admission_before.1,
+                "admission_claims_examined": self.admission.evidence_claims_examined - admission_before.2,
                 "evidence_micros":evidence_micros,"evidence_claims_examined":evidence_claims_examined,"reconstructed_edges":reconstructed_edges,
                 "expanded_nodes": counters.expanded_nodes, "examined_edges": counters.examined_edges,
                 "cumulative_expanded_nodes": self.counters.expanded_nodes,
@@ -508,6 +543,7 @@ impl NeighborhoodSearch {
 }
 
 impl QueryEngine {
+    #[cfg(test)]
     pub(super) fn bounded_neighborhood(
         &self,
         start: &str,
@@ -517,16 +553,31 @@ impl QueryEngine {
         endpoint_role: Option<&ProviderRoleSelector>,
         budget: BoundedWalkBudget,
     ) -> Result<Value, QueryError> {
-        let budget = validate_walk_budget(budget)?;
-        NeighborhoodSearch::new(
-            self,
-            start,
+        self.bounded_neighborhood_query(&TraverseQuery::Neighborhood {
+            start: start.into(),
             direction,
-            predicates,
+            predicates: predicates.to_vec(),
             evidence_filter,
-            endpoint_role,
-        )?
-        .advance(self, &self.repository()?, budget, usize::MAX)
+            endpoint_role: endpoint_role.cloned(),
+            budget,
+            prune: Default::default(),
+            endpoint_selector: None,
+            resumable: false,
+            continuation: None,
+        })
+    }
+
+    pub(super) fn bounded_neighborhood_query(
+        &self,
+        request: &TraverseQuery,
+    ) -> Result<Value, QueryError> {
+        let budget = validate_walk_budget(request.budget())?;
+        NeighborhoodSearch::new(self, request)?.advance(
+            self,
+            &self.repository()?,
+            budget,
+            usize::MAX,
+        )
     }
 }
 
@@ -604,6 +655,8 @@ mod tests {
         let query = |root: &str, direction, filter, budget| {
             engine
                 .traverse(TraverseQuery::Neighborhood {
+                    endpoint_selector: None,
+                    prune: Default::default(),
                     resumable: false,
                     continuation: None,
                     start: root.into(),
@@ -706,6 +759,8 @@ mod tests {
         graph.relation_edges[1].scope.context_id = Some("other-build".into());
         let scoped = QueryEngine::new(graph, store)
             .traverse(TraverseQuery::Neighborhood {
+                endpoint_selector: None,
+                prune: Default::default(),
                 resumable: false,
                 continuation: None,
                 start: "a".into(),

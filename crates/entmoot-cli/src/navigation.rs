@@ -7,8 +7,35 @@ use std::path::PathBuf;
 
 #[derive(Debug, Args)]
 pub(super) struct FindArgs {
-    /// Symbol/name text; omit to enumerate candidates.
+    /// Symbol/name text; omit when using explicit selectors.
     query: Option<String>,
+    /// Inventory kind (repeatable), e.g. callable or declaration.
+    #[arg(long)]
+    kind: Vec<String>,
+    /// Published language name (repeatable).
+    #[arg(long)]
+    language: Vec<String>,
+    /// Explicit whole-name equality; intersects the positional discovery text.
+    #[arg(long, conflicts_with_all = ["name_distance", "name_contains"])]
+    name_exact: Option<String>,
+    /// Name within this Levenshtein distance of the positional query (0..=8).
+    #[arg(long, requires = "query", conflicts_with = "name_contains")]
+    name_distance: Option<usize>,
+    /// Case-sensitive name substring; intersects positional discovery text.
+    #[arg(long)]
+    name_contains: Option<String>,
+    /// Match an explicit declared parameter type substring.
+    #[arg(long)]
+    parameter_type_contains: Option<String>,
+    /// Constrain the same parameter as --parameter-type-contains.
+    #[arg(long)]
+    parameter_name: Option<String>,
+    /// Exact subtree, including descendants at slash boundaries.
+    #[arg(long, conflicts_with = "path_glob")]
+    path_prefix: Option<String>,
+    /// Repository-relative glob: '*' stays within segments; '**' crosses them.
+    #[arg(long)]
+    path_glob: Option<String>,
     #[arg(long)]
     path: Option<String>,
     #[arg(long)]
@@ -17,6 +44,61 @@ pub(super) struct FindArgs {
     limit: usize,
     #[command(flatten)]
     output: InformationArgs,
+}
+
+impl FindArgs {
+    fn selector(&self) -> Result<Option<SubjectSelector>> {
+        let literal = |value: &str| TextMatch::Contains {
+            value: value.into(),
+            case: TextCase::Sensitive,
+        };
+        let kinds = self
+            .kind
+            .iter()
+            .map(|kind| {
+                serde_json::from_value::<InventoryKind>(serde_json::Value::String(kind.clone()))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let name = if let Some(max_distance) = self.name_distance {
+            self.query.as_ref().map(|value| TextMatch::Levenshtein {
+                value: value.clone(),
+                max_distance,
+                case: TextCase::Sensitive,
+            })
+        } else if let Some(value) = &self.name_exact {
+            Some(TextMatch::Exact {
+                value: value.clone(),
+                case: TextCase::Sensitive,
+            })
+        } else {
+            self.name_contains.as_deref().map(literal)
+        };
+        let callable = (self.parameter_name.is_some() || self.parameter_type_contains.is_some())
+            .then(|| CallableSelector {
+                parameters: vec![ParameterSelector {
+                    name: self.parameter_name.as_ref().map(|value| TextMatch::Exact {
+                        value: value.clone(),
+                        case: TextCase::Sensitive,
+                    }),
+                    declared_type_syntax: self.parameter_type_contains.as_deref().map(literal),
+                    ..Default::default()
+                }],
+                ..Default::default()
+            });
+        let selector = SubjectSelector {
+            kinds,
+            languages: self.language.clone(),
+            name,
+            callable,
+            path: self
+                .path_prefix
+                .clone()
+                .map(PathSelector::Subtree)
+                .or_else(|| self.path_glob.clone().map(PathSelector::Glob)),
+            ..Default::default()
+        };
+        Ok((selector != SubjectSelector::default()).then_some(selector))
+    }
 }
 #[derive(Debug, Args)]
 pub(super) struct SubjectArgs {
@@ -45,6 +127,12 @@ pub(super) struct SourceArgs {
 }
 #[derive(Debug, Args)]
 pub(super) struct BoundaryArgs {
+    /// Exact repository-relative file, mutually exclusive with legacy --path.
+    #[arg(long, conflicts_with_all = ["path", "path_glob"])]
+    path_exact: Option<String>,
+    /// Repository-relative glob; '*' stays within segments and '**' crosses them.
+    #[arg(long, conflicts_with = "path")]
+    path_glob: Option<String>,
     /// Exact source callee or '*' pattern, e.g. '*.toString()'. Syntax is not a type claim.
     #[arg(long)]
     callee: Option<String>,
@@ -70,7 +158,12 @@ pub(super) fn request(command: &Commands) -> Result<Option<QueryRequest>> {
         Commands::Find(args) => (
             QueryRequest::Find {
                 request: FindQuery::Subject {
-                    query: args.query.clone(),
+                    selector: args.selector()?,
+                    query: if args.name_distance.is_some() {
+                        None
+                    } else {
+                        args.query.clone()
+                    },
                     path: args.path.clone(),
                     line: args.line,
                     limit: Some(args.limit),
@@ -135,6 +228,11 @@ pub(super) fn request(command: &Commands) -> Result<Option<QueryRequest>> {
             QueryRequest::Find {
                 request: FindQuery::CallBoundary {
                     request: CallBoundaryRequest {
+                        path_selector: args
+                            .path_exact
+                            .clone()
+                            .map(PathSelector::Exact)
+                            .or_else(|| args.path_glob.clone().map(PathSelector::Glob)),
                         callee: args.callee.clone(),
                         path: args.path.clone(),
                         outcome: args.outcome.clone(),

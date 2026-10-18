@@ -22,6 +22,10 @@ type Failure = (&'static str, String);
 #[serde(deny_unknown_fields)]
 struct NeighborhoodArgs {
     #[serde(default)]
+    prune: entmoot_contracts::query::TraversalPrune,
+    #[serde(default)]
+    endpoint_selector: Option<entmoot_contracts::query::SubjectSelector>,
+    #[serde(default)]
     resumable: bool,
     continuation: Option<String>,
     /// Compact by default (10 items, 16 KiB); explain/export expand selected evidence.
@@ -156,31 +160,19 @@ struct Args {
     require_adapter_config: bool,
 }
 
+// The tagged contract rejects unknown fields after output is consumed.
+// serde's outer deny_unknown_fields is incompatible with flattening a tagged enum.
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
-#[serde(deny_unknown_fields)]
-struct FindArgs {
-    /// Compact by default (10 items, 16 KiB); explain/export expand selected evidence.
-    /// Output continuation is pinned; deferred detail is not search truncation.
+#[schemars(deny_unknown_fields)]
+struct QueryArgs<T> {
+    #[serde(flatten)]
+    request: T,
+    /// Shared delivery controls, independent of discovery and graph work.
     #[serde(default)]
     output: entmoot_contracts::query::OutputOptions,
-    /// subject | initializer | location | finding | evidence_role | changed_subject |
-    /// unresolved_boundary | external_boundary | conflicted_relation |
-    /// stale_evidence | producer_gap | high_fan_in_or_out
-    kind: String,
-    query: Option<String>,
-    /// Exact plain decimal initializer spelling; only for kind=initializer.
-    integer: Option<String>,
-    path: Option<String>,
-    line: Option<usize>,
-    column: Option<usize>,
-    role: Option<String>,
-    reason: Option<String>,
-    compare_revision: Option<String>,
-    compare_snapshot_digest: Option<String>,
-    direction: Option<String>,
-    min_degree: Option<usize>,
-    limit: Option<usize>,
 }
+type FindArgs = QueryArgs<FindQuery>;
+type InspectArgs = QueryArgs<InspectQuery>;
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
@@ -191,151 +183,15 @@ struct BoundaryArgs {
     output: entmoot_contracts::query::OutputOptions,
 }
 
-impl TryFrom<FindArgs> for FindQuery {
-    type Error = QueryServiceError;
-
-    fn try_from(value: FindArgs) -> Result<Self, Self::Error> {
-        match value.kind.as_str() {
-            "initializer" => Ok(Self::Initializer {
-                integer: value.integer.ok_or_else(|| QueryServiceError::InvalidRequest("find initializer requires integer".into()))?,
-                path: value.path,
-                limit: value.limit,
-            }),
-            "subject" => Ok(Self::Subject {
-                query: value.query,
-                path: value.path,
-                line: value.line,
-                limit: value.limit,
-            }),
-            "location" => Ok(Self::Location {
-                path: value.path.ok_or_else(|| {
-                    QueryServiceError::InvalidRequest("find location requires path".into())
-                })?,
-                line: value.line.ok_or_else(|| {
-                    QueryServiceError::InvalidRequest("find location requires line".into())
-                })?,
-                column: value.column,
-            }),
-            "finding" => Ok(Self::Finding {
-                query: value.query,
-                path: value.path,
-                limit: value.limit,
-            }),
-            "evidence_role" => Ok(Self::EvidenceRole {
-                role: value.role,
-                path: value.path,
-                limit: value.limit,
-            }),
-            "changed_subject" => Ok(Self::ChangedSubject {
-                compare_revision: value.compare_revision.ok_or_else(|| {
-                    QueryServiceError::InvalidRequest(
-                        "find changed_subject requires compare_revision".into(),
-                    )
-                })?,
-                compare_snapshot_digest: value.compare_snapshot_digest,
-                path: value.path,
-                limit: value.limit,
-            }),
-            "unresolved_boundary" => Ok(Self::UnresolvedBoundary {
-                reason: value.reason,
-                path: value.path,
-                limit: value.limit,
-            }),
-            "external_boundary" => Ok(Self::ExternalBoundary {
-                path: value.path,
-                limit: value.limit,
-            }),
-            "conflicted_relation" => Ok(Self::ConflictedRelation {
-                path: value.path,
-                limit: value.limit,
-            }),
-            "stale_evidence" => Ok(Self::StaleEvidence {
-                path: value.path,
-                limit: value.limit,
-            }),
-            "producer_gap" => Ok(Self::ProducerGap {
-                path: value.path,
-                limit: value.limit,
-            }),
-            "high_fan_in_or_out" => {
-                let direction = match value.direction.as_deref().unwrap_or("either") {
-                    "in" => entmoot_contracts::query::FanDirection::In,
-                    "out" => entmoot_contracts::query::FanDirection::Out,
-                    "either" => entmoot_contracts::query::FanDirection::Either,
-                    _ => {
-                        return Err(QueryServiceError::InvalidRequest(
-                            "high_fan_in_or_out direction must be in, out, or either".into(),
-                        ))
-                    }
-                };
-                Ok(Self::HighFanInOrOut {
-                    direction,
-                    min_degree: value.min_degree,
-                    path: value.path,
-                    limit: value.limit,
-                })
-            }
-            _ => Err(QueryServiceError::InvalidRequest(
-                "find kind must be subject, location, finding, evidence_role, changed_subject, unresolved_boundary, external_boundary, conflicted_relation, stale_evidence, producer_gap, or high_fan_in_or_out".into(),
-            )),
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, schemars::JsonSchema)]
-#[serde(deny_unknown_fields)]
-struct InspectArgs {
-    /// Compact by default (10 items, 16 KiB); explain/export expand selected evidence.
-    /// Output continuation is pinned; deferred detail is not search truncation.
-    #[serde(default)]
-    output: entmoot_contracts::query::OutputOptions,
-    /// Continuation for kind=unresolved only.
-    after: Option<entmoot_contracts::query::UnresolvedPageCursor>,
-    /// subject | evidence | trace | proposition | relation_edge | unresolved
-    kind: String,
-    id: String,
-    offset: Option<usize>,
-    limit: Option<usize>,
-}
-
-impl TryFrom<InspectArgs> for InspectQuery {
-    type Error = QueryServiceError;
-
-    fn try_from(value: InspectArgs) -> Result<Self, Self::Error> {
-        if value.after.is_some() && value.kind != "unresolved" {
-            return Err(QueryServiceError::InvalidRequest(
-                "inspect after is only supported for kind=unresolved".into(),
-            ));
-        }
-        match value.kind.as_str() {
-            "unresolved" => Ok(Self::Unresolved {
-                id: value.id,
-                after: value.after,
-                limit: value.limit,
-            }),
-            "subject" => Ok(Self::Subject {
-                id: value.id,
-                limit: value.limit,
-            }),
-            "evidence" => Ok(Self::Evidence { id: value.id }),
-            "trace" => Ok(Self::Trace {
-                id: value.id,
-                offset: value.offset,
-                limit: value.limit,
-            }),
-            "proposition" => Ok(Self::Proposition { id: value.id }),
-            "relation_edge" => Ok(Self::RelationEdge { id: value.id }),
-            _ => Err(QueryServiceError::InvalidRequest(
-                "inspect kind must be subject, evidence, trace, proposition, relation_edge, or unresolved"
-                    .into(),
-            )),
-        }
-    }
-}
-
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 struct TraverseArgs {
+    /// Same per-hop evidence policy as neighborhood.
+    #[serde(default)]
+    evidence_filter: HopEvidenceFilter,
+    /// Exclusions applied during both search frontiers.
+    #[serde(default)]
+    prune: entmoot_contracts::query::TraversalPrune,
     #[serde(default)]
     resumable: bool,
     continuation: Option<String>,
@@ -360,7 +216,7 @@ struct TraverseArgs {
     max_edges_per_node: Option<usize>,
     /// Maximum path receipts (default 10, maximum 20).
     max_results: Option<usize>,
-    /// Entries per hop in each evidence detail list (default 3, maximum 100;
+    /// Entries per hop in each evidence detail list (default 20, maximum 100;
     /// zero retains counts and classification). Inspect exact edges for details.
     max_evidence_per_hop: Option<usize>,
 }
@@ -425,6 +281,10 @@ struct InventoryOverlayArgs {
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 struct SeededPathArgs {
+    #[serde(default)]
+    prune: entmoot_contracts::query::TraversalPrune,
+    #[serde(default)]
+    evidence_filter: HopEvidenceFilter,
     /// Compact by default (10 items, 16 KiB); explain/export expand selected evidence.
     /// Output continuation is pinned; deferred detail is not search truncation.
     #[serde(default)]
@@ -722,6 +582,8 @@ impl EntmootMcp {
         self.dispatch(move |server| {
             server.execute_query(QueryRequest::Traverse {
                 request: TraverseQuery::Neighborhood {
+                    endpoint_selector: args.endpoint_selector.map(Box::new),
+                    prune: args.prune,
                     resumable: args.resumable,
                     continuation: args.continuation,
                     start: args.start,
@@ -773,7 +635,7 @@ impl EntmootMcp {
     }
 
     #[tool(
-        description = "Find bounded inventory anchors by subject/name/path, exact initializer integer syntax, location, analyzer observation, or provider-stated semantic role. Initializer syntax is not a runtime value. Results preserve ambiguity and unknown coverage. Compact is the default; output.tier=explain/export expands evidence. Compact output.after resumes a pinned page; deferred evidence does not mean search truncation.",
+        description = "Find inventory anchors with typed subject selectors (name exact/contains/Levenshtein, language, path, correlated written parameter types), initializer syntax, location, analyzer observation, or provider roles. Initializer syntax is not a runtime value. Results preserve ambiguity and unknown coverage. Compact is the default; output.tier=explain/export expands evidence. Compact output.after resumes a pinned page; deferred evidence does not mean search truncation.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -787,14 +649,13 @@ impl EntmootMcp {
                 Ok(bundle) => bundle,
                 Err(error) => return Self::tool_result(Err(error)),
             };
-            let output = args.output.clone();
-            match args.try_into() {
-                Ok(request) => Self::tool_result(QueryService::execute(
-                    &bundle.engine,
-                    QueryRequest::Find { request, output },
-                )),
-                Err(error) => Self::tool_result(Err(error)),
-            }
+            Self::tool_result(QueryService::execute(
+                &bundle.engine,
+                QueryRequest::Find {
+                    request: args.request,
+                    output: args.output,
+                },
+            ))
         })
         .await
     }
@@ -814,20 +675,19 @@ impl EntmootMcp {
                 Ok(bundle) => bundle,
                 Err(error) => return Self::tool_result(Err(error)),
             };
-            let output = args.output.clone();
-            match args.try_into() {
-                Ok(request) => Self::tool_result(QueryService::execute(
-                    &bundle.engine,
-                    QueryRequest::Inspect { request, output },
-                )),
-                Err(error) => Self::tool_result(Err(error)),
-            }
+            Self::tool_result(QueryService::execute(
+                &bundle.engine,
+                QueryRequest::Inspect {
+                    request: args.request,
+                    output: args.output,
+                },
+            ))
         })
         .await
     }
 
     #[tool(
-        description = "Traverse typed durable relations between two exact subjects with explicit hop, expansion, fanout, and result budgets. Returns ordered edge references and evidence classifications and never treats backward search as reversed semantics. Compact is the default; output.tier=explain/export expands evidence. Compact output.after resumes a pinned page; deferred evidence does not mean search truncation.",
+        description = "Traverse typed durable relations between two exact subjects with explicit hop, expansion, fanout, and result budgets. Apply evidence_filter and prune during discovery. Returns directed original-edge witnesses with evidence classifications; routes do not establish dataflow. Compact is the default; output.tier=explain/export expands evidence. Compact output.after resumes a pinned page; deferred evidence does not mean search truncation.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -840,6 +700,8 @@ impl EntmootMcp {
             let defaults = BoundedWalkBudget::default();
             server.execute_query(QueryRequest::Traverse {
                 request: TraverseQuery::Path {
+                    evidence_filter: args.evidence_filter,
+                    prune: args.prune,
                     resumable: args.resumable,
                     continuation: args.continuation,
                     start: args.start,
@@ -855,7 +717,9 @@ impl EntmootMcp {
                             .max_edges_per_node
                             .unwrap_or(defaults.max_edges_per_node),
                         max_results: args.max_results.unwrap_or(defaults.max_results),
-                        max_evidence_per_hop: args.max_evidence_per_hop.unwrap_or(3),
+                        max_evidence_per_hop: args
+                            .max_evidence_per_hop
+                            .unwrap_or(defaults.max_evidence_per_hop),
                     },
                 },
                 output: args.output,
@@ -1127,6 +991,8 @@ impl EntmootMcp {
         self.dispatch(move |server| {
             let defaults = SeededPathRequest::default();
             let request = SeededPathRequest {
+                prune: args.prune,
+                evidence_filter: args.evidence_filter,
                 output: args.output,
                 include_hypotheses: args
                     .include_hypotheses
@@ -1396,4 +1262,38 @@ async fn main() -> Result<()> {
     let server = service.serve(rmcp::transport::stdio()).await?;
     server.waiting().await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod query_inputs {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn find_uses_typed_variants_without_ignored_parameters() {
+        let args: FindArgs = serde_json::from_value(json!({
+            "kind":"subject",
+            "selector":{"name":{"mode":"contains","value":"handle"},
+                "callable":{"parameters":[{"declared_type_syntax":{"mode":"contains","value":"Request"}}]}},
+            "output":{"tier":"explain"}
+        })).unwrap();
+        assert!(matches!(
+            args.request,
+            FindQuery::Subject {
+                selector: Some(_),
+                ..
+            }
+        ));
+        let inspect: InspectArgs =
+            serde_json::from_value(json!({"kind":"subject","id":"exact-id"})).unwrap();
+        assert!(matches!(inspect.request, InspectQuery::Subject { .. }));
+        assert!(serde_json::from_value::<InspectArgs>(
+            json!({"kind":"subject","id":"exact-id","offset":12})
+        )
+        .is_err());
+        assert!(serde_json::from_value::<FindArgs>(json!({
+            "kind":"subject","query":"handle","role":"ignored"
+        }))
+        .is_err());
+    }
 }

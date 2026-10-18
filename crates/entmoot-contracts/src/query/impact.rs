@@ -357,6 +357,10 @@ pub struct CodeContractImpact {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(default, deny_unknown_fields)]
 pub struct ImpactRelayRequest {
+    /// Shared traversal exclusions applied only to caller discovery.
+    pub prune: super::TraversalPrune,
+    /// Shared returned-caller selector; intermediate subjects remain searchable.
+    pub endpoint_selector: Option<super::SubjectSelector>,
     /// Search controls per changed callable, independent of delivery bytes.
     pub budget: super::BoundedWalkBudget,
     /// All represented evidence includes candidates; resolved-only is the default.
@@ -371,6 +375,8 @@ pub struct ImpactRelayRequest {
 impl Default for ImpactRelayRequest {
     fn default() -> Self {
         Self {
+            prune: Default::default(),
+            endpoint_selector: None,
             budget: super::BoundedWalkBudget::default(),
             evidence_filter: super::HopEvidenceFilter::ResolvedOnly,
             output: super::OutputOptions::default(),
