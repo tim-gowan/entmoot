@@ -31,15 +31,16 @@ env:
   ARTIFACT_RETENTION_DAYS: '14'
   NATIVE_FEATURES: entmoot/producer,entmoot/native-tests,entmoot-engine/native-tests
 jobs:
-  resolved:
+  native-suite:
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        suite: [native_library, program_adapters, adapter_controls, producer_cli, campaign_harness, dispatch_expectations, callsites_c_family, callsites_csharp, callsites_go, callsites_java, callsites_rust, callsites_javascript, package_compatibility, historical_rust, packages]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 100
     env:
-      RUST_CACHE_KEY: resolved-${{ matrix.os }}
+      RUST_CACHE_KEY: resolved-${{ matrix.os }}-${{ matrix.suite }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -91,10 +92,17 @@ jobs:
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Compute native dependency cache key
+        id: inputs
+        shell: bash
+        run: python scripts/crate_graph.py --package entmoot --github-output "$GITHUB_OUTPUT"
       - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
         with:
           shared-key: ${{ env.RUST_CACHE_KEY }}
           cache-targets: true
+          cache-all-crates: true
+          cache-on-failure: true
+          key: ${{ steps.inputs.outputs.key }}
       - name: Build pinned native adapters (Windows)
         if: runner.os != 'Linux'
         shell: pwsh
@@ -149,23 +157,13 @@ jobs:
           $publication = Join-Path $volume 'current.json'
           & ./target/debug/entmoot status --publication $publication --source-root $profileRoot | Out-Null
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test program_adapters -- --include-ignored --test-threads=1
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test adapter_controls -- --test-threads=1
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test producer_cli -- --include-ignored --test-threads=1
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test campaign_harness revision_campaign_joins_actual_occurrences_and_preserves_unconsumed_frontiers -- --ignored --exact
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test dispatch_expectations --test callsites_c_family --test callsites_csharp --test callsites_go --test callsites_java --test callsites_rust --test callsites_javascript -- --include-ignored --test-threads=1
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cargo test --locked --workspace --features $env:NATIVE_FEATURES --test package_compatibility native_python_five_controls -- --ignored --exact --test-threads=1
+          python scripts/run_native_ci.py "${{ matrix.suite }}"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
       - name: Retain native build provenance on failure
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: native-${{ matrix.os }}
+          name: native-${{ matrix.os }}-${{ matrix.suite }}
           path: ${{ env.ADAPTERS_OUT }}/build-receipt.json
           if-no-files-found: ignore
       - name: Report build storage
@@ -175,6 +173,7 @@ jobs:
           df -h .
           if [ -d target ]; then du -sh target; fi
       - name: Historical Rust compiler control
+        if: matrix.suite == 'historical_rust'
         shell: pwsh
         run: |
           # Toolchains are installed by assemble-ci-env on Linux; ensure on Windows.
@@ -186,6 +185,7 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           cargo test --locked --workspace --features $env:NATIVE_FEATURES --test adapter_controls pinned_rust_compilers_preserve_trait_macro_and_generic_syntax -- --ignored --exact --test-threads=1
       - name: Preserve matched producer binaries
+        if: matrix.suite == 'packages'
         shell: bash
         run: |
           set -euo pipefail
@@ -196,12 +196,25 @@ jobs:
             cp "target/debug/${binary}${suffix}" .tmp/bin-artifact/
           done
       - name: Rehearse extracted native-enabled packages
+        if: matrix.suite == 'packages'
         run: python scripts/package_smoke.py --producer --profile test --baseline-bin-dir .tmp/bin-artifact
       - name: Upload qualified producer test-profile binaries
-        if: success()
+        if: success() && matrix.suite == 'packages'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: entmoot-bin-producer-test-${{ runner.os }}-${{ github.sha }}
           path: .tmp/bin-artifact/*
           if-no-files-found: error
           retention-days: ${{ fromJSON(env.ARTIFACT_RETENTION_DAYS) }}
+  resolved:
+    # Retain the previous required check names; failed suites rerun separately.
+    if: always()
+    needs: native-suite
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Require every native control
+        shell: bash
+        run: test "${{ needs.native-suite.result }}" = success

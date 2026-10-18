@@ -1,5 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
-use entmoot_engine::{KnowledgeRepository, KnowledgeStore, SqliteKnowledgeRepository};
+use entmoot_engine::{
+    KnowledgeRead, KnowledgeRepository, KnowledgeStore, SqliteKnowledgeRepository,
+};
 
 #[test]
 fn gitignore_exclusions_survive_publication_and_incremental_reuse() {

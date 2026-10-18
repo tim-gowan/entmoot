@@ -1,6 +1,8 @@
 //! P1 durable site and attachment controls across the release claim set.
 #![allow(clippy::unwrap_used, clippy::expect_used)]
-use entmoot_engine::{KnowledgeRepository, KnowledgeStore, NodeKind, SqliteKnowledgeRepository};
+use entmoot_engine::{
+    KnowledgeRead, KnowledgeRepository, KnowledgeStore, NodeKind, SqliteKnowledgeRepository,
+};
 
 #[test]
 fn sites_survive_aggregation_and_knowledge_replay_for_every_claimed_family() {

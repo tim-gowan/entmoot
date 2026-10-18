@@ -5,7 +5,7 @@ use entmoot_contracts::{
     ScopeUniverse,
 };
 use entmoot_engine::{
-    load_graph_json, GraphSummary, KnowledgeRepository, SqliteKnowledgeRepository,
+    load_graph_json, GraphSummary, KnowledgeRead, KnowledgeRepository, SqliteKnowledgeRepository,
 };
 
 fn cli() -> Command {

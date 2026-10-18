@@ -76,7 +76,7 @@ runs:
         fi
 
     - name: Setup Python (evals)
-      if: inputs.lane == 'structural' || inputs.lane == 'native'
+      if: inputs.lane == 'structural' || inputs.lane == 'native' || inputs.lane == 'policy'
       uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
       with:
         python-version: ${{ inputs.python-version }}
@@ -223,7 +223,7 @@ runs:
         "${HOME}/.local/bin/actionlint" -version
 
     - name: Install evals Python requirements
-      if: inputs.lane == 'structural' || inputs.lane == 'native'
+      if: inputs.lane == 'structural' || inputs.lane == 'native' || inputs.lane == 'policy'
       shell: bash
       run: |
         set -euo pipefail

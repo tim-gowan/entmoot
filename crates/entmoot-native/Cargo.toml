@@ -1,0 +1,65 @@
+[package]
+name = "entmoot-native"
+version.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Explicit native providers and isolated process execution."
+
+[features]
+default = []
+# Explicit opt-in: CI provisions all required native adapters before this target.
+native-tests = []
+# Optional in-process rust-analyzer solver for explicit init/bind and entmoot-producer.
+# Keep aligned versions in sync via scripts/update_ra_ap_pins.py.
+resolved-rust-analyzer = [
+    "dep:ra_ap_base_db",
+    "dep:ra_ap_intern",
+    "dep:ra_ap_hir",
+    "dep:ra_ap_ide_db",
+    "dep:ra_ap_load_cargo",
+    "dep:ra_ap_paths",
+    "dep:ra_ap_project_model",
+    "dep:ra_ap_syntax",
+    "dep:ra_ap_vfs",
+]
+# Optional in-process Oxc JS/TS lexical solver (host toolchain in rust-toolchain.toml).
+resolved-oxc = ["dep:oxc"]
+
+
+[dependencies]
+entmoot-contracts = { version = "=0.0.1-alpha.1", path = "../entmoot-contracts" }
+entmoot-core = { version = "=0.0.1-alpha.1", path = "../entmoot-core" }
+entmoot-store = { version = "=0.0.1-alpha.1", path = "../entmoot-store" }
+entmoot-evidence = { version = "=0.0.1-alpha.1", path = "../entmoot-evidence" }
+serde = { version = "1.0.228", features = ["derive", "rc"] }
+serde_json = "1.0.148"
+thiserror = "2.0.17"
+tempfile = "3.10.1"
+cap-std = "4.0.3"
+process-wrap = { version = "=10.0.0", default-features = false, features = ["std", "job-object", "process-group", "creation-flags"] }
+rayon = "1.11.0"
+packageurl = "=0.7.0"
+oxc = { version = "=0.153.0", optional = true, features = ["semantic", "ast_visit"] }
+ra_ap_base_db = { version = "=0.0.358", optional = true }
+ra_ap_intern = { version = "=0.0.358", optional = true }
+ra_ap_hir = { version = "=0.0.358", optional = true }
+ra_ap_ide_db = { version = "=0.0.358", optional = true }
+ra_ap_load_cargo = { package = "ra_ap_load-cargo", version = "=0.0.358", optional = true }
+ra_ap_paths = { version = "=0.0.358", optional = true }
+ra_ap_project_model = { version = "=0.0.358", optional = true }
+ra_ap_syntax = { version = "=0.0.358", optional = true }
+ra_ap_vfs = { version = "=0.0.358", optional = true }
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62.2", features = ["Win32_System_Threading"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+
+[dev-dependencies]
+tempfile = "3.10.1"
+
+[lints]
+workspace = true

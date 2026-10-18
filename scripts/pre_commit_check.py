@@ -59,14 +59,8 @@ FIND_QUERY_LITERAL_RE = re.compile(
 # Local data roots may contain installed tools and third-party adapter sources.
 SKIP_DIRS = {".git", ".tmp", ".entmoot", ".venv", "venv", "node_modules", "target", "archive"}
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]*\]\((?P<target>[^)]+)\)")
-CANONICAL_CRATES = {
-    "entmoot-contracts",
-    "entmoot-core",
-    "entmoot-engine",
-    "entmoot",
-    "entmoot-mcp",
-}
-RETIRED_CRATES = {"entmoot-schema", "entmoot-query", "entmoot-topology-poc"}
+CANONICAL_CRATES = {'entmoot-native', 'entmoot-contracts', 'entmoot-core', 'entmoot-evidence', 'entmoot-query', 'entmoot-mcp', 'entmoot-workspace', 'entmoot-store', 'entmoot-ops', 'entmoot', 'entmoot-topology', 'entmoot-engine'}
+RETIRED_CRATES = {"entmoot-schema", "entmoot-topology-poc"}
 DYLINT_CMD = ["cargo", "dylint", "--all", "--workspace", "--fail-on-no-libraries"]
 DENY_CMD = ["cargo", "deny", "--exclude-dev", "check", "licenses"]
 MACHETE_CMD = ["cargo", "machete"]
@@ -305,32 +299,25 @@ def check_crate_boundaries(root: Path = ROOT) -> int:
         if (root / "crates" / retired).exists():
             failures.append(f"retired crate directory remains: crates/{retired}")
 
-    forbidden = {
-        "entmoot-contracts": {
-            "entmoot-core", "entmoot-engine", "entmoot", "entmoot-mcp",
-            "gix", "rusqlite", "rmcp", "tokio", "clap",
-        },
-        "entmoot-core": {
-            "entmoot-engine", "entmoot", "entmoot-mcp",
-            "gix", "rusqlite", "rmcp", "tokio", "clap",
-        },
-        "entmoot-engine": {"entmoot", "entmoot-mcp", "rmcp", "clap"},
-    }
-    for crate, denied in forbidden.items():
-        manifest_path = root / "crates" / crate / "Cargo.toml"
-        try:
-            manifest = tomllib.loads(manifest_path.read_text(encoding="utf-8"))
-        except (OSError, tomllib.TOMLDecodeError) as err:
-            failures.append(f"{manifest_path.relative_to(root)}: {err}")
-            continue
-        dependencies = set(manifest.get("dependencies", {}))
-        dependencies.update(manifest.get("dev-dependencies", {}))
-        violations = sorted(dependencies & denied)
-        tree_sitter = sorted(name for name in dependencies if name.startswith("tree-sitter"))
-        if crate == "entmoot-contracts":
-            violations.extend(tree_sitter)
-        if violations:
-            failures.append(f"{crate} has outward/engine dependency: {violations}")
+    from scripts.crate_graph import packages, dependencies, publication_order
+    allowed = {'entmoot-evidence': ['entmoot-contracts', 'entmoot-core', 'entmoot-store'], 'entmoot-query': ['entmoot-contracts', 'entmoot-core', 'entmoot-evidence', 'entmoot-store'], 'entmoot-native': ['entmoot-contracts', 'entmoot-core', 'entmoot-evidence', 'entmoot-store'], 'entmoot-ops': ['entmoot-contracts', 'entmoot-core', 'entmoot-evidence', 'entmoot-native', 'entmoot-query', 'entmoot-store'], 'entmoot-workspace': ['entmoot-contracts', 'entmoot-core', 'entmoot-evidence', 'entmoot-native', 'entmoot-ops', 'entmoot-query', 'entmoot-store'], 'entmoot-store': ['entmoot-contracts', 'entmoot-core', 'entmoot-topology'], 'entmoot-topology': ['entmoot-contracts', 'entmoot-core'], 'entmoot-contracts': [], 'entmoot-core': ['entmoot-contracts'], 'entmoot': ['entmoot-contracts', 'entmoot-core', 'entmoot-workspace'], 'entmoot-engine': ['entmoot-workspace'], 'entmoot-mcp': ['entmoot-contracts', 'entmoot-core', 'entmoot-workspace']}
+    try:
+        graph = packages(root)
+        publication_order(graph)
+        for name, (_, manifest) in graph.items():
+            actual = dependencies(manifest)
+            outward = (actual & CANONICAL_CRATES) - set(allowed.get(name, []))
+            if outward:
+                failures.append(f"{name} has outward dependency: {sorted(outward)}")
+            vendors = {"rusqlite": "entmoot-store", "gix": "entmoot-store", "cap-std": "entmoot-native", "oxc": "entmoot-native"}
+            for dependency in actual:
+                owner = "entmoot-native" if dependency.startswith("ra_ap_") else vendors.get(dependency)
+                if owner and name != owner:
+                    failures.append(f"{name}: {dependency} belongs to {owner}")
+            if name == "entmoot-contracts" and any(d.startswith("tree-sitter") for d in actual):
+                failures.append("contracts must not contain syntax vendor dependencies")
+    except (OSError, ValueError, KeyError) as error:
+        failures.append(str(error))
 
     if failures:
         print("pre-commit: crate boundary check failed:", file=sys.stderr)
@@ -435,10 +422,10 @@ def sidecar_controls(environment: dict[str, str], paths: list[str] | None) -> li
     from scripts.test_ownership import CargoTarget, cargo_commands_for_targets
     if environment.get("ENTMOOT_NATIVE_CHECK") == "off":
         return []
-    shared = ("crates/entmoot-engine/src/native_resolver/producers/sidecar.rs",
-              "crates/entmoot-engine/src/native_resolver/environment.rs",
-              "crates/entmoot-engine/src/native_resolver/join.rs",
-              "crates/entmoot-engine/src/process.rs", "tools/resolver-adapters/catalog.toml")
+    shared = ("crates/entmoot-native/src/native_resolver/producers/sidecar.rs",
+              "crates/entmoot-native/src/native_resolver/environment.rs",
+              "crates/entmoot-native/src/native_resolver/join.rs",
+              "crates/entmoot-native/src/process.rs", "tools/resolver-adapters/catalog.toml")
     selected = []
     for family in load_catalog():
         control = family.get("control")

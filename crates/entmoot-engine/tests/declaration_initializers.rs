@@ -1,5 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
-use entmoot_engine::{KnowledgeRepository, KnowledgeStore, NodeKind, SqliteKnowledgeRepository};
+use entmoot_engine::{
+    KnowledgeRead, KnowledgeRepository, KnowledgeStore, NodeKind, SqliteKnowledgeRepository,
+};
 
 const CASES: &[(&str, &str)] = &[
     ("a.rs", "const LIMIT: i32 = -1; fn get() -> i32 { LIMIT }"),

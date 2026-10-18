@@ -549,7 +549,7 @@ fn retained_workflow_phase_measurements() {
             )
             .unwrap();
             let started = Instant::now();
-            let knowledge = entmoot_engine::KnowledgeRepository::load(&selected).unwrap();
+            let knowledge = entmoot_engine::KnowledgeRead::load(&selected).unwrap();
             knowledge_loads.push(started.elapsed().as_micros());
             let inventory = graph.clone();
             let started = Instant::now();

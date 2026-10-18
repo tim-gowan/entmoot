@@ -5,7 +5,7 @@ use entmoot_contracts::{
 };
 use entmoot_engine::{
     evaluate_artifact_revalidation, plan_revalidation_analysis, publish_artifact_evidence,
-    KnowledgeRepository, SqliteKnowledgeRepository,
+    KnowledgeRead, SqliteKnowledgeRepository,
 };
 use serde::Deserialize;
 use serde_json::json;

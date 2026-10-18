@@ -410,7 +410,9 @@ fn duplicated_occurrence_aliases_and_contradictory_target_identities_fail_atomic
 #[test]
 fn agreeing_native_artifacts_retain_independent_support_and_invalidate_separately() {
     use entmoot_contracts::{RelationClaimValue, ResolutionState};
-    use entmoot_engine::{KnowledgeRepository, KnowledgeStore, SqliteKnowledgeRepository};
+    use entmoot_engine::{
+        KnowledgeRead, KnowledgeRepository, KnowledgeStore, SqliteKnowledgeRepository,
+    };
     for &(language, extension) in LANGUAGES {
         let (_root, graph, raw) = fixture_with_source(extension, "sibling()");
         let mut artifacts = [
@@ -602,7 +604,9 @@ fn agreeing_native_artifacts_retain_independent_support_and_invalidate_separatel
 #[test]
 fn shared_projection_requires_active_site_support_and_matching_capability() {
     use entmoot_contracts::{topology_node_address, RelationClaimState, SubjectId};
-    use entmoot_engine::{KnowledgeRepository, KnowledgeStore, SqliteKnowledgeRepository};
+    use entmoot_engine::{
+        KnowledgeRead, KnowledgeRepository, KnowledgeStore, SqliteKnowledgeRepository,
+    };
     for &(language, extension) in LANGUAGES {
         let (_root, original, raw) = fixture_with_source(extension, "sibling()");
         for case in [

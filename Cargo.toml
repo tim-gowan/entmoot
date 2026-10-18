@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/entmoot-contracts", "crates/entmoot-core", "crates/entmoot-cli", "crates/entmoot-engine", "crates/entmoot-mcp"]
+members = ["crates/entmoot-evidence","crates/entmoot-query","crates/entmoot-native","crates/entmoot-ops","crates/entmoot-workspace","crates/entmoot-store", "crates/entmoot-topology", "crates/entmoot-contracts", "crates/entmoot-core", "crates/entmoot-cli", "crates/entmoot-engine", "crates/entmoot-mcp"]
 exclude = ["tools/entmoot-lints", ".tmp"]
 resolver = "2"
 

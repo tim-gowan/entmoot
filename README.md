@@ -1,16 +1,12 @@
 # Entmoot: reusable code context, with evidence and limits
 
-Tools and AI agents repeatedly reconstruct partial context from source files:
-what calls this function, what changed, which observations still apply, and where
-the evidence ends. Entmoot stores that context across revisions so the next
-question can start from attributable, queryable knowledge.
+Which callers does my diff touch? Which tests have evidence connecting them to
+those changes? Where does that evidence stop?
 
-Its substrate prioritizes soundness: every source identity and attached claim
-keeps its scope and provenance; ambiguity, disagreement and unfinished work stay
-visible. Use it to navigate code, investigate change impact and select evidence
-for development or security review. Entmoot is **not a scanner, taint/dataflow
-engine, proof of runtime behavior, or security verdict**. A represented call path
-does not establish exploitability; a missing path does not establish safety.
+Entmoot answers those questions with retained source identities, bounded CLI/MCP
+queries and explicit unknown, partial and stale results. It refuses to conclude
+that an unresolved call or an unreported test is absent. Call paths and clone
+candidates do not prove runtime behavior or safety.
 
 Rust, Python, JS/TS/TSX, Go, Java, C# and C have structural inventory. C++ is
 experimental. Structural operation requires no language compiler at runtime.
@@ -36,12 +32,13 @@ flowchart LR
     Q --> E["Evidence, gaps and continuation<br/>Further questions remain possible"]
 ```
 
-The five crates keep these responsibilities separate: `entmoot-contracts` owns
-shared data shapes, `entmoot-core` owns structural extraction, `entmoot-engine`
-owns persistence and operations, and the CLI (`entmoot`) and `entmoot-mcp` expose
-the same read service. Native evidence enriches inventory without replacing its
-structural identities. [Architecture and invariants](docs/architecture/ARCHITECTURE.md)
-describe the deeper boundaries.
+The model, storage, evidence, query, native execution and operations have separate
+crate owners. CLI and MCP compose them through `entmoot-workspace`;
+`entmoot-engine` remains a re-export facade for one release. The read service
+builds independently with `cargo test -p entmoot-query`; its `query_scale_bench`
+example measures read latency without a native-producer dependency.
+Native evidence preserves structural identities.
+[Architecture and invariants](docs/architecture/ARCHITECTURE.md) define the DAG.
 
 ## Start locally
 
@@ -284,10 +281,10 @@ require [release qualification](PLANNING.md#current-qualification-blockers).
 | CLI/MCP navigation and source | Alpha candidate | Shared bounded operations and digest-verified reads; first inventory has a startup cost. [Transport controls](crates/entmoot-mcp/tests/stdio_e2e.rs) |
 | Source/native call boundaries | Partial | Distinct-site counts and retained native detail; repository/dependency/native-library completeness remains separately unestablished. [Boundary controls](crates/entmoot-engine/tests/call_boundaries.rs) |
 | Native binding/dispatch | Partial, per configuration | Repository/external/intrinsic/unknown observations; no universal closed-world claim. [Native qualification](.github/workflows/native.yml) |
-| Revision impact and scoped overlay | Alpha candidate | Scope/signature/multiplicity-aware presence deltas; not API compatibility. [Overlay owner](crates/entmoot-engine/src/overlay.rs) |
+| Revision impact and scoped overlay | Alpha candidate | Scope/signature/multiplicity-aware presence deltas; not API compatibility. [Overlay owner](crates/entmoot-topology/src/overlay.rs) |
 | Provider observations and workflow evaluation | Partial, bounded cohort | Eight pinned Express releases, 96 runtime observations and 16 verified historical views. One framework family; no population or agent-cost qualification. [Study and limits](docs/runbooks/revision-evaluation.md#release-cohort-evidence-2026-10-17) |
 | Consumer/provider compatibility | Partial | Authored positive/negative controls; missing import/export scope remains incomplete. [Controls](crates/entmoot-engine/tests/package_compatibility.rs) |
-| Dependency materialization | Alpha candidate | Confined staged copying, opaque version keys, symlink rejection and resource bounds. [Safety owner](crates/entmoot-engine/src/materialize.rs) |
+| Dependency materialization | Alpha candidate | Confined staged copying, opaque version keys, symlink rejection and resource bounds. [Safety owner](crates/entmoot-native/src/materialize.rs) |
 | Test impact / unused candidates | Partial | Review and test-selection assistance; no coverage or dead-code proof. [Testing](docs/runbooks/testing.md) |
 | Canon / clone candidates / collaboration | Experimental | Explicit evidence policies and local recovery; no runtime equivalence proof or remote collaboration service. [Architecture](docs/architecture/ARCHITECTURE.md) |
 | Registry packages / generated docs / CI | Qualification pending | Local regression repairs and controls passed; the exact candidate still needs hosted structural/native and extracted-package gates. [Release gates](docs/runbooks/local-alpha.md) |

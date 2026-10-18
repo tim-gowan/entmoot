@@ -261,7 +261,7 @@ fn generic_runtime_artifact_stitches_desired_and_observed_resources() {
     };
     let mut ledger = entmoot_engine::SqliteKnowledgeRepository::open_in_memory().unwrap();
     entmoot_engine::publish_artifact_evidence(&mut ledger, &graph, manifest, &declaration).unwrap();
-    let retained = entmoot_engine::KnowledgeRepository::load(&ledger).unwrap();
+    let retained = entmoot_engine::KnowledgeRead::load(&ledger).unwrap();
     assert_eq!(retained.resources.len(), 2);
     assert!(retained
         .resources

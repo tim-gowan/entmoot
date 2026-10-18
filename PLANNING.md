@@ -14,7 +14,7 @@ fingerprints. Keep the README maturity table aligned with verified evidence.
 
 Resolve the qualification blockers below before release. External steps remain:
 copy/commit/push to `tim-gowan/entmoot`,
-confirm all five crate owners, configure the protected release environment and
+confirm all workspace crate owners, configure the protected release environment and
 Pages, and require the exact tag's CI/native/docs gates. Do not claim publication
 from local packaging. Beta requires operator feedback, representative native
 project qualification and an exercised upgrade/history policy.
@@ -23,6 +23,14 @@ A remote location is a future transport boundary, not an implemented feature.
 Do not add a scheduler, global package catalog or merge provenance to deliver
 local automatic storage. First-use MCP inventory startup cost is measurable
 follow-up if large-source operator feedback warrants asynchronous preparation.
+
+## Architecture qualification follow-up
+
+The split preserves a conservative v1 whole-engine derivation fence. Qualify
+component-specific fingerprints before narrowing its invalidation scope. Measure
+the standalone query benchmark on a pinned 10k-file repository and publish cold
+load, warm query and edit→refresh distributions separately; the crate split alone
+does not establish a latency improvement or monorepo readiness.
 
 ## Current qualification blockers
 
@@ -349,7 +357,7 @@ allocated storage still need separate instrumentation if required by the wider s
   canon, persistence and processing owners. Reproduce defects with independent
   expectations, then fix the common owner and its consumers. Prefer consolidating
   or shortening existing logic over adding parallel abstractions.
-- Preserve the five crate boundaries, compiler-free structural builds, typed
+- Preserve the crate dependency DAG, compiler-free structural builds, typed
   library errors and shared CLI/MCP engine operations. KnowledgeRepository owns
   durable mutation; topology and indexes remain disposable views. Preserve atomic
   publication, historical retrieval, idempotence, source fences and passive reads.
@@ -546,7 +554,7 @@ pass. Initialization remains separately owned; operational UX work excludes it.
    architectural defect, and splitting files can merely scatter coupling.
    **Instruction:** Split large modules along established responsibilities and
    cohesive invariants when it improves ownership or testing. Keep orchestration
-   thin, share repeated logic, minimize public surface and retain the five crates.
+   thin, share repeated logic, minimize public surface and retain the documented dependency DAG.
    Preserve observable behavior and wire contracts with focused regression tests;
    do not create new abstractions or a module-per-type solely to meet line quotas.
 

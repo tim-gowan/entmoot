@@ -15,10 +15,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-ENGINE_TOML = ROOT / "crates" / "entmoot-engine" / "Cargo.toml"
-MOD_RS = ROOT / "crates" / "entmoot-engine" / "src" / "native_resolver" / "mod.rs"
-CONST_RE = re.compile(r'pub const RA_AP_PIN: &str = "(?P<ver>[^"]+)";')
-VERSION_RE = re.compile(r'(version = "=)\d+\.\d+\.\d+(")')
+NATIVE_TOML = ROOT / "crates" / "entmoot-native" / "Cargo.toml"
+MOD_RS = ROOT / "crates" / "entmoot-contracts" / "src" / "binding_evidence.rs"
+CONST_RE = re.compile(r'pub const RUST_ADAPTER_PIN: &str = "(?P<ver>[^"]+)";')
 
 
 def current_pin() -> str:
@@ -38,17 +37,15 @@ def show() -> int:
 def set_pin(version: str) -> int:
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
         raise SystemExit("version must look like 0.0.358")
-    before = ENGINE_TOML.read_text(encoding="utf-8")
-    # Only rewrite the optional ra_ap dependency block.
-    start = before.find("# Pinned, aligned rust-analyzer")
-    if start < 0:
-        raise SystemExit("ra_ap pin block not found in entmoot-engine Cargo.toml")
-    block = before[start:]
-    rewritten = VERSION_RE.sub(rf"\g<1>{version}\2", block)
-    ENGINE_TOML.write_text(before[:start] + rewritten, encoding="utf-8")
+    before = NATIVE_TOML.read_text(encoding="utf-8")
+    pattern = re.compile(r'(?m)^(ra_ap_[^=\n]+ = \{[^\n]*version = "=)[^"]+(")')
+    rewritten, count = pattern.subn(lambda match: match[1] + version + match[2], before)
+    if count != 9:
+        raise SystemExit(f"expected 9 aligned rust-analyzer dependencies, found {count}")
+    NATIVE_TOML.write_text(rewritten, encoding="utf-8")
     mod = MOD_RS.read_text(encoding="utf-8")
     MOD_RS.write_text(
-        CONST_RE.sub(f'pub const RA_AP_PIN: &str = "{version}";', mod),
+        CONST_RE.sub(f'pub const RUST_ADAPTER_PIN: &str = "{version}";', mod),
         encoding="utf-8",
     )
     print(f"updated RA_AP_PIN -> {version}")
@@ -56,7 +53,7 @@ def set_pin(version: str) -> int:
         "cargo",
         "check",
         "-p",
-        "entmoot-engine",
+        "entmoot-native",
         "--features",
         "resolved-rust-analyzer",
     ]

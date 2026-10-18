@@ -57,13 +57,30 @@ occurrence coordinates. Unavailable, stale, partial and incomparable results are
 limitations, not negative conclusions. Parsing alone does not qualify compiler
 acceptance. C++ remains experimental.
 
-The workspace has five crates:
+The production dependency graph has explicit owners:
 
-- `entmoot-contracts`: typed portable payloads, validation, generated JSON Schema.
-- `entmoot-core`: Tree-sitter inventory and structural identity, without compilers.
-- `entmoot-engine`: sources, adapters, joins, storage, bounded reads and impact.
-- `entmoot` (directory `entmoot-cli`): operator composition and durable mutations.
-- `entmoot-mcp`: shared query transport and explicitly invoked collaboration writes.
+- `entmoot-contracts`: portable payloads, binding-evidence validation, query options and JSON Schema.
+- `entmoot-core`: compiler-free syntax and structural identity.
+- `entmoot-topology`: pure graph/model transforms, identity correspondence, joins and impact. It depends only on contracts/core among Entmoot crates.
+- `entmoot-store`: durable knowledge, source storage, checkpoints, location resolution and stored adapter profiles. Only this production crate links rusqlite/gix. Source inventory construction and filesystem configuration scans stay here because they consume source/storage ports.
+- `entmoot-evidence`: artifact adapters, normalization, ingestion and resolver accounting over store/model interfaces.
+- `entmoot-query`: bounded reads and compatibility judgments over store read capabilities and evidence. It cannot link native, ops or workspace.
+- `entmoot-native`: explicit compiler adapters, discovery, materialization and process execution. Native vendor features live here.
+- `entmoot-ops`: producer execution, binding, collaboration, revalidation and canon production.
+- `entmoot-workspace`: publication lifecycle and CLI/MCP composition. It drives native work through `NativeProducer`/`AdapterDiscovery`.
+- `entmoot` and `entmoot-mcp`: transports using the workspace facade.
+- `entmoot-engine`: one-release compatibility re-export, with legacy integration targets during migration.
+
+`KnowledgeRead` exposes pinned read transactions; `RepositoryReader` opens one
+per operation so concurrent requests do not share a SQLite connection. Durable
+continuations receive a separate `QueryCheckpoints` capability. SQL operation
+transitions remain atomic in store's `OperationRepository`; ops re-exports the
+legacy `LocalOperations` spelling. The old store references to execution were
+integration tests, now owned by ops. No producer is called by the SQL backend.
+
+`resolved_identity` stays with topology because both evidence ingestion and query
+consume it. `inventory_stitch` stays with store because syntax-part construction
+reads source bytes. These placements avoid reverse dependencies.
 
 Contracts contain no compiler, scanner, database or agent implementation types.
 Adapters translate external evidence; they do not create structural identities.
@@ -87,12 +104,17 @@ completeness are independent universes. None is established without exhaustive
 evidence for the relevant dispatch, implicit calls and external reentry. Future
 boundary claims attach to immutable source and artifact identities.
 
-The derivation fence composes package-local contracts/core/engine fingerprints.
-Each commits production sources/build support and generated normalized manifest
-and lock inputs; core verifies bundled grammar commitments. Checkout and extracted
-packages agree. `scripts/prepare_release_inputs.py --check` rejects stale release
-inputs; supported installs use the committed lockfile. Alpha fingerprint changes
-require matching historical readers or explicit rebuilds, not forced migration.
+The v1 derivation fence composes contracts/core/topology package fingerprints.
+Topology's generated inputs also commit the production sources and dependency
+policies of the six former engine components. This conservatively preserves the
+whole-engine compatibility fence during the shim release; splitting crates does
+not qualify old publications for new derivation code. It can invalidate query
+builds after a native implementation change, even though query cannot link that
+producer. Narrower per-stage fingerprints require a separately qualified format.
+Core also verifies bundled grammar commitments. Checkout and extracted packages
+must agree. `scripts/prepare_release_inputs.py --check` rejects stale inputs;
+supported installs use the committed lockfile. Never reset stores or rewrite
+fingerprints to admit incompatible evidence.
 
 ## Declared code contracts
 

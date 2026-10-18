@@ -5,8 +5,8 @@ use entmoot_contracts::{
     ScopeCompleteness, ScopeUniverse,
 };
 use entmoot_engine::{
-    build_topology_from_repo_with_options, ingest_artifact_manifest, KnowledgeRepository,
-    KnowledgeStore, NodeKind, SqliteKnowledgeRepository, TopologyBuildOptions,
+    build_topology_from_repo_with_options, ingest_artifact_manifest, KnowledgeRead,
+    KnowledgeRepository, KnowledgeStore, NodeKind, SqliteKnowledgeRepository, TopologyBuildOptions,
 };
 
 fn fixture_repository() -> (tempfile::TempDir, entmoot_engine::TopologyGraph) {

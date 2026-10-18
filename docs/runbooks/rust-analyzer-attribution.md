@@ -1,12 +1,13 @@
 # Third-party notices for optional Resolver adapter dependencies
 
-The `resolved-rust-analyzer` feature of `entmoot-engine` (consumed only by
+The `resolved-rust-analyzer` feature of `entmoot-native` (forwarded by the façade and consumed by
 `entmoot-producer`) embeds aligned `ra_ap_*` crates published from the
 rust-analyzer project.
 
 - Project: https://github.com/rust-lang/rust-analyzer
 - License: MIT OR Apache-2.0
-- Pin surface: `crates/entmoot-engine/Cargo.toml` + `RA_AP_PIN`
+- Pin surface: `crates/entmoot-native/Cargo.toml` + `RUST_ADAPTER_PIN` in
+  `crates/entmoot-contracts/src/binding_evidence.rs`
 - Update helper: `scripts/update_ra_ap_pins.py`
 
 CodeQL’s Rust extractor is a comparative reference for orchestration strategy

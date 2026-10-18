@@ -1,6 +1,10 @@
 # entmoot-engine
 
-Durable attributable knowledge, publication, native evidence attachment and shared query operations. Repository, dependency and native-library call-graph closure are separate and remain unestablished without supporting claims.
+Compatibility re-export of `entmoot-workspace` for one release. Production code
+now lives in topology, store, evidence, query, native, ops and workspace crates.
+New integrations should depend on their owning crate. Existing module paths
+remain available; repository consumers import `KnowledgeRead` for reads and
+`KnowledgeRepository` for publication.
 
 Alpha software: pin the exact prerelease and lockfile; incompatible derivations require rebuilding disposable local publications.
 

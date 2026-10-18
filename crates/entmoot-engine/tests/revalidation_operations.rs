@@ -2,8 +2,8 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 use entmoot_contracts::*;
 use entmoot_engine::{
-    collaboration, revalidation_operations as worker, KnowledgeRepository, LocalOperations,
-    SqliteKnowledgeRepository, TopologyGraph,
+    collaboration, revalidation_operations as worker, KnowledgeRead, KnowledgeRepository,
+    LocalOperations, SqliteKnowledgeRepository, TopologyGraph,
 };
 use std::{collections::BTreeSet, path::PathBuf};
 

@@ -20,7 +20,7 @@ def main():
     shutil.copyfile(Path(__file__).with_name('typescript_program.package-lock.json'), out / 'package-lock.json')
     subprocess.run([shutil.which('npm.cmd' if os.name == 'nt' else 'npm'), 'ci',
                     '--ignore-scripts', '--no-audit', '--no-fund'], cwd=out, check=True)
-    source = Path(__file__).resolve().parents[1] / 'crates/entmoot-engine/src/native_resolver/producers/typescript_program.cjs'
+    source = Path(__file__).resolve().parents[1] / 'crates/entmoot-native/src/native_resolver/producers/typescript_program.cjs'
     shutil.copyfile(source, out / 'entmoot-typescript.cjs')
     # Explicit reference producer shares only the pinned hashing runtime.
     shutil.copyfile(Path(__file__).resolve().parents[1] / 'tools/lock-instance-providers/npm.cjs', out / 'npm-lock-provider.cjs')

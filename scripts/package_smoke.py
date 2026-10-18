@@ -3,6 +3,10 @@
 Only extracted crate tarballs are patched into the isolated rehearsal workspace.
 Builds use the release lockfile. No source checkout paths occur in its manifest.
 """
+try:
+    from .crate_graph import packages, publication_order
+except ImportError:
+    from crate_graph import packages, publication_order
 import argparse
 import json
 import os
@@ -85,7 +89,7 @@ def main():
     baseline = fingerprint(baseline_bin / ("entmoot" + suffix), stage / "baseline")
     baseline_tools = read(baseline_bin / ("entmoot-mcp" + suffix), ["--tools-schema"], stage)
     run(["cargo", "package", "--workspace", "--locked", "--target-dir", target, "--allow-dirty", "--no-verify"])
-    names = ["entmoot-contracts", "entmoot-core", "entmoot-engine", "entmoot", "entmoot-mcp"]
+    names = publication_order(packages())
     for name in names:
         archive = target / "package" / f"{name}-{version}.crate"
         assert archive.stat().st_size < 10 * 1024 * 1024, archive

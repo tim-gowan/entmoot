@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-18: Separate model, storage, queries and production
+
+- Split the engine into topology, store, evidence, query, native, ops and
+  workspace crates. Keep `entmoot-engine` as a compatibility re-export for one
+  release; CLI and MCP import the workspace façade.
+- Separate read capabilities from durable mutation, move payload validation to
+  contracts, and centralize locations and retained adapter profiles in store.
+  Query links without native producers or workspace orchestration; its latency
+  benchmark builds directly from `entmoot-query`.
+- Move tests to their owning boundaries and run structural crate and native
+  suites in independent CI jobs. Cache compiled workspace crates using dependency
+  closures, retain caches on failures, and keep required aggregate check names.
+  Every selected test still executes; cached builds are not qualification.
+- Generate package/release order from the crate DAG. Preserve the conservative
+  whole-engine v1 implementation fence while the compatibility shim remains.
+
 ## 2026-10-18: Keep call-site fixture bytes LF on Windows
 
 - Normalize CRLF when copying callsites fixtures into qualification temps and

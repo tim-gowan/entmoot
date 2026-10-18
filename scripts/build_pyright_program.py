@@ -37,7 +37,7 @@ def main():
     shutil.copyfile(Path(__file__).with_name('pyright_program.package-lock.json'), out / 'package-lock.json')
     npm = shutil.which("npm.cmd" if os.name == "nt" else "npm")
     subprocess.run([npm, "ci", "--ignore-scripts", "--no-audit", "--no-fund"], cwd=out, check=True)
-    entry = Path(__file__).resolve().parents[1] / "crates/entmoot-engine/src/native_resolver/producers/pyright_program.ts"
+    entry = Path(__file__).resolve().parents[1] / "crates/entmoot-native/src/native_resolver/producers/pyright_program.ts"
     build = {
         "entryPoints": [str(entry)], "outfile": str(out / "entmoot-pyright.cjs"),
         "bundle": True, "platform": "node", "format": "cjs", "target": "node20",

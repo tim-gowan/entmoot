@@ -532,3 +532,6 @@ mod tests {
         );
     }
 }
+
+mod options;
+pub use options::QueryEngineOptions;

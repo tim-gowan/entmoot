@@ -62,3 +62,5 @@ pub use visitor::{BaseVisitor, NodeVisitor, RecursionDepthError, VisitorState};
 /// Package-local source and release dependency commitment.
 #[doc(hidden)]
 pub const PACKAGE_FINGERPRINT: &str = env!("ENTMOOT_PACKAGE_FINGERPRINT");
+
+pub mod provider_language;

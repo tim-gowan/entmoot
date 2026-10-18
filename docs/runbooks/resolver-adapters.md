@@ -232,7 +232,7 @@ These cases never fabricate an npm package coordinate or close dispatch.
 | Env | `ENTMOOT_TYPESCRIPT_ADAPTER`; optional `ENTMOOT_TYPESCRIPT_CONFIG`, `ENTMOOT_TYPESCRIPT_LIBRARY` |
 | Build | `python scripts/build_typescript_program.py --out .tmp/adapter-build/typescript-program` |
 | Artifact | `.tmp/adapter-build/typescript-program/entmoot-typescript.cjs` |
-| Source | `crates/entmoot-engine/src/native_resolver/producers/` |
+| Source | `crates/entmoot-native/src/native_resolver/producers/` |
 | Limitations | Requires `tsconfig.json`; identity distinct from Oxc; historical controls 4.9.5–5.9.3; **TypeScript 7.x has no compiler API and is not qualified** |
 
 ## Python — Pyright Program

@@ -1,7 +1,7 @@
 //! Local composition; portable contracts and execution live in the engine.
 use anyhow::{Context, Result};
 use clap::Subcommand;
-use entmoot_engine::{LocalOperations, SqliteKnowledgeRepository};
+use entmoot_workspace::{LocalOperations, SqliteKnowledgeRepository};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Subcommand)]
@@ -245,15 +245,15 @@ pub enum Command {
     },
 }
 
-fn graph(path: &Path) -> Result<entmoot_engine::TopologyGraph> {
-    entmoot_engine::load_graph_json(path)
+fn graph(path: &Path) -> Result<entmoot_workspace::TopologyGraph> {
+    entmoot_workspace::load_graph_json(path)
         .map_err(|e| anyhow::anyhow!(e.to_string()))
         .with_context(|| format!("load graph {}", path.display()))
 }
 
 pub fn run(store: &Path, command: Command) -> Result<()> {
     use entmoot_contracts::OperationControl;
-    use entmoot_engine::collaboration as engine;
+    use entmoot_workspace::collaboration as engine;
     let value = match command {
         Command::Scheduler { repository } => engine::read(
             store,
@@ -406,7 +406,7 @@ pub fn run(store: &Path, command: Command) -> Result<()> {
         Command::Source {
             source_root,
             repository,
-        } => serde_json::to_value(entmoot_engine::producer_operations::observe_source(
+        } => serde_json::to_value(entmoot_workspace::producer_operations::observe_source(
             &source_root,
             &repository,
         )?)?,
@@ -476,7 +476,7 @@ pub fn run(store: &Path, command: Command) -> Result<()> {
             let mut report =
                 engine::compare_branch_conflicts(&graph(&base)?, &graph(&left)?, &graph(&right)?)?;
             if let Some(root) = git_root {
-                let observation = entmoot_engine::collaboration_git::observe_merge(
+                let observation = entmoot_workspace::collaboration_git::observe_merge(
                     &root,
                     &root.join(".tmp/entmoot-conflicts"),
                     &report.left,

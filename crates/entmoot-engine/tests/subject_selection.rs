@@ -2,8 +2,8 @@
 //! Independent signature near misses across production extraction and stored reload.
 use entmoot_contracts::query::{FindQuery, InventoryRequest};
 use entmoot_engine::{
-    build_topology_from_repo_with_options, KnowledgeRepository, KnowledgeStore, QueryEngine,
-    SqliteKnowledgeRepository, TopologyBuildOptions,
+    build_topology_from_repo_with_options, KnowledgeRead, KnowledgeRepository, KnowledgeStore,
+    QueryEngine, SqliteKnowledgeRepository, TopologyBuildOptions,
 };
 use serde_json::json;
 

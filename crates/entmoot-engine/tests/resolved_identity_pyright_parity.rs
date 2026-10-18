@@ -42,7 +42,9 @@ fn claimed_family_occurrences_keep_empty_and_missing_bindings_distinct_through_s
         ProducerIdentity, ResolvedBindingEvidence, ResolverEvidenceRef, ScopeCompleteness,
         ScopeUniverse, SourceSnapshot, SourceState,
     };
-    use entmoot_engine::{KnowledgeRepository, KnowledgeStore, SqliteKnowledgeRepository};
+    use entmoot_engine::{
+        KnowledgeRead, KnowledgeRepository, KnowledgeStore, SqliteKnowledgeRepository,
+    };
 
     let corpus = fixture::load();
     let ids = [

@@ -100,19 +100,19 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/workspace.rs"
+          "path": "crates/entmoot-workspace/src/workspace.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/inventory_stitch.rs"
+          "path": "crates/entmoot-store/src/inventory_stitch.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/resolve_edges"
+          "path": "crates/entmoot-topology/src/resolve_edges"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db/syntax_cache.rs"
+          "path": "crates/entmoot-topology/src/knowledge_db/syntax_cache.rs"
         }
       ],
       "extensions": []
@@ -720,23 +720,23 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/query/assessments.rs"
+          "path": "crates/entmoot-query/src/query/assessments.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/artifact/assessment.rs"
+          "path": "crates/entmoot-evidence/src/artifact/assessment.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/test_validation.rs"
+          "path": "crates/entmoot-ops/src/test_validation.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/process.rs"
+          "path": "crates/entmoot-native/src/process.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/query/relationships.rs"
+          "path": "crates/entmoot-query/src/query/relationships.rs"
         },
         {
           "kind": "file_prefix",
@@ -744,15 +744,15 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/impact.rs"
+          "path": "crates/entmoot-topology/src/impact.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/overlay.rs"
+          "path": "crates/entmoot-topology/src/overlay.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/compatibility.rs"
+          "path": "crates/entmoot-query/src/compatibility.rs"
         },
         {
           "kind": "file_prefix",
@@ -804,11 +804,11 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/query/continuation.rs"
+          "path": "crates/entmoot-query/src/query/continuation.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/workspace/open.rs"
+          "path": "crates/entmoot-workspace/src/workspace/open.rs"
         },
         {
           "kind": "file_prefix",
@@ -828,7 +828,7 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db/"
+          "path": "crates/entmoot-topology/src/knowledge_db/"
         },
         {
           "kind": "file_prefix",
@@ -836,7 +836,7 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/sqlite_startup.rs"
+          "path": "crates/entmoot-store/src/sqlite_startup.rs"
         }
       ],
       "extensions": []
@@ -857,15 +857,15 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge"
+          "path": "crates/entmoot-topology/src/knowledge"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/collaboration.rs"
+          "path": "crates/entmoot-ops/src/collaboration.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db"
+          "path": "crates/entmoot-topology/src/knowledge_db"
         },
         {
           "kind": "file_prefix",
@@ -900,7 +900,7 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/integration_operations.rs"
+          "path": "crates/entmoot-ops/src/integration_operations.rs"
         },
         {
           "kind": "file_prefix",
@@ -908,7 +908,7 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db/operations"
+          "path": "crates/entmoot-topology/src/knowledge_db/operations"
         },
         {
           "kind": "file_prefix",
@@ -933,15 +933,15 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db/layout.rs"
+          "path": "crates/entmoot-topology/src/knowledge_db/layout.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db/inventory.rs"
+          "path": "crates/entmoot-topology/src/knowledge_db/inventory.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db/operations/git_capture.rs"
+          "path": "crates/entmoot-topology/src/knowledge_db/operations/git_capture.rs"
         },
         {
           "kind": "file_prefix",
@@ -966,39 +966,39 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/producer_operations.rs"
+          "path": "crates/entmoot-ops/src/producer_operations.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/inventory_stitch.rs"
+          "path": "crates/entmoot-store/src/inventory_stitch.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/extractor.rs"
+          "path": "crates/entmoot-topology/src/extractor.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/resolve_edges.rs"
+          "path": "crates/entmoot-topology/src/resolve_edges.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/resolve_edges/"
+          "path": "crates/entmoot-topology/src/resolve_edges/"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db/syntax_cache.rs"
+          "path": "crates/entmoot-topology/src/knowledge_db/syntax_cache.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/canon.rs"
+          "path": "crates/entmoot-ops/src/canon.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db/operations.rs"
+          "path": "crates/entmoot-topology/src/knowledge_db/operations.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db/inventory.rs"
+          "path": "crates/entmoot-topology/src/knowledge_db/inventory.rs"
         },
         {
           "kind": "file_prefix",
@@ -1006,7 +1006,7 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db/operations/"
+          "path": "crates/entmoot-topology/src/knowledge_db/operations/"
         }
       ],
       "extensions": []
@@ -1031,15 +1031,15 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/binding_operations.rs"
+          "path": "crates/entmoot-ops/src/binding_operations.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge_db/operations/binding.rs"
+          "path": "crates/entmoot-topology/src/knowledge_db/operations/binding.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/process.rs"
+          "path": "crates/entmoot-native/src/process.rs"
         },
         {
           "kind": "file_prefix",
@@ -1652,7 +1652,7 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/query/boundaries.rs"
+          "path": "crates/entmoot-query/src/query/boundaries.rs"
         },
         {
           "kind": "file_prefix",
@@ -1690,15 +1690,15 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/query/selection.rs"
+          "path": "crates/entmoot-query/src/query/selection.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/query/admission.rs"
+          "path": "crates/entmoot-query/src/query/admission.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/knowledge.rs"
+          "path": "crates/entmoot-topology/src/knowledge.rs"
         },
         {
           "kind": "file_prefix",
@@ -1713,6 +1713,205 @@
         {
           "package": "entmoot",
           "test": "workspace_defaults"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-query",
+        "test": "revision_impact"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-query/tests/revision_impact.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-ops",
+        "test": "retained_clones"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-ops/tests/retained_clones.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-ops",
+        "test": "store_git_capture"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-ops/tests/store_git_capture.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-ops",
+        "test": "store_revalidation"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-ops/tests/store_revalidation.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-ops",
+        "test": "store_stitch"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-ops/tests/store_stitch.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-workspace",
+        "test": "location_bootstrap"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-workspace/tests/location_bootstrap.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-store",
+        "test": "import_edges"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-store/tests/import_edges.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-store",
+        "test": "overlay_overloads"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-store/tests/overlay_overloads.rs"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-topology"
+      },
+      "owners": [
+        {
+          "kind": "crate",
+          "path": "crates/entmoot-topology/"
+        }
+      ],
+      "extensions": [],
+      "notes": "convention: workspace package \u2192 crate path"
+    },
+    {
+      "cargo": {
+        "package": "entmoot-store"
+      },
+      "owners": [
+        {
+          "kind": "crate",
+          "path": "crates/entmoot-store/"
+        }
+      ],
+      "extensions": [],
+      "notes": "convention: workspace package \u2192 crate path"
+    },
+    {
+      "cargo": {
+        "package": "entmoot-evidence"
+      },
+      "owners": [
+        {
+          "kind": "crate",
+          "path": "crates/entmoot-evidence/"
+        }
+      ],
+      "extensions": [],
+      "notes": "convention: workspace package \u2192 crate path"
+    },
+    {
+      "cargo": {
+        "package": "entmoot-query"
+      },
+      "owners": [
+        {
+          "kind": "crate",
+          "path": "crates/entmoot-query/"
+        }
+      ],
+      "extensions": [],
+      "notes": "convention: workspace package \u2192 crate path"
+    },
+    {
+      "cargo": {
+        "package": "entmoot-native"
+      },
+      "owners": [
+        {
+          "kind": "crate",
+          "path": "crates/entmoot-native/"
+        }
+      ],
+      "extensions": [],
+      "notes": "convention: workspace package \u2192 crate path"
+    },
+    {
+      "cargo": {
+        "package": "entmoot-ops"
+      },
+      "owners": [
+        {
+          "kind": "crate",
+          "path": "crates/entmoot-ops/"
+        }
+      ],
+      "extensions": [],
+      "notes": "convention: workspace package \u2192 crate path"
+    },
+    {
+      "cargo": {
+        "package": "entmoot-workspace"
+      },
+      "owners": [
+        {
+          "kind": "crate",
+          "path": "crates/entmoot-workspace/"
+        }
+      ],
+      "extensions": [],
+      "notes": "convention: workspace package \u2192 crate path"
+    },
+    {
+      "cargo": {
+        "package": "entmoot-query",
+        "test": "read_backend"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-query/tests/read_backend.rs"
         }
       ]
     }
@@ -1736,6 +1935,13 @@
     "crates/entmoot-cli/tests/producer_cli.rs",
     "crates/entmoot-cli/tests/support/",
     "crates/entmoot-cli/tests/binding_operations_cli.rs",
-    "tools/resolver-adapters/"
+    "tools/resolver-adapters/",
+    "crates/entmoot-topology/src/",
+    "crates/entmoot-store/src/",
+    "crates/entmoot-evidence/src/",
+    "crates/entmoot-query/src/",
+    "crates/entmoot-native/src/",
+    "crates/entmoot-ops/src/",
+    "crates/entmoot-workspace/src/"
   ]
 }

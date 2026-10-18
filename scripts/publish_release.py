@@ -1,4 +1,8 @@
 """Protected CI publishing, followed by clean registry installation. Never called by local checks."""
+try:
+    from .crate_graph import packages, publication_order
+except ImportError:
+    from crate_graph import packages, publication_order
 import json
 import os
 from pathlib import Path
@@ -15,7 +19,7 @@ def main():
     version = tomllib.loads((root / "Cargo.toml").read_text(encoding="utf-8"))["workspace"]["package"]["version"]
     if not os.environ.get("CARGO_REGISTRY_TOKEN"):
         raise SystemExit("Configure trusted publishing or the protected environment's scoped CARGO_REGISTRY_TOKEN")
-    names = ["entmoot-contracts", "entmoot-core", "entmoot-engine", "entmoot", "entmoot-mcp"]
+    names = publication_order(packages())
     for name in names:
         # A version is immutable: an already published version must be reconciled
         # by the maintainer, never silently treated as this build's success.

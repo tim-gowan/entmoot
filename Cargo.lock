@@ -934,6 +934,7 @@ dependencies = [
  "entmoot-contracts",
  "entmoot-core",
  "entmoot-engine",
+ "entmoot-workspace",
  "indicatif",
  "reqwest",
  "rmcp",
@@ -992,11 +993,59 @@ name = "entmoot-engine"
 version = "0.0.1-alpha.1"
 dependencies = [
  "blake3",
+ "entmoot-contracts",
+ "entmoot-core",
+ "entmoot-workspace",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
+name = "entmoot-evidence"
+version = "0.0.1-alpha.1"
+dependencies = [
+ "blake3",
+ "entmoot-contracts",
+ "entmoot-core",
+ "entmoot-store",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+]
+
+[[package]]
+name = "entmoot-mcp"
+version = "0.0.1-alpha.1"
+dependencies = [
+ "anyhow",
+ "axum",
+ "clap",
+ "entmoot-contracts",
+ "entmoot-core",
+ "entmoot-engine",
+ "entmoot-workspace",
+ "reqwest",
+ "rmcp",
+ "rmcp-macros",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+]
+
+[[package]]
+name = "entmoot-native"
+version = "0.0.1-alpha.1"
+dependencies = [
  "cap-std",
  "entmoot-contracts",
  "entmoot-core",
- "gix",
- "globset",
+ "entmoot-evidence",
+ "entmoot-store",
  "libc",
  "oxc",
  "packageurl",
@@ -1010,6 +1059,41 @@ dependencies = [
  "ra_ap_project_model",
  "ra_ap_syntax",
  "ra_ap_vfs",
+ "rayon",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+ "windows",
+]
+
+[[package]]
+name = "entmoot-ops"
+version = "0.0.1-alpha.1"
+dependencies = [
+ "blake3",
+ "entmoot-contracts",
+ "entmoot-core",
+ "entmoot-native",
+ "entmoot-query",
+ "entmoot-store",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+]
+
+[[package]]
+name = "entmoot-query"
+version = "0.0.1-alpha.1"
+dependencies = [
+ "blake3",
+ "entmoot-contracts",
+ "entmoot-core",
+ "entmoot-evidence",
+ "entmoot-store",
+ "globset",
  "rapidfuzz",
  "rayon",
  "rusqlite",
@@ -1018,6 +1102,24 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tracing",
+]
+
+[[package]]
+name = "entmoot-store"
+version = "0.0.1-alpha.1"
+dependencies = [
+ "blake3",
+ "entmoot-contracts",
+ "entmoot-core",
+ "entmoot-topology",
+ "gix",
+ "libc",
+ "rayon",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
  "tree-sitter",
  "tree-sitter-hcl",
  "tree-sitter-json",
@@ -1026,23 +1128,34 @@ dependencies = [
 ]
 
 [[package]]
-name = "entmoot-mcp"
+name = "entmoot-topology"
 version = "0.0.1-alpha.1"
 dependencies = [
- "anyhow",
- "axum",
- "clap",
+ "blake3",
  "entmoot-contracts",
  "entmoot-core",
- "entmoot-engine",
- "reqwest",
- "rmcp",
- "rmcp-macros",
- "schemars",
  "serde",
  "serde_json",
  "tempfile",
- "tokio",
+ "thiserror",
+]
+
+[[package]]
+name = "entmoot-workspace"
+version = "0.0.1-alpha.1"
+dependencies = [
+ "blake3",
+ "entmoot-contracts",
+ "entmoot-core",
+ "entmoot-native",
+ "entmoot-ops",
+ "entmoot-query",
+ "entmoot-store",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tracing",
 ]
 
 [[package]]

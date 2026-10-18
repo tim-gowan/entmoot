@@ -8,7 +8,9 @@ use std::time::Instant;
 use entmoot_contracts::{
     Assertion, AssertionObject, ClaimScope, EntityKind, EntityRef, EpistemicStatus,
 };
-use entmoot_engine::{KnowledgeRepository, KnowledgeStore, SqliteKnowledgeRepository};
+use entmoot_engine::{
+    KnowledgeRead, KnowledgeRepository, KnowledgeStore, SqliteKnowledgeRepository,
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let row_count = std::env::args()

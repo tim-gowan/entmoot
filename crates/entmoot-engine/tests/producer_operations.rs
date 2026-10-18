@@ -734,7 +734,7 @@ fn request_collision_and_invalid_source_identity_are_rejected_before_work() {
 
 #[test]
 fn failed_registration_rolls_back_the_new_inventory_and_knowledge() {
-    use entmoot_engine::KnowledgeRepository;
+    use entmoot_engine::KnowledgeRead;
     let (_tmp, root, store) = fixture();
     let mut db = SqliteKnowledgeRepository::open(&store).unwrap();
     let job = submit(&mut db, request(&root, "topic"), "index", "agent").unwrap();

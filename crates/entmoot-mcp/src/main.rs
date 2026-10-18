@@ -305,7 +305,7 @@ struct EntmootMcp {
     collaboration_source_root: Option<PathBuf>,
     operation_executor: execution::OperationExecutor,
     executor: execution::ReadExecutor,
-    deferred: entmoot_engine::workspace::DeferredQueryBundle,
+    deferred: entmoot_workspace::workspace::DeferredQueryBundle,
     working_tree_policy: StructuralHashPolicy,
     ready_timeout: std::time::Duration,
 }
@@ -328,7 +328,7 @@ impl EntmootMcp {
         match self
             .operation_executor
             .run(request, move |request| {
-                entmoot_engine::collaboration::write_with_source(
+                entmoot_workspace::collaboration::write_with_source(
                     &store,
                     request,
                     source_root.as_deref(),
@@ -356,7 +356,7 @@ impl EntmootMcp {
 
     fn ready(
         &self,
-    ) -> Result<std::sync::Arc<entmoot_engine::workspace::OpenedQueryBundle>, QueryServiceError>
+    ) -> Result<std::sync::Arc<entmoot_workspace::workspace::OpenedQueryBundle>, QueryServiceError>
     {
         self.deferred.wait(self.ready_timeout)
     }
@@ -406,7 +406,9 @@ impl EntmootMcp {
 
     fn warming_or<T: serde::Serialize>(
         &self,
-        run: impl FnOnce(&entmoot_engine::workspace::OpenedQueryBundle) -> Result<T, QueryServiceError>,
+        run: impl FnOnce(
+            &entmoot_workspace::workspace::OpenedQueryBundle,
+        ) -> Result<T, QueryServiceError>,
     ) -> CallToolResult {
         match self.ready().and_then(|bundle| run(bundle.as_ref())) {
             Ok(value) => Self::structured(Ok(value)),
@@ -450,7 +452,7 @@ impl EntmootMcp {
                     "configure --collaboration-store explicitly".into(),
                 ))
                 .and_then(|store| {
-                    entmoot_engine::collaboration::read_with_source(
+                    entmoot_workspace::collaboration::read_with_source(
                         store,
                         request,
                         server.collaboration_source_root.as_deref(),
@@ -533,7 +535,7 @@ impl EntmootMcp {
                 .map_err(|error| ("invalid_input", error.to_string()))
                 .and_then(|graph| {
                     if let Some(root) = &working_tree_root {
-                        entmoot_engine::workspace::compare_working_tree_impact(
+                        entmoot_workspace::workspace::compare_working_tree_impact(
                             &graph,
                             root,
                             &server.working_tree_policy,
@@ -544,7 +546,7 @@ impl EntmootMcp {
                             "invalid_input",
                             "operation requires --compare-graph at server startup".into(),
                         ))?;
-                        entmoot_engine::compare_revision_impact(base, &graph)
+                        entmoot_workspace::compare_revision_impact(base, &graph)
                             .map_err(|error| ("invalid_input", error.to_string()))
                     }
                 });
@@ -933,14 +935,14 @@ impl EntmootMcp {
                 "inventory_overlay",
                 (|| {
                     let (base_path, _, _) =
-                        entmoot_engine::compatibility::publication_input(&args.base_graph)
+                        entmoot_workspace::compatibility::publication_input(&args.base_graph)
                             .map_err(|e| ("invalid_request", e.to_string()))?;
                     let (head_path, _, _) =
-                        entmoot_engine::compatibility::publication_input(&args.head_graph)
+                        entmoot_workspace::compatibility::publication_input(&args.head_graph)
                             .map_err(|e| ("invalid_request", e.to_string()))?;
-                    let base = entmoot_engine::load_graph_json(&base_path)
+                    let base = entmoot_workspace::load_graph_json(&base_path)
                         .map_err(|e| ("invalid_request", e.to_string()))?;
-                    let head = entmoot_engine::load_graph_json(&head_path)
+                    let head = entmoot_workspace::load_graph_json(&head_path)
                         .map_err(|e| ("invalid_request", e.to_string()))?;
                     let request = entmoot_contracts::query::InventoryOverlayRequest {
                         base_publication: base_path.display().to_string(),
@@ -948,7 +950,7 @@ impl EntmootMcp {
                         name_filters: args.name_filters,
                         path_prefixes: args.path_prefixes,
                     };
-                    entmoot_engine::compare_inventory_overlay(&base, &head, &request)
+                    entmoot_workspace::compare_inventory_overlay(&base, &head, &request)
                         .map_err(|e| ("overlay_error", e.to_string()))
                 })(),
             )
@@ -1027,7 +1029,7 @@ fn resolve_publication(
     if value.get("schema_version").and_then(|v| v.as_str())
         == Some("entmoot.workspace_publication.v1")
     {
-        let publication = entmoot_engine::workspace::read_publication(path)?;
+        let publication = entmoot_workspace::workspace::read_publication(path)?;
         return Ok((
             publication.current.graph,
             Some(publication.current.store),
@@ -1081,7 +1083,7 @@ async fn main() -> Result<()> {
         );
         return Ok(());
     }
-    entmoot_engine::workspace::configure_data_directory(args.data_dir.as_deref())?;
+    entmoot_workspace::workspace::configure_data_directory(args.data_dir.as_deref())?;
     if let Some(directory) = &args.directory {
         std::env::set_current_dir(directory)?;
     }
@@ -1093,10 +1095,10 @@ async fn main() -> Result<()> {
     if args.graph.is_none() && args.publication.is_none() {
         match args.source_root.as_ref().or(explicit_directory.as_ref()) {
             Some(root) => {
-                entmoot_engine::workspace::prepare_workspace(root)?;
+                entmoot_workspace::workspace::prepare_workspace(root)?;
             }
             None => {
-                entmoot_engine::workspace::location::prepare_discovered_workspace(
+                entmoot_workspace::workspace::location::prepare_discovered_workspace(
                     &std::env::current_dir()?,
                 )?;
             }
@@ -1110,7 +1112,7 @@ async fn main() -> Result<()> {
         let mut pointer = None;
         for source in discovery_start.ancestors() {
             let candidate =
-                entmoot_engine::workspace::storage_directory(source)?.join("current.json");
+                entmoot_workspace::workspace::storage_directory(source)?.join("current.json");
             if candidate.is_file() {
                 pointer = Some(candidate);
                 break;
@@ -1121,7 +1123,7 @@ async fn main() -> Result<()> {
         None
     };
     let follow_compare = args.compare_graph.is_none();
-    let query_options = entmoot_engine::query::QueryEngineOptions {
+    let query_options = entmoot_workspace::query::QueryEngineOptions {
         durable_continuations: args.durable_continuations,
         continuation_capacity: args.continuation_capacity,
         continuation_bytes: args.continuation_bytes,
@@ -1139,7 +1141,7 @@ async fn main() -> Result<()> {
         } else if let Some(graph) = &args.graph {
             (graph.clone(), None, None)
         } else {
-            let publication = entmoot_engine::workspace::discover_publication(&discovery_start)?;
+            let publication = entmoot_workspace::workspace::discover_publication(&discovery_start)?;
             (
                 publication.current.graph,
                 Some(publication.current.store),
@@ -1149,14 +1151,14 @@ async fn main() -> Result<()> {
     let store = args
         .store
         .or(publication_store)
-        .unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph_path));
+        .unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph_path));
     let require_source = args.source_root.is_some();
     let source_root = args.source_root.or(publication_root);
     let discovered_base = if args.graph.is_none() {
         let publication = if let Some(path) = &args.publication {
-            entmoot_engine::workspace::read_publication(path).ok()
+            entmoot_workspace::workspace::read_publication(path).ok()
         } else {
-            entmoot_engine::workspace::discover_publication(&discovery_start).ok()
+            entmoot_workspace::workspace::discover_publication(&discovery_start).ok()
         };
         publication.and_then(|p| p.base.map(|b| b.graph))
     } else {
@@ -1171,11 +1173,11 @@ async fn main() -> Result<()> {
         .or_else(|| {
             std::env::current_dir()
                 .ok()
-                .and_then(|cwd| entmoot_engine::native_resolver::find_workspace_root(&cwd))
+                .and_then(|cwd| entmoot_workspace::native_resolver::find_workspace_root(&cwd))
         })
         .or(discovery_root.clone());
     if let Some(root) = &profile_root {
-        match entmoot_engine::native_resolver::load_profile(root) {
+        match entmoot_workspace::native_resolver::load_profile(root) {
             Ok(Some(profile)) => {
                 let gaps = profile.hard_gaps();
                 if gaps.is_empty() {
@@ -1220,12 +1222,12 @@ async fn main() -> Result<()> {
     let collaboration_store = match args.collaboration_store {
         Some(path) => Some(path),
         None if store.is_file() => Some(
-            entmoot_engine::KnowledgeViewLocator::read(&store)?
+            entmoot_workspace::KnowledgeViewLocator::read(&store)?
                 .map_or_else(|| store.clone(), |view| view.database),
         ),
         None => None,
     };
-    let spec = entmoot_engine::workspace::PublicationOpenSpec {
+    let spec = entmoot_workspace::workspace::PublicationOpenSpec {
         query_options,
         graph: graph_path,
         store,
@@ -1236,13 +1238,13 @@ async fn main() -> Result<()> {
         discovery_root,
     };
     let deferred = match pointer {
-        Some(pointer) => entmoot_engine::workspace::DeferredQueryBundle::start_monitored(
+        Some(pointer) => entmoot_workspace::workspace::DeferredQueryBundle::start_monitored(
             spec,
             pointer,
             follow_compare,
             args.continuation_generations.into(),
         ),
-        None => entmoot_engine::workspace::DeferredQueryBundle::start(spec),
+        None => entmoot_workspace::workspace::DeferredQueryBundle::start(spec),
     };
     let service = EntmootMcp {
         collaboration_store,

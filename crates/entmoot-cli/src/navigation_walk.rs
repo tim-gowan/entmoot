@@ -90,8 +90,9 @@ impl WalkExecutionArgs {
             "standalone resumable searches require --durable so the next invocation can load its checkpoint");
         let (graph, store, source) =
             super::resolve_read_paths(self.graph, self.publication, self.store, None)?;
-        let store = store.unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph));
-        let opened = entmoot_engine::workspace::open_query_bundle_paths(
+        let store =
+            store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
+        let opened = entmoot_workspace::workspace::open_query_bundle_paths(
             &graph,
             &store,
             source.as_deref(),

@@ -54,7 +54,7 @@ jobs:
           print(tomllib.loads(Path("Cargo.toml").read_text(encoding="utf-8"))["workspace"]["package"]["version"])
           PY
           )"
-          for name in entmoot-contracts entmoot-core entmoot-engine entmoot entmoot-mcp; do
+          for name in $(python3 scripts/crate_graph.py); do
             CODE="$(curl -sS -o /dev/null -w '%{http_code}' \
               -H 'User-Agent: entmoot-release-ci (github.com/tim-gowan/entmoot)' \
               "https://crates.io/api/v1/crates/${name}/${VERSION}")"

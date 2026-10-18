@@ -21,7 +21,7 @@ required-features = ["producer"]
 [features]
 default = []
 native-tests = []
-producer = ["entmoot-engine/resolved-rust-analyzer", "entmoot-engine/resolved-oxc"]
+producer = ["entmoot-workspace/resolved-rust-analyzer", "entmoot-workspace/resolved-oxc"]
 
 [[test]]
 name = "adapter_controls"
@@ -41,7 +41,7 @@ required-features = ["producer"]
 [dependencies]
 entmoot-core = { version = "=0.0.1-alpha.1", path = "../entmoot-core" }
 entmoot-contracts = { version = "=0.0.1-alpha.1", path = "../entmoot-contracts" }
-entmoot-engine = { version = "=0.0.1-alpha.1", path = "../entmoot-engine" }
+entmoot-workspace = { version = "=0.0.1-alpha.1", path = "../entmoot-workspace" }
 serde_json = "1.0.148"
 anyhow = "1.0.100"
 clap = { version = "4.5.53", features = ["derive", "env"] }
@@ -60,3 +60,7 @@ rusqlite = { version = "0.40.1", features = ["bundled"] }
 
 [lints]
 workspace = true
+
+[dev-dependencies.entmoot-engine]
+version = "=0.0.1-alpha.1"
+path = "../entmoot-engine"

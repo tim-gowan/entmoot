@@ -22,7 +22,7 @@ class PackageSmokeTests(unittest.TestCase):
             packages = target / "package"
             packages.mkdir(parents=True)
             source = root / "Cargo.toml"
-            for name in ("entmoot-contracts", "entmoot-core", "entmoot-engine", "entmoot", "entmoot-mcp"):
+            for name in package_smoke.publication_order(package_smoke.packages()):
                 with tarfile.open(packages / f"{name}-1.0.0.crate", "w:gz") as archive:
                     archive.add(source, arcname=f"{name}-1.0.0/Cargo.toml")
             tools = [{"name": name} for name in ("boundaries", "find", "read_source", "status")]

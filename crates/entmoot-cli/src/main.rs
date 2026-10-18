@@ -29,16 +29,16 @@ use entmoot_core::ground_truth::{
 };
 use entmoot_core::index::build_file_index;
 use entmoot_core::StructuralHasher;
-use entmoot_engine::query::{
+use entmoot_workspace::query::{
     artifact_result, assertions_result, dependency_result, expert_proposition_result,
     expert_relation_claims_result, owner_result, relations_result, resources_result, trace_result,
     unresolved_result,
 };
-use entmoot_engine::{
+use entmoot_workspace::{
     adapter_for_manifest, build_topology_from_repo_with_options, compare_inventory_overlay,
     compare_revision_impact_with_correspondence, ingest_artifact_manifest, load_graph_json,
     write_graph_json, ArtifactAdapter, AtomicGraphWrite, FilesystemArtifactObjectRepository,
-    KnowledgeRepository, KnowledgeStore, KnowledgeStoreBatches, PublicationBuffer,
+    KnowledgeRead, KnowledgeRepository, KnowledgeStore, KnowledgeStoreBatches, PublicationBuffer,
     ResourceInventoryAdapter, SarifAdapter, SemanticClusterAdapter, SqliteKnowledgeRepository,
     TopologyBuildOptions,
 };
@@ -137,7 +137,7 @@ enum Commands {
         #[arg(long)]
         require_native: bool,
         /// Per native producer wall-clock allowance (seconds).
-        #[arg(long, default_value_t = entmoot_engine::ProducerBudget::DEFAULT_WALL_SECONDS, value_parser = clap::value_parser!(u64).range(1..=3600))]
+        #[arg(long, default_value_t = entmoot_workspace::ProducerBudget::DEFAULT_WALL_SECONDS, value_parser = clap::value_parser!(u64).range(1..=3600))]
         timeout_seconds: u64,
         /// Declared publication subject (`pkg:…` or repository[`#path`]).
         #[arg(long)]
@@ -174,7 +174,7 @@ enum Commands {
         #[arg(long)]
         plan_only: bool,
         /// Per native producer wall-clock allowance (seconds).
-        #[arg(long, default_value_t = entmoot_engine::ProducerBudget::DEFAULT_WALL_SECONDS, value_parser = clap::value_parser!(u64).range(1..=3600))]
+        #[arg(long, default_value_t = entmoot_workspace::ProducerBudget::DEFAULT_WALL_SECONDS, value_parser = clap::value_parser!(u64).range(1..=3600))]
         timeout_seconds: u64,
         /// Declared publication subject (`pkg:…` or repository[`#path`]).
         #[arg(long)]
@@ -733,8 +733,8 @@ fn main() {
     let _ = tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| {
             // Operator progress on Entmoot targets only; ra_ap_/salsa stay at warn+
-            // unless RUST_LOG opts in (e.g. RUST_LOG=warn,entmoot_engine=info,ra_ap_=debug).
-            "warn,entmoot=info,entmoot_engine=info".into()
+            // unless RUST_LOG opts in (e.g. RUST_LOG=warn,entmoot_workspace=info,ra_ap_=debug).
+            "warn,entmoot=info,entmoot_workspace=info".into()
         }))
         .with_writer(std::io::stderr)
         .try_init();
@@ -778,22 +778,24 @@ fn resolve_default_database(store: Option<PathBuf>) -> Result<PathBuf> {
     }
     let publication = prepare_current_workspace()?;
     Ok(
-        entmoot_engine::KnowledgeViewLocator::read(&publication.current.store)?
+        entmoot_workspace::KnowledgeViewLocator::read(&publication.current.store)?
             .map_or(publication.current.store, |view| view.database),
     )
 }
 
-fn prepare_current_workspace() -> Result<entmoot_engine::workspace::WorkspacePublication> {
+fn prepare_current_workspace() -> Result<entmoot_workspace::workspace::WorkspacePublication> {
     Ok(match SOURCE_DIRECTORY.get() {
-        Some(root) => entmoot_engine::workspace::prepare_workspace(root)?,
-        None => entmoot_engine::workspace::prepare_discovered_workspace(&std::env::current_dir()?)?,
+        Some(root) => entmoot_workspace::workspace::prepare_workspace(root)?,
+        None => {
+            entmoot_workspace::workspace::prepare_discovered_workspace(&std::env::current_dir()?)?
+        }
     })
 }
 
 fn run() -> Result<()> {
     let cli = Cli::parse();
     output::configure(cli.json);
-    entmoot_engine::workspace::configure_data_directory(cli.data_dir.as_deref())?;
+    entmoot_workspace::workspace::configure_data_directory(cli.data_dir.as_deref())?;
     if let Some(directory) = &cli.directory {
         std::env::set_current_dir(directory)?;
         let _ = SOURCE_DIRECTORY.set(std::env::current_dir()?);
@@ -816,18 +818,18 @@ fn run() -> Result<()> {
         | Commands::Callees(_)
         | Commands::Boundaries(_) => bail!("navigation request was not handled"),
         Commands::StoragePlan { root, policy, out } => {
-            use entmoot_engine::workspace::retention::{plan_retention, read_retention_policy};
+            use entmoot_workspace::workspace::retention::{plan_retention, read_retention_policy};
             let policy = match policy {
                 Some(path) => serde_json::from_slice(&fs::read(path)?)?,
                 None => read_retention_policy(&root)?,
             };
             let plan = plan_retention(&root, policy)?;
-            entmoot_engine::workspace::write_json(&out, &plan)?;
+            entmoot_workspace::workspace::write_json(&out, &plan)?;
             crate::output::emit(&plan)?;
         }
         Commands::StorageApply { root, plan } => {
             let plan = serde_json::from_slice(&fs::read(plan)?)?;
-            let receipt = entmoot_engine::workspace::retention::apply_retention(&root, &plan)?;
+            let receipt = entmoot_workspace::workspace::retention::apply_retention(&root, &plan)?;
             crate::output::emit(&receipt)?;
         }
         Commands::SourceFetch {
@@ -836,7 +838,7 @@ fn run() -> Result<()> {
             revision,
             timeout_seconds,
         } => {
-            use entmoot_engine::source_store::{
+            use entmoot_workspace::source_store::{
                 GitFetchRequest, GitSourceRepository, SourceRepository,
             };
             let receipt = GitSourceRepository::open(&root)?.fetch_revision(GitFetchRequest {
@@ -858,7 +860,7 @@ fn run() -> Result<()> {
         } => {
             let root = match root.or_else(|| SOURCE_DIRECTORY.get().cloned()) {
                 Some(root) => fs::canonicalize(root)?,
-                None => entmoot_engine::workspace::workspace_root(&std::env::current_dir()?)?,
+                None => entmoot_workspace::workspace::workspace_root(&std::env::current_dir()?)?,
             };
             // Bare init is structural-first: publish inventory + refresh adapter profile.
             // Opt in with --require-native to hard-fail missing adapters during init.
@@ -874,7 +876,7 @@ fn run() -> Result<()> {
             if let Some(raw) = subject {
                 options.subject = Some(subject_args::parse_subject(&raw)?);
             }
-            let summary = entmoot_engine::workspace::initialize_workspace(
+            let summary = entmoot_workspace::workspace::initialize_workspace(
                 &root,
                 repo.as_deref(),
                 &load_normalization_policy(&config)?,
@@ -913,12 +915,12 @@ fn run() -> Result<()> {
             }
             if let Some(path) = from_impact {
                 let receipt =
-                    entmoot_engine::workspace::impact::bind_from_package(&path, &options)?;
+                    entmoot_workspace::workspace::impact::bind_from_package(&path, &options)?;
                 crate::output::emit(&receipt)?;
                 return Ok(());
             }
             if let Some(graph) = graph {
-                let summary = entmoot_engine::workspace::bind_publication(
+                let summary = entmoot_workspace::workspace::bind_publication(
                     &graph,
                     root.as_deref(),
                     store.as_deref(),
@@ -930,12 +932,12 @@ fn run() -> Result<()> {
             }
             let root = match root.or_else(|| SOURCE_DIRECTORY.get().cloned()) {
                 Some(root) => root,
-                None => entmoot_engine::workspace::workspace_root(&std::env::current_dir()?)?,
+                None => entmoot_workspace::workspace::workspace_root(&std::env::current_dir()?)?,
             };
             if !options.plan_only {
-                entmoot_engine::workspace::prepare_workspace(&root)?;
+                entmoot_workspace::workspace::prepare_workspace(&root)?;
             }
-            let summary = entmoot_engine::workspace::bind_workspace(&root, &options)?;
+            let summary = entmoot_workspace::workspace::bind_workspace(&root, &options)?;
             operator_summary::write_workspace_summary("bind", &summary);
             crate::output::emit(&summary)?;
         }
@@ -1000,8 +1002,8 @@ fn run() -> Result<()> {
                 bail!("request batch must contain 1..=1000 requests");
             }
             let store =
-                store.unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph));
-            let opened = entmoot_engine::workspace::open_query_bundle_paths(
+                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
+            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
                 &graph,
                 &store,
                 source_root.as_deref(),
@@ -1047,8 +1049,8 @@ fn run() -> Result<()> {
                 };
             output.apply(&mut request.output)?;
             let store =
-                store.unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph));
-            let opened = entmoot_engine::workspace::open_query_bundle_paths(
+                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
+            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
                 &graph,
                 &store,
                 None,
@@ -1069,8 +1071,8 @@ fn run() -> Result<()> {
         } => {
             let graph = graph.context("--graph is required for standalone reads")?;
             let store =
-                store.unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph));
-            let opened = entmoot_engine::workspace::open_query_bundle_paths(
+                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
+            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
                 &graph, &store, None, None, false,
             )
             .map_err(|error| anyhow!(error.to_string()))?;
@@ -1098,14 +1100,14 @@ fn run() -> Result<()> {
             let (graph, store, source_root) =
                 resolve_read_paths(graph, publication, store, source_root)?;
             let store =
-                store.unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph));
+                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
             let request = match request {
                 Some(path) => serde_json::from_slice::<entmoot_contracts::query::StatusRequest>(
                     &fs::read(path)?,
                 )?,
                 None => entmoot_contracts::query::StatusRequest::default(),
             };
-            let opened = entmoot_engine::workspace::open_query_bundle_paths(
+            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
                 &graph,
                 &store,
                 source_root.as_deref(),
@@ -1130,7 +1132,7 @@ fn run() -> Result<()> {
             let (graph, store, source_root) =
                 resolve_read_paths(graph, publication, store, source_root)?;
             let store =
-                store.unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph));
+                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
             let request = match request {
                 Some(path) => serde_json::from_slice::<entmoot_contracts::query::InventoryRequest>(
                     &fs::read(path)?,
@@ -1146,7 +1148,7 @@ fn run() -> Result<()> {
                     request
                 }
             };
-            let opened = entmoot_engine::workspace::open_query_bundle_paths(
+            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
                 &graph,
                 &store,
                 source_root.as_deref(),
@@ -1173,7 +1175,7 @@ fn run() -> Result<()> {
             let (graph, store, source_root) =
                 resolve_read_paths(graph, publication, store, source_root)?;
             let store =
-                store.unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph));
+                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
             let request = match request {
                 Some(path) => serde_json::from_slice::<
                     entmoot_contracts::query::CallComponentsRequest,
@@ -1187,7 +1189,7 @@ fn run() -> Result<()> {
                     max_edges,
                 },
             };
-            let opened = entmoot_engine::workspace::open_query_bundle_paths(
+            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
                 &graph,
                 &store,
                 source_root.as_deref(),
@@ -1212,14 +1214,14 @@ fn run() -> Result<()> {
             let (graph, store, source_root) =
                 resolve_read_paths(graph, publication, store, source_root)?;
             let store =
-                store.unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph));
+                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
             let request = match request {
                 Some(path) => {
                     serde_json::from_slice::<entmoot_contracts::CloneRequest>(&fs::read(path)?)?
                 }
                 None => entmoot_contracts::CloneRequest::default(),
             };
-            let opened = entmoot_engine::workspace::open_query_bundle_paths(
+            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
                 &graph,
                 &store,
                 source_root.as_deref(),
@@ -1247,14 +1249,14 @@ fn run() -> Result<()> {
             let (graph, store, source_root) =
                 resolve_read_paths(graph, publication, store, source_root)?;
             let store =
-                store.unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph));
+                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
             let request = match request {
                 Some(path) => {
                     serde_json::from_slice::<entmoot_contracts::UnusedRequest>(&fs::read(path)?)?
                 }
                 None => Default::default(),
             };
-            let opened = entmoot_engine::workspace::open_query_bundle_paths(
+            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
                 &graph,
                 &store,
                 source_root.as_deref(),
@@ -1276,11 +1278,12 @@ fn run() -> Result<()> {
             require_accounted,
         } => {
             let graph = load_graph_json(&graph).map_err(|e| anyhow!(e.to_string()))?;
-            let audit =
-                entmoot_engine::resolver_accounting::audit_resolver_manifests(&graph, &artifacts)?;
+            let audit = entmoot_workspace::resolver_accounting::audit_resolver_manifests(
+                &graph, &artifacts,
+            )?;
             if let Some(context) = build_context {
                 let context = entmoot_contracts::ContentDigest::parse(context)?;
-                let reachability = entmoot_engine::resolver_accounting::audit_reachability(
+                let reachability = entmoot_workspace::resolver_accounting::audit_reachability(
                     &audit,
                     &context,
                     &entrypoint,
@@ -1314,7 +1317,7 @@ fn run() -> Result<()> {
                 "never" => entmoot_contracts::AnalysisPassMode::Never,
                 _ => bail!("invalid adapter-pass mode"),
             };
-            let decision = entmoot_engine::plan_analysis(demand, mode)?;
+            let decision = entmoot_workspace::plan_analysis(demand, mode)?;
             crate::output::emit(&decision)?;
         }
         Commands::Work { queue, command } => cmd_work(&queue, command)?,
@@ -1324,7 +1327,7 @@ fn run() -> Result<()> {
         Commands::Fingerprint => {
             println!(
                 "{}",
-                serde_json::to_string_pretty(&entmoot_engine::storage_fingerprint())?
+                serde_json::to_string_pretty(&entmoot_workspace::storage_fingerprint())?
             );
         }
         Commands::ValidateTests {
@@ -1332,11 +1335,11 @@ fn run() -> Result<()> {
             request,
             out,
         } => {
-            let graph = entmoot_engine::export::load_graph_json(&graph)
+            let graph = entmoot_workspace::export::load_graph_json(&graph)
                 .map_err(|error| anyhow!(error.to_string()))?;
             let request = serde_json::from_slice(&fs::read(request)?)?;
-            let evidence = entmoot_engine::test_validation::validate_tests(&graph, request)?;
-            let path = entmoot_engine::test_validation::write_evidence(&evidence, &out)?;
+            let evidence = entmoot_workspace::test_validation::validate_tests(&graph, request)?;
+            let path = entmoot_workspace::test_validation::write_evidence(&evidence, &out)?;
             println!(
                 "{}",
                 serde_json::to_string_pretty(
@@ -1355,7 +1358,7 @@ fn run() -> Result<()> {
                 serde_json::from_slice(&std::fs::read(manifest)?)?;
             let evaluator = entmoot_contracts::ContentDigest::parse(evaluator_digest)
                 .map_err(|error| anyhow::anyhow!("invalid evaluator digest: {error}"))?;
-            inputs.validate(&entmoot_engine::implementation_fingerprint(), &evaluator)?;
+            inputs.validate(&entmoot_workspace::implementation_fingerprint(), &evaluator)?;
             crate::output::emit(&inputs.input_digest()?)?;
         }
         Commands::Policy { config } => {
@@ -1441,10 +1444,10 @@ fn run() -> Result<()> {
                     out,
                 },
         } => {
-            use entmoot_engine::compatibility::{CompatibilityCatalog, PackagePublication};
+            use entmoot_workspace::compatibility::{CompatibilityCatalog, PackagePublication};
             let cwd = std::env::current_dir()?;
             let (consumer_path, store, source_root) = if let Some(path) = consumer {
-                entmoot_engine::compatibility::publication_input(&path)?
+                entmoot_workspace::compatibility::publication_input(&path)?
             } else {
                 let publication = prepare_current_workspace()?;
                 (
@@ -1459,7 +1462,7 @@ fn run() -> Result<()> {
                 consumer_path.display(),
                 consumer.id()
             );
-            let providers = entmoot_engine::compatibility::load_providers(
+            let providers = entmoot_workspace::compatibility::load_providers(
                 source_root.as_deref().unwrap_or(&cwd),
                 &provider,
             )?;
@@ -1547,16 +1550,16 @@ fn run() -> Result<()> {
                     let publication = prepare_current_workspace()?;
                     let base = load_graph_json(&publication.current.graph).map_err(box_err)?;
                     let policy = load_normalization_policy(&config)?;
-                    let head = entmoot_engine::workspace::working_tree_graph(
+                    let head = entmoot_workspace::workspace::working_tree_graph(
                         &base,
                         &publication.current.source_root,
                         &policy,
                     )?;
                     (base, head)
                 };
-                let report = entmoot_engine::query::assess_test_impact(&base, &head, request)?;
+                let report = entmoot_workspace::query::assess_test_impact(&base, &head, request)?;
                 if let Some(path) = out {
-                    entmoot_engine::workspace::write_json(&path, &report)?;
+                    entmoot_workspace::workspace::write_json(&path, &report)?;
                 }
                 crate::output::emit(&report)?;
                 return Ok(());
@@ -1565,13 +1568,13 @@ fn run() -> Result<()> {
                 let publication = prepare_current_workspace()?;
                 let base = load_graph_json(&publication.current.graph).map_err(box_err)?;
                 let policy = load_normalization_policy(&config)?;
-                let manifest = entmoot_engine::workspace::compare_working_tree_impact(
+                let manifest = entmoot_workspace::workspace::compare_working_tree_impact(
                     &base,
                     &publication.current.source_root,
                     &policy,
                 )?;
                 if let Some(path) = out {
-                    entmoot_engine::workspace::write_json(&path, &manifest)?;
+                    entmoot_workspace::workspace::write_json(&path, &manifest)?;
                 }
                 crate::output::emit(&manifest)?;
                 return Ok(());
@@ -1581,10 +1584,11 @@ fn run() -> Result<()> {
                 let destination = match out {
                     Some(path) => path,
                     None => {
-                        let root =
-                            entmoot_engine::workspace::workspace_root(&std::env::current_dir()?)?;
+                        let root = entmoot_workspace::workspace::workspace_root(
+                            &std::env::current_dir()?,
+                        )?;
                         let parent =
-                            entmoot_engine::workspace::storage_directory(&root)?.join("impact");
+                            entmoot_workspace::workspace::storage_directory(&root)?.join("impact");
                         fs::create_dir_all(&parent)?;
                         tempfile::Builder::new()
                             .prefix("transition-")
@@ -1597,12 +1601,12 @@ fn run() -> Result<()> {
                     bail!("impact package already exists; use a new --out path");
                 }
                 let ledger = destination.with_extension("ledger.sqlite3");
-                let package = entmoot_engine::workspace::impact::create_package(
-                    entmoot_engine::workspace::impact::location(&base)?,
-                    entmoot_engine::workspace::impact::location(&head)?,
+                let package = entmoot_workspace::workspace::impact::create_package(
+                    entmoot_workspace::workspace::impact::location(&base)?,
+                    entmoot_workspace::workspace::impact::location(&head)?,
                     Some(&ledger),
                 )?;
-                entmoot_engine::workspace::write_json(&destination, &package)?;
+                entmoot_workspace::workspace::write_json(&destination, &package)?;
                 eprintln!(
                     "package={} ledger={}",
                     destination.display(),
@@ -1618,7 +1622,7 @@ fn run() -> Result<()> {
                     correspondence.as_ref(),
                 )?;
                 if let Some(path) = out {
-                    entmoot_engine::workspace::write_json(&path, &manifest)?;
+                    entmoot_workspace::workspace::write_json(&path, &manifest)?;
                 }
                 crate::output::emit(&manifest)?;
             }
@@ -1643,7 +1647,7 @@ fn run() -> Result<()> {
             };
             let report = compare_inventory_overlay(&base, &head, &request)?;
             if let Some(path) = out {
-                entmoot_engine::workspace::write_json(&path, &report)?;
+                entmoot_workspace::workspace::write_json(&path, &report)?;
             }
             crate::output::emit(&report)?;
         }
@@ -1663,8 +1667,8 @@ fn run() -> Result<()> {
                 "schema": "entmoot.deps_materialization.v1", "subject": subject,
                 "version": version, "source": from.display().to_string(),
             });
-            let dest = entmoot_engine::materialize::materialize(
-                &entmoot_engine::workspace::storage_directory(&root)?.join("deps"),
+            let dest = entmoot_workspace::materialize::materialize(
+                &entmoot_workspace::workspace::storage_directory(&root)?.join("deps"),
                 &subject,
                 &version,
                 &from,
@@ -1686,8 +1690,8 @@ fn workspace_options(
     plan_only: bool,
     structural_only: bool,
     seconds: u64,
-) -> entmoot_engine::workspace::BindOptions {
-    entmoot_engine::workspace::BindOptions {
+) -> entmoot_workspace::workspace::BindOptions {
+    entmoot_workspace::workspace::BindOptions {
         canon: false,
         subject: None,
         subject_aliases: Vec::new(),
@@ -1696,7 +1700,7 @@ fn workspace_options(
         plan_only,
         structural_only,
         rust_profile: Default::default(),
-        budget: entmoot_engine::ProducerBudget {
+        budget: entmoot_workspace::ProducerBudget {
             wall: std::time::Duration::from_secs(seconds),
             ..Default::default()
         },
@@ -1715,7 +1719,7 @@ fn resolve_read_paths(
             graph.display(),
             store
                 .as_deref()
-                .unwrap_or(&entmoot_engine::workspace::default_store_path(&graph))
+                .unwrap_or(&entmoot_workspace::workspace::default_store_path(&graph))
                 .display(),
             source
                 .as_deref()
@@ -1725,9 +1729,9 @@ fn resolve_read_paths(
         return Ok((graph, store, source));
     }
     let discovered = match publication {
-        Some(path) => entmoot_engine::workspace::read_publication(&path)?,
+        Some(path) => entmoot_workspace::workspace::read_publication(&path)?,
         None => match source.as_deref() {
-            Some(root) => entmoot_engine::workspace::prepare_workspace(root)?,
+            Some(root) => entmoot_workspace::workspace::prepare_workspace(root)?,
             None => prepare_current_workspace()?,
         },
     };
@@ -1742,8 +1746,8 @@ fn cmd_work(path: &Path, command: WorkCmd) -> Result<()> {
         Ok(item) => println!("{}", serde_json::to_string_pretty(&item)?),
         Err(error) => {
             let kind = error
-                .downcast_ref::<entmoot_engine::AnalysisWorkError>()
-                .map(entmoot_engine::AnalysisWorkError::code)
+                .downcast_ref::<entmoot_workspace::AnalysisWorkError>()
+                .map(entmoot_workspace::AnalysisWorkError::code)
                 .unwrap_or("invalid_input");
             println!(
                 "{}",
@@ -1759,12 +1763,12 @@ fn cmd_work(path: &Path, command: WorkCmd) -> Result<()> {
 }
 
 fn cmd_work_item(path: &Path, command: WorkCmd) -> Result<entmoot_contracts::AnalysisWorkItem> {
-    use entmoot_engine::{AnalysisWorkQueue, ManifestUnverified, SqliteAnalysisWorkQueue};
+    use entmoot_workspace::{AnalysisWorkQueue, ManifestUnverified, SqliteAnalysisWorkQueue};
     if let WorkCmd::Get { id } = &command {
         let queue = SqliteAnalysisWorkQueue::open_read_only(path)
             .with_context(|| format!("open analysis work queue read-only {}", path.display()))?;
         return queue.get(id)?.ok_or_else(|| {
-            entmoot_engine::AnalysisWorkError::Invalid("unknown analysis work id".into()).into()
+            entmoot_workspace::AnalysisWorkError::Invalid("unknown analysis work id".into()).into()
         });
     }
     let mut queue = SqliteAnalysisWorkQueue::open(path)
@@ -1812,7 +1816,7 @@ fn cmd_revalidate(base: &Path, head: &Path, request: &Path, ledger: &Path) -> Re
         serde_json::from_slice(&fs::read(request)?)?;
     let base = load_graph_json(base).map_err(box_err)?;
     let head = load_graph_json(head).map_err(box_err)?;
-    match entmoot_engine::publish_revalidation_ledger(&base, &head, &request, ledger) {
+    match entmoot_workspace::publish_revalidation_ledger(&base, &head, &request, ledger) {
         Ok(receipt) => println!("{}", serde_json::to_string_pretty(&receipt)?),
         Err(error) => {
             println!(
@@ -1875,7 +1879,7 @@ fn cmd_query(store: &Path, command: QueryCmd) -> Result<()> {
             limit,
         } => serde_json::to_value(dependency_result(
             &repository,
-            entmoot_engine::KnowledgeRecordRef::new(collection, record_id),
+            entmoot_workspace::KnowledgeRecordRef::new(collection, record_id),
             limit,
         )?)?,
     };
@@ -1967,7 +1971,7 @@ fn cmd_validate_ground_truth(
     );
     pb.set_message("ground truth");
     let validator = GroundTruthValidator::new(dataset);
-    let implementation = entmoot_engine::implementation_fingerprint();
+    let implementation = entmoot_workspace::implementation_fingerprint();
     let report = validator.validate(&policy, implementation.clone());
     report
         .validate(&implementation)
@@ -2070,8 +2074,8 @@ fn cmd_index(
 
     let store_path = store
         .map(Path::to_path_buf)
-        .unwrap_or_else(|| entmoot_engine::workspace::default_store_path(out));
-    entmoot_engine::workspace::retention::check_store_admission(&store_path)?;
+        .unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(out));
+    entmoot_workspace::workspace::retention::check_store_admission(&store_path)?;
     // Hold the database lifecycle lease across archival and publication. GC
     // cannot retire a referenced native object in the gap between those steps.
     let mut repository = SqliteKnowledgeRepository::open(&store_path)
@@ -2084,7 +2088,7 @@ fn cmd_index(
             .unwrap_or_else(|| default_artifact_store_path(&store_path))?,
     )?;
     let extraction_started = std::time::Instant::now();
-    entmoot_engine::workspace::retention::check_store_admission(&store_path)?;
+    entmoot_workspace::workspace::retention::check_store_admission(&store_path)?;
     let knowledge = KnowledgeStore::extract_from_graph(&graph);
     let extraction_elapsed = extraction_started.elapsed();
     let synchronization_started = std::time::Instant::now();
@@ -2159,7 +2163,7 @@ fn cmd_attach(
     let graph = load_graph_json(graph_path).map_err(box_err)?;
     let store_path = store
         .map(Path::to_path_buf)
-        .unwrap_or_else(|| entmoot_engine::workspace::default_store_path(graph_path));
+        .unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(graph_path));
     let knowledge = if store_path.exists() {
         match SqliteKnowledgeRepository::open(&store_path) {
             Ok(repository) => {
@@ -2184,7 +2188,7 @@ fn cmd_attach(
     } else {
         KnowledgeStore::extract_from_graph(&graph)
     };
-    let mut graph = knowledge.apply_to_inventory(entmoot_engine::inventory_skeleton(&graph));
+    let mut graph = knowledge.apply_to_inventory(entmoot_workspace::inventory_skeleton(&graph));
     graph
         .validate()
         .context("validate graph rematerialized from durable knowledge")?;
@@ -2209,7 +2213,7 @@ fn cmd_attach(
         );
         attachment_receipts.push(stats);
     }
-    entmoot_engine::workspace::retention::check_store_admission(&store_path)?;
+    entmoot_workspace::workspace::retention::check_store_admission(&store_path)?;
     let mut repository = SqliteKnowledgeRepository::open(&store_path)
         .with_context(|| format!("open knowledge store {}", store_path.display()))?;
     archive_artifacts(
@@ -2220,7 +2224,7 @@ fn cmd_attach(
             .unwrap_or_else(|| default_artifact_store_path(&store_path))?,
     )?;
     let buffer = PublicationBuffer::default();
-    entmoot_engine::workspace::retention::check_store_admission(&store_path)?;
+    entmoot_workspace::workspace::retention::check_store_admission(&store_path)?;
     let mut batches =
         KnowledgeStoreBatches::new(KnowledgeStore::extract_from_graph(&graph), buffer)
             .context("prepare bounded knowledge batches")?;
@@ -2266,7 +2270,9 @@ fn cmd_attach(
 }
 
 fn default_artifact_store_path(store_path: &Path) -> Result<PathBuf> {
-    Ok(entmoot_engine::workspace::artifact_store_path(store_path)?)
+    Ok(entmoot_workspace::workspace::artifact_store_path(
+        store_path,
+    )?)
 }
 
 fn archive_artifacts(manifests: &[PathBuf], root: PathBuf) -> Result<()> {
@@ -2390,7 +2396,7 @@ fn cmd_artifact_inspect(artifact_path: &Path, manifest_path: Option<&Path>) -> R
                 let errors = norm
                     .diagnostics
                     .iter()
-                    .filter(|d| matches!(d.severity, entmoot_engine::DiagnosticSeverity::Error))
+                    .filter(|d| matches!(d.severity, entmoot_workspace::DiagnosticSeverity::Error))
                     .count();
                 println!("diagnostics_excluded: {excluded}");
                 println!("diagnostics_errors: {errors}");

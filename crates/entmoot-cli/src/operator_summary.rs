@@ -1,6 +1,6 @@
 //! Always-on human summary for init/bind (stderr). Not filtered by RUST_LOG.
 use entmoot_contracts::package_api::PackageApiEvidence;
-use entmoot_engine::workspace::WorkspaceSummary;
+use entmoot_workspace::workspace::WorkspaceSummary;
 use std::fmt::Write as _;
 use std::path::Path;
 
@@ -154,7 +154,7 @@ fn is_incomplete(summary: &WorkspaceSummary) -> bool {
     false
 }
 
-fn first_actionable_limitation(stage: &entmoot_engine::workspace::BindStage) -> Option<&str> {
+fn first_actionable_limitation(stage: &entmoot_workspace::workspace::BindStage) -> Option<&str> {
     stage
         .native_receipt
         .as_ref()
@@ -183,8 +183,8 @@ mod tests {
     use entmoot_contracts::NativeReceipt;
     use entmoot_contracts::{SourceSnapshot, SourceState};
 
-    use entmoot_engine::workspace::{BindStage, PublicationLocation, WorkspaceSummary};
-    use entmoot_engine::CoverageReport;
+    use entmoot_workspace::workspace::{BindStage, PublicationLocation, WorkspaceSummary};
+    use entmoot_workspace::CoverageReport;
     use std::path::PathBuf;
 
     fn base_summary(stages: Vec<BindStage>, structural_only: bool) -> WorkspaceSummary {
@@ -251,7 +251,7 @@ mod tests {
             call_gaps: Default::default(),
             input_files: 1,
             schema_version: entmoot_contracts::NativeReceiptSeries::V1,
-            implementation: entmoot_engine::implementation_fingerprint(),
+            implementation: entmoot_workspace::implementation_fingerprint(),
             producer: entmoot_contracts::NativeProducerContext {
                 adapter_pin: "test".into(),
                 method_id: "fixture.v1".into(),

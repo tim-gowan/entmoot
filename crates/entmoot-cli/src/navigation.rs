@@ -260,8 +260,8 @@ pub(super) fn request(command: &Commands) -> Result<Option<QueryRequest>> {
 
 pub(super) fn run(request: QueryRequest) -> Result<()> {
     let (graph, store, source) = super::resolve_read_paths(None, None, None, None)?;
-    let store = store.unwrap_or_else(|| entmoot_engine::workspace::default_store_path(&graph));
-    let bundle = entmoot_engine::workspace::open_query_bundle_paths(
+    let store = store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
+    let bundle = entmoot_workspace::workspace::open_query_bundle_paths(
         &graph,
         &store,
         source.as_deref(),

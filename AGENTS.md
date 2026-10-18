@@ -26,7 +26,7 @@ records delivered work. Known defects belong in PLANNING, not weaker contracts.
   historical retrieval and recovery. Query-service reads never enqueue native
   producers. Frontends may bootstrap missing structural inventory; refreshing
   existing publications requires explicit init/bind.
-- Keep the five crate boundaries. Contracts contain no vendor/compiler/DB types;
+- Keep the crate dependency DAG documented in ARCHITECTURE. Contracts contain no vendor/compiler/DB types;
   CLI and MCP share engine read operations. Use typed library errors and anyhow
   at the CLI boundary; no production unwrap/expect. Identity digests use BLAKE3.
 - Normalize provider vocabulary once at the adapter boundary into shared,

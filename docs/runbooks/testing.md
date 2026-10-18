@@ -32,14 +32,14 @@ downstream packages. Missing ownership widens to workspace checks.
     the same Closed fence vocabulary (nonempty policy + assumptions).
   Pre-commit co-selects the whole claim/deep/joins/adapters cohort whenever any
   member, `fixtures/callsites/`, or `support/callsites_expect.rs` changes (named
-  targets stay named; source under `crates/entmoot-engine/src/` still runs the
-  package). Claim/deep/adapter tests resolve catalog adapters under
+  targets stay named; crate source changes select the owning package and its
+  downstream test closure). Claim/deep/adapter tests resolve catalog adapters under
   `.tmp/adapter-build/` when `ENTMOOT_*_ADAPTER` is unset; build with
   `scripts/build_resolver_adapters.py` (and program builders) at the floor pins.
   Floor-backed Closed policies are listed in `tools/resolver-adapters/floors.toml`
   (producers emit Closed; join validates fences). Historical multi-toolchain /
   Acorn rows stay `#[ignore]`.
-- Storage/application: engine store tests and CLI workspace/artifact suites
+- Storage/application: store/ops tests and CLI workspace/artifact suites
   exercise transactions, restart, producer isolation, historical reads and impact.
 - Live resolver controls: explicit validation against configured adapters. A
   missing tool or unsupported mode remains unavailable; do not report it as a
@@ -205,7 +205,7 @@ bytes. Search timing includes witness reconstruction; evidence timing includes
 classification and witness JSON construction. These counters are distinct from
 process RSS and uncontrolled OS-cache effects.
 
-Use `cargo run -p entmoot-engine --example query_scale_bench -- --chain-fixture
+Use `cargo run -p entmoot-query --example query_scale_bench -- --chain-fixture
 .tmp/query-scale-chain` for the authored 120-hop control. It retains the structural
 extractor's parallel aggregate/site call edges as a noncontracting control and adds
 single-occurrence dependency edges over the same production callable inventory.
@@ -263,3 +263,18 @@ The ignored revision-campaign execution control requires the CLI `producer`
 feature (in-process Oxc). Resolved CI invokes it explicitly; the other Python/Git
 campaign accounting controls run in structural CI. Opt-in corpus demo:
 [`evals/demo/`](../../evals/demo/) via `demo.yml` (structural-only; not a release gate).
+
+## Component CI and cache reuse
+
+Structural unit/integration/doctest jobs run for every workspace crate on Linux
+and Windows. Packaging and binary-backed campaign controls have their own jobs;
+native controls have one job per named suite and platform. Matrix fail-fast is
+disabled. Rerun failed jobs at the same revision to preserve successful siblings.
+No source path skips a required correctness check on a new revision.
+
+Rust build caches include workspace crates and save even after a test failure.
+`scripts/crate_graph.py` derives keys from normal/build/dev dependency closures,
+including target-specific and optional dependencies, lockfile and toolchain.
+Cargo still verifies build fingerprints; test success is never cached. Release
+publication order is derived from the same production DAG. Regenerate release
+inputs after source changes before relying on compatibility or package checks.

@@ -17,13 +17,8 @@ CORE_CARGO_TOML = (
     Path(__file__).resolve().parents[1] / "crates" / "entmoot-core" / "Cargo.toml"
 )
 
-WORKSPACE_PACKAGES: tuple[str, ...] = (
-    "entmoot-contracts",
-    "entmoot-core",
-    "entmoot-engine",
-    "entmoot",
-    "entmoot-mcp",
-)
+from scripts.crate_graph import dependencies, packages, publication_order
+WORKSPACE_PACKAGES = tuple(publication_order(packages()))
 
 
 @dataclass(frozen=True)
@@ -396,21 +391,8 @@ def workspace_dependencies(root: Path, manifests: dict[str, dict[str, Any]]) -> 
     root_manifest = root / "Cargo.toml"
     inherited = (_parse_manifest(root_manifest.read_bytes()).get("workspace", {}).get("dependencies", {})
                  if root_manifest.is_file() else {})
-    result: dict[str, set[str]] = {}
-    for package, manifest in manifests.items():
-        dependencies: set[str] = set()
-        for table in [manifest, *manifest.get("target", {}).values()]:
-            for section in ("dependencies", "dev-dependencies", "build-dependencies"):
-                for alias, spec in table.get(section, {}).items():
-                    if isinstance(spec, dict) and spec.get("workspace"):
-                        if alias not in inherited:
-                            raise ValueError(f"unresolved workspace dependency: {package}/{alias}")
-                        spec = inherited[alias]
-                    name = spec.get("package", alias) if isinstance(spec, dict) else alias
-                    if name in manifests:
-                        dependencies.add(name)
-        result[package] = dependencies
-    return result
+    return {package: dependencies(manifest, include_dev=True, inherited=inherited) & manifests.keys()
+            for package, manifest in manifests.items()}
 
 
 @lru_cache(maxsize=32)

@@ -222,13 +222,16 @@ class ValidationIsolationTests(unittest.TestCase):
                 self.assertEqual(selects_integration_tests([command], "entmoot"), expected)
 
     def test_validation_and_eval_use_same_isolated_target(self) -> None:
-        from scripts.pre_commit_check import validation_environment, ROOT
+        from scripts.pre_commit_check import validation_environment
         from scripts.cargo_paths import debug_directory
 
-        env = validation_environment({'CARGO_TARGET_DIR': str(ROOT / 'target')})
-        self.assertEqual(Path(env['CARGO_TARGET_DIR']), ROOT / 'target/commit-check')
-        with patch.dict(os.environ, env), patch.object(Path, 'is_file', return_value=True):
-            self.assertEqual(debug_directory(), ROOT / 'target/commit-check/debug')
+        with TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            with patch('scripts.pre_commit_check.ROOT', root), patch('scripts.cargo_paths.ROOT', root):
+                env = validation_environment({'CARGO_TARGET_DIR': str(root / 'target')})
+                self.assertEqual(Path(env['CARGO_TARGET_DIR']), root / 'target/commit-check')
+                with patch.dict(os.environ, env):
+                    self.assertEqual(debug_directory(), root / 'target/commit-check/debug')
 
     def test_windows_validation_bounds_default_linker_concurrency_and_preserves_override(self):
         from scripts.pre_commit_check import validation_environment
@@ -364,22 +367,11 @@ class CrateBoundaryCheckTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "crates").mkdir()
-            (root / "Cargo.toml").write_text(
-                '[workspace]\nmembers = ["crates/entmoot-contracts", '
-                '"crates/entmoot-core", "crates/entmoot-engine", '
-                '"crates/entmoot-cli", "crates/entmoot-mcp"]\n',
-                encoding="utf-8",
-            )
-            manifests = {
-                "entmoot-contracts": "",
-                "entmoot-core": 'entmoot-contracts = { path = "../entmoot-contracts" }',
-                "entmoot-engine": (
-                    'entmoot-contracts = { path = "../entmoot-contracts" }\n'
-                    'entmoot-core = { path = "../entmoot-core" }'
-                ),
-                "entmoot-mcp": 'entmoot-engine = { path = "../entmoot-engine" }',
-                "entmoot": 'entmoot-engine = { path = "../entmoot-engine" }',
-            }
+            from scripts.crate_graph import packages
+            manifests = {name: "\n".join(f'{dep} = {{ path = "../{dep}" }}' for dep in manifest.get("dependencies", {}) if dep.startswith("entmoot-")) for name, (_, manifest) in packages().items()}
+            members = ["crates/entmoot-cli" if name == "entmoot" else f"crates/{name}" for name in manifests]
+            import json
+            (root / "Cargo.toml").write_text('[workspace]\nmembers = ' + json.dumps(members) + '\n', encoding="utf-8")
             for name, dependencies in manifests.items():
                 crate = root / "crates" / ("entmoot-cli" if name == "entmoot" else name)
                 crate.mkdir()
@@ -394,7 +386,7 @@ class CrateBoundaryCheckTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "crates" / "entmoot-contracts").mkdir(parents=True)
-            (root / "crates" / "entmoot-query").mkdir()
+            (root / "crates" / "entmoot-topology-poc").mkdir()
             (root / "Cargo.toml").write_text(
                 '[workspace]\nmembers = ["crates/entmoot-contracts"]\n',
                 encoding="utf-8",

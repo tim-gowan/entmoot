@@ -3,7 +3,7 @@ name: entmoot-release
 description: Prepare, verify and hand off Entmoot alpha/beta packages, generated docs and GitHub release workflows. Use for release readiness or an authorized publish, not routine source navigation.
 ---
 
-Read AGENTS.md and docs/runbooks/local-alpha.md. Keep the five crate boundaries
+Read AGENTS.md and docs/runbooks/local-alpha.md. Keep the documented crate dependency DAG
 and exact prerelease dependencies. README maturity must describe demonstrated
 utility and remaining limits; a historical corpus process success is not a gate.
 

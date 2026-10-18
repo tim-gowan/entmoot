@@ -168,7 +168,7 @@ pub(super) fn run(command: &Commands, url: &str, token_file: Option<&Path>) -> R
         eprintln!("{nudge}");
     }
     if let Some(path) = out {
-        entmoot_engine::workspace::write_json(path, &result)?;
+        entmoot_workspace::workspace::write_json(path, &result)?;
     }
     crate::output::emit(&result)?;
     if complete

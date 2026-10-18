@@ -1,5 +1,6 @@
 # Phased coverage (this workflow):
-#   structural — compiler-free inventory, crate unit/integration, packaging smoke
+#   structural — independent crate unit/integration/doctest jobs
+#   packaging  — binary-backed controls and extracted package smoke
 #   policy     — fmt/clippy/deny (orthogonal to coverage claims)
 #   repo       — scripts/utilities unit tests only (no adapters, no remote corpora)
 # Docs staging lives in docs.yml (.tmp/staging). Resolved: native.yml. Demo: demo.yml.
@@ -29,7 +30,60 @@ env:
   EVALS_TOKENIZER_REQUIREMENTS: evals/harness/requirements-tokenizer.txt
   FULL_TESTS_FEATURES: entmoot-core/full-tests
 jobs:
-  structural:
+  component:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        package: [entmoot-contracts, entmoot-core, entmoot-topology, entmoot-store, entmoot-evidence, entmoot-native, entmoot-query, entmoot-ops, entmoot-workspace, entmoot, entmoot-engine, entmoot-mcp]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 65
+    env:
+      # Parallel linking of large engine test binaries has SIGBUS'd ld on GHA.
+      CARGO_BUILD_JOBS: 1
+      RUST_CACHE_KEY: structural-${{ matrix.os }}-${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Assemble CI environment (Linux)
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/assemble-ci-env
+        with:
+          lane: structural
+          python-version: ${{ env.PYTHON_VERSION }}
+          evals-requirements: ${{ env.EVALS_REQUIREMENTS }}
+      - name: Assemble CI environment (Windows)
+        if: runner.os != 'Linux'
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            ${{ env.EVALS_REQUIREMENTS }}
+      - if: runner.os != 'Linux'
+        run: rustup show
+      - if: runner.os != 'Linux'
+        run: python -m pip install -r "${{ env.EVALS_REQUIREMENTS }}"
+      - name: Compute dependency cache key
+        id: inputs
+        shell: bash
+        run: python scripts/crate_graph.py --package "${{ matrix.package }}" --github-output "$GITHUB_OUTPUT"
+      - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
+        with:
+          shared-key: ${{ env.RUST_CACHE_KEY }}
+          cache-targets: true
+          cache-all-crates: true
+          cache-on-failure: true
+          key: ${{ steps.inputs.outputs.key }}
+      - name: Test component (unit, integration and doctests)
+        shell: bash
+        run: |
+          set -euo pipefail
+          features=()
+          if [ "${{ matrix.package }}" = entmoot-core ]; then features=(--features full-tests); fi
+          cargo test --locked -p "${{ matrix.package }}" "${features[@]}"
+  packaging:
     strategy:
       fail-fast: false
       matrix:
@@ -39,7 +93,7 @@ jobs:
     env:
       # Parallel linking of large engine test binaries has SIGBUS'd ld on GHA.
       CARGO_BUILD_JOBS: 1
-      RUST_CACHE_KEY: structural-${{ matrix.os }}
+      RUST_CACHE_KEY: packaging-${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -67,12 +121,10 @@ jobs:
         with:
           shared-key: ${{ env.RUST_CACHE_KEY }}
           cache-targets: true
-      - name: Test workspace and report build storage
-        shell: bash
-        run: |
-          trap 'df -h .; du -sh target' EXIT
-          df -h .
-          cargo test --workspace --locked --features ${{ env.FULL_TESTS_FEATURES }}
+          cache-all-crates: true
+          cache-on-failure: true
+      - name: Build matched transport binaries
+        run: cargo build --workspace --locked --profile test --bins
       - name: Binary-backed campaign controls (same feature graph)
         run: cargo test --workspace --locked --features ${{ env.FULL_TESTS_FEATURES }} --test campaign_harness --test revision_receipts -- --ignored
       - run: python scripts/check_release.py
@@ -103,6 +155,21 @@ jobs:
           path: .tmp/bin-artifact/*
           if-no-files-found: error
           retention-days: ${{ fromJSON(env.ARTIFACT_RETENTION_DAYS) }}
+  structural:
+    # Preserve the existing required check names while component jobs remain
+    # independently rerunnable. Aggregation never substitutes for a test run.
+    if: always()
+    needs: [component, packaging]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Require every component and package control
+        shell: bash
+        run: |
+          test "${{ needs.component.result }}" = success
+          test "${{ needs.packaging.result }}" = success
   policy:
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -120,6 +187,8 @@ jobs:
         with:
           shared-key: ${{ env.RUST_CACHE_KEY }}
           cache-targets: true
+          cache-all-crates: true
+          cache-on-failure: true
       - run: cargo fmt --all -- --check
       - run: python3 scripts/prepare_release_inputs.py --check
       - run: cargo clippy --workspace --locked --all-targets --features ${{ env.FULL_TESTS_FEATURES }} -- -D warnings
@@ -144,7 +213,7 @@ jobs:
       - run: python -m unittest discover -s scripts -p "test_*.py"
       - run: python -m unittest discover -s evals/harness -p "test_*.py"
   docs:
-    needs: structural
+    needs: packaging
     uses: ./.github/workflows/docs.yml
     with:
       binaries_artifact: entmoot-bin-test-Linux-${{ github.sha }}
@@ -152,7 +221,7 @@ jobs:
     # Advisory classification reuses this run's qualified Linux binary. Full
     # structural/native lanes remain authoritative; never rerun selected tests here.
     if: github.event_name == 'pull_request'
-    needs: structural
+    needs: packaging
     uses: ./.github/workflows/pr-gate-decision.yml
     with:
       binaries_artifact: entmoot-bin-test-Linux-${{ github.sha }}

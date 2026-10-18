@@ -5,7 +5,7 @@
 
 [[family]]
 id = "go"
-control = { target = "adapter_controls", filter = "go_named_types_tags_source_fences_and_test_scope", owners = ["tools/resolver-adapters/go/", "crates/entmoot-engine/src/native_resolver/producers/go"] }
+control = { target = "adapter_controls", filter = "go_named_types_tags_source_fences_and_test_scope", owners = ["tools/resolver-adapters/go/", "crates/entmoot-native/src/native_resolver/producers/go"] }
 languages = ["go"]
 env = "ENTMOOT_GO_ADAPTER"
 isolation = "go_sidecar_process"
@@ -20,7 +20,7 @@ limitations = [
 
 [[family]]
 id = "roslyn"
-control = { target = "adapter_controls", filter = "roslyn_virtual_base_and_implicit_constructor_targets", owners = ["tools/resolver-adapters/roslyn/", "crates/entmoot-engine/src/native_resolver/producers/roslyn"] }
+control = { target = "adapter_controls", filter = "roslyn_virtual_base_and_implicit_constructor_targets", owners = ["tools/resolver-adapters/roslyn/", "crates/entmoot-native/src/native_resolver/producers/roslyn"] }
 languages = ["csharp"]
 env = "ENTMOOT_ROSLYN_ADAPTER"
 isolation = "dotnet_process"
@@ -37,7 +37,7 @@ limitations = [
 
 [[family]]
 id = "java"
-control = { target = "adapter_controls", filter = "java_dispatch_default_scope_and_unsupported_engine", owners = ["tools/resolver-adapters/java/", "crates/entmoot-engine/src/native_resolver/producers/java"] }
+control = { target = "adapter_controls", filter = "java_dispatch_default_scope_and_unsupported_engine", owners = ["tools/resolver-adapters/java/", "crates/entmoot-native/src/native_resolver/producers/java"] }
 languages = ["java"]
 env = "ENTMOOT_JAVA_ADAPTER"
 isolation = "jvm_process"
@@ -53,7 +53,7 @@ limitations = [
 
 [[family]]
 id = "clang"
-control = { target = "adapter_controls", filter = "clang_template_body_layout_target_and_missing_compdb", owners = ["tools/resolver-adapters/clang/", "crates/entmoot-engine/src/native_resolver/producers/clang"] }
+control = { target = "adapter_controls", filter = "clang_template_body_layout_target_and_missing_compdb", owners = ["tools/resolver-adapters/clang/", "crates/entmoot-native/src/native_resolver/producers/clang"] }
 languages = ["c", "cxx"]
 env = "ENTMOOT_CLANG_ADAPTER"
 isolation = "pinned_clang_process"
@@ -71,7 +71,7 @@ limitations = [
 
 [[family]]
 id = "typescript"
-control = { target = "program_adapters", filter = "typescript_routes_offsets_types_and_body_independent_contracts", owners = ["tools/resolver-adapters/typescript/", "crates/entmoot-engine/src/native_resolver/producers/typescript"] }
+control = { target = "program_adapters", filter = "typescript_routes_offsets_types_and_body_independent_contracts", owners = ["tools/resolver-adapters/typescript/", "crates/entmoot-native/src/native_resolver/producers/typescript"] }
 languages = ["javascript", "typescript"]
 env = "ENTMOOT_TYPESCRIPT_ADAPTER"
 isolation = "pinned_program_batch_process"
@@ -87,7 +87,7 @@ limitations = [
 
 [[family]]
 id = "pyright"
-control = { target = "program_adapters", filter = "pyright_unicode_offsets_header_identity_and_version_modes", owners = ["tools/resolver-adapters/python/", "crates/entmoot-engine/src/native_resolver/producers/python"] }
+control = { target = "program_adapters", filter = "pyright_unicode_offsets_header_identity_and_version_modes", owners = ["tools/resolver-adapters/python/", "crates/entmoot-native/src/native_resolver/producers/python"] }
 languages = ["python"]
 env = "ENTMOOT_PYRIGHT_ADAPTER"
 isolation = "pinned_program_batch_process"

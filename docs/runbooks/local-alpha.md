@@ -1,7 +1,7 @@
 # Local alpha operation and release
 
 Target: `tim-gowan/entmoot`, the workspace version in [Cargo.toml](../../Cargo.toml),
-five crates, v1 wire series. Confirm repository access and the target branch at
+workspace crates, v1 wire series. Confirm repository access and the target branch at
 handoff. Resolve [current qualification blockers](../../PLANNING.md#current-qualification-blockers)
 before preparing a clean copy; copying, committing, pushing and
 registry publication are separate operator steps. Local success is not a claim
@@ -86,7 +86,7 @@ failures and unsupported constructs remain different observations.
    normalized release inputs. Regenerate after Cargo dependency/feature changes.
    `python scripts/check_release.py` checks ownership, links, versions and metadata.
    Run Python harness tests and the existing Dylint/license/unused dependency gates.
-3. `python scripts/package_smoke.py` packages all five crates, builds only their
+3. `python scripts/package_smoke.py` packages all workspace crates, builds only their
    extracted contents in an isolated workspace and compares implementation
    fingerprints. Its patches point exclusively to extracted siblings, never the
    checkout; this supports first releases before dependencies exist on crates.io.

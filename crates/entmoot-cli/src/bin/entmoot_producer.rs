@@ -8,8 +8,8 @@ use clap::{Parser, Subcommand};
 #[path = "../rust_profile.rs"]
 mod rust_profile;
 use entmoot_contracts::blake3_hex;
-use entmoot_engine::native_resolver::oxc::OXC_PIN;
-use entmoot_engine::{
+use entmoot_workspace::native_resolver::oxc::OXC_PIN;
+use entmoot_workspace::{
     produce_clang_resolver, produce_go_resolver, produce_java_resolver, produce_oxc_resolver,
     produce_python_resolver, produce_roslyn_resolver, produce_rust_resolver,
     produce_typescript_resolver, publish_dogfood, DogfoodPublishRequest, ExecutionPolicy,
@@ -180,7 +180,7 @@ fn main() -> Result<()> {
         Commands::Fingerprint => {
             println!(
                 "{}",
-                serde_json::to_string(&entmoot_engine::implementation_fingerprint())?
+                serde_json::to_string(&entmoot_workspace::implementation_fingerprint())?
             );
             Ok(())
         }
@@ -201,7 +201,7 @@ fn main() -> Result<()> {
                 .rust_profile
                 .validate()
                 .map_err(anyhow::Error::msg)?;
-            entmoot_engine::native_resolver::pipeline::produce_family(family, request)?;
+            entmoot_workspace::native_resolver::pipeline::produce_family(family, request)?;
             Ok(())
         }
         Commands::Rust { command } => match command {
@@ -332,8 +332,8 @@ fn run_sidecar(
     produce: fn(
         NativeProduceRequest,
     ) -> std::result::Result<
-        entmoot_engine::native_resolver::NativeProduceResult,
-        entmoot_engine::native_resolver::NativeProducerError,
+        entmoot_workspace::native_resolver::NativeProduceResult,
+        entmoot_workspace::native_resolver::NativeProducerError,
     >,
     language: &str,
 ) -> Result<()> {

@@ -1,8 +1,8 @@
 //! Retain a qualified publication in a campaign's multi-view production store.
 //! Uses repository publication APIs; evaluation grades never enter this store.
 use entmoot_engine::{
-    FilesystemArtifactObjectRepository, GixSourceStore, KnowledgeRepository, KnowledgeStoreBatches,
-    KnowledgeViewLocator, PublicationBuffer, SqliteKnowledgeRepository,
+    FilesystemArtifactObjectRepository, GixSourceStore, KnowledgeRead, KnowledgeRepository,
+    KnowledgeStoreBatches, KnowledgeViewLocator, PublicationBuffer, SqliteKnowledgeRepository,
 };
 use serde::Deserialize;
 use std::{fs, path::PathBuf};

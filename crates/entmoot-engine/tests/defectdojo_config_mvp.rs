@@ -10,8 +10,8 @@ use entmoot_contracts::{
 };
 use entmoot_engine::{
     build_topology_from_repo_with_options, ingest_artifact_manifest, BoundedWalkBudget,
-    InspectQuery, KnowledgeRepository, KnowledgeStore, QueryEngine, SqliteKnowledgeRepository,
-    TopologyBuildOptions, TraverseQuery,
+    InspectQuery, KnowledgeRead, KnowledgeRepository, KnowledgeStore, QueryEngine,
+    SqliteKnowledgeRepository, TopologyBuildOptions, TraverseQuery,
 };
 
 const RENDERED: &str = include_str!(

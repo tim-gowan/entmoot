@@ -1,0 +1,32 @@
+[package]
+name = "entmoot-store"
+version.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Durable knowledge, source storage and checked local locations"
+
+[dependencies]
+entmoot-contracts = { version = "=0.0.1-alpha.1", path = "../entmoot-contracts" }
+entmoot-core = { version = "=0.0.1-alpha.1", path = "../entmoot-core" }
+entmoot-topology = { version = "=0.0.1-alpha.1", path = "../entmoot-topology" }
+serde = { version = "1.0.228", features = ["derive", "rc"] }
+serde_json = "1.0.148"
+thiserror = "2.0.17"
+blake3 = "1.8.2"
+tempfile = "3.10.1"
+gix = "0.87.1"
+rusqlite = { version = "0.40.1", features = ["bundled"] }
+tree-sitter = "0.26.13"
+tree-sitter-yaml = "=0.7.2"
+tree-sitter-hcl = "=1.1.0"
+tree-sitter-json = "=0.24.8"
+rayon = "1.11.0"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62.2", features = ["Win32_System_Threading"] }
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+[lints]
+workspace = true
