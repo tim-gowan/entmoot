@@ -492,6 +492,32 @@ mod tests {
         plan_analysis(demand, AnalysisPassMode::Auto).unwrap()
     }
 
+    fn open_with_lock_retry(
+        path: &std::path::Path,
+    ) -> Result<SqliteAnalysisWorkQueue, AnalysisWorkError> {
+        let mut last = None;
+        for _ in 0..50 {
+            match SqliteAnalysisWorkQueue::open(path) {
+                Ok(queue) => return Ok(queue),
+                Err(error) => {
+                    let transient = matches!(
+                        &error,
+                        AnalysisWorkError::Sqlite(rusqlite::Error::SqliteFailure(code, _))
+                            if code.code == rusqlite::ErrorCode::FileLockingProtocolFailed
+                                || code.code == rusqlite::ErrorCode::DatabaseBusy
+                                || code.code == rusqlite::ErrorCode::DatabaseLocked
+                    );
+                    last = Some(error);
+                    if !transient {
+                        break;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(10));
+                }
+            }
+        }
+        Err(last.expect("open retried without an error"))
+    }
+
     #[test]
     fn concurrent_first_open_of_the_legacy_queue_is_safe() {
         let directory = tempfile::tempdir().unwrap();
@@ -503,7 +529,9 @@ mod tests {
                 let barrier = barrier.clone();
                 std::thread::spawn(move || {
                     barrier.wait();
-                    SqliteAnalysisWorkQueue::open(&path).map(|_| ())
+                    // Windows can refuse the first concurrent creates with
+                    // FileLockingProtocolFailed even after busy_timeout.
+                    open_with_lock_retry(&path).map(|_| ())
                 })
             })
             .collect();
@@ -523,31 +551,7 @@ mod tests {
                 let barrier = barrier.clone();
                 std::thread::spawn(move || {
                     barrier.wait();
-                    // Windows can briefly refuse concurrent opens with
-                    // FileLockingProtocolFailed even after busy_timeout.
-                    let mut last = None;
-                    for _ in 0..50 {
-                        match SqliteAnalysisWorkQueue::open(&path) {
-                            Ok(mut queue) => return queue.enqueue(decision()),
-                            Err(error) => {
-                                let transient = matches!(
-                                    &error,
-                                    AnalysisWorkError::Sqlite(rusqlite::Error::SqliteFailure(
-                                        code,
-                                        _,
-                                    )) if code.code == rusqlite::ErrorCode::FileLockingProtocolFailed
-                                        || code.code == rusqlite::ErrorCode::DatabaseBusy
-                                        || code.code == rusqlite::ErrorCode::DatabaseLocked
-                                );
-                                last = Some(error);
-                                if !transient {
-                                    break;
-                                }
-                                std::thread::sleep(std::time::Duration::from_millis(10));
-                            }
-                        }
-                    }
-                    Err(last.expect("open retried without an error"))
+                    open_with_lock_retry(&path).and_then(|mut queue| queue.enqueue(decision()))
                 })
             })
             .collect();
