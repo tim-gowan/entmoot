@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-18: Keep call-site fixture bytes LF on Windows
+
+- Normalize CRLF when copying callsites fixtures into qualification temps and
+  pin those fixtures to LF in `.gitattributes`, so multi-line Python selectors
+  match inventory offsets on Windows checkouts.
+
 ## 2026-10-18: Harden Windows path checks for campaigns and Pyright fencing
 
 - Campaign publication prefix checks canonicalize before `starts_with` so
