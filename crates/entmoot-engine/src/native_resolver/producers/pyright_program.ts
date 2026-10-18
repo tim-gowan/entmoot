@@ -176,22 +176,49 @@ function run(request: any) {
         inputs.set(file, digest(bytes));
     }
     const pathIgnored = makeIgnoreChecker(root);
+    const typeshed = real(ENTMOOT_PYRIGHT_TYPESHED);
     // Fence explicit source and import universes before any analysis, including stubs.
     // Skip inventory-equivalent dirs and paths matching the publication root's gitignore.
-    function freeze(dir: string, verify = false, observed = new Set<string>()) {
+    function freeze(
+        dir: string,
+        verify = false,
+        observed = new Set<string>(),
+        seen = new Set<string>(),
+    ) {
+        dir = real(dir);
+        if (seen.has(dir)) return observed;
+        seen.add(dir);
         for (const entry of fs.readdirSync(dir, {withFileTypes: true}).sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) {
             const file = path.join(dir, entry.name);
             if (pathIgnored(file)) continue;
-            if (entry.isSymbolicLink()) throw Error('linked Python inputs require a qualified materialization: ' + dir);
-            if (entry.isDirectory()) freeze(file, verify, observed);
+            if (entry.isSymbolicLink()) {
+                // Project-local links still require materialization. Ambient import
+                // roots (Windows site-packages junctions) resolve to their target.
+                if (inside(root, file)) {
+                    throw Error('linked Python inputs require a qualified materialization: ' + dir);
+                }
+                let target: string;
+                try { target = real(file); } catch { continue; }
+                try {
+                    const st = fs.statSync(target);
+                    if (st.isDirectory()) freeze(target, verify, observed, seen);
+                    else if (st.isFile() && (/\.(py|pyi)$/.test(target) || ['py.typed', 'VERSIONS'].includes(entry.name))) {
+                        observed.add(target);
+                        if (!verify) { remember(target); sourceFiles.add(target); }
+                    }
+                } catch { /* dangling ambient link */ }
+                continue;
+            }
+            if (entry.isDirectory()) freeze(file, verify, observed, seen);
             else if (entry.isFile() && (/\.(py|pyi)$/.test(file) || ['py.typed', 'VERSIONS'].includes(entry.name))) {
-                observed.add(file);
-                if (!verify) { remember(file); sourceFiles.add(file); }
+                const key = real(file);
+                observed.add(key);
+                if (!verify) { remember(key); sourceFiles.add(key); }
             }
         }
         return observed;
     }
-    const universes = new Set([root, ...roots, ...packages.map((p: any) => p.root), ENTMOOT_PYRIGHT_TYPESHED]);
+    const universes = new Set([root, ...roots, ...packages.map((p: any) => p.root), typeshed]);
     const tracked = [...freeze(root)].filter(p => /\.pyi?$/.test(p));
     for (const dir of universes) if (dir !== root) freeze(dir);
     remember(interpreter);
@@ -221,11 +248,11 @@ function run(request: any) {
     const host = new ExplicitHost(sp);
     const pythonVersion = host.getPythonVersion(uri(interpreter), []);
     if (!pythonVersion) throw Error('cannot identify configured Python interpreter');
-    config.initializeFromJson({pythonPath: interpreter, extraPaths: roots, typeshedPath: ENTMOOT_PYRIGHT_TYPESHED,
+    config.initializeFromJson({pythonPath: interpreter, extraPaths: roots, typeshedPath: typeshed,
         pythonVersion: settings.python_version ?? PythonVersion.toString(pythonVersion),
         useLibraryCodeForTypes: true, typeCheckingMode: 'off'}, uri(analysisRoot), sp, host);
     config.pythonPath = uri(interpreter);
-    config.typeshedPath = uri(ENTMOOT_PYRIGHT_TYPESHED);
+    config.typeshedPath = uri(typeshed);
     const program = new Program(new ImportResolver(sp, config, host), config, sp, undefined, true);
     const calls: any[] = [];
     const diagnostics: string[] = [];

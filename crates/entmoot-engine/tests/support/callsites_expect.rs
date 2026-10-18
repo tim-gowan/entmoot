@@ -232,6 +232,13 @@ pub fn apply_sidecar_env() {
         "CARGO_ENCODED_RUSTFLAGS",
         "RUSTC_WRAPPER",
         "RUSTC_WORKSPACE_WRAPPER",
+        // Python discovery must not inherit a host/CI venv or conda prefix that
+        // is unrelated to the fixture under test (program_adapters clears these
+        // the same way before invoking the Pyright program).
+        "ENTMOOT_PYTHON_ENVIRONMENT",
+        "ENTMOOT_PYTHON_EXECUTABLE",
+        "VIRTUAL_ENV",
+        "CONDA_PREFIX",
     ] {
         std::env::remove_var(key);
     }
@@ -332,7 +339,11 @@ pub fn qualify_pipeline(opts: QualifyOpts<'_>) {
 
     assert_eq!(produced.artifact.implementation, graph.implementation);
     assert_eq!(produced.receipt.implementation, graph.implementation);
-    assert!(!produced.raw.invalid_environment);
+    assert!(
+        !produced.raw.invalid_environment,
+        "invalid_environment diagnostics={:?}",
+        produced.raw.diagnostics
+    );
     assert!(!produced.raw.budget_exceeded);
     assert!(
         matches!(produced.receipt.semantic_status.as_str(), "ok" | "partial"),

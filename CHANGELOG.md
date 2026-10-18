@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-18: Harden Windows path checks for campaigns and Pyright fencing
+
+- Campaign publication prefix checks canonicalize before `starts_with` so
+  Windows 8.3 tempfile paths match long-path receipts.
+- Pyright program fencing resolves ambient import-root junctions (common in
+  Windows site-packages) instead of treating them like project-local symlinks,
+  and call-site qualification clears inherited Python environment selectors.
+
 ## 2026-10-18: Reclaim dependency materialize locks after failed copies
 
 - Acquire `materialize.lock` with a short `WouldBlock` retry and unlock

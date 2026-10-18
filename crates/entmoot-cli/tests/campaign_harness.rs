@@ -320,9 +320,19 @@ fn pinned_repositories_build_and_publish_at_bounded_dependency_depth() {
         !tmp.path().join("caller-volume").exists(),
         "campaign leaked into caller-selected storage"
     );
+    // Canonicalize before prefix checks: Windows tempfile paths may use 8.3
+    // short names while publication receipts record the long path.
+    let owned_data = run.join("data").canonicalize().unwrap();
     for row in summary["repositories"].as_array().unwrap() {
-        let graph = Path::new(row["publication"]["graph"].as_str().unwrap());
-        assert!(graph.starts_with(run.join("data")), "{}", graph.display());
+        let graph = Path::new(row["publication"]["graph"].as_str().unwrap())
+            .canonicalize()
+            .unwrap();
+        assert!(
+            graph.starts_with(&owned_data),
+            "{} not under {}",
+            graph.display(),
+            owned_data.display()
+        );
         assert!(row["database_bytes"].as_u64().unwrap() > 0);
         assert!(Path::new(row["dependency_lock"]["retained"].as_str().unwrap()).is_file());
         assert!(row["dependency_lock"]["content_digest"]
