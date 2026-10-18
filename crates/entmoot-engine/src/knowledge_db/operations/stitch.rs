@@ -392,6 +392,9 @@ mod tests {
             .unwrap();
         }
         std::fs::write(root.parent().unwrap().join("operation"), job.id.as_str()).unwrap();
+        // Release the lifecycle lease before aborting so the parent does not wait on
+        // process-exit FD cleanup under parallel CI load.
+        drop(db);
         std::process::exit(0);
     }
 
@@ -413,16 +416,18 @@ mod tests {
                 .success());
             let store = tmp.path().join("shared.db");
             let id = std::fs::read_to_string(tmp.path().join("operation")).unwrap();
-            let before = SqliteKnowledgeRepository::open_operations_read_only(&store)
-                .unwrap()
-                .operation(&id)
-                .unwrap()
-                .unwrap();
+            let before = {
+                let db = SqliteKnowledgeRepository::open_operations_read_only(&store).unwrap();
+                db.operation(&id).unwrap().unwrap()
+            };
             assert_eq!(before.state, OperationState::Running);
-            crate::knowledge_db::retention::Maintenance::open(&store)
-                .unwrap()
-                .collect(&std::collections::BTreeSet::new())
-                .unwrap();
+            {
+                let mut maintenance =
+                    crate::knowledge_db::retention::Maintenance::open(&store).unwrap();
+                maintenance
+                    .collect(&std::collections::BTreeSet::new())
+                    .unwrap();
+            }
             let done = crate::producer_operations::run_bounded(
                 &store,
                 &root,

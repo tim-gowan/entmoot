@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-18: Reclaim storage lifecycle leases after abrupt peer exit
+
+- Retry lifecycle `.lease` `WouldBlock` briefly (same budget as startup
+  initialization) so collection and re-open recover after a crashed holder
+  whose process exit has not yet released the flock. Stitch/git-capture
+  recovery fixtures release or scope leases before the next open.
+
 ## 2026-10-18: Refresh package derivation inputs after query-selector merge
 
 - Regenerate `derivation-inputs.json` for contracts, core and engine so the
