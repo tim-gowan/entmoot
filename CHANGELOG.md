@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-17: Assemble CI host environments as a discrete step
+
+- Add `.github/actions/assemble-ci-env` to restore, probe and install lane-scoped
+  tools before build/test. Linux `structural`, `policy`, `repo`, `docs` and
+  `native` jobs call it; cache hits never skip qualification. `scripts/rehearse_ci_env.py`
+  rehearses the Linux path under `ghcr.io/catthehacker/ubuntu:full-latest` via act.
+
 ## 2026-10-17: Install actionlint from its release archive
 
 - CI workflow lint installs the pinned `actionlint` 1.7.7 Linux amd64 release

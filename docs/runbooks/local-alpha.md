@@ -157,10 +157,13 @@ tag CD creates the GitHub Release and publishes to crates.io.
 - `ci.yml`: `structural` (compiler-free tests, packaging, test-profile CLI/MCP artifacts),
   `policy` (fmt/Clippy/deny), `repo` (Python script/configuration/harness tests). Cargo/pip caches;
   ubuntu uploads `.crate` artifacts. No path-based correctness skips; no remote
-  corpus clones.
+  corpus clones. Linux jobs call `.github/actions/assemble-ci-env` before build/test.
 - `native.yml` (`resolved` job): provisioned Windows/Linux adapters, pinned
   Pyright/TypeScript, Rust/Oxc producer, dispatch/compatibility; rust-cache;
-  producer CLI artifact on success.
+  producer CLI artifact on success. Linux assembly uses the same composite action
+  (tools + adapter tree); Windows keeps inline setup.
+- Local Linux rehearsal: `python scripts/rehearse_ci_env.py` (Docker + act;
+  `ghcr.io/catthehacker/ubuntu:full-latest`). Logs under `.tmp/ci-env-rehearsal/`.
 - `demo.yml`: dispatch-only structural corpus (`evals/demo/`); reuses CI CLI
   artifact. Not a release gate.
 - `docs.yml` (called by CI): reuses that run's qualified Linux test-profile CLI/MCP,

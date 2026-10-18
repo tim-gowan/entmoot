@@ -1,0 +1,311 @@
+# Discrete CI environment assembly: restore → probe → install gaps → save.
+# Never skips build/test/qualification based on a cache hit.
+name: Assemble CI environment
+description: >
+  Restore and install lane-scoped host tools for Entmoot CI. Presence probes
+  decide installs; caches never replace correctness controls.
+inputs:
+  lane:
+    description: structural | policy | repo | docs | native
+    required: true
+  python-version:
+    description: CPython version for lanes that need Python
+    required: false
+    default: "3.13"
+  node-version:
+    description: Node.js version for the native lane
+    required: false
+    default: "22"
+  go-version:
+    description: Go version for the native lane
+    required: false
+    default: "1.26.0"
+  java-version:
+    description: Temurin JDK major version for the native lane
+    required: false
+    default: "25"
+  dotnet-version:
+    description: .NET SDK version for the native lane
+    required: false
+    default: "9.0.318"
+  evals-requirements:
+    description: Path to evals harness requirements
+    required: false
+    default: evals/harness/requirements.txt
+  evals-tokenizer-requirements:
+    description: Path to tokenizer requirements (repo lane)
+    required: false
+    default: evals/harness/requirements-tokenizer.txt
+  docs-requirements:
+    description: Path to docs site requirements
+    required: false
+    default: docs/requirements.txt
+  adapters-out:
+    description: Adapter build output directory (native lane)
+    required: false
+    default: .tmp/adapter-build/resolver-adapters
+  pyright-path:
+    description: Checked-out Pyright source path (native lane)
+    required: false
+    default: .tmp/adapter-build/source/pyright
+  pyright-ref:
+    description: Pyright git ref included in the adapter cache key
+    required: false
+    default: a07bbdeae085f59396acee8739c7d862dd3a1ff1
+  build-adapters:
+    description: When true (native), build adapters after tool install if cache miss
+    required: false
+    default: "true"
+runs:
+  using: composite
+  steps:
+    - name: Validate lane
+      shell: bash
+      run: |
+        set -euo pipefail
+        case "${{ inputs.lane }}" in
+          structural|policy|repo|docs|native) ;;
+          *)
+            echo "unsupported assemble-ci-env lane: ${{ inputs.lane }}" >&2
+            exit 1
+            ;;
+        esac
+        if [ "${RUNNER_OS}" != "Linux" ]; then
+          echo "assemble-ci-env supports Linux runners only; got ${RUNNER_OS}" >&2
+          exit 1
+        fi
+
+    - name: Setup Python (evals)
+      if: inputs.lane == 'structural' || inputs.lane == 'native'
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+        cache-dependency-path: ${{ inputs.evals-requirements }}
+
+    - name: Setup Python (repo)
+      if: inputs.lane == 'repo'
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+        cache-dependency-path: |
+          ${{ inputs.evals-requirements }}
+          ${{ inputs.evals-tokenizer-requirements }}
+
+    - name: Setup Python (docs)
+      if: inputs.lane == 'docs'
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+        cache-dependency-path: ${{ inputs.docs-requirements }}
+
+    - name: Setup Node
+      if: inputs.lane == 'native'
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Setup Go
+      if: inputs.lane == 'native'
+      uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+      with:
+        go-version: ${{ inputs.go-version }}
+        cache: true
+
+    - name: Setup Java
+      if: inputs.lane == 'native'
+      uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+      with:
+        distribution: temurin
+        java-version: ${{ inputs.java-version }}
+
+    - name: Setup .NET
+      if: inputs.lane == 'native'
+      uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Rust toolchain presence
+      if: inputs.lane == 'structural' || inputs.lane == 'policy' || inputs.lane == 'docs' || inputs.lane == 'native'
+      shell: bash
+      run: |
+        set -euo pipefail
+        rustup show
+        if [ "${{ inputs.lane }}" = "native" ]; then
+          rustup component add rust-src
+        fi
+
+    # Keep policy tools outside ~/.cargo/bin so Swatinem/rust-cache post cleanup
+    # cannot delete them before the cache save step.
+    - name: Restore policy cargo bins
+      if: inputs.lane == 'policy'
+      id: policy-bins
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+      with:
+        path: ~/.local/entmoot-ci-bins
+        key: assemble-policy-bins-${{ runner.os }}-deny0.20.2-machete0.9.1-dylint6.1.1-v2
+
+    - name: Expose policy cargo bins on PATH
+      if: inputs.lane == 'policy'
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p "${HOME}/.local/entmoot-ci-bins"
+        echo "${HOME}/.local/entmoot-ci-bins" >> "${GITHUB_PATH}"
+        echo "${HOME}/.cargo/bin" >> "${GITHUB_PATH}"
+        export PATH="${HOME}/.local/entmoot-ci-bins:${HOME}/.cargo/bin:${PATH}"
+
+    - name: Install cargo-deny and cargo-machete
+      if: inputs.lane == 'policy' && steps.policy-bins.outputs.cache-hit != 'true'
+      uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+      with:
+        tool: cargo-deny@0.20.2,cargo-machete@0.9.1
+
+    - name: Stage deny/machete into durable bin dir
+      if: inputs.lane == 'policy' && steps.policy-bins.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p "${HOME}/.local/entmoot-ci-bins"
+        for tool in cargo-deny cargo-machete; do
+          src="$(command -v "${tool}")"
+          cp -f "${src}" "${HOME}/.local/entmoot-ci-bins/${tool}"
+        done
+
+    - name: Install cargo-dylint when missing
+      if: inputs.lane == 'policy'
+      shell: bash
+      run: |
+        set -euo pipefail
+        export PATH="${HOME}/.local/entmoot-ci-bins:${HOME}/.cargo/bin:${PATH}"
+        if [ -x "${HOME}/.local/entmoot-ci-bins/cargo-dylint" ] \
+          && "${HOME}/.local/entmoot-ci-bins/cargo-dylint" --version 2>/dev/null | grep -Fq '6.1.1' \
+          && [ -x "${HOME}/.local/entmoot-ci-bins/dylint-link" ]; then
+          echo "cargo-dylint 6.1.1 already present in entmoot-ci-bins"
+          "${HOME}/.local/entmoot-ci-bins/cargo-dylint" --version
+          exit 0
+        fi
+        cargo install cargo-dylint dylint-link --locked --version 6.1.1 --root "${HOME}/.local/entmoot-ci-bins-root"
+        install -m 0755 "${HOME}/.local/entmoot-ci-bins-root/bin/cargo-dylint" "${HOME}/.local/entmoot-ci-bins/cargo-dylint"
+        install -m 0755 "${HOME}/.local/entmoot-ci-bins-root/bin/dylint-link" "${HOME}/.local/entmoot-ci-bins/dylint-link"
+
+    - name: Restore actionlint
+      if: inputs.lane == 'repo'
+      id: actionlint-cache
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+      with:
+        path: ~/.local/bin/actionlint
+        key: assemble-actionlint-1.7.7-linux-amd64-023070a287cd8ccc
+
+    - name: Install actionlint when missing
+      if: inputs.lane == 'repo'
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p "${HOME}/.local/bin"
+        echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+        export PATH="${HOME}/.local/bin:${PATH}"
+        if command -v actionlint >/dev/null 2>&1 \
+          && actionlint -version 2>/dev/null | grep -Fq '1.7.7'; then
+          echo "actionlint 1.7.7 already present"
+          actionlint -version
+          exit 0
+        fi
+        version=1.7.7
+        archive="actionlint_${version}_linux_amd64.tar.gz"
+        expected_sha256=023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757
+        base="https://github.com/rhysd/actionlint/releases/download/v${version}"
+        curl -fsSL -o "/tmp/${archive}" "${base}/${archive}"
+        echo "${expected_sha256}  /tmp/${archive}" | sha256sum -c -
+        tar -xzf "/tmp/${archive}" -C "${HOME}/.local/bin" actionlint
+        "${HOME}/.local/bin/actionlint" -version
+
+    - name: Install evals Python requirements
+      if: inputs.lane == 'structural' || inputs.lane == 'native'
+      shell: bash
+      run: |
+        set -euo pipefail
+        python -m pip install -r "${{ inputs.evals-requirements }}"
+        if [ "${{ inputs.lane }}" = "native" ]; then
+          python -m pip install libclang==18.1.1
+        fi
+
+    - name: Install repo Python requirements
+      if: inputs.lane == 'repo'
+      shell: bash
+      run: |
+        set -euo pipefail
+        python -m pip install -r "${{ inputs.evals-requirements }}"
+        python -m pip install -r "${{ inputs.evals-tokenizer-requirements }}"
+
+    - name: Install docs Python requirements
+      if: inputs.lane == 'docs'
+      shell: bash
+      run: |
+        set -euo pipefail
+        python -m pip install -r "${{ inputs.docs-requirements }}"
+
+    - name: Restore native adapter build tree
+      if: inputs.lane == 'native' && inputs.build-adapters == 'true'
+      id: adapters-cache
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+      with:
+        path: |
+          .tmp/adapter-build/resolver-adapters
+          .tmp/adapter-build/pyright-program
+          .tmp/adapter-build/typescript-program
+          .tmp/adapter-build/typescript-versions
+        key: assemble-adapters-${{ runner.os }}-${{ inputs.pyright-ref }}-${{ hashFiles('tools/resolver-adapters/**', 'scripts/build_resolver_adapters.py', 'scripts/build_pyright_program.py', 'scripts/build_typescript_program.py', 'tools/resolver-adapters/floors.toml') }}
+
+    - name: Build pinned native adapters when cache misses
+      if: inputs.lane == 'native' && inputs.build-adapters == 'true' && steps.adapters-cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        ADAPTERS_OUT: ${{ inputs.adapters-out }}
+        PYRIGHT_PATH: ${{ inputs.pyright-path }}
+      run: |
+        set -euo pipefail
+        python scripts/build_resolver_adapters.py --out "${ADAPTERS_OUT}"
+        python scripts/build_pyright_program.py --source "${PYRIGHT_PATH}" --out .tmp/adapter-build/pyright-program
+        python scripts/build_typescript_program.py --out .tmp/adapter-build/typescript-program --version-tools .tmp/adapter-build/typescript-versions
+
+    - name: Verify native adapter tree
+      if: inputs.lane == 'native' && inputs.build-adapters == 'true'
+      shell: bash
+      env:
+        ADAPTERS_OUT: ${{ inputs.adapters-out }}
+      run: |
+        set -euo pipefail
+        test -f "${ADAPTERS_OUT}/build-receipt.json"
+        test -f .tmp/adapter-build/pyright-program/entmoot-pyright.cjs
+        test -f .tmp/adapter-build/typescript-program/entmoot-typescript.cjs
+
+    - name: Install historical Rust toolchains when missing
+      if: inputs.lane == 'native'
+      shell: bash
+      run: |
+        set -euo pipefail
+        for tc in 1.79.0 1.91 1.95.0; do
+          if rustup toolchain list | grep -Fq "${tc}"; then
+            echo "rustup toolchain ${tc} present"
+          else
+            rustup toolchain install "${tc}" --profile minimal
+          fi
+        done
+
+    - name: Environment probe summary
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "lane=${{ inputs.lane }}"
+        command -v rustc >/dev/null 2>&1 && rustc -V || true
+        command -v python >/dev/null 2>&1 && python -V || true
+        command -v node >/dev/null 2>&1 && node -v || true
+        command -v go >/dev/null 2>&1 && go version || true
+        command -v java >/dev/null 2>&1 && java -version 2>&1 | head -n1 || true
+        command -v dotnet >/dev/null 2>&1 && dotnet --version || true
+        command -v actionlint >/dev/null 2>&1 && actionlint -version || true
+        command -v cargo-deny >/dev/null 2>&1 && cargo deny --version || true
+        command -v cargo-dylint >/dev/null 2>&1 && cargo-dylint --version || true

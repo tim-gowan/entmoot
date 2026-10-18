@@ -1,6 +1,7 @@
 # Resolved coverage: pinned adapters + producer/bind/dispatch controls.
 # Structural CI (ci.yml) stays compiler-free. release.yml calls this file by path; do not rename.
 # Does not claim remote corpora green (see demo.yml for opt-in structural corpus).
+# Linux jobs assemble host tools/adapters via .github/actions/assemble-ci-env first.
 name: Native qualification
 on:
   push:
@@ -49,30 +50,53 @@ jobs:
           repository: ${{ env.PYRIGHT_REPO }}
           ref: ${{ env.PYRIGHT_REF }}
           path: ${{ env.PYRIGHT_PATH }}
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - name: Assemble CI environment (Linux)
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/assemble-ci-env
+        with:
+          lane: native
+          python-version: ${{ env.PYTHON_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+          go-version: ${{ env.GO_VERSION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          adapters-out: ${{ env.ADAPTERS_OUT }}
+          pyright-path: ${{ env.PYRIGHT_PATH }}
+          pyright-ref: ${{ env.PYRIGHT_REF }}
+          build-adapters: "true"
+      - name: Assemble CI environment (Windows)
+        if: runner.os != 'Linux'
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - if: runner.os != 'Linux'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - run: rustup show
-      - run: rustup component add rust-src
+      - if: runner.os != 'Linux'
+        run: rustup show
+      - if: runner.os != 'Linux'
+        run: rustup component add rust-src
+      - if: runner.os != 'Linux'
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: false
+      - if: runner.os != 'Linux'
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+      - if: runner.os != 'Linux'
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
       - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
         with:
           shared-key: ${{ env.RUST_CACHE_KEY }}
           cache-targets: true
-      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: false
-      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - name: Build pinned native adapters
+      - name: Build pinned native adapters (Windows)
+        if: runner.os != 'Linux'
         shell: pwsh
         run: |
           # Campaign harness revision controls need the shared eval requirements
@@ -87,10 +111,11 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python scripts/build_typescript_program.py --out .tmp/adapter-build/typescript-program --version-tools .tmp/adapter-build/typescript-versions
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          # A stable workspace feature graph avoids recompiling dependencies for
-          # each test target. Keep build outputs intact until all consumers finish.
-          cargo build --locked --profile test --workspace --features $env:NATIVE_FEATURES --bins --example blake3_digest
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Build native-enabled workspace binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo build --locked --profile test --workspace --features "${NATIVE_FEATURES}" --bins --example blake3_digest
       - name: Native expansion and discrete version controls
         shell: pwsh
         run: |
@@ -152,6 +177,7 @@ jobs:
       - name: Historical Rust compiler control
         shell: pwsh
         run: |
+          # Toolchains are installed by assemble-ci-env on Linux; ensure on Windows.
           rustup toolchain install 1.79.0 --profile minimal
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           rustup toolchain install 1.91 --profile minimal

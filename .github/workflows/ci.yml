@@ -4,6 +4,7 @@
 #   repo       — scripts/utilities unit tests only (no adapters, no remote corpora)
 # Docs staging lives in docs.yml (.tmp/staging). Resolved: native.yml. Demo: demo.yml.
 # release.yml calls this file by path; do not rename. Never path-skip correctness here.
+# Linux jobs assemble the host environment via .github/actions/assemble-ci-env first.
 name: CI
 on:
   push:
@@ -43,19 +44,29 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - name: Assemble CI environment (Linux)
+        if: runner.os == 'Linux'
+        uses: ./.github/actions/assemble-ci-env
+        with:
+          lane: structural
+          python-version: ${{ env.PYTHON_VERSION }}
+          evals-requirements: ${{ env.EVALS_REQUIREMENTS }}
+      - name: Assemble CI environment (Windows)
+        if: runner.os != 'Linux'
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
           cache-dependency-path: |
             ${{ env.EVALS_REQUIREMENTS }}
-      - run: rustup show
+      - if: runner.os != 'Linux'
+        run: rustup show
+      - if: runner.os != 'Linux'
+        run: python -m pip install -r "${{ env.EVALS_REQUIREMENTS }}"
       - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
         with:
           shared-key: ${{ env.RUST_CACHE_KEY }}
           cache-targets: true
-      - run: |
-          python -m pip install -r "${{ env.EVALS_REQUIREMENTS }}"
       - name: Test workspace and report build storage
         shell: bash
         run: |
@@ -102,7 +113,9 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - run: rustup show
+      - uses: ./.github/actions/assemble-ci-env
+        with:
+          lane: policy
       - uses: Swatinem/rust-cache@aa7c1c80a07a27a84c0aa76d0cef0aad3830e330 # v2.7.8
         with:
           shared-key: ${{ env.RUST_CACHE_KEY }}
@@ -111,13 +124,6 @@ jobs:
       - run: python3 scripts/prepare_release_inputs.py --check
       - run: cargo clippy --workspace --locked --all-targets --features ${{ env.FULL_TESTS_FEATURES }} -- -D warnings
       - run: cargo clippy -p entmoot --locked --features ${{ env.PRODUCER_FEATURES }} --all-targets -- -D warnings
-      # Binary installs for deny/machete. cargo-dylint is not in install-action
-      # manifests; installing it via cargo-binstall fails on edition=2024 crates.
-      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
-        with:
-          tool: cargo-deny@0.20.2,cargo-machete@0.9.1
-      - name: Install cargo-dylint
-        run: cargo install cargo-dylint dylint-link --locked --version 6.1.1 --force
       - run: python3 scripts/pre_commit_check.py --banned-only
       - run: cargo deny --all-features --exclude-dev check licenses advisories
   repo:
@@ -128,32 +134,13 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: ./.github/actions/assemble-ci-env
         with:
+          lane: repo
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-          cache-dependency-path: |
-            ${{ env.EVALS_REQUIREMENTS }}
-            ${{ env.EVALS_TOKENIZER_REQUIREMENTS }}
-      # actionlint is a Go release binary; install-action has no manifest and
-      # cargo-binstall cannot resolve it. Pin the Linux amd64 archive checksum.
-      - name: Install actionlint
-        shell: bash
-        run: |
-          set -euo pipefail
-          version=1.7.7
-          archive="actionlint_${version}_linux_amd64.tar.gz"
-          expected_sha256=023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757
-          base="https://github.com/rhysd/actionlint/releases/download/v${version}"
-          curl -fsSL -o "/tmp/${archive}" "${base}/${archive}"
-          echo "${expected_sha256}  /tmp/${archive}" | sha256sum -c -
-          mkdir -p "${HOME}/.local/bin"
-          tar -xzf "/tmp/${archive}" -C "${HOME}/.local/bin" actionlint
-          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
-          "${HOME}/.local/bin/actionlint" -version
+          evals-requirements: ${{ env.EVALS_REQUIREMENTS }}
+          evals-tokenizer-requirements: ${{ env.EVALS_TOKENIZER_REQUIREMENTS }}
       - run: actionlint -shellcheck= -pyflakes=
-      - run: python -m pip install -r "${{ env.EVALS_REQUIREMENTS }}"
-      - run: python -m pip install -r "${{ env.EVALS_TOKENIZER_REQUIREMENTS }}"
       - run: python -m unittest discover -s scripts -p "test_*.py"
       - run: python -m unittest discover -s evals/harness -p "test_*.py"
   docs:

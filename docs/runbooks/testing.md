@@ -226,6 +226,7 @@ Native CI reads profile/publication locations from init's returned store locator
 
 | Phase | Workflow / job | May claim | Must not claim |
 |-------|----------------|-----------|----------------|
+| Env assemble (Linux) | `.github/actions/assemble-ci-env` | Host tool restore/install for a lane | Skipping tests on cache hit |
 | Structural + unit | `ci.yml` → `structural` | Compiler-free inventory, crate tests without adapters, packaging smoke | Native bind readiness |
 | Policy | `ci.yml` → `policy` | fmt/clippy/deny | Product coverage |
 | Repo | `ci.yml` → `repo` | Scripts/utilities unit tests | Remote corpus correctness |
