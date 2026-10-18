@@ -238,7 +238,8 @@ impl MarkerTopologyExtractor {
         callable_node.exact_body_id = occurrence.and_then(|o| o.exact_body_id.clone());
         callable_node.code_contract = occurrence
             .and_then(|o| self.contract_lookup.get(&o.address_id))
-            .cloned();
+            .cloned()
+            .map(Box::new);
         callable_node.start_byte = Some(def.start_byte);
         callable_node.end_byte = Some(def.end_byte);
         self.graph.upsert_node(callable_node);
@@ -266,10 +267,11 @@ impl MarkerTopologyExtractor {
         node.code_contract = self
             .contract_lookup
             .get(declaration.site.occurrence.address_id.as_str())
-            .cloned();
+            .cloned()
+            .map(Box::new);
         node.logic_kind = Some(declaration.kind.clone());
         if declaration.syntax.is_some() {
-            node.declaration = Some(declaration.clone());
+            node.declaration = Some(Box::new(declaration.clone()));
         }
         node.address_id = Some(declaration.site.occurrence.address_id.as_str().to_owned());
         node.logic_address = Some(declaration.site.occurrence.logic_address.clone());
@@ -311,7 +313,7 @@ impl MarkerTopologyExtractor {
         call_node.path = Some(file_path.to_string());
         call_node.start_byte = Some(call.start_byte);
         call_node.end_byte = Some(call.end_byte);
-        call_node.call_site = Some(call.clone());
+        call_node.call_site = Some(Box::new(call.clone()));
         self.graph.upsert_node(call_node);
         self.graph.add_edge(StructuralEdge {
             from: owner_id.to_string(),

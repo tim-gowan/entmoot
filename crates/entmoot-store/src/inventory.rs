@@ -43,27 +43,52 @@ pub fn build_topology_with_syntax_cache(
     use inventory_stitch::{CallPart, SyntaxPart};
     use knowledge_db::syntax_cache::{FileParts, SyntaxCache};
     let context = SyntaxCache::context(&prepared.repository_id, &policy)?;
-    let mut prior = match store {
+    let prior = match store {
         Some(path) => {
             SqliteKnowledgeRepository::open_read_snapshot(path)?.load_syntax_cache(&context)?
         }
-        None => SyntaxCache {
-            context,
-            ..Default::default()
-        },
+        None => SyntaxCache::new(context)?,
     };
-    let scan = entmoot_core::scan::scan_repo_with_analysis_cached(
-        &prepared.hasher,
-        &prepared.root,
-        Some(&policy),
-        Some(&prepared.repository_id),
-        &prior.records,
-    )?;
-    let snapshot = snapshot_from_scan(
+    let mut cache = SyntaxCache::new(prior.context.clone())?;
+    let manifest = entmoot_core::scan::source_manifest(&prepared.root)?;
+    let workers = entmoot_core::scan::ScanWorkers::new()?;
+    let mut scan = entmoot_core::scan::ScanMetadata::from_manifest(&prepared.root, &manifest);
+    // Persist parser IR before deriving any graph. Each file is an independent
+    // parse job; source commitments and explicit skips survive the phase barrier.
+    for inputs in manifest.inputs.chunks(32) {
+        let records = prior.records_for_inputs(inputs)?;
+        let (batch, reused) = workers.scan_cached(
+            &prepared.root,
+            &prepared.repository_id,
+            &policy,
+            inputs,
+            &records,
+        )?;
+        cache.reused += reused;
+        for mut outcome in batch {
+            if let Some(record) = outcome.record.take() {
+                cache.insert_record(
+                    outcome.input.path.clone(),
+                    outcome.input.content_digest.clone(),
+                    &record,
+                )?;
+            }
+            if let Some(reason) = outcome.skipped {
+                scan.skipped.push(entmoot_core::scan::SkippedFile {
+                    path: prepared.root.join(outcome.input.path),
+                    reason,
+                });
+            }
+        }
+    }
+    drop(workers);
+    let snapshot = snapshot_from_scan_with_subject(
         &prepared.root,
         &prepared.repository_id,
         &prepared.observed,
-        &scan,
+        &scan.snapshot_files,
+        None,
+        Vec::new(),
     )?;
     let mut extractor = crate::extractor::MarkerTopologyExtractor::with_snapshot(
         prepared.root.to_string_lossy(),
@@ -71,64 +96,59 @@ pub fn build_topology_with_syntax_cache(
     );
     extractor.on_repo_begin(&prepared.root.to_string_lossy());
     let (mut graph, _) = extractor.finish_syntax();
-    let digests: HashMap<_, _> = scan
-        .snapshot_files
-        .iter()
-        .map(|f| (&f.path, &f.content_digest))
-        .collect();
-    let mut cache = SyntaxCache {
-        context: prior.context.clone(),
-        reused: scan.reused_files,
-        ..Default::default()
-    };
-    let mut syntax_parts = HashMap::new();
-    let mut prior_calls = HashMap::new();
-    for file in &scan.files {
-        let path = relative_scan_path(&prepared.root, &file.path);
-        let digest = *digests
-            .get(&file.path)
-            .ok_or("parsed file lacks its source commitment")?;
-        let reusable = prior.qualified_parts(&path, digest).is_some();
-        let syntax = match reusable.then(|| prior.parts.remove(&path)).flatten() {
+    let paths: Vec<_> = cache.paths().map(str::to_owned).collect();
+    for path in &paths {
+        let digest = cache
+            .source_digest(path)
+            .ok_or("IR lacks source commitment")?;
+        let syntax = match prior.qualified_parts(path, digest)? {
             Some(parts) => {
                 cache.reused_extraction += 1;
-                prior_calls.insert(path.clone(), parts.calls);
+                cache.insert_parts(path, &parts)?;
                 parts.syntax
             }
-            None => SyntaxPart::build_record(&prepared.root, &path, digest, Some(&file.record))?,
-        };
-        syntax.clone().apply(&mut graph);
-        syntax_parts.insert(path.clone(), syntax);
-        cache
-            .records
-            .insert(path, (digest.clone(), file.record.clone()));
-    }
-    let index = crate::resolve_edges::StructuralCallIndex::new(&graph);
-    // Match ordinary resolution's path/occurrence order on every platform.
-    let ordered: std::collections::BTreeMap<_, _> = cache.records.iter().collect();
-    for (path, (_, record)) in ordered {
-        let calls = match prior_calls
-            .remove(path)
-            .filter(|calls| calls.matches(&index))
-        {
-            Some(calls) => {
-                cache.reused_stitching += 1;
-                calls
+            None => {
+                let record = cache.record(path)?.ok_or("file lacks parser IR")?;
+                let syntax = SyntaxPart::build_record(&prepared.root, path, digest, Some(&record))?;
+                cache.insert_syntax(path, &syntax)?;
+                syntax
             }
-            None => CallPart::build_record(&index, path, Some(record)),
+        };
+        syntax.apply(&mut graph);
+    }
+    let prior_files = prior.len();
+    drop(prior);
+    // Imports are lookup inputs, not proof of a closed component. All symbol
+    // inventory must exist before positive, negative or ambiguous call lookups.
+    let index = crate::resolve_edges::StructuralCallIndex::new(&graph);
+    for path in &paths {
+        let digest = cache
+            .source_digest(path)
+            .ok_or("IR lacks source commitment")?;
+        let cached = cache.qualified_parts(path, digest)?;
+        let (syntax, calls) = match cached.filter(|parts| parts.calls.matches(&index)) {
+            Some(parts) => {
+                cache.reused_stitching += 1;
+                (parts.syntax, parts.calls)
+            }
+            None => {
+                let record = cache.record(path)?.ok_or("file lacks parser IR")?;
+                (
+                    cache.syntax(path)?,
+                    CallPart::build_record(&index, path, Some(&record)),
+                )
+            }
         };
         calls.apply(&mut graph);
-        let syntax = syntax_parts
-            .remove(path)
-            .ok_or("file lacks its syntax fragment")?;
-        cache
-            .parts
-            .insert(path.clone(), FileParts { syntax, calls });
+        cache.insert_parts(path, &FileParts { syntax, calls })?;
     }
-    cache.unchanged = cache.records.len() == prior.records.len()
-        && cache.reused_extraction == cache.records.len()
-        && cache.reused_stitching == cache.records.len();
-    finalize_topology_graph(&prepared, &scan, &mut graph)?;
+    drop(index);
+    cache.unchanged = cache.len() == prior_files
+        && cache.reused == cache.len()
+        && cache.reused_extraction == cache.len()
+        && cache.reused_stitching == cache.len()
+        && store.is_some();
+    finalize_topology_inventory(&prepared, &scan, &mut graph)?;
     Ok((graph, cache))
 }
 
@@ -304,6 +324,19 @@ fn finalize_topology_from_scan(
 pub fn finalize_topology_graph(
     prepared: &PreparedTopologyScan,
     scan: &RepoScanResult,
+    graph: &mut TopologyGraph,
+) -> Result<(), Box<dyn std::error::Error>> {
+    finalize_topology_inventory(
+        prepared,
+        &entmoot_core::scan::ScanMetadata::from(scan),
+        graph,
+    )
+}
+
+/// Complete graph assembly consumes source membership/gaps, not hydrated parser IR.
+pub fn finalize_topology_inventory(
+    prepared: &PreparedTopologyScan,
+    scan: &entmoot_core::scan::ScanMetadata,
     graph: &mut TopologyGraph,
 ) -> Result<(), Box<dyn std::error::Error>> {
     for skipped in &scan.skipped {
@@ -532,19 +565,25 @@ pub fn snapshot_from_scan(
     observed: &SourceObservation,
     scan: &RepoScanResult,
 ) -> Result<entmoot_contracts::SourceSnapshot, Box<dyn std::error::Error>> {
-    snapshot_from_scan_with_subject(root, repository_id, observed, scan, None, Vec::new())
+    snapshot_from_scan_with_subject(
+        root,
+        repository_id,
+        observed,
+        &scan.snapshot_files,
+        None,
+        Vec::new(),
+    )
 }
 
 fn snapshot_from_scan_with_subject(
     root: &Path,
     repository_id: &str,
     observed: &SourceObservation,
-    scan: &RepoScanResult,
+    files: &[entmoot_core::scan::SnapshotFile],
     subject: Option<entmoot_contracts::SourceSubject>,
     subject_aliases: Vec<entmoot_contracts::SourceSubject>,
 ) -> Result<entmoot_contracts::SourceSnapshot, Box<dyn std::error::Error>> {
-    let entries: Vec<(String, String)> = scan
-        .snapshot_files
+    let entries: Vec<(String, String)> = files
         .iter()
         .map(|f| {
             let rel = f

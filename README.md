@@ -281,7 +281,10 @@ timed out during initial publication after 20 minutes on 16,087 tracked files
 were unavailable. This Windows host was under memory pressure.
 The [memory follow-up](evals/experiments/memory-go-2026-10-18.json) identifies
 oversized node storage and retained graph/cache/publication copies; fixes and
-renewed scale qualification remain open.
+renewed scale qualification remain open. The
+[IR-first follow-up](evals/experiments/memory-ir-first-2026-10-18.json)
+reduces the frozen 512-file sample's publisher-preparation allocation peak from
+841MB to 411MB; this does not qualify large-repository latency.
 
 | Capability | Maturity | Utility and limit / verification owner |
 |---|---|---|

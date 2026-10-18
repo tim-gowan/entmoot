@@ -233,7 +233,7 @@ pub fn run_bounded(
                                 &item.spec.repository_id,
                                 policy,
                                 &inputs,
-                                &prior.records,
+                                &prior.records_for_inputs(&inputs)?,
                             )
                             .map_err(invalid)?;
                         item = db.checkpoint_inventory_batch(
@@ -259,10 +259,10 @@ pub fn run_bounded(
                                     match prior.qualified_parts(
                                         &outcome.input.path,
                                         &outcome.input.content_digest,
-                                    ) {
+                                    )? {
                                         Some(parts) => {
                                             reused += 1;
-                                            Ok(Part::Syntax(parts.syntax.clone()))
+                                            Ok(Part::Syntax(parts.syntax))
                                         }
                                         None => SyntaxPart::build(&root, outcome).map(Part::Syntax),
                                     }
@@ -291,17 +291,17 @@ pub fn run_bounded(
                                             .qualified_parts(
                                                 &outcome.input.path,
                                                 &outcome.input.content_digest,
-                                            )
+                                            )?
                                             .filter(|parts| parts.calls.matches(index));
-                                        Part::Calls(match cached {
+                                        Ok(Part::Calls(match cached {
                                             Some(parts) => {
                                                 reused += 1;
-                                                parts.calls.clone()
+                                                parts.calls
                                             }
                                             None => CallPart::build(index, outcome),
-                                        })
+                                        }))
                                     })
-                                    .collect()
+                                    .collect::<Result<Vec<_>, OperationError>>()?
                             }
                         };
                         item = db.checkpoint_inventory_frontier(
@@ -320,14 +320,14 @@ pub fn run_bounded(
                         None => db.inventory_syntax_graph(id, &root, &request.source.snapshot)?,
                     };
                     db.apply_inventory_calls(id, &mut graph)?;
-                    let scan = db.completed_inventory(id, &root)?;
+                    let scan = db.completed_inventory_metadata(id, &root)?;
                     let options = crate::TopologyBuildOptions {
                         policy: Some(policy),
                         repository: Some(&item.spec.repository_id),
                     };
                     let prepared =
                         crate::prepare_topology_scan(&root, &options).map_err(invalid)?;
-                    crate::finalize_topology_graph(&prepared, &scan, &mut graph)
+                    crate::finalize_topology_inventory(&prepared, &scan, &mut graph)
                         .map_err(invalid)?;
                     completed_cache =
                         Some(db.completed_inventory_cache(id, &item.spec.repository_id, policy)?);
@@ -375,7 +375,7 @@ pub fn run_bounded(
             }
             graph.root = root.to_string_lossy().into_owned();
             verify_source(&root, &request.source)?;
-            let view = entmoot_contracts::blake3_hex(&serde_json::to_vec(&graph)?);
+            let view = graph.content_digest()?;
             let source = crate::GixSourceStore::open(&root).map_err(invalid)?;
             let mut staged = SqliteKnowledgeRepository::open_view(store, &view)?;
             item = if let Some(cache) = &completed_cache {

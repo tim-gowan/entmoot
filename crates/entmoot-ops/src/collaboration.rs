@@ -318,8 +318,7 @@ pub fn register_graph(
     graph
         .validate()
         .map_err(|e| OperationError::Invalid(e.to_string()))?;
-    let view =
-        ContentDigest::from_trusted(entmoot_contracts::blake3_hex(&serde_json::to_vec(graph)?));
+    let view = ContentDigest::from_trusted(graph.content_digest()?);
     let mut repository = SqliteKnowledgeRepository::open_view(store, view.as_str())?;
     repository.import_publication(
         graph,

@@ -116,6 +116,36 @@ must agree. `scripts/prepare_release_inputs.py --check` rejects stale inputs;
 supported installs use the committed lockfile. Never reset stores or rewrite
 fingerprints to admit incompatible evidence.
 
+Structural initialization writes per-file `FileIndexRecord` IR before graph
+extraction. Occurrences own structural identities; callable boundaries and
+markers carry signatures, declarations, imports, lexical bindings and syntax
+sites consumed by extraction and call resolution. Definition hashes remain in
+the shared record contract; graph nodes, edges, display references and call
+decisions are derived projections, not additional parser authority.
+
+`SyntaxCache` stages canonical record/fragment bytes in private temporary files
+and retains path, source and payload commitments in memory. Parsing admits 32
+files per batch on at most four in-process workers. Extraction moves one file's
+nodes into the graph; stitching hydrates one file's IR after the complete symbol
+index exists. This bounds admitted file counts, not total RSS or a single large
+file. `ScanMetadata` carries membership and explicit gaps separately from parser
+records. Cache publication hydrates one file at a time under the existing atomic
+transaction and membership commitment. Normal return/error removes temporary IR;
+restartable operations still use the existing fenced durable file checkpoints.
+
+Files are safe parse/extraction job units. Imports and lexical definitions are
+already indexed in the IR; they do not establish closed dependency components.
+Package scope, global names, dynamic syntax and ambiguous or missing modules
+require the complete lookup index before stitching. Cached call decisions retain
+positive, negative and ambiguous lookup dependencies across added/deleted/renamed
+files. No import-only partition may convert missing evidence into absence.
+
+Topology nodes box sparse contract/declaration/call-site payloads without
+changing JSON or IDs. View digests stream compact JSON into BLAKE3. Publication
+preparation retains content commitments instead of a second serialized payload
+set, but typed batches and the complete validation context still remain resident;
+the graph and publisher are not yet fully streaming.
+
 ## Declared code contracts
 
 Inventory attaches structured callable parameters/results and direct object

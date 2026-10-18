@@ -335,7 +335,7 @@ impl SqliteKnowledgeRepository {
         id: &str,
         root: &Path,
     ) -> Result<entmoot_core::RepoScanResult, OperationError> {
-        let (metadata, outcomes) = self.completed_files::<ScanOutcome>(id)?;
+        let (metadata, outcomes) = self.completed_files(id, |outcome: ScanOutcome| outcome)?;
         let FileProgress::Inventory(exclusions) = metadata else {
             return Err(invalid("checkpoint is not inventory"));
         };
@@ -348,17 +348,54 @@ impl SqliteKnowledgeRepository {
         &self,
         id: &str,
     ) -> Result<(CanonCursor, Vec<CanonFileOutcome>), OperationError> {
-        let (metadata, outcomes) = self.completed_files::<CanonFileOutcome>(id)?;
+        let (metadata, outcomes) = self.completed_files(id, |outcome: CanonFileOutcome| outcome)?;
         let FileProgress::Canon(cursor) = metadata else {
             return Err(invalid("checkpoint is not canon"));
         };
         Ok((cursor, outcomes))
     }
 
-    fn completed_files<T: FileOutcome>(
+    /// Publication preparation consumes commitments and gaps, keeping parser IR
+    /// in its durable per-file checkpoint instead of rehydrating it all at once.
+    pub fn completed_inventory_metadata(
         &self,
         id: &str,
-    ) -> Result<(FileProgress, Vec<T>), OperationError> {
+        root: &Path,
+    ) -> Result<entmoot_core::scan::ScanMetadata, OperationError> {
+        let (metadata, outcomes) =
+            self.completed_files(id, |outcome: ScanOutcome| (outcome.input, outcome.skipped))?;
+        let FileProgress::Inventory(exclusions) = metadata else {
+            return Err(invalid("checkpoint is not inventory"));
+        };
+        let mut scan = entmoot_core::scan::ScanMetadata {
+            excluded_directories: exclusions
+                .directories
+                .iter()
+                .map(|p| root.join(p))
+                .collect(),
+            ignored_files: exclusions.files.iter().map(|p| root.join(p)).collect(),
+            skipped: Vec::new(),
+            snapshot_files: Vec::new(),
+        };
+        for (input, skipped) in outcomes {
+            let path = root.join(input.path);
+            scan.snapshot_files.push(entmoot_core::scan::SnapshotFile {
+                path: path.clone(),
+                content_digest: input.content_digest,
+            });
+            if let Some(reason) = skipped {
+                scan.skipped
+                    .push(entmoot_core::scan::SkippedFile { path, reason });
+            }
+        }
+        Ok(scan)
+    }
+
+    fn completed_files<T: FileOutcome, U>(
+        &self,
+        id: &str,
+        mut project: impl FnMut(T) -> U,
+    ) -> Result<(FileProgress, Vec<U>), OperationError> {
         let tx = self.connection.unchecked_transaction()?;
         require_complete_if_present(&tx, id)?;
         let (metadata, total): (i64, i64) = tx.query_row(
@@ -386,7 +423,7 @@ impl SqliteKnowledgeRepository {
             if outcome.input().path != path || outcome.input().content_digest != digest {
                 return Err(invalid("file checkpoint membership mismatch"));
             }
-            outcomes.push(outcome);
+            outcomes.push(project(outcome));
         }
         if outcomes.len() != total {
             return Err(invalid("file checkpoint is missing manifest members"));

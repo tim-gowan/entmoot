@@ -125,7 +125,7 @@ impl<'a> CanonPlan<'a> {
                     files
                         .entry(path.clone())
                         .or_default()
-                        .push((node.id.clone(), contract.clone()));
+                        .push((node.id.clone(), contract.as_ref().clone()));
                 }
             }
         }

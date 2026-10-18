@@ -849,7 +849,7 @@ fn publish(
     // Re-observe source bytes before returning; equality grants no producer reuse.
     if options.structural_only && !options.plan_only {
         if let (Some(previous), Some(receipt)) = (&previous, &previous_receipt) {
-            let digest = entmoot_contracts::blake3_hex(&serde_json::to_vec(&graph)?);
+            let digest = graph.content_digest()?;
             if crate::KnowledgeViewLocator::read(&previous.current.store)
                 .map_err(failure)?
                 .is_some_and(|locator| locator.view == digest)
@@ -861,14 +861,14 @@ fn publish(
                 receipt.adapter_profile = Some(adapter_profile);
                 append_adapter_profile_limitations(&mut receipt);
                 if let Some(cache) = syntax_cache {
-                    if cache.reused != cache.records.len() {
+                    if cache.reused != cache.len() {
                         retention::check_admission(&root)?;
                     }
                     SqliteKnowledgeRepository::open(&previous.current.store)
                         .map_err(failure)?
                         .store_syntax_cache(cache)
                         .map_err(failure)?;
-                    receipt.indexed_files = cache.records.len() - cache.reused;
+                    receipt.indexed_files = cache.len() - cache.reused;
                     receipt.reused_syntax_files = cache.reused;
                     receipt.reused_extraction_files = cache.reused_extraction;
                     receipt.reused_stitching_files = cache.reused_stitching;
@@ -941,7 +941,7 @@ fn publish(
     retention::check_admission(&root)?;
     let locator = crate::KnowledgeViewLocator {
         database,
-        view: entmoot_contracts::blake3_hex(&serde_json::to_vec(&graph)?),
+        view: graph.content_digest()?,
     };
     location.store = generation.path().join("graph.json.knowledge.view.json");
     write_json(&location.store, &locator)?;
@@ -988,7 +988,7 @@ fn publish(
     );
     summary.adapter_profile = Some(adapter_profile);
     if let Some(cache) = syntax_cache {
-        summary.indexed_files = cache.records.len() - cache.reused;
+        summary.indexed_files = cache.len() - cache.reused;
         summary.reused_syntax_files = cache.reused;
         summary.reused_extraction_files = cache.reused_extraction;
         summary.reused_stitching_files = cache.reused_stitching;

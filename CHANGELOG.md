@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-10-18: Stage structural IR before graph assembly
+
+- Persist per-file parser IR before graph extraction; hydrate records/fragments
+  per file and publish the syntax cache without retaining a repository-wide
+  encoded payload vector. Bound parsing to 32-file batches and four workers.
+  Existing durable producer checkpoints now stream fragments into the graph.
+- Separate scan membership/gaps from hydrated records. Preserve the complete
+  symbol-index barrier and positive/negative/ambiguous lookup invalidation;
+  imports do not prove independent resolution components.
+- Box sparse node payloads with unchanged JSON/identity semantics, stream graph
+  digests, and replace the publisher's duplicate serialized row set with BLAKE3
+  commitments. Typed batch validation remains resident; full publication memory
+  and scale latency remain qualification work.
+- On the frozen 512-file Go subset, the
+  [allocation comparison](evals/experiments/memory-ir-first-2026-10-18.json)
+  reduced graph/cache live allocations from 484MB to 195MB and publisher
+  preparation peak from 841MB to 411MB. Nodes occupy 440 rather than 1,160 bytes.
+  Ordinary/staged graph digests agree at all four subset sizes. A separate
+  64-file control completed publication; no large-repository latency claim.
+
 ## 2026-10-18: Attribute structural memory before worker refactoring
 
 - Run 27 diagnostic processes over frozen nested Go source frames, repeated

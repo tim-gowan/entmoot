@@ -89,7 +89,9 @@ pub(super) fn publish(
     // write transaction when nothing changed (ADR-0017 buffer limits still apply).
     let mut collected = Vec::new();
     let mut receipt = BufferedPublicationReceipt::default();
-    let mut union_rows: BTreeMap<KnowledgeRecordRef, StoredRow> = BTreeMap::new();
+    // Keep content commitments, not a second serialized copy of every payload.
+    // Typed batches retain the complete cross-batch validation context.
+    let mut union_rows: BTreeMap<KnowledgeRecordRef, String> = BTreeMap::new();
     let mut union_deps: BTreeMap<KnowledgeRecordRef, BTreeSet<KnowledgeRecordRef>> =
         BTreeMap::new();
     for batch in batches {
@@ -125,12 +127,13 @@ pub(super) fn publish(
         }
         let dependencies = validate_dependency_batch(&rows, &batch.dependencies)?;
         for (record, row) in &rows {
+            let digest = entmoot_contracts::blake3_hex(&row.payload);
             if let Some(existing) = union_rows.get(record) {
-                if existing.payload != row.payload {
+                if existing != &digest {
                     return Err(collision(record));
                 }
             } else {
-                union_rows.insert(record.clone(), row.clone());
+                union_rows.insert(record.clone(), digest);
             }
         }
         for (record, inputs) in dependencies {
@@ -158,7 +161,13 @@ pub(super) fn publish(
         validate_store_records_in_context(&batch.store, &context)?;
     }
 
-    let digest = owner_publication_digest(owner, &union_rows, &union_deps);
+    let digest = owner_publication_digest_from_commitments(
+        owner,
+        union_rows
+            .iter()
+            .map(|(record, digest)| (record, digest.clone())),
+        &union_deps,
+    );
     if owner_publication_digest_matches(connection, owner, &digest)? {
         receipt.outcome = PublicationOutcome::Unchanged { digest: digest };
         return Ok(receipt);

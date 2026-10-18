@@ -112,7 +112,7 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db/syntax_cache.rs"
+          "path": "crates/entmoot-store/src/knowledge_db/syntax_cache.rs"
         }
       ],
       "extensions": []
@@ -986,7 +986,7 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db/syntax_cache.rs"
+          "path": "crates/entmoot-store/src/knowledge_db/syntax_cache.rs"
         },
         {
           "kind": "file_prefix",

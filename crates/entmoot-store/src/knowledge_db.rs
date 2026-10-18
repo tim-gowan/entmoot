@@ -2540,14 +2540,26 @@ fn owner_publication_digest(
     rows: &BTreeMap<KnowledgeRecordRef, StoredRow>,
     dependencies: &BTreeMap<KnowledgeRecordRef, BTreeSet<KnowledgeRecordRef>>,
 ) -> String {
+    owner_publication_digest_from_commitments(
+        owner_id,
+        rows.iter()
+            .map(|(record, row)| (record, entmoot_contracts::blake3_hex(&row.payload))),
+        dependencies,
+    )
+}
+
+fn owner_publication_digest_from_commitments<'a>(
+    owner_id: &str,
+    rows: impl IntoIterator<Item = (&'a KnowledgeRecordRef, String)>,
+    dependencies: &BTreeMap<KnowledgeRecordRef, BTreeSet<KnowledgeRecordRef>>,
+) -> String {
     let mut digest = blake3::Hasher::new();
     digest.update(b"entmoot.owner-publication.v1\0");
     update_length_prefixed(&mut digest, owner_id.as_bytes());
-    for (record, row) in rows {
+    for (record, payload_digest) in rows {
         update_length_prefixed(&mut digest, record.collection.as_bytes());
         update_length_prefixed(&mut digest, record.record_id.as_bytes());
         // Payload content identity — not the SQLite row staging representation.
-        let payload_digest = entmoot_contracts::blake3_hex(&row.payload);
         update_length_prefixed(&mut digest, payload_digest.as_bytes());
         let empty = BTreeSet::new();
         let inputs = dependencies.get(record).unwrap_or(&empty);

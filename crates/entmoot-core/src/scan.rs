@@ -44,6 +44,45 @@ pub struct RepoScanResult {
     pub snapshot_files: Vec<SnapshotFile>,
 }
 
+/// Source membership and explicit gaps after parser IR has been consumed.
+/// This cannot be mistaken for a complete set of hydrated parser records.
+#[derive(Debug, Clone)]
+pub struct ScanMetadata {
+    pub excluded_directories: Vec<PathBuf>,
+    pub ignored_files: Vec<PathBuf>,
+    pub skipped: Vec<SkippedFile>,
+    pub snapshot_files: Vec<SnapshotFile>,
+}
+
+impl From<&RepoScanResult> for ScanMetadata {
+    fn from(scan: &RepoScanResult) -> Self {
+        Self {
+            excluded_directories: scan.excluded_directories.clone(),
+            ignored_files: scan.ignored_files.clone(),
+            skipped: scan.skipped.clone(),
+            snapshot_files: scan.snapshot_files.clone(),
+        }
+    }
+}
+
+impl ScanMetadata {
+    pub fn from_manifest(root: &Path, manifest: &ScanManifest) -> Self {
+        Self {
+            excluded_directories: manifest.exclusions.directories.iter().map(|p| root.join(p)).collect(),
+            ignored_files: manifest.exclusions.files.iter().map(|p| root.join(p)).collect(),
+            skipped: Vec::new(),
+            snapshot_files: manifest
+                .inputs
+                .iter()
+                .map(|input| SnapshotFile {
+                    path: root.join(&input.path),
+                    content_digest: input.content_digest.clone(),
+                })
+                .collect(),
+        }
+    }
+}
+
 /// A file that was not hashed during repo scan.
 #[derive(Debug, Clone)]
 pub struct SkippedFile {
@@ -251,7 +290,7 @@ pub fn source_manifest(root: &Path) -> Result<ScanManifest, ScanError> {
     })
 }
 
-/// Reuse workers across bounded batches. A batch reads only its selected files;
+/// Reuse at most four workers across bounded batches. A batch reads only its selected files;
 /// parsing and diagnostics use the same owner as ordinary and cached scans.
 pub struct ScanWorkers {
     pool: rayon::ThreadPool,
@@ -261,6 +300,12 @@ impl ScanWorkers {
     pub fn new() -> Result<Self, ScanError> {
         Ok(Self {
             pool: rayon::ThreadPoolBuilder::new()
+                .num_threads(
+                    std::thread::available_parallelism()
+                        .map(usize::from)
+                        .unwrap_or(1)
+                        .min(4),
+                )
                 .stack_size(SCAN_WORKER_STACK_BYTES)
                 .build()
                 .map_err(|e| ScanError::WorkerPool(e.to_string()))?,
@@ -525,11 +570,8 @@ fn scan_repo_inner(
     let policy = policy.cloned();
     let needs_workers = work.iter().any(|w| matches!(w, FileWork::Hashable { .. }));
     let outcomes: Vec<_> = if needs_workers {
-        let worker_pool = rayon::ThreadPoolBuilder::new()
-            .stack_size(SCAN_WORKER_STACK_BYTES)
-            .build()
-            .map_err(|error| ScanError::WorkerPool(error.to_string()))?;
-        worker_pool.install(|| {
+        let workers = ScanWorkers::new()?;
+        workers.pool.install(|| {
             work.into_par_iter()
                 .map(|item| process_file(item, &repo_name, policy.as_ref()))
                 .collect()

@@ -424,8 +424,8 @@ fn compare_code_contracts(
         .filter_map(|id| {
             let left = before.get(id);
             let right = after.get(id);
-            let a = left.and_then(|n| n.code_contract.as_ref());
-            let b = right.and_then(|n| n.code_contract.as_ref());
+            let a = left.and_then(|n| n.code_contract.as_deref());
+            let b = right.and_then(|n| n.code_contract.as_deref());
             let kind = match (a, b) {
                 (None, None) => return None,
                 (Some(a), Some(b)) if a.boundary_key() == b.boundary_key() => return None,
@@ -464,7 +464,7 @@ fn compare_declarations(
             .filter_map(|node| {
                 Some((
                     node.address_id.as_deref()?,
-                    (node.path.as_deref()?, node.declaration.as_ref()?),
+                    (node.path.as_deref()?, node.declaration.as_deref()?),
                 ))
             })
             .collect()

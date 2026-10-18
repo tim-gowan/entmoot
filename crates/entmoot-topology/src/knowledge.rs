@@ -122,7 +122,7 @@ impl KnowledgeStore {
             .iter()
             .filter_map(|node| {
                 let path = node.path.as_deref()?;
-                let marker = node.call_site.clone()?;
+                let marker = node.call_site.as_deref()?.clone();
                 let mut site = entmoot_contracts::CallSiteRecord {
                     site_id: String::new(),
                     snapshot: graph.snapshot.clone(),
@@ -141,7 +141,7 @@ impl KnowledgeStore {
             .nodes
             .iter()
             .filter_map(|node| {
-                let marker = node.declaration.clone()?;
+                let marker = node.declaration.as_deref()?.clone();
                 let path = node.path.as_deref()?;
                 let mut site = entmoot_contracts::DeclarationSiteRecord {
                     site_id: String::new(),
@@ -169,7 +169,7 @@ impl KnowledgeStore {
                     content_digest: entmoot_contracts::ContentDigest::from_trusted(
                         (*digests.get(path)?).clone(),
                     ),
-                    contract: node.code_contract.clone()?,
+                    contract: node.code_contract.as_deref()?.clone(),
                 };
                 record.record_id = record.derive_id();
                 Some(record)
@@ -268,7 +268,7 @@ impl KnowledgeStore {
             node.logic_address = Some(marker.site.occurrence.logic_address.clone());
             node.fqn = crate::display_ref::build_fqn(&site.path, &marker.scope, &marker.name);
             node.display_ref = node.fqn.clone().unwrap_or_else(|| site.path.clone());
-            node.declaration = Some(marker.clone());
+            node.declaration = Some(Box::new(marker.clone()));
             inventory.upsert_node(node);
         }
         for site in &self.call_sites {
@@ -297,7 +297,7 @@ impl KnowledgeStore {
             node.path = Some(site.path.clone());
             node.start_byte = Some(marker.start_byte);
             node.end_byte = Some(marker.end_byte);
-            node.call_site = Some(marker.clone());
+            node.call_site = Some(Box::new(marker.clone()));
             inventory.upsert_node(node);
         }
         let mut contract_nodes: BTreeMap<_, Vec<usize>> = BTreeMap::new();
@@ -336,7 +336,7 @@ impl KnowledgeStore {
         for (key, observation) in observations {
             if let Some(indices) = contract_nodes.get(&key) {
                 for &index in indices {
-                    inventory.nodes[index].code_contract = observation.cloned();
+                    inventory.nodes[index].code_contract = observation.cloned().map(Box::new);
                 }
             }
         }

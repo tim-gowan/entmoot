@@ -297,7 +297,7 @@ pub fn run(
                 attachment,
                 completed,
             };
-            let next_view = entmoot_contracts::blake3_hex(&serde_json::to_vec(&graph)?);
+            let next_view = graph.content_digest()?;
             let source = crate::GixSourceStore::open(&root).map_err(invalid)?;
             item = SqliteKnowledgeRepository::open_view(store, &next_view)?.checkpoint_binding(
                 id,

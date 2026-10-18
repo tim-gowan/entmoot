@@ -43,11 +43,23 @@ prioritizes representation and ownership before worker orchestration. Reloading
 the retained export used 6.13GB of live Rust allocations: 2.43GB for the node
 vector (1,160 bytes per node slot) and 0.90GB for runtime indexes. A 512-file
 subset reached 839MB during publisher preparation; cached fragments and retained
-typed/serialized copies are measured contributors. Evaluate compact optional node
-payloads, then remove publication-wide batch/row retention while preserving
+typed/serialized copies are measured contributors. Optional node payloads are now
+boxed; initialization stages per-file IR and syntax fragments on disk before
+downstream phases, and publisher preparation retains payload commitments rather
+than a second serialized row set. The
+[IR-first comparison](evals/experiments/memory-ir-first-2026-10-18.json) on the
+same frozen 512-file frame reduced graph/cache live Rust allocations from 484MB
+to 195MB and publisher-preparation peak from 841MB to 411MB. Node slots are
+440 bytes. Current ordinary/staged graph digests agree at all four frame sizes;
+inventory and extracted record counts also match baseline. This is an allocation
+diagnostic with temporary-file I/O, not latency qualification or a strict RSS cap.
+Remove the remaining publication-wide typed batch retention while preserving
 validation, collisions, atomicity, no-change results and recovery. Smaller repeated
 graph-build residual growth remains unattributed; isolated source-observation and
-scan controls did not reproduce sustained growth. These allocation probes do not
+scan controls did not reproduce sustained growth. The current 20-cycle 128-file
+repeat still grows by 0.33MB between its first and twentieth released cycles after
+a 200ms grace period, usually in 17,504-byte steps; this smaller issue is not fixed
+by the representation changes. These allocation probes do not
 qualify latency or account for all native allocations in the failed initial run.
 
 ## Current qualification blockers

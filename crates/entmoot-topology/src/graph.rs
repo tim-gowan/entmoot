@@ -38,13 +38,13 @@ pub enum EdgeKind {
 pub struct TopologyNode {
     /// Source-declared relationship boundary; retained with the inventory node.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub code_contract: Option<entmoot_contracts::CodeContract>,
+    pub code_contract: Option<Box<entmoot_contracts::CodeContract>>,
     /// Source-committed declaration syntax; no runtime value or access relation.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub declaration: Option<entmoot_contracts::DeclarationMarker>,
+    pub declaration: Option<Box<entmoot_contracts::DeclarationMarker>>,
     /// Disposable projection of the durable snapshot-local syntax observation.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub call_site: Option<entmoot_contracts::CallSiteMarker>,
+    pub call_site: Option<Box<entmoot_contracts::CallSiteMarker>>,
     pub id: String,
     pub kind: NodeKind,
     pub label: String,
@@ -406,6 +406,14 @@ impl TopologyGraph {
             claim_by_id: HashMap::new(),
             unresolved_relation_by_id: HashMap::new(),
         }
+    }
+
+    /// Commit the compact JSON view without allocating a whole serialized graph.
+    /// This is byte-identical to hashing `serde_json::to_vec(self)`.
+    pub fn content_digest(&self) -> Result<String, serde_json::Error> {
+        let mut digest = blake3::Hasher::new();
+        serde_json::to_writer(&mut digest, self)?;
+        Ok(format!("blake3:{}", digest.finalize().to_hex()))
     }
 
     /// Rebuild runtime indexes after deserialize or bulk mutation.
@@ -788,7 +796,7 @@ impl TopologyGraph {
                         snapshot: self.snapshot.clone(),
                         path: path.to_owned(),
                         content_digest: entmoot_contracts::ContentDigest::from_trusted(digest),
-                        marker: marker.clone(),
+                        marker: marker.as_ref().clone(),
                     };
                     site.site_id = site.derive_id();
                     if let Err(error) = crate::knowledge::validate_declaration_site(&site) {
@@ -2041,5 +2049,40 @@ mod tests {
         assert_eq!(survey.exact_body_divergence_groups, 1);
         assert_eq!(survey.cross_label_structural_hash_groups, 1);
         assert_eq!(survey.max_structural_hash_group_size, 3);
+    }
+}
+
+#[cfg(test)]
+mod node_storage_tests {
+    use super::*;
+
+    #[test]
+    fn sparse_nodes_do_not_reserve_inline_marker_payloads() {
+        assert!(std::mem::size_of::<TopologyNode>() <= 512);
+    }
+
+    #[test]
+    fn marker_storage_preserves_the_existing_json_shape() {
+        let mut node = TopologyNode::shell("site", NodeKind::CallStub, "f", None);
+        let mut value = serde_json::to_value(&node).unwrap();
+        value["call_site"] = serde_json::json!({"callee":"f","start_byte":3,"end_byte":6});
+        node = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(node.call_site.as_ref().unwrap().callee, "f");
+        assert_eq!(serde_json::to_value(&node).unwrap(), value);
+    }
+
+    #[test]
+    fn streamed_view_digest_matches_compact_json_bytes() {
+        let mut graph = TopologyGraph::new("repo/é\\quoted\"");
+        graph.nodes.push(TopologyNode::shell(
+            "node",
+            NodeKind::File,
+            "line\nbreak",
+            None,
+        ));
+        assert_eq!(
+            graph.content_digest().unwrap(),
+            entmoot_contracts::blake3_hex(&serde_json::to_vec(&graph).unwrap())
+        );
     }
 }

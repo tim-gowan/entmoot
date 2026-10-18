@@ -204,12 +204,13 @@ impl SqliteKnowledgeRepository {
         );
         extractor.on_repo_begin(&root.to_string_lossy());
         let (mut graph, _) = extractor.finish_syntax();
-        for part in self.inventory_parts(id, Phase::Syntax)? {
+        self.for_each_inventory_part(id, Phase::Syntax, |part| {
             let Part::Syntax(part) = part else {
                 return Err(invalid("unexpected inventory part kind"));
             };
             part.apply(&mut graph);
-        }
+            Ok(())
+        })?;
         Ok(graph)
     }
 
@@ -218,13 +219,13 @@ impl SqliteKnowledgeRepository {
         id: &str,
         graph: &mut crate::TopologyGraph,
     ) -> Result<(), OperationError> {
-        for part in self.inventory_parts(id, Phase::Calls)? {
+        self.for_each_inventory_part(id, Phase::Calls, |part| {
             let Part::Calls(part) = part else {
                 return Err(invalid("unexpected inventory part kind"));
             };
             part.apply(graph);
-        }
-        Ok(())
+            Ok(())
+        })
     }
 
     pub fn completed_inventory_cache(
@@ -238,10 +239,9 @@ impl SqliteKnowledgeRepository {
         if parsed != total || syntax != total || calls != total {
             return Err(invalid("inventory cache requires complete frontiers"));
         }
-        let mut cache = syntax_cache::SyntaxCache {
-            context: syntax_cache::SyntaxCache::context(repository, policy)?,
-            ..Default::default()
-        };
+        let mut cache = syntax_cache::SyntaxCache::new(syntax_cache::SyntaxCache::context(
+            repository, policy,
+        )?)?;
         let mut statement = tx.prepare("SELECT f.path,f.digest,f.payload,s.payload,c.payload FROM local_file_outcomes f JOIN local_inventory_parts s ON s.operation_id=f.operation_id AND s.ordinal=f.ordinal AND s.phase='syntax' JOIN local_inventory_parts c ON c.operation_id=f.operation_id AND c.ordinal=f.ordinal AND c.phase='calls' WHERE f.operation_id=?1")?;
         let mut rows = statement.query([id])?;
         let mut count = 0;
@@ -262,10 +262,8 @@ impl SqliteKnowledgeRepository {
             let Part::Calls(calls) = hydrate_record(&tx, row.get(4)?)? else {
                 return Err(invalid("unexpected call cache part"));
             };
-            cache
-                .parts
-                .insert(path.clone(), syntax_cache::FileParts { syntax, calls });
-            cache.records.insert(path, (digest, record));
+            cache.insert_record(path.clone(), digest, &record)?;
+            cache.insert_parts(&path, &syntax_cache::FileParts { syntax, calls })?;
         }
         if count != total {
             return Err(invalid("inventory cache is missing files"));
@@ -273,7 +271,12 @@ impl SqliteKnowledgeRepository {
         Ok(cache)
     }
 
-    fn inventory_parts(&self, id: &str, phase: Phase) -> Result<Vec<Part>, OperationError> {
+    fn for_each_inventory_part(
+        &self,
+        id: &str,
+        phase: Phase,
+        mut visit: impl FnMut(Part) -> Result<(), OperationError>,
+    ) -> Result<(), OperationError> {
         let tx = self.connection.unchecked_transaction()?;
         let (parsed, total, syntax, calls) = counts(&tx, id)?;
         if parsed != total || syntax != total || (phase == Phase::Calls && calls != total) {
@@ -283,13 +286,14 @@ impl SqliteKnowledgeRepository {
         // platform manifest order and how frontiers were sliced.
         let mut statement = tx.prepare("SELECT p.payload FROM local_inventory_parts p JOIN local_file_outcomes f ON f.operation_id=p.operation_id AND f.ordinal=p.ordinal WHERE p.operation_id=?1 AND p.phase=?2 ORDER BY f.path")?;
         let rows = statement.query_map(params![id, phase.key()], |r| r.get::<_, i64>(0))?;
-        let mut parts = Vec::new();
+        let mut count = 0;
         for row in rows {
-            parts.push(hydrate_record(&tx, row?)?);
+            visit(hydrate_record(&tx, row?)?)?;
+            count += 1;
         }
-        if parts.len() != total {
+        if count != total {
             return Err(invalid("inventory parts are missing files"));
         }
-        Ok(parts)
+        Ok(())
     }
 }
