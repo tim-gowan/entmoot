@@ -268,7 +268,9 @@ campaign accounting controls run in structural CI. Opt-in corpus demo:
 
 Structural unit/integration/doctest jobs run for every workspace crate on Linux
 and Windows. Packaging and binary-backed campaign controls have their own jobs;
-native controls have one job per named suite and platform. Matrix fail-fast is
+native controls have one job per named suite and platform, including binding
+operations, producer-enabled workspace defaults and Oxc identity ingestion.
+The coverage guard rejects feature-gated targets without a native job. Matrix fail-fast is
 disabled. Rerun failed jobs at the same revision to preserve successful siblings.
 No source path skips a required correctness check on a new revision.
 

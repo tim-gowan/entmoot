@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        suite: [native_library, program_adapters, adapter_controls, producer_cli, campaign_harness, dispatch_expectations, callsites_c_family, callsites_csharp, callsites_go, callsites_java, callsites_rust, callsites_javascript, package_compatibility, historical_rust, packages]
+        suite: [native_library, program_adapters, adapter_controls, producer_cli, binding_operations_cli, workspace_defaults, resolved_identity_oxc_ingest, campaign_harness, dispatch_expectations, callsites_c_family, callsites_csharp, callsites_go, callsites_java, callsites_rust, callsites_javascript, package_compatibility, historical_rust, packages]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 100
     env:

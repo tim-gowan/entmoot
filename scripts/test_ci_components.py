@@ -10,6 +10,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ComponentCiTests(unittest.TestCase):
+    def test_feature_guarded_test_targets_have_a_native_job(self):
+        guard = re.compile(r'^#!?\[cfg\(feature = "(?:producer|resolved-oxc|resolved-rust-analyzer)"\)\]', re.MULTILINE)
+        required = set()
+        for package, (directory, _) in packages().items():
+            for source in (directory / "tests").glob("*.rs"):
+                if guard.search(source.read_text(encoding="utf-8")):
+                    required.add((package, source.stem))
+        covered = {(package, suite) for suite, (package, _, _) in SUITES.items()}
+        self.assertLessEqual(required, covered)
+
     def test_structural_matrix_covers_every_workspace_member(self):
         workflow = (ROOT / ".github/workflows/ci.yml").read_text()
         matrix = re.search(r"package: \[([^\]]+)\]", workflow)[1]

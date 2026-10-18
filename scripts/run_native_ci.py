@@ -8,6 +8,9 @@ SUITES = {
     "program_adapters": ("entmoot", [], ["--include-ignored"]),
     "adapter_controls": ("entmoot", [], []),
     "producer_cli": ("entmoot", [], ["--include-ignored"]),
+    "binding_operations_cli": ("entmoot", [], []),
+    "workspace_defaults": ("entmoot", [], []),
+    "resolved_identity_oxc_ingest": ("entmoot-engine", [], []),
     "campaign_harness": ("entmoot", ["revision_campaign_joins_actual_occurrences_and_preserves_unconsumed_frontiers"], ["--ignored", "--exact"]),
     "dispatch_expectations": ("entmoot-engine", [], ["--include-ignored"]),
     **{name: ("entmoot-engine", [], ["--include-ignored"]) for name in (
