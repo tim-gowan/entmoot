@@ -279,6 +279,9 @@ Large-repository performance remains unqualified: the
 timed out during initial publication after 20 minutes on 16,087 tracked files
 (11,836 Go files), with 23.1GB sampled peak RSS. Warm-read and refresh measurements
 were unavailable. This Windows host was under memory pressure.
+The [memory follow-up](evals/experiments/memory-go-2026-10-18.json) identifies
+oversized node storage and retained graph/cache/publication copies; fixes and
+renewed scale qualification remain open.
 
 | Capability | Maturity | Utility and limit / verification owner |
 |---|---|---|

@@ -38,6 +38,18 @@ publication owner before attributing an inner bottleneck or narrowing the
 workload. The crate split alone establishes no latency improvement or monorepo
 readiness; the Windows host was under memory pressure.
 
+The [memory attribution follow-up](evals/experiments/memory-go-2026-10-18.json)
+prioritizes representation and ownership before worker orchestration. Reloading
+the retained export used 6.13GB of live Rust allocations: 2.43GB for the node
+vector (1,160 bytes per node slot) and 0.90GB for runtime indexes. A 512-file
+subset reached 839MB during publisher preparation; cached fragments and retained
+typed/serialized copies are measured contributors. Evaluate compact optional node
+payloads, then remove publication-wide batch/row retention while preserving
+validation, collisions, atomicity, no-change results and recovery. Smaller repeated
+graph-build residual growth remains unattributed; isolated source-observation and
+scan controls did not reproduce sustained growth. These allocation probes do not
+qualify latency or account for all native allocations in the failed initial run.
+
 ## Current qualification blockers
 
 The storage, configuration/admission, obsolete fixture paths, process isolation,

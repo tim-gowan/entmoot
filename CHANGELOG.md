@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-18: Attribute structural memory before worker refactoring
+
+- Run 27 diagnostic processes over frozen nested Go source frames, repeated
+  lifecycle controls and the retained full export. Rust allocation counters
+  calibrate allocation/reallocation/drop independently; cached and ordinary
+  graph digests agree at all four subset sizes.
+- Record graph layout, cache and publisher retention in the
+  [memory report](evals/experiments/memory-go-2026-10-18.json). Full export reload
+  retained 6.13GB of Rust allocations, including a 2.43GB node backing vector;
+  the 512-file publisher preparation reached 839MB before SQL publication.
+  Smaller repeated graph-build residual growth remains unresolved. Product code
+  and worker orchestration are unchanged; this is attribution, not a delivered
+  memory reduction or successful scale qualification.
+
 ## 2026-10-18: Record unsuccessful large-repository performance qualification
 
 - Freeze the Go revision and verify all 16,087 tracked files against Git blobs,
