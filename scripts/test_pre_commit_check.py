@@ -95,7 +95,7 @@ class AccelerationSkipTests(unittest.TestCase):
             with self.subTest(path=path):
                 plan = self.plan_for(path)
                 self.assertEqual(plan.mode, "skip")
-                with patch.multiple(hook, check_banned_patterns=lambda: 0, check_dylint=lambda: 0,
+                with patch.multiple(hook, check_banned_patterns=lambda: 0, check_test_anti_patterns=lambda: 0, check_dylint=lambda: 0,
                                     check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
                                     check_crate_boundaries=lambda: 0, check_local_markdown_links=lambda: 0,
                                     check_test_ownership_registry=lambda: 0), \
@@ -132,7 +132,7 @@ class ValidationIsolationTests(unittest.TestCase):
             plan = hook.AccelerationPlan("selected", "fixture", clippy_packages=["entmoot-mcp"],
                 cargo_commands=[["cargo", "test", "-p", "entmoot-mcp", "--test", target]])
             with self.subTest(target=target), \
-                    patch.multiple(hook, check_banned_patterns=lambda: 0, check_dylint=lambda: 0,
+                    patch.multiple(hook, check_banned_patterns=lambda: 0, check_test_anti_patterns=lambda: 0, check_dylint=lambda: 0,
                                    check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
                                    check_crate_boundaries=lambda: 0, check_local_markdown_links=lambda: 0,
                                    check_test_ownership_registry=lambda: 0), \
@@ -152,7 +152,7 @@ class ValidationIsolationTests(unittest.TestCase):
     def test_sidecar_features_survive_without_the_in_process_native_lane(self):
         from scripts import pre_commit_check as hook
         command = ["cargo", "test", "-p", "entmoot", "--features", "entmoot/native-tests", "--test", "adapter_controls", "go_control", "--", "--include-ignored", "--exact"]
-        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_dylint=lambda: 0,
+        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_test_anti_patterns=lambda: 0, check_dylint=lambda: 0,
                             check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
                             check_crate_boundaries=lambda: 0, check_local_markdown_links=lambda: 0,
                             check_test_ownership_registry=lambda: 0), \
@@ -167,7 +167,7 @@ class ValidationIsolationTests(unittest.TestCase):
 
     def test_main_runs_cheap_checks_then_one_feature_aligned_workspace_lane(self):
         from scripts import pre_commit_check as hook
-        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_dylint=lambda: 0,
+        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_test_anti_patterns=lambda: 0, check_dylint=lambda: 0,
                             check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
                             check_crate_boundaries=lambda: 0,
                             check_local_markdown_links=lambda: 0, check_test_ownership_registry=lambda: 0), \
@@ -189,7 +189,7 @@ class ValidationIsolationTests(unittest.TestCase):
         from scripts import pre_commit_check as hook
         from scripts.test_ownership import WORKSPACE_PACKAGES
         command = ["cargo", "test", "-p", "entmoot", "--test", "program_adapters", "go_control", "--", "--ignored", "--exact"]
-        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_dylint=lambda: 0,
+        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_test_anti_patterns=lambda: 0, check_dylint=lambda: 0,
                             check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
                             check_crate_boundaries=lambda: 0,
                             check_local_markdown_links=lambda: 0, check_test_ownership_registry=lambda: 0), \
@@ -332,6 +332,26 @@ class ManifestScanTests(unittest.TestCase):
                 self.assertEqual(check_banned_patterns(), 0)
                 (root / "Cargo.toml").write_text('[dependencies]\nsha2 = "0.10"\n', encoding="utf-8")
                 self.assertEqual(check_banned_patterns(), 1)
+
+
+class TestAntiPatternScanTests(unittest.TestCase):
+    def test_flags_path_colliding_find_queries_and_accepts_unique_symbols(self) -> None:
+        from scripts.pre_commit_check import check_test_anti_patterns
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            scripts = root / "scripts"
+            scripts.mkdir()
+            bad = scripts / "probe_bad.py"
+            good = scripts / "probe_good.py"
+            # Build the denylisted query without embedding a find-literal pair in this file.
+            colliding = "wo" + "rk"
+            bad.write_text(f'args = ["find", "{colliding}"]\n', encoding="utf-8")
+            good.write_text('args = ["find", "entmoot_smoke_fn"]\n', encoding="utf-8")
+            with patch("scripts.pre_commit_check.ROOT", root), redirect_stdout(StringIO()), redirect_stderr(StringIO()):
+                self.assertEqual(check_test_anti_patterns(), 1)
+                bad.write_text('args = ["find", "entmoot_smoke_fn"]\n', encoding="utf-8")
+                self.assertEqual(check_test_anti_patterns(), 0)
 
 
 class CrateBoundaryCheckTests(unittest.TestCase):

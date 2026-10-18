@@ -80,8 +80,10 @@ lto = true
                     env=env, text=True).strip()
                 self.assertEqual(Path(root).resolve(), source,
                                  "package smoke escaped to the enclosing checkout")
-                self.assertEqual((source / "app.py").read_text(encoding="utf-8"),
-                                 "def work(object):\n    object.toString()\n")
+                self.assertEqual(
+                    (source / "app.py").read_text(encoding="utf-8"),
+                    "def entmoot_smoke_fn(object):\n    object.toString()\n",
+                )
                 data = Path(args[args.index("--data-dir") + 1])
                 store = data / "workspaces" / "fixture" / "store"
                 store.mkdir(parents=True, exist_ok=True)

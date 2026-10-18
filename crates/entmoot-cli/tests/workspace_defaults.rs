@@ -1403,7 +1403,7 @@ fn automatic_storage_is_reused_and_can_live_outside_source() {
     fs::create_dir(&source).unwrap();
     fs::write(
         source.join("app.py"),
-        "def work(object):\n    object.toString()\n",
+        "def entmoot_smoke_fn(object):\n    object.toString()\n",
     )
     .unwrap();
     let invoke = |args: &[&str]| -> Value {
@@ -1431,7 +1431,7 @@ fn automatic_storage_is_reused_and_can_live_outside_source() {
         );
         serde_json::from_slice(&output.stdout).unwrap()
     };
-    let found = invoke(&["find", "work"]);
+    let found = invoke(&["find", "entmoot_smoke_fn"]);
     assert_eq!(found["result_bounds"]["total_matches"], 1);
     assert!(!source.join(".entmoot").exists());
     let pointer = entmoot_engine::workspace::storage_directory_in(&source, Some(&data))
@@ -1454,7 +1454,7 @@ fn automatic_storage_is_reused_and_can_live_outside_source() {
     assert_eq!(before, fs::read(&pointer).unwrap());
     // Stale source does not silently replace history during a query.
     fs::write(source.join("app.py"), "def changed(): pass\n").unwrap();
-    invoke(&["find", "work"]);
+    invoke(&["find", "entmoot_smoke_fn"]);
     assert_eq!(before, fs::read(&pointer).unwrap());
     invoke(&["init"]);
     assert_ne!(before, fs::read(&pointer).unwrap());

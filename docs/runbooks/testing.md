@@ -80,6 +80,11 @@ Each fixture owns source, data root and cleanup. Pass paths/config explicitly;
 exercise process-global environment or CWD changes in a child process. Use
 absolute scratch paths across child working directories and never remove a caller's
 override or use the maintainer's real home store. Close stores before cleanup.
+Find/query strings in smoke and docs fixtures must not be common absolute-path
+segments (`work`, `runner`, `home`, …): GHA checkouts live under
+`/home/runner/work/…` and substring search will false-match. Pre-commit
+(`check_test_anti_patterns`) rejects those literals; use a unique symbol such as
+`entmoot_smoke_fn`.
 
 Ordinary Rust tests belong in the corresponding crate. Calling them native Rust
 tests does not qualify another language's compiler semantics: authored provider

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-18: Gate path-colliding find queries in pre-commit
+
+- Pre-commit rejects `find` query literals that collide with common absolute-path
+  segments (for example GHA `/home/runner/work/`). Package smoke and docs examples
+  use the unique fixture symbol `entmoot_smoke_fn`.
+
 ## 2026-10-17: Solo-developer GitHub ruleset and public-repo bleed hardening
 
 - Retarget the `main` ruleset to the default branch only: PR required (0 reviews),

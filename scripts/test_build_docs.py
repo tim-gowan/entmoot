@@ -33,8 +33,12 @@ class DocumentationTests(unittest.TestCase):
                 stores.add(store)
                 store.mkdir(exist_ok=True)
                 (store / "sentinel").write_text("fixture", encoding="utf-8")
-                return json.dumps({"subjects": {"f": {"kind": "callable", "display_ref": "app.py::work"}},
-                                   "result_bounds": {"total_matches": 1}}).encode()
+                return json.dumps({
+                    "subjects": {
+                        "f": {"kind": "callable", "display_ref": "app.py::entmoot_smoke_fn"}
+                    },
+                    "result_bounds": {"total_matches": 1},
+                }).encode()
 
             with patch.object(build_docs, "ROOT", root), patch.object(build_docs.subprocess, "check_output", side_effect=cli):
                 build_docs.qualify_examples(Path("unused"))

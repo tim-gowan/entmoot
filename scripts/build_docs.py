@@ -38,8 +38,15 @@ def qualify_examples(cli):
         source = Path(directory) / "source"
         data = Path(directory) / "data"
         env = fixture_repository(source)
-        (source / "app.py").write_text("def work(object):\n    object.toString()\n", encoding="utf-8")
-        for command in (["find", "work"], ["boundaries", "--callee", "*.toString()"], ["status"], ["inventory"]):
+        (source / "app.py").write_text(
+            "def entmoot_smoke_fn(object):\n    object.toString()\n", encoding="utf-8"
+        )
+        for command in (
+            ["find", "entmoot_smoke_fn"],
+            ["boundaries", "--callee", "*.toString()"],
+            ["status"],
+            ["inventory"],
+        ):
             result = json.loads(subprocess.check_output(
                 [str(cli), "--data-dir", str(data), "-C", str(source), "--json", *command], env=env))
             if command[0] == "find":
@@ -47,7 +54,8 @@ def qualify_examples(cli):
                 callables = [
                     entry
                     for entry in subjects.values()
-                    if entry.get("kind") == "callable" and entry.get("display_ref") == "app.py::work"
+                    if entry.get("kind") == "callable"
+                    and entry.get("display_ref") == "app.py::entmoot_smoke_fn"
                 ]
                 assert len(callables) == 1, result
                 assert result["result_bounds"]["total_matches"] == 1, result

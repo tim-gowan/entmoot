@@ -34,6 +34,28 @@ if str(ROOT) not in sys.path:
 # Import/Sync AST policy lives in tools/entmoot-lints (cargo dylint).
 BANNED_DEP_NAMES = ("sha2", "sha256")
 
+# Find/query literals that collide with common absolute-path segments (GHA uses
+# /home/runner/work/...). Prefer unique fixture symbols such as entmoot_smoke_fn.
+PATH_COLLIDING_FIND_QUERIES = (
+    "work",
+    "runner",
+    "home",
+    "users",
+    "tmp",
+    "var",
+    "mnt",
+    "opt",
+    "github",
+)
+# CLI list forms: ["find", "<query>"] / 'find', "<query>"
+FIND_QUERY_LITERAL_RE = re.compile(
+    r"""(?x)
+    (?:\[\s*["']find["']\s*,\s*["'](?P<list>[^"']+)["'])
+    |
+    (?:["']find["']\s*,\s*["'](?P<pair>[^"']+)["'])
+    """
+)
+
 # Local data roots may contain installed tools and third-party adapter sources.
 SKIP_DIRS = {".git", ".tmp", ".entmoot", ".venv", "venv", "node_modules", "target", "archive"}
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]*\]\((?P<target>[^)]+)\)")
@@ -85,6 +107,57 @@ def check_banned_patterns() -> int:
             print(f"  {line}", file=sys.stderr)
         return 1
     print("pre-commit: banned dependency check passed")
+    return 0
+
+
+def _iter_test_policy_files() -> list[Path]:
+    """Return script/eval/test sources without descending into build/vendor trees."""
+    roots = (ROOT / "scripts", ROOT / "evals", ROOT / "crates")
+    files: list[Path] = []
+    for start in roots:
+        if not start.is_dir():
+            continue
+        for directory, child_dirs, filenames in os.walk(start, topdown=True):
+            child_dirs[:] = sorted(name for name in child_dirs if name not in SKIP_DIRS)
+            base = Path(directory)
+            rel_parts = base.relative_to(ROOT).parts
+            under_tests = "tests" in rel_parts
+            for filename in sorted(filenames):
+                suffix = Path(filename).suffix
+                if suffix not in {".py", ".rs"}:
+                    continue
+                if start.name == "crates" and not under_tests and not filename.endswith("_test.rs"):
+                    continue
+                files.append(base / filename)
+    return files
+
+
+def check_test_anti_patterns() -> int:
+    """Fail find/query literals that collide with common CI absolute-path segments."""
+    denylist = {name.lower() for name in PATH_COLLIDING_FIND_QUERIES}
+    failures: list[str] = []
+    for path in _iter_test_policy_files():
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError as err:
+            failures.append(f"{path.relative_to(ROOT).as_posix()}: read error: {err}")
+            continue
+        rel = path.relative_to(ROOT).as_posix()
+        for index, line in enumerate(text.splitlines(), start=1):
+            for match in FIND_QUERY_LITERAL_RE.finditer(line):
+                query = (match.group("list") or match.group("pair") or "").lower()
+                if query in denylist:
+                    failures.append(
+                        f"{rel}:{index}: find query `{query}` collides with common "
+                        "absolute-path segments (e.g. GHA /home/runner/work/); "
+                        "use a unique fixture symbol such as entmoot_smoke_fn"
+                    )
+    if failures:
+        print("pre-commit: test anti-pattern check failed:", file=sys.stderr)
+        for line in failures:
+            print(f"  {line}", file=sys.stderr)
+        return 1
+    print("pre-commit: test anti-pattern check passed")
     return 0
 
 
@@ -442,6 +515,7 @@ def selects_integration_tests(commands: list[list[str]], package: str, target: s
 def main() -> int:
     policy = (
         check_banned_patterns,
+        check_test_anti_patterns,
         check_dylint,
         check_cargo_deny,
         check_cargo_machete,

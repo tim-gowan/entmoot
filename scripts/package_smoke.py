@@ -46,9 +46,11 @@ def fingerprint(binary, directory):
     # Keep durable state outside the analyzed source tree.
     data_dir = directory.parent / f"{directory.name}-data"
     data_dir.mkdir(exist_ok=True)
-    (directory / "app.py").write_text("def work(object):\n    object.toString()\n", encoding="utf-8")
+    (directory / "app.py").write_text(
+        "def entmoot_smoke_fn(object):\n    object.toString()\n", encoding="utf-8"
+    )
     common = ["--data-dir", str(data_dir), "-C", str(directory)]
-    found = read(binary, [*common, "find", "work"], directory, env=env)
+    found = read(binary, [*common, "find", "entmoot_smoke_fn"], directory, env=env)
     assert found["result_bounds"]["total_matches"] == 1, found
     result = read(binary, [*common, "boundaries", "--callee", "*.toString()"], directory, env=env)
     assert result["result_bounds"]["total_matches"] == 1, result
