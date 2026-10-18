@@ -24,12 +24,30 @@ import { PyrightFileSystem } from '@pyright/pyrightFileSystem';
 declare const ENTMOOT_PYRIGHT_TYPESHED: string;
 const digest = (bytes: Uint8Array) => 'blake3:' + bytesToHex(blake3(bytes));
 const inside = (root: string, file: string) => {
+    // Resolve both sides before comparing. Windows short/long path spellings and
+    // drive-letter case otherwise make path.relative report a false escape.
+    try {
+        root = real(root);
+        file = real(file);
+    } catch {
+        return false;
+    }
+    if (root === file) return true;
     const rel = path.relative(root, file);
     return rel === '' || (!rel.startsWith('..' + path.sep) && rel !== '..' && !path.isAbsolute(rel));
 };
 const portable = (s: string) => s.replaceAll('\\', '/');
 const publicMember = (name: string) => !name.startsWith('_') || /^__.+__$/.test(name);
-const real = (s: string) => fs.realpathSync(s).replace(/^[a-z]:/, drive => drive.toUpperCase());
+const real = (s: string) => {
+    let resolved = fs.realpathSync(s);
+    // Sidecar roots are ordinary drive paths; strip verbatim forms so containment
+    // matches request.root after Rust compiler_root normalization.
+    if (resolved.startsWith('\\\\?\\')) {
+        resolved = resolved.slice(4);
+        if (resolved.startsWith('UNC\\')) resolved = '\\\\' + resolved.slice(4);
+    }
+    return resolved.replace(/^[a-z]:/, drive => drive.toUpperCase());
+};
 
 /** Match structural-scan skip dirs; keep the Python fence close to inventory. */
 const SKIP_DIR_NAMES = new Set([
@@ -430,7 +448,19 @@ function run(request: any) {
             declarationTargets.set(resolved, result);
             return importRoute(decl, result);
         }
-        for (const pkg of packages.filter((p: any) => inside(root, p.root))) {
+        for (const pkg of packages) {
+            if (!inside(root, pkg.root)) {
+                // Consumer publications may map a dependency outside the analyzed
+                // root; only same-root packages contribute export surfaces here.
+                // Keep this out of `diagnostics` so references_complete stays honest.
+                providerErrors.push({
+                    kind: 'package_root_outside_analysis_root',
+                    package: pkg.name,
+                    root: portable(pkg.root),
+                    analysis_root: portable(root),
+                });
+                continue;
+            }
             const surface = {package: {ecosystem: 'python', name: pkg.name},
                 export_universes: [boundaryPolicy, 'pyright.method_header_utf8.v1', 'pyright.class_constructor_headers.v1',
                     'pyright.stub_function_header_utf8.v1', 'pyright.stub_method_header_utf8.v1', 'pyright.stub_class_constructor_headers.v1',

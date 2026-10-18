@@ -944,6 +944,18 @@ fn native_python_five_controls() {
             result.raw.diagnostics
         );
         assert!(!result.raw.budget_exceeded);
+        if item._root.path() == package_root {
+            assert!(
+                result
+                    .artifact
+                    .package_api
+                    .as_ref()
+                    .is_some_and(|api| !api.surfaces.is_empty()),
+                "same-root package_api surfaces missing; diagnostics={:?} api={:?}",
+                result.raw.diagnostics,
+                result.artifact.package_api
+            );
+        }
         item.artifact = result.artifact;
         serial += 1;
         item

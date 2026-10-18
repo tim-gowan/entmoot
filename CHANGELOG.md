@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-18: Stabilize Windows package-api and analysis-work controls
+
+- Pyright path containment compares realpaths (and strips verbatim prefixes) so
+  Windows short/long spellings still attach package surfaces to the analysis root.
+- Retry transient SQLite `FileLockingProtocolFailed` when many threads open the
+  analysis-work queue together on Windows.
+
 ## 2026-10-18: Keep call-site fixture bytes LF on Windows
 
 - Normalize CRLF when copying callsites fixtures into qualification temps and

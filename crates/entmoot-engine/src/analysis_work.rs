@@ -523,8 +523,31 @@ mod tests {
                 let barrier = barrier.clone();
                 std::thread::spawn(move || {
                     barrier.wait();
-                    let mut queue = SqliteAnalysisWorkQueue::open(&path).unwrap();
-                    queue.enqueue(decision())
+                    // Windows can briefly refuse concurrent opens with
+                    // FileLockingProtocolFailed even after busy_timeout.
+                    let mut last = None;
+                    for _ in 0..50 {
+                        match SqliteAnalysisWorkQueue::open(&path) {
+                            Ok(mut queue) => return queue.enqueue(decision()),
+                            Err(error) => {
+                                let transient = matches!(
+                                    &error,
+                                    AnalysisWorkError::Sqlite(rusqlite::Error::SqliteFailure(
+                                        code,
+                                        _,
+                                    )) if code.code == rusqlite::ErrorCode::FileLockingProtocolFailed
+                                        || code.code == rusqlite::ErrorCode::DatabaseBusy
+                                        || code.code == rusqlite::ErrorCode::DatabaseLocked
+                                );
+                                last = Some(error);
+                                if !transient {
+                                    break;
+                                }
+                                std::thread::sleep(std::time::Duration::from_millis(10));
+                            }
+                        }
+                    }
+                    Err(last.expect("open retried without an error"))
                 })
             })
             .collect();
