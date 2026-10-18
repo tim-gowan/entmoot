@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-18: Record unsuccessful large-repository performance qualification
+
+- Freeze the Go revision and verify all 16,087 tracked files against Git blobs,
+  then run the optimized structural-only CLI at `8d3b225` with a fresh data root.
+  Initial publication exceeded its 1,200s allowance (1,202s measured), with
+  23.1GB sampled peak RSS and 8.02GB of incomplete artifacts; no current
+  publication was exposed. Source stayed clean and binaries stayed unchanged.
+- Retain the failed attempt and explicitly mark the remaining two fresh trials,
+  warm-query and edit→refresh/impact measurements unrun. The
+  [result and reproduction inputs](evals/experiments/performance-go-2026-10-18.json)
+  scope this unsuccessful qualification to one pinned repository and a Windows
+  host under memory pressure; whole-phase timings do not identify a bottleneck.
+
 ## 2026-10-18: Separate model, storage, queries and production
 
 - Split the engine into topology, store, evidence, query, native, ops and

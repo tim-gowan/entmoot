@@ -28,9 +28,15 @@ follow-up if large-source operator feedback warrants asynchronous preparation.
 
 The split preserves a conservative v1 whole-engine derivation fence. Qualify
 component-specific fingerprints before narrowing its invalidation scope. Measure
-the standalone query benchmark on a pinned 10k-file repository and publish cold
-load, warm query and edit→refresh distributions separately; the crate split alone
-does not establish a latency improvement or monorepo readiness.
+the standalone query benchmark after resolving the initial-publication scale
+blocker. The [2026-10-18 pinned Go attempt](evals/experiments/performance-go-2026-10-18.json)
+at `8d3b225` timed out after 1,202s on 16,087 tracked files (11,836 Go files),
+with 23.1GB sampled peak RSS and 8.02GB of incomplete artifacts. No current
+publication was exposed. Warm reads and edit→refresh distributions remain
+unavailable; two remaining fresh trials were unrun. Profile the initial
+publication owner before attributing an inner bottleneck or narrowing the
+workload. The crate split alone establishes no latency improvement or monorepo
+readiness; the Windows host was under memory pressure.
 
 ## Current qualification blockers
 

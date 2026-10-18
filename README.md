@@ -263,7 +263,7 @@ pins, denominators, failed attempts and unknown measurements explicit.
 
 ## Implementation maturity
 
-Reviewed 2026-10-17. Maintain this table with the owning controls whenever behavior
+Reviewed 2026-10-18. Maintain this table with the owning controls whenever behavior
 or qualification changes. **Alpha candidate** means implemented and locally
 controlled; **partial** means useful evidence with material gaps. No row claims
 exhaustive language semantics or runtime/security proof.
@@ -273,6 +273,12 @@ covers 5,407 call sites across four pinned publications and 47 verified source
 digests/spans, with build and native-scope limitations kept explicit. That historical
 sample does not establish current release readiness; the repaired controls still
 require [release qualification](PLANNING.md#current-qualification-blockers).
+
+Large-repository performance remains unqualified: the
+[2026-10-18 Go trial](evals/experiments/performance-go-2026-10-18.json) at `8d3b225`
+timed out during initial publication after 20 minutes on 16,087 tracked files
+(11,836 Go files), with 23.1GB sampled peak RSS. Warm-read and refresh measurements
+were unavailable. This Windows host was under memory pressure.
 
 | Capability | Maturity | Utility and limit / verification owner |
 |---|---|---|

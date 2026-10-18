@@ -1,0 +1,218 @@
+{
+  "kind": "local_performance_qualification",
+  "date": "2026-10-18",
+  "outcome": "not_qualified",
+  "implementation_revision": "8d3b22523a00f7bb9e8cb4fe03ac0550067bd52b",
+  "source": {
+    "upstream": "https://go.googlesource.com/go",
+    "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+    "tracked_files": 16087,
+    "tracked_bytes": 154889445,
+    "supported_extension_files": 11994,
+    "go_files": 11836,
+    "checkout_git_blob_parity": true,
+    "source_clean_after_run": true
+  },
+  "build": {
+    "profile": "release",
+    "features": [],
+    "native_production": false,
+    "target": "isolated target directory",
+    "build_seconds": 617,
+    "build_seconds_source": "Cargo rounded elapsed output",
+    "binaries_unchanged_after_run": true,
+    "binaries": {
+      "entmoot.exe": {
+        "sha256": "c700fa69dd76d21c76c640cd3172ed18dc7a730e4cf560697a835ebf4c540959",
+        "bytes": 68175872
+      },
+      "query_scale_bench.exe": {
+        "sha256": "2f2ac5581e4257cbaf62fc14eab842ea8b558e07315f4609fdca7d01eef43b13",
+        "bytes": 48293888
+      }
+    },
+    "fingerprint": {
+      "series": "entmoot.storage.v1",
+      "implementation": {
+        "contracts": "blake3:8a2b9234dbb4fae645c92d6ea8e04914fc5049bbf3d26c1dcaace80da3023f5f",
+        "derivation": "blake3:7ba3c5808887bc20fe8095f4698d56e5c626f7744eeb0f7c5716ab899a1d89d4"
+      },
+      "layout": "blake3:77f306cce2d19425ebe5da3997f4ecf092b3f7aa9ed119200681544168a67ce6"
+    }
+  },
+  "environment": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "logical_cpus": 32,
+    "physical_cpus": 16,
+    "memory_total_bytes": 66094223360,
+    "memory_available_at_freeze_bytes": 20528340992
+  },
+  "schedule": {
+    "fresh_publications": 3,
+    "edit_refresh_impact_cycles": 5,
+    "query_processes": 3,
+    "query_rounds_per_case": 20,
+    "query_clients": 4,
+    "query_concurrent_requests": 120,
+    "publication_timeout_seconds": 1200,
+    "read_timeout_seconds": 900,
+    "fresh_process_reads": 5
+  },
+  "fresh_publication": {
+    "planned": 3,
+    "attempted": 1,
+    "complete": 0,
+    "unrun": 2
+  },
+  "observations": [
+    {
+      "status": "timeout",
+      "exit_code": 1,
+      "started_utc": "2026-10-18T20:45:17.764448+00:00",
+      "wall_seconds": 1202.1006918000057,
+      "sampled_peak_tree_rss_bytes": 23098880000,
+      "os_peak_main_working_set_bytes": 23098880000,
+      "sampled_tree_cpu_seconds": 1177.40625,
+      "sampled_tree_read_bytes": 194768784366,
+      "sampled_tree_write_bytes": 392648559057,
+      "resource_method": {
+        "sampling_interval_seconds": 0.05,
+        "samples": 15427,
+        "observed_processes": 1,
+        "cpu": "sum_last_observed_process_counters"
+      },
+      "limitations": [
+        "rss_sum_can_count_shared_pages_more_than_once",
+        "short_lived_children_may_be_unobserved"
+      ],
+      "phase": "fresh-1",
+      "stdout_bytes": 0,
+      "stdout_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+      "stderr_bytes": 0,
+      "stderr_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+      "arguments": [
+        "$BIN\\entmoot.exe",
+        "--json",
+        "--standalone",
+        "init",
+        "--root",
+        "$RUN\\source",
+        "--structural-only"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "data_root": "data-1",
+      "file_bytes": 8020034821,
+      "current_pointers": [],
+      "largest_files": [
+        {
+          "path": "workspaces/blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755/store/knowledge.sqlite3-wal",
+          "bytes": 5035492872
+        },
+        {
+          "path": "workspaces/blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755/store/current/generation-8If4oy/graph.json",
+          "bytes": 2974466957
+        },
+        {
+          "path": "workspaces/blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755/store/knowledge.sqlite3-shm",
+          "bytes": 9797632
+        },
+        {
+          "path": "workspaces/blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755/store/knowledge.sqlite3",
+          "bytes": 274432
+        },
+        {
+          "path": "workspaces/blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755/store/adapter-profile.json",
+          "bytes": 2635
+        }
+      ]
+    }
+  ],
+  "owned_process_exited_after_timeout": true,
+  "warm_query": {
+    "planned_processes": 3,
+    "attempted_processes": 0,
+    "lookup_target_ms": 1000,
+    "status": "unavailable_without_a_completed_publication"
+  },
+  "fresh_process_read": {
+    "planned": 5,
+    "attempted": 0,
+    "status": "unavailable_without_a_completed_publication"
+  },
+  "edit_refresh_impact": {
+    "planned_cycles": 5,
+    "attempted_cycles": 0,
+    "status": "unavailable_without_a_completed_publication"
+  },
+  "ambient_observations": [
+    {
+      "observed_utc": "2026-10-18T20:48:41.221471+00:00",
+      "host_available_bytes": 1660981248,
+      "host_swap": {
+        "total": 57914363904,
+        "used": 10095017983,
+        "free": 47819345921,
+        "percent": 17.4,
+        "sin": 0,
+        "sout": 0
+      },
+      "processes": [
+        {
+          "pid": 77388,
+          "rss_bytes": 23091511296,
+          "private_bytes": 24994889728,
+          "cpu_seconds": 285.984375,
+          "age_seconds": 205.99486351013184
+        }
+      ]
+    },
+    {
+      "observed_utc": "2026-10-18T20:52:46.041359+00:00",
+      "host_available_bytes": 1821868032,
+      "processes": [
+        {
+          "pid": 77388,
+          "rss_bytes": 23093841920,
+          "private_bytes": 24994889728,
+          "cpu_seconds": 528.046875,
+          "age_seconds": 450.6463770866394
+        }
+      ]
+    },
+    {
+      "observed_utc": "2026-10-18T20:56:14.276822+00:00",
+      "age_seconds": 656.5097413063049,
+      "cpu_seconds": 706.0625,
+      "rss_bytes": 23095644160,
+      "private_bytes": 24994926592,
+      "host_available_bytes": 1614721024
+    }
+  ],
+  "limitations": [
+    "One pinned Go repository and Windows host; not a cross-language or monorepo population claim",
+    "Fresh application stores and fresh processes; OS filesystem cache is uncontrolled",
+    "No before/after implementation comparison; no speedup claim",
+    "Sampled process-tree resources are lower bounds; shared RSS can be double-counted",
+    "Other host workloads are not stopped; no CPU affinity or power-plan control",
+    "Structural evidence only; no native semantic qualification or upstream Go test execution",
+    "Queries exclude read-source because the standalone benchmark has no source capability; CLI source-read controls can be reported separately",
+    "The first fresh-publication failure stops dependent phases; unrun samples are explicit, not zeros.",
+    "Partial cache/export sizes are not sizes of a successfully published knowledge store.",
+    "Whole-command measurements do not identify an inner bottleneck.",
+    "OS process I/O counters do not measure physical disk traffic or unique retained bytes.",
+    "Observed host memory pressure limits transfer of timings to other hosts."
+  ],
+  "reproduction": {
+    "build": "cargo build --locked --release -p entmoot -p entmoot-query --bins --example query_scale_bench",
+    "materialize": "Create a fresh checkout of the pinned Go revision with core.autocrlf=false; verify file bytes against Git blobs.",
+    "initial": "entmoot --json --standalone --data-dir <fresh-owned-data-root> init --root <pinned-go-checkout> --structural-only",
+    "measurement": "evals.harness.measurement.command with 1200-second timeout and 50ms process-tree sampling",
+    "raw_evidence": ".tmp/performance-qualification-20261018/ under the maintainer checkout; plan, source oracle, recipes, command streams and process receipts retained",
+    "plan_digest": "blake3:c43c6b9b3054216c3a0a4d4e1d17cc77b1d4a97579f58544ae8500b75e39c78c",
+    "source_oracle_digest": "blake3:26c37e3d10dc05c708a486deaae4b79e9dd7c6cdf09b7771ce69a7055108bf3a"
+  }
+}
