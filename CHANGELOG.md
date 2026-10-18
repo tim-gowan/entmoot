@@ -2,8 +2,9 @@
 
 ## 2026-10-18: Stabilize Windows package-api and analysis-work controls
 
-- Pyright path containment compares realpaths (and strips verbatim prefixes) so
-  Windows short/long spellings still attach package surfaces to the analysis root.
+- Pyright path containment compares realpaths (case-insensitive on Windows, strip
+  verbatim prefixes). Native Python package-api controls hand environment roots
+  in the same ordinary drive spelling the sidecar uses for `request.root`.
 - Retry transient SQLite `FileLockingProtocolFailed` when many threads open the
   analysis-work queue together on Windows.
 

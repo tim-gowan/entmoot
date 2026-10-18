@@ -32,7 +32,13 @@ const inside = (root: string, file: string) => {
     } catch {
         return false;
     }
-    if (root === file) return true;
+    if (process.platform === 'win32') {
+        root = root.replaceAll('/', '\\').replace(/\\+$/, '');
+        file = file.replaceAll('/', '\\').replace(/\\+$/, '');
+        if (root.toLowerCase() === file.toLowerCase()) return true;
+    } else if (root === file) {
+        return true;
+    }
     const rel = path.relative(root, file);
     return rel === '' || (!rel.startsWith('..' + path.sep) && rel !== '..' && !path.isAbsolute(rel));
 };
