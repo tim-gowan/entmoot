@@ -7,6 +7,9 @@ impl QueryEngine {
         &self,
         mut request: ImpactRelayRequest,
     ) -> Result<ImpactRelayResult, QueryError> {
+        if self.deferred_navigation.is_some() {
+            return self.navigation()?.deliver_impact_relay(request);
+        }
         output::validate(&request.output)?;
         output::validate(&request.callers_output)?;
         validate_walk_budget(request.budget)?;
@@ -20,7 +23,7 @@ impl QueryEngine {
         let options = request.output.clone();
         request.output = OutputOptions::default();
         let cursor = self.output_cursor(&request, &options, true)?;
-        let base = self.compare_graph.as_deref().ok_or_else(|| {
+        let base = self.comparison_graph()?.ok_or_else(|| {
             QueryError::InvalidInput(
                 "impact relay requires a configured base/compare publication".into(),
             )

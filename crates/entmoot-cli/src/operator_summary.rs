@@ -189,6 +189,7 @@ mod tests {
 
     fn base_summary(stages: Vec<BindStage>, structural_only: bool) -> WorkspaceSummary {
         WorkspaceSummary {
+            phases: Vec::new(),
             indexed_files: 0,
             reused_syntax_files: 0,
             reused_extraction_files: 0,

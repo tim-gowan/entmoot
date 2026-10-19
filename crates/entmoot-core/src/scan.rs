@@ -251,6 +251,47 @@ pub struct ScanExclusions {
 pub struct ScanManifest {
     pub inputs: Vec<ScanInput>,
     pub exclusions: ScanExclusions,
+    /// Exact byte lengths observed with the source commitments, in input order.
+    pub source_bytes: Vec<u64>,
+}
+
+impl ScanManifest {
+    /// Admit at most 32 files and 32 MiB of source. An oversized file is a
+    /// singleton; it cannot cause the following file to share its batch.
+    pub fn batches(&self) -> impl Iterator<Item = &[ScanInput]> {
+        let mut position = 0;
+        std::iter::from_fn(move || {
+            if position == self.inputs.len() {
+                return None;
+            }
+            let start = position;
+            let mut bytes = 0_u64;
+            while position < self.inputs.len() && position - start < 32 {
+                // A manually constructed manifest without lengths receives
+                // singleton admission; unknown size never means zero bytes.
+                let size = self.source_bytes.get(position).copied().unwrap_or(u64::MAX);
+                if position != start && bytes.saturating_add(size) > 32 * 1024 * 1024 {
+                    break;
+                }
+                bytes = bytes.saturating_add(size);
+                position += 1;
+                if bytes >= 32 * 1024 * 1024 {
+                    break;
+                }
+            }
+            Some(&self.inputs[start..position])
+        })
+    }
+}
+
+/// A parser result and the exact bytes it describes. Source is captured once
+/// for downstream extraction and retention; it is not read again from the tree.
+pub struct CapturedFileFacts {
+    pub input: ScanInput,
+    pub source: Vec<u8>,
+    pub facts: Option<entmoot_contracts::FileFacts>,
+    pub skipped: Option<SkipReason>,
+    pub reused: bool,
 }
 
 /// Complete outcome for a single selected file, including unsupported syntax.
@@ -273,16 +314,22 @@ pub fn source_manifest(root: &Path) -> Result<ScanManifest, ScanError> {
             .replace('\\', "/")
     };
     let (directories, files) = walk_source_files(root, |path| {
-        inputs.push(ScanInput {
-            path: relative(path),
-            content_digest: entmoot_contracts::blake3_hex(&std::fs::read(path)?),
-        });
+        let bytes = std::fs::read(path)?;
+        inputs.push((
+            ScanInput {
+                path: relative(path),
+                content_digest: entmoot_contracts::blake3_hex(&bytes),
+            },
+            bytes.len() as u64,
+        ));
         Ok(())
     })?;
     // Match the shared scan's platform path order, including non-ASCII names.
-    inputs.sort_by(|a, b| Path::new(&a.path).cmp(Path::new(&b.path)));
+    inputs.sort_by(|a, b| Path::new(&a.0.path).cmp(Path::new(&b.0.path)));
+    let (inputs, source_bytes) = inputs.into_iter().unzip();
     Ok(ScanManifest {
         inputs,
+        source_bytes,
         exclusions: ScanExclusions {
             directories: directories.iter().map(|p| relative(p)).collect(),
             files: files.iter().map(|p| relative(p)).collect(),
@@ -297,6 +344,121 @@ pub struct ScanWorkers {
 }
 
 impl ScanWorkers {
+    /// Parse directly to canonical facts. Reuse is admitted only under the
+    /// caller's qualified extraction context and this exact path/source fence.
+    pub fn scan_facts(
+        &self,
+        root: &Path,
+        repository: &str,
+        policy: &StructuralHashPolicy,
+        inputs: &[ScanInput],
+        cached: &HashMap<String, (String, entmoot_contracts::FileFacts)>,
+    ) -> Result<Vec<CapturedFileFacts>, ScanError> {
+        let mut results = Vec::new();
+        self.scan_facts_into(root, repository, policy, inputs, cached, |file| {
+            results.push(file);
+            Ok::<_, ScanError>(())
+        })?;
+        Ok(results)
+    }
+
+    /// Hand each file directly to the caller's writer in manifest order. Each
+    /// worker has a rendezvous channel: no completed repository-sized batch is
+    /// buffered. A writer failure closes all channels and joins the workers.
+    pub fn scan_facts_into<E: From<ScanError>>(
+        &self,
+        root: &Path,
+        repository: &str,
+        policy: &StructuralHashPolicy,
+        inputs: &[ScanInput],
+        cached: &HashMap<String, (String, entmoot_contracts::FileFacts)>,
+        mut write: impl FnMut(CapturedFileFacts) -> Result<(), E>,
+    ) -> Result<(), E> {
+        let policy_id = policy.fingerprint();
+        let parse = |input: &ScanInput| -> Result<CapturedFileFacts, ScanError> {
+            if input.path.is_empty()
+                || Path::new(&input.path)
+                    .components()
+                    .any(|c| !matches!(c, std::path::Component::Normal(_)))
+            {
+                return Err(ScanError::InvalidPath(input.path.clone()));
+            }
+            let path = root.join(&input.path);
+            let source = std::fs::read(&path)?;
+            if entmoot_contracts::blake3_hex(&source) != input.content_digest {
+                return Err(ScanError::InputChanged(input.path.clone()));
+            }
+            let mut result = CapturedFileFacts {
+                input: input.clone(),
+                source,
+                facts: None,
+                skipped: None,
+                reused: false,
+            };
+            if let Some((_, facts)) = cached
+                .get(&input.path)
+                .filter(|(digest, facts)| digest == &input.content_digest && facts.policy_id == policy_id)
+            {
+                result.facts = Some(facts.clone());
+                result.reused = true;
+                return Ok(result);
+            }
+            let extension = path
+                .extension()
+                .and_then(|e| e.to_str())
+                .map(|e| format!(".{e}"))
+                .unwrap_or_default();
+            let language = THREAD_HASHER.with(|h| h.language_for_extension(&extension));
+            let Some(language) = language else {
+                result.skipped = Some(SkipReason::UnknownExtension);
+                return Ok(result);
+            };
+            let source = match std::str::from_utf8(&result.source) {
+                Ok(source) => source,
+                Err(error) => {
+                    result.skipped = Some(SkipReason::ReadError(error.to_string()));
+                    return Ok(result);
+                }
+            };
+            match THREAD_HASHER.with(|h| {
+                h.compute_granular_hash_with_analysis_at(
+                    source,
+                    &language,
+                    Some(&input.path),
+                    Some(repository),
+                    Some(policy),
+                )
+            }) {
+                Ok(parsed) => result.facts = Some(crate::index::build_file_facts(parsed)),
+                Err(error) => result.skipped = Some(SkipReason::HashError(error.to_string())),
+            }
+            Ok(result)
+        };
+        let workers = self.pool.current_num_threads().min(inputs.len());
+        self.pool.in_place_scope(|scope| {
+            let mut receivers = Vec::with_capacity(workers);
+            for worker in 0..workers {
+                let (sender, receiver) = std::sync::mpsc::sync_channel(0);
+                receivers.push(receiver);
+                let parse = &parse;
+                scope.spawn(move |_| {
+                    for input in inputs.iter().skip(worker).step_by(workers) {
+                        if sender.send(parse(input)).is_err() {
+                            break;
+                        }
+                    }
+                });
+            }
+            for index in 0..inputs.len() {
+                let result = receivers[index % workers]
+                    .recv()
+                    .map_err(|e| ScanError::WorkerPool(e.to_string()))?;
+                write(result?)?;
+            }
+            Ok(())
+        })
+    }
+
     pub fn new() -> Result<Self, ScanError> {
         Ok(Self {
             pool: rayon::ThreadPoolBuilder::new()
@@ -707,6 +869,134 @@ mod tests {
     use super::*;
     use std::fs;
     use tempfile::tempdir;
+
+    #[test]
+    fn fact_jobs_bound_source_bytes_and_keep_oversized_files_isolated() {
+        let mib = 1024 * 1024;
+        let sizes = [20 * mib, 12 * mib, 1, 40 * mib, 2];
+        let manifest = ScanManifest {
+            inputs: (0..5)
+                .map(|n| ScanInput {
+                    path: format!("{n}.py"),
+                    content_digest: String::new(),
+                })
+                .collect(),
+            exclusions: ScanExclusions::default(),
+            source_bytes: sizes.to_vec(),
+        };
+        assert_eq!(
+            manifest
+                .batches()
+                .map(|b| b.iter().map(|i| i.path.as_str()).collect::<Vec<_>>())
+                .collect::<Vec<_>>(),
+            [vec!["0.py", "1.py"], vec!["2.py"], vec!["3.py"], vec!["4.py"]]
+        );
+        let manifest = ScanManifest {
+            inputs: (0..65)
+                .map(|n| ScanInput {
+                    path: format!("{n}.py"),
+                    content_digest: String::new(),
+                })
+                .collect(),
+            exclusions: ScanExclusions::default(),
+            source_bytes: vec![0; 65],
+        };
+        assert_eq!(
+            manifest.batches().map(<[ScanInput]>::len).collect::<Vec<_>>(),
+            [32, 32, 1]
+        );
+    }
+
+    #[test]
+    fn canonical_scan_preserves_source_and_matches_legacy_inventory() {
+        let dir = tempdir().unwrap();
+        fs::write(dir.path().join("a.py"), "def first(x):\n    return other(x)\n").unwrap();
+        fs::write(dir.path().join("not-source.txt"), b"\xff").unwrap();
+        let manifest = source_manifest(dir.path()).unwrap();
+        let workers = ScanWorkers::new().unwrap();
+        let expected = workers
+            .scan(dir.path(), "fixture", &Default::default(), &manifest.inputs)
+            .unwrap();
+        let captured = workers
+            .scan_facts(
+                dir.path(),
+                "fixture",
+                &Default::default(),
+                &manifest.inputs,
+                &HashMap::new(),
+            )
+            .unwrap();
+        for (old, new) in expected.iter().zip(&captured) {
+            assert_eq!(
+                old.record,
+                new.facts.as_ref().map(entmoot_contracts::FileFacts::to_index)
+            );
+            assert_eq!(old.skipped, new.skipped);
+            assert_eq!(entmoot_contracts::blake3_hex(&new.source), old.input.content_digest);
+        }
+        fs::write(dir.path().join("a.py"), "def changed(): pass\n").unwrap();
+        assert!(matches!(
+            workers.scan_facts(
+                dir.path(),
+                "fixture",
+                &Default::default(),
+                &manifest.inputs,
+                &HashMap::new()
+            ),
+            Err(ScanError::InputChanged(_))
+        ));
+    }
+
+    #[test]
+    fn streaming_file_jobs_keep_order_and_release_workers_after_writer_failure() {
+        let source = tempdir().unwrap();
+        for i in 0..19 {
+            fs::write(
+                source.path().join(format!("{i:02}.py")),
+                format!("def work_{i}(): return {i}\n"),
+            )
+            .unwrap();
+        }
+        let inputs = source_manifest(source.path()).unwrap().inputs;
+        let workers = ScanWorkers::new().unwrap();
+        let mut visited = Vec::new();
+        let error = workers
+            .scan_facts_into(
+                source.path(),
+                "stream-fixture",
+                &Default::default(),
+                &inputs,
+                &HashMap::new(),
+                |file| {
+                    visited.push(file.input.path);
+                    if visited.len() == 3 {
+                        return Err(ScanError::WorkerPool("writer failed".into()));
+                    }
+                    Ok(())
+                },
+            )
+            .unwrap_err();
+        assert!(matches!(error, ScanError::WorkerPool(message) if message == "writer failed"));
+        assert_eq!(visited, ["00.py", "01.py", "02.py"]);
+        visited.clear();
+        workers
+            .scan_facts_into(
+                source.path(),
+                "stream-fixture",
+                &Default::default(),
+                &inputs,
+                &HashMap::new(),
+                |file| {
+                    visited.push(file.input.path);
+                    Ok::<_, ScanError>(())
+                },
+            )
+            .unwrap();
+        assert_eq!(
+            visited,
+            inputs.iter().map(|input| input.path.clone()).collect::<Vec<_>>()
+        );
+    }
 
     #[test]
     fn cached_batches_still_fence_source_policy_path_and_native_evidence() {

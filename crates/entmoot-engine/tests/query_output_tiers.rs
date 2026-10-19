@@ -162,7 +162,7 @@ fn compact_pages_cover_all_bounded_hits_and_reject_rebuilt_publications() {
     let mut request = json!({"operation":"find","request":{"kind":"subject","path":"main.rs","limit":100},"output":{"limit":1}});
     let first = execute(&engine, request.clone());
     let cursor = first["page"]["next_cursor"].clone();
-    let mut changed = engine.graph().clone();
+    let mut changed = engine.graph().unwrap().clone();
     changed.nodes[0].label.push_str("-changed");
     let rebuilt = QueryEngine::new(changed, dir.path().join("knowledge.sqlite3"));
     let mut continued = request.clone();
@@ -201,7 +201,7 @@ fn compact_pages_cover_all_bounded_hits_and_reject_rebuilt_publications() {
 #[test]
 fn seeded_compact_keeps_original_roles_colocation_and_unmapped_counts() {
     let (dir, engine) = fixture();
-    let mut graph = engine.graph().clone();
+    let mut graph = engine.graph().unwrap().clone();
     let root = graph
         .nodes
         .iter()
@@ -293,7 +293,7 @@ fn seeded_compact_keeps_original_roles_colocation_and_unmapped_counts() {
 #[test]
 fn oversized_single_subject_explain_refuses_until_bytes_are_explicitly_raised() {
     let (dir, engine) = fixture();
-    let mut graph = engine.graph().clone();
+    let mut graph = engine.graph().unwrap().clone();
     let node = graph
         .nodes
         .iter_mut()

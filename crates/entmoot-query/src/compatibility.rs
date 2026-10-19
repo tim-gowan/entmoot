@@ -193,19 +193,38 @@ pub struct PackagePublication {
 }
 
 impl PackagePublication {
-    /// Read exact graph bytes and digest-verified artifacts from the existing object store.
+    /// Read a pinned publication or explicit graph export and verified artifacts.
     /// A missing artifact is an explicit gap; corrupted evidence is a hard error.
     pub fn load(path: &Path, store: Option<&Path>) -> Result<Self, QueryServiceError> {
-        let bytes = std::fs::read(path).map_err(invalid)?;
-        let mut graph: TopologyGraph = serde_json::from_slice(&bytes).map_err(invalid)?;
-        graph.rebuild_indexes();
+        let (graph, digest) = if entmoot_store::KnowledgeViewLocator::read(path)
+            .map_err(invalid)?
+            .is_some()
+        {
+            use entmoot_store::read::RepositoryReader;
+            let reader = entmoot_store::read::SqliteReader::new(path);
+            let view = reader.open_read().map_err(invalid)?;
+            let digest = view
+                .inventory_export_digest()
+                .map_err(invalid)?
+                .ok_or_else(|| invalid("compatibility publication commitment is missing"))?;
+            let graph = view
+                .load_inventory(false)
+                .map_err(invalid)?
+                .ok_or_else(|| invalid("compatibility inventory is missing"))?;
+            (graph, digest)
+        } else {
+            let bytes = std::fs::read(path).map_err(invalid)?;
+            let mut graph: TopologyGraph = serde_json::from_slice(&bytes).map_err(invalid)?;
+            graph.rebuild_indexes();
+            (graph, entmoot_contracts::blake3_hex(&bytes))
+        };
         let store = store
             .map(Path::to_path_buf)
             .unwrap_or_else(|| entmoot_store::location::default_store_path(path));
         let repository = FilesystemArtifactObjectRepository::new(
             entmoot_store::location::artifact_store_path(&store).map_err(invalid)?,
         );
-        Self::from_graph(&graph, entmoot_contracts::blake3_hex(&bytes), |manifest| {
+        Self::from_graph(&graph, digest, |manifest| {
             let digest = ContentDigest::parse(manifest.content_digest.clone()).map_err(invalid)?;
             match repository.get(&digest) {
                 Ok(bytes) => Ok(Some(bytes)),

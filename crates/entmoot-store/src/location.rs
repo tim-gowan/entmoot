@@ -334,6 +334,8 @@ pub fn failure(error: impl std::fmt::Display) -> WorkspaceError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PublicationLocation {
+    /// Pinned .view.json locator for retained publications, or an explicit
+    /// graph JSON export supplied by an operator. Load through graph_io.
     pub graph: PathBuf,
     pub store: PathBuf,
     pub source_root: PathBuf,
@@ -397,6 +399,9 @@ pub fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<(), WorkspaceE
 
 /// Adjacent knowledge store path used when callers omit `--store`.
 pub fn default_store_path(graph_path: &Path) -> PathBuf {
+    if graph_path.to_string_lossy().ends_with(".view.json") {
+        return graph_path.to_path_buf();
+    }
     let locator = PathBuf::from(format!("{}.knowledge.view.json", graph_path.display()));
     if locator.is_file() {
         return locator;

@@ -13473,6 +13473,952 @@
       "title": "ExactBodyId",
       "type": "string"
     },
+    "FileFacts": {
+      "$defs": {
+        "AddressId": {
+          "description": "Bare BLAKE3 hex address id (no prefix).",
+          "type": "string"
+        },
+        "ArgumentSite": {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "$ref": "#/$defs/ArgumentSiteKind"
+            },
+            "name": {
+              "description": "Source keyword label, when present. Not a resolved parameter binding.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "position": {
+              "description": "Zero-based ordinal in the source argument list; spreads consume one site.",
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "span": {
+              "$ref": "#/$defs/SiteSpan",
+              "description": "Whole argument syntax, including labels, ref/out or spread operators."
+            }
+          },
+          "required": [
+            "position",
+            "kind",
+            "span"
+          ],
+          "type": "object"
+        },
+        "ArgumentSiteKind": {
+          "enum": [
+            "positional",
+            "named",
+            "spread",
+            "keyword_spread"
+          ],
+          "type": "string"
+        },
+        "BindingKind": {
+          "description": "Binding established during alpha-rename or scope analysis.",
+          "enum": [
+            "Parameter",
+            "Local",
+            "Global"
+          ],
+          "type": "string"
+        },
+        "BindingMarker": {
+          "description": "Variable or parameter binding discovered during alpha-renaming.",
+          "properties": {
+            "binding_kind": {
+              "$ref": "#/$defs/BindingKind"
+            },
+            "name": {
+              "type": "string"
+            },
+            "normalized": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "start_byte": {
+              "description": "Declaration byte offset when the language visitor can provide it.\nMissing means unknown; zero is a valid source offset and is never a sentinel.",
+              "format": "uint",
+              "minimum": 0,
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "binding_kind"
+          ],
+          "type": "object"
+        },
+        "CallSiteMarker": {
+          "additionalProperties": false,
+          "description": "Call expression site with its syntactic owner when visited inside a callable.",
+          "properties": {
+            "callee": {
+              "description": "Syntactic callee spelling, not a resolved identity. The structural marker\nproducer replaces spellings over 1024 UTF-8 bytes with\n`<oversized-callee:blake3:...>`; inspect the source span for exact text.\nSuch digest labels must remain unresolved by lexical name matching.",
+              "type": "string"
+            },
+            "end_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "owner": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DefinitionSiteRef"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Captured from the callable stack during the AST walk. `None` means the\ncall is file/module scoped, not that a later span search failed."
+            },
+            "ports": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/CallSitePorts"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exact syntax sites. Absence means this producer did not inventory ports.\nPositions are source argument ordinals, never resolved parameter indexes."
+            },
+            "start_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "callee",
+            "start_byte",
+            "end_byte"
+          ],
+          "type": "object"
+        },
+        "CallSitePorts": {
+          "additionalProperties": false,
+          "description": "Syntax associations only. The result is the call expression itself, including\nvoid/discarded calls; it does not assert a returned value, assignment or flow.\nA receiver is the syntactic selector base (possibly a type/namespace).",
+          "properties": {
+            "arguments": {
+              "items": {
+                "$ref": "#/$defs/ArgumentSite"
+              },
+              "type": "array"
+            },
+            "callee": {
+              "$ref": "#/$defs/SiteSpan"
+            },
+            "completeness": {
+              "$ref": "#/$defs/SiteCompleteness"
+            },
+            "limitations": {
+              "items": {
+                "$ref": "#/$defs/SiteLimitation"
+              },
+              "type": "array"
+            },
+            "receiver": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SiteSpan"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "result": {
+              "$ref": "#/$defs/SiteSpan"
+            }
+          },
+          "required": [
+            "callee",
+            "arguments",
+            "result",
+            "completeness",
+            "limitations"
+          ],
+          "type": "object"
+        },
+        "CallableFact": {
+          "additionalProperties": false,
+          "description": "One syntax-owned implementation occurrence. Boundary and content identity\nshare the occurrence key; native evidence is deliberately absent.",
+          "properties": {
+            "exact_body_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "occurrence": {
+              "$ref": "#/$defs/OccurrenceRef"
+            },
+            "signature_hash": {
+              "type": "string"
+            },
+            "structural_hash": {
+              "type": "string"
+            },
+            "syntactic_signature": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "occurrence",
+            "structural_hash",
+            "signature_hash",
+            "syntactic_signature"
+          ],
+          "type": "object"
+        },
+        "CodeContract": {
+          "additionalProperties": false,
+          "description": "Parser observation attached to an actual production occurrence. Snapshot,\npath and source digest are supplied by its inventory publication envelope.",
+          "properties": {
+            "language": {
+              "type": "string"
+            },
+            "limitations": {
+              "description": "Bounded extraction gaps, never evidence of member/type absence.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "method": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "shape": {
+              "$ref": "#/$defs/DeclaredContract"
+            },
+            "site": {
+              "$ref": "#/$defs/SourceOccurrenceRef"
+            }
+          },
+          "required": [
+            "method",
+            "language",
+            "name",
+            "site",
+            "shape"
+          ],
+          "type": "object"
+        },
+        "ContentDigest": {
+          "description": "Prefixed structural or content digest (`blake3:<64-hex>`).",
+          "type": "string"
+        },
+        "ControlSite": {
+          "description": "Control-structure site: AST span of a conditional/loop/switch/match/return/break/continue/throw.\nInventory annotation only — not a CFG edge (no successors, dominance, or SSA).",
+          "properties": {
+            "from_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "kind": {
+              "$ref": "#/$defs/ControlSiteKind"
+            },
+            "to_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "from_byte",
+            "to_byte",
+            "kind"
+          ],
+          "type": "object"
+        },
+        "ControlSiteKind": {
+          "description": "Kind of control-structure site (if/loop/match/return/…).",
+          "enum": [
+            "Conditional",
+            "Loop",
+            "Switch",
+            "Match",
+            "Return",
+            "Break",
+            "Continue",
+            "Throw"
+          ],
+          "type": "string"
+        },
+        "DeclarationMarker": {
+          "additionalProperties": false,
+          "description": "Addressable declaration that is not itself an implementation occurrence, or\nwhose source binding is distinct from the callable implementation it names.\n\nA class declaration has no `callable` target. An assigned callable (for\nexample `handler = lambda: ...`) points at the separately hashed callable\noccurrence without conflating the binding span with the implementation span.",
+          "properties": {
+            "callable": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SourceOccurrenceRef"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Complete implementation occurrence emitted by this file's structural visitor."
+            },
+            "kind": {
+              "description": "Coarse syntax-owned kind such as `class`, `assigned_callable`, or `binding`.",
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "scope": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "site": {
+              "$ref": "#/$defs/SourceOccurrenceRef"
+            },
+            "syntax": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DeclarationSyntax"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional bounded syntax observation; absence means not inventoried by this producer."
+            }
+          },
+          "required": [
+            "name",
+            "kind",
+            "scope",
+            "site"
+          ],
+          "type": "object"
+        },
+        "DeclarationSyntax": {
+          "additionalProperties": false,
+          "description": "A simple named binding and its explicitly written initializer. This is not\ndefinite assignment, a read/write edge, a runtime default, or a property proof.",
+          "properties": {
+            "initializer": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/InitializerSyntax"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "None means no initializer syntax at this site, not an uninitialized value."
+            },
+            "method": {
+              "type": "string"
+            },
+            "name_span": {
+              "$ref": "#/$defs/SiteSpan"
+            }
+          },
+          "required": [
+            "method",
+            "name_span"
+          ],
+          "type": "object"
+        },
+        "DeclaredContract": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "callable",
+                  "type": "string"
+                },
+                "parameters": {
+                  "items": {
+                    "$ref": "#/$defs/DeclaredParameter"
+                  },
+                  "type": "array"
+                },
+                "result": {
+                  "$ref": "#/$defs/DeclaredType"
+                }
+              },
+              "required": [
+                "kind",
+                "parameters",
+                "result"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "object",
+                  "type": "string"
+                },
+                "members": {
+                  "items": {
+                    "$ref": "#/$defs/DeclaredMember"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "kind",
+                "members"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "unsupported",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "DeclaredExpression": {
+          "additionalProperties": false,
+          "description": "An unevaluated expression with its exact UTF-8 source extent.",
+          "properties": {
+            "span": {
+              "$ref": "#/$defs/SiteSpan"
+            },
+            "syntax": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "syntax",
+            "span"
+          ],
+          "type": "object"
+        },
+        "DeclaredMember": {
+          "additionalProperties": false,
+          "description": "Directly declared member only; no inheritance or runtime shape closure.",
+          "properties": {
+            "declared_type": {
+              "$ref": "#/$defs/DeclaredType"
+            },
+            "kind": {
+              "$ref": "#/$defs/MemberKind"
+            },
+            "modifiers": {
+              "description": "Written member qualifiers such as visibility, static or optional syntax.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "span": {
+              "$ref": "#/$defs/SiteSpan"
+            }
+          },
+          "required": [
+            "kind",
+            "span",
+            "declared_type"
+          ],
+          "type": "object"
+        },
+        "DeclaredParameter": {
+          "additionalProperties": false,
+          "description": "One declaration parameter, not an argument-to-parameter binding.",
+          "properties": {
+            "declared_type": {
+              "$ref": "#/$defs/DeclaredType"
+            },
+            "default": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DeclaredExpression"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Written default expression, not an evaluated default value."
+            },
+            "kind": {
+              "$ref": "#/$defs/ParameterKind"
+            },
+            "modifiers": {
+              "description": "Written declaration qualifiers (including optional `?` syntax), without\ninterpretation across languages.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "span": {
+              "$ref": "#/$defs/SiteSpan"
+            }
+          },
+          "required": [
+            "kind",
+            "span",
+            "declared_type"
+          ],
+          "type": "object"
+        },
+        "DeclaredType": {
+          "description": "A written type expression in its language's syntax. No nominal equivalence,\ninferred type, alias resolution or runtime value is implied.",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "explicit",
+                  "type": "string"
+                },
+                "span": {
+                  "$ref": "#/$defs/SiteSpan"
+                },
+                "syntax": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "syntax",
+                "span"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "No type was written at this position; this does not mean void or any.",
+              "properties": {
+                "kind": {
+                  "const": "unspecified",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Syntax exists but the extractor cannot isolate a type safely.",
+              "properties": {
+                "kind": {
+                  "const": "unsupported",
+                  "type": "string"
+                },
+                "span": {
+                  "$ref": "#/$defs/SiteSpan"
+                },
+                "syntax": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "syntax",
+                "span"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "DefMarker": {
+          "description": "Type, class, or callable definition site (logic kind as string: `function`, `method`, …).",
+          "properties": {
+            "end_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "scope": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "start_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "name",
+            "kind",
+            "scope",
+            "start_byte",
+            "end_byte"
+          ],
+          "type": "object"
+        },
+        "DefinitionSiteRef": {
+          "additionalProperties": false,
+          "description": "Stable syntactic reference to the callable that owns a marker.",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "scope": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "start_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "name",
+            "scope",
+            "start_byte"
+          ],
+          "type": "object"
+        },
+        "FileMarkers": {
+          "description": "All markers collected from a single file during one AST walk.",
+          "properties": {
+            "bindings": {
+              "items": {
+                "$ref": "#/$defs/BindingMarker"
+              },
+              "type": "array"
+            },
+            "call_sites": {
+              "items": {
+                "$ref": "#/$defs/CallSiteMarker"
+              },
+              "type": "array"
+            },
+            "code_contracts": {
+              "description": "Source-declared boundary objects attached to inventory occurrences.",
+              "items": {
+                "$ref": "#/$defs/CodeContract"
+              },
+              "type": "array"
+            },
+            "control_sites": {
+              "items": {
+                "$ref": "#/$defs/ControlSite"
+              },
+              "type": "array"
+            },
+            "declarations": {
+              "description": "Non-body declarations and declaration-to-callable binding sites.",
+              "items": {
+                "$ref": "#/$defs/DeclarationMarker"
+              },
+              "type": "array"
+            },
+            "definitions": {
+              "items": {
+                "$ref": "#/$defs/DefMarker"
+              },
+              "type": "array"
+            },
+            "imports": {
+              "items": {
+                "$ref": "#/$defs/ImportMarker"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "imports",
+            "definitions",
+            "bindings",
+            "control_sites",
+            "call_sites"
+          ],
+          "type": "object"
+        },
+        "ImportKind": {
+          "description": "Import statement classification.",
+          "enum": [
+            "Module",
+            "Named",
+            "Star",
+            "Static",
+            "Alias"
+          ],
+          "type": "string"
+        },
+        "ImportMarker": {
+          "description": "File-level or module-level import site.",
+          "properties": {
+            "alias": {
+              "description": "Local source binding when it differs from the target's final segment,\nor when the import form (for example a JS default import) requires it.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "end_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "kind": {
+              "$ref": "#/$defs/ImportKind"
+            },
+            "path": {
+              "description": "Provider-independent semantic target named by the import.\n\nModule imports store the module path. Named/static imports store the\ncomplete target, including the imported member.",
+              "type": "string"
+            },
+            "start_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "path",
+            "kind",
+            "start_byte",
+            "end_byte"
+          ],
+          "type": "object"
+        },
+        "InitializerSyntax": {
+          "additionalProperties": false,
+          "description": "Source-local initializer evidence. Expressions are never evaluated. Only\nplain decimal integer syntax (at most 256 bytes, no suffix/radix/separators)\nreceives a canonical integer spelling; type/coercion and runtime value are unknown.",
+          "properties": {
+            "content_digest": {
+              "$ref": "#/$defs/ContentDigest"
+            },
+            "span": {
+              "$ref": "#/$defs/SiteSpan"
+            },
+            "value": {
+              "$ref": "#/$defs/InitializerValue"
+            }
+          },
+          "required": [
+            "span",
+            "content_digest",
+            "value"
+          ],
+          "type": "object"
+        },
+        "InitializerValue": {
+          "description": "Syntactic classification, never a runtime evaluation. The canonical decimal\nspelling is derived from the committed text, not stored as a second value\nwhich could disagree with it.",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "unevaluated",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "decimal_integer",
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "text"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "MemberKind": {
+          "enum": [
+            "field",
+            "property",
+            "method",
+            "embedded",
+            "unsupported"
+          ],
+          "type": "string"
+        },
+        "OccurrenceRef": {
+          "additionalProperties": false,
+          "description": "The readable occurrence envelope and its committed compact identity.\nThis does not establish a definition hash, a provider symbol, or a snapshot.",
+          "properties": {
+            "address_id": {
+              "$ref": "#/$defs/AddressId"
+            },
+            "logic_address": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "address_id",
+            "logic_address"
+          ],
+          "type": "object"
+        },
+        "ParameterKind": {
+          "enum": [
+            "ordinary",
+            "positional_only",
+            "keyword_only",
+            "variadic",
+            "keyword_variadic",
+            "receiver",
+            "unsupported"
+          ],
+          "type": "string"
+        },
+        "PolicyId": {
+          "description": "Bare BLAKE3 hex policy fingerprint (no prefix).",
+          "type": "string"
+        },
+        "SiteCompleteness": {
+          "enum": [
+            "complete",
+            "partial",
+            "unsupported"
+          ],
+          "type": "string"
+        },
+        "SiteLimitation": {
+          "enum": [
+            "invalid_syntax",
+            "unsupported_shape",
+            "argument_budget",
+            "oversized_name"
+          ],
+          "type": "string"
+        },
+        "SiteSpan": {
+          "additionalProperties": false,
+          "description": "Half-open UTF-8 byte range in the containing snapshot file, not a LogicId.",
+          "properties": {
+            "end_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "start_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "start_byte",
+            "end_byte"
+          ],
+          "type": "object"
+        },
+        "SourceOccurrenceRef": {
+          "additionalProperties": false,
+          "description": "An inventoried occurrence at a UTF-8 byte span in the containing file.\nRepository, snapshot and path come from the enclosing source record; the\nsource inventory owner verifies byte boundaries against that file.",
+          "properties": {
+            "occurrence": {
+              "$ref": "#/$defs/OccurrenceRef"
+            },
+            "span": {
+              "$ref": "#/$defs/SiteSpan"
+            }
+          },
+          "required": [
+            "occurrence",
+            "span"
+          ],
+          "type": "object"
+        }
+      },
+      "$id": "https://entmoot.dev/schemas/contracts/entmoot-contracts.v1.json?type=FileFacts",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "description": "Reusable output of one parse under its source, path, language and policy\ncontext. This is syntax evidence, not a claim that references are resolved.\nA store must bind these facts to exact source bytes and an extraction\nfingerprint before reuse. Graphs and legacy index records are projections.",
+      "properties": {
+        "callables": {
+          "items": {
+            "$ref": "#/$defs/CallableFact"
+          },
+          "type": "array"
+        },
+        "file_hash": {
+          "type": "string"
+        },
+        "markers": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileMarkers"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "module_shell_hash": {
+          "type": "string"
+        },
+        "policy_id": {
+          "$ref": "#/$defs/PolicyId"
+        }
+      },
+      "required": [
+        "policy_id",
+        "file_hash",
+        "module_shell_hash",
+        "callables"
+      ],
+      "title": "FileFacts",
+      "type": "object"
+    },
     "FileIndexRecord": {
       "$defs": {
         "AddressId": {

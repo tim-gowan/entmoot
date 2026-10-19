@@ -116,22 +116,86 @@ must agree. `scripts/prepare_release_inputs.py --check` rejects stale inputs;
 supported installs use the committed lockfile. Never reset stores or rewrite
 fingerprints to admit incompatible evidence.
 
-Structural initialization writes per-file `FileIndexRecord` IR before graph
-extraction. Occurrences own structural identities; callable boundaries and
-markers carry signatures, declarations, imports, lexical bindings and syntax
-sites consumed by extraction and call resolution. Definition hashes remain in
-the shared record contract; graph nodes, edges, display references and call
-decisions are derived projections, not additional parser authority.
+Structural initialization consumes each parse into canonical `FileFacts` before
+graph extraction. One callable row owns the occurrence, body and signature
+identities; the older `FileIndexRecord` interface is a projection. Markers retain
+declarations, imports, lexical bindings and syntax sites. Native evidence cannot
+enter these units or rewrite their addresses.
 
-`SyntaxCache` stages canonical record/fragment bytes in private temporary files
-and retains path, source and payload commitments in memory. Parsing admits 32
-files per batch on at most four in-process workers. Extraction moves one file's
-nodes into the graph; stitching hydrates one file's IR after the complete symbol
-index exists. This bounds admitted file counts, not total RSS or a single large
-file. `ScanMetadata` carries membership and explicit gaps separately from parser
-records. Cache publication hydrates one file at a time under the existing atomic
-transaction and membership commitment. Normal return/error removes temporary IR;
-restartable operations still use the existing fenced durable file checkpoints.
+Ordinary init retains sealed file units and their exact source bytes before
+downstream work. SQLite uses binary callable digests and separate syntax-site
+rows, without per-fact ownership or visibility events. Units are keyed by source,
+repository/path extraction context and policy; identical source bytes share
+retention while distinct paths retain distinct occurrences. A failed init can
+reuse completed units without publishing an incomplete inventory. Publication
+selects immutable file membership; offline retention removes unreachable units.
+
+`SyntaxCache` reads membership first and hydrates admitted files lazily. It keeps
+structural call summaries, including their negative lookup dependencies, in the
+selected revision's file membership. This replaces the global mutable cache and
+lets historical publications reuse their own verified selection. It persists no
+syntax graph fragments. Parsing admits at most 32 files and
+32 MiB of source, processing at most four admitted files at a time. Reused
+workers hand results directly to the writer through rendezvous channels;
+oversized files run alone. These are admission limits, not a total RSS ceiling. Extraction reads captured source and builds a
+disposable file projection. Ordinary structural init writes that projection into
+an unpublished SQLite view and drops it. The complete callable lookup index is
+the cross-file barrier; call decisions then publish one file at a time. The
+repository graph is never accumulated in this path. Its view ID commits to the
+parser-unit selection, complete publication metadata and derivation fingerprint
+before insertion, avoiding a rewrite of all record keys at the end. Canonical
+graph/export and membership commitments independently stream retained rows.
+Explicit graph imports retain their graph-content view identity. File/endpoint validation, immutable
+identity collisions and the transaction preserve the same published graph.
+`ScanMetadata` carries membership and explicit gaps.
+Existing advanced operations retain their fenced durable checkpoints.
+
+Managed publications expose a `publication.view.json` locator through both local
+graph/store fields. Full graph JSON is an explicit export; compatibility loads a
+projection only on demand. Native sessions receive a streamed, temporary input
+containing the source manifest and exact declaration/call sites: original IDs,
+spans, labels and ownership. They receive no edges, claims or syntax payloads.
+Rust Analyzer and Oxc consume those sites directly; external compilers still
+choose their ecosystem analysis units. Explicit graph inputs remain supported
+through a one-time compatibility projection. Immutable publication uses
+one sealed-view transaction for knowledge, inventory and file membership, without
+per-fact owner/dependency/visibility histories. Mutable operations retain those
+histories where their semantics require them. Nullable evidence lookup keys have
+partial SQLite indexes: an unreported key creates no index entry, while its
+record remains available through normal collection and ID reads.
+
+Inventory membership contains integer revision, ordinal and node-version keys.
+Unchanged node versions are shared across revisions; indexed logical addresses
+select versions within the pinned revision. Node identity, kind, label, display
+reference and qualified name occupy typed version columns; the detail payload
+does not repeat them. Syntax bodies share content-addressed storage across file
+facts, node detail and scoped source records; each referring record retains its
+own snapshot and provenance. Exact identity alternatives use indexes before hydration,
+including structural hashes that cannot be shared across multiple policies.
+The per-node commitment covers both indexed fields and detail. Revision keys
+are private storage positions and never replace logical or structural IDs.
+
+Query startup reads verified publication metadata and the source manifest.
+Verified source, subject-find, callers, callees and unresolved-attempt reads do
+not materialize a graph. Subject search
+pages retained nodes, narrows paths and exact hash selectors before hydration, checks each node's
+commitment and retains only the requested ranked cards. Call pages use retained
+subject/object indexes and selected endpoint/claim context. A sparse reverse
+contradiction index preserves conflicts originating outside the page. Unresolved
+continuation commitments stream the selected attempts without collecting them.
+Unscoped text still scans node pages; this is a memory bound, not a sub-second
+lookup qualification. Other
+navigation operations explicitly hydrate a shared deferred projection. Graph
+access is fallible so a missing projection cannot appear as an empty inventory.
+Comparison bases pin their locator and lifecycle lease at open and hydrate once
+on the first comparison. Ordinary source/find requests do not load the base;
+failed base loads remain explicit and shared by cloned query handles.
+Native/canon production and these remaining graph reads still materialize graph
+views, tracked in PLANNING. An unchanged structural refresh verifies the complete
+source/policy/scan-gap commitment and sealed file/call membership before skipping
+projection, resolution and publication; a second full source fence still applies. Phase receipts report
+elapsed time and RSS endpoints, not phase peaks; tracing also records unfinished
+phases. External process sampling owns peak-memory qualification.
 
 Files are safe parse/extraction job units. Imports and lexical definitions are
 already indexed in the IR; they do not establish closed dependency components.
@@ -139,6 +203,8 @@ Package scope, global names, dynamic syntax and ambiguous or missing modules
 require the complete lookup index before stitching. Cached call decisions retain
 positive, negative and ambiguous lookup dependencies across added/deleted/renamed
 files. No import-only partition may convert missing evidence into absence.
+Native compiler families and nested module jobs share one active session slot;
+compiler-internal parallelism remains provider-owned.
 
 Topology nodes box sparse contract/declaration/call-site payloads without
 changing JSON or IDs; claims box sparse assessment/derivation payloads as well.
@@ -151,9 +217,9 @@ original view. Sharing changes neither serialized records nor structural IDs.
 View/cursor digests and native/helper output stream canonical JSON. Graph
 publication projects syntax in 32-node chunks and other collections in at most
 1,024-record chunks, then applies the existing record/byte buffer limits. Schema
-references no longer require repeated context records in every batch. Private
-disk staging owns serialized batches and indexed validation context until all forward
-references and collisions are checked. Owner commitments retain the unchanged
+references no longer require repeated context records in every batch. Explicit graph imports validate against borrowed graph context and insert bounded
+batches directly into the transaction. Mutable owner batches retain private disk
+staging for forward references and collision checks. Owner commitments retain the unchanged
 shortcut before the durable transaction; imports retain their existing atomic
 graph/seal/checkpoint transaction. Disposable staging is not a recovery protocol.
 The complete graph and compact identity/dependency maps still determine memory;

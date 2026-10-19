@@ -1,4 +1,4 @@
-//! Bounded compiler invocations. Nested Go module work shares the family pool.
+//! One active compiler session. Nested module work shares the family pool.
 use rayon::prelude::*;
 use std::sync::LazyLock;
 
@@ -6,7 +6,7 @@ use std::sync::LazyLock;
 // cap conservative; failure to allocate workers falls back to sequential work.
 static POOL: LazyLock<Option<rayon::ThreadPool>> = LazyLock::new(|| {
     rayon::ThreadPoolBuilder::new()
-        .num_threads(2)
+        .num_threads(1)
         .stack_size(8 * 1024 * 1024)
         .thread_name(|index| format!("entmoot-producer-{index}"))
         .build()
@@ -26,7 +26,7 @@ mod tests {
     use super::*;
     use std::sync::atomic::{AtomicUsize, Ordering};
     #[test]
-    fn nested_work_overlaps_with_one_shared_cap_and_stable_results() {
+    fn nested_work_retains_one_session_cap_and_stable_results() {
         let active = AtomicUsize::new(0);
         let peak = AtomicUsize::new(0);
         let values = ordered_map(&[0, 1, 2], |family| {
@@ -40,6 +40,6 @@ mod tests {
         });
         assert_eq!(values, [vec![0, 1, 2], vec![10, 11, 12], vec![20, 21, 22]]);
         assert_eq!(active.load(Ordering::SeqCst), 0);
-        assert_eq!(peak.load(Ordering::SeqCst), 2);
+        assert_eq!(peak.load(Ordering::SeqCst), 1);
     }
 }

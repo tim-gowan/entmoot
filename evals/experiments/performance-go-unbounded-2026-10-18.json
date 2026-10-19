@@ -1,0 +1,393 @@
+{
+  "kind": "local_full_repository_unbounded_run",
+  "implementation_revision": "57c2bf369831832cb97723045abff0e94f67c7ab",
+  "plan": {
+    "implementation_revision": "57c2bf369831832cb97723045abff0e94f67c7ab",
+    "source": {
+      "tracked_files": 16087,
+      "tracked_bytes": 154889445,
+      "all_bytes_match_frozen_oracle": true
+    },
+    "source_path": "G:\\GitHub\\entmoot\\.tmp\\performance-qualification-20261018\\source",
+    "source_revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+    "binary": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\target\\commit-check\\release\\entmoot.exe",
+    "sha256": "ffa56f62357649c6513f31d8a63b1e4b26c851df5f771cc499425772f02b7e3f",
+    "profile": "release",
+    "features": [],
+    "arguments": [
+      "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\target\\commit-check\\release\\entmoot.exe",
+      "--json",
+      "--standalone",
+      "init",
+      "--root",
+      "G:\\GitHub\\entmoot\\.tmp\\performance-qualification-20261018\\source",
+      "--structural-only"
+    ],
+    "timeout_seconds": null,
+    "sampling_interval_seconds": 0.05,
+    "scope": "one full-repository fresh structural publication; warm reads and refresh not scheduled",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "memory_before": {
+      "total": 66094223360,
+      "available": 25453694976,
+      "percent": 61.5,
+      "used": 40640528384,
+      "free": 25453694976
+    },
+    "limitations": [
+      "one trial",
+      "uncontrolled OS cache and concurrent host workloads",
+      "sampled RSS lower bound; native allocator included; no allocation attribution"
+    ]
+  },
+  "measurement": {
+    "status": "complete",
+    "exit_code": 0,
+    "arguments": [
+      "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\target\\commit-check\\release\\entmoot.exe",
+      "--json",
+      "--standalone",
+      "init",
+      "--root",
+      "G:\\GitHub\\entmoot\\.tmp\\performance-qualification-20261018\\source",
+      "--structural-only"
+    ],
+    "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-qualification-20261018\\source",
+    "started_utc": "2026-10-19T02:23:03.017951+00:00",
+    "wall_seconds": 2720.1170557999867,
+    "launch_error": null,
+    "sampled_peak_tree_rss_bytes": 7173054464,
+    "os_peak_main_working_set_bytes": 7173054464,
+    "sampled_tree_cpu_seconds": 2652.640625,
+    "sampled_tree_read_bytes": 653403875294,
+    "sampled_tree_write_bytes": 963752971466,
+    "resource_method": {
+      "sampling_interval_seconds": 0.05,
+      "samples": 35046,
+      "observed_processes": 1,
+      "cpu": "sum_last_observed_process_counters"
+    },
+    "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-go-unbounded-57c2bf3\\commands\\fresh-1-daevm2q8\\stdout",
+    "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-go-unbounded-57c2bf3\\commands\\fresh-1-daevm2q8\\stderr",
+    "input": null,
+    "output": {
+      "stdout": {
+        "bytes": 6183,
+        "characters": 6183,
+        "character_encoding": "utf8_replace",
+        "content_digest": "blake3:28d8703a9ee7debc9417f22b316c87db999e184f92b47a095dda43ff9007033f",
+        "tokens": null,
+        "tokenizer": null,
+        "token_status": "not_requested"
+      },
+      "stderr": {
+        "bytes": 593,
+        "characters": 577,
+        "character_encoding": "utf8_replace",
+        "content_digest": "blake3:2e86902994f2f283588a72be2fd0fd322a81fc9799d0d55bee5df8faa8dbc4dc",
+        "tokens": null,
+        "tokenizer": null,
+        "token_status": "not_requested"
+      }
+    },
+    "limitations": [
+      "process_counters_incomplete",
+      "rss_sum_can_count_shared_pages_more_than_once",
+      "short_lived_children_may_be_unobserved"
+    ]
+  },
+  "publication": {
+    "indexed_files": 11832,
+    "reused_syntax_files": 0,
+    "reused_extraction_files": 0,
+    "reused_stitching_files": 0,
+    "schema_version": "entmoot.workspace_summary.v1",
+    "publication": {
+      "graph": "G:\\GitHub\\entmoot\\.tmp\\performance-go-unbounded-57c2bf3\\data\\workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\current\\generation-cB7LxY\\graph.json",
+      "store": "G:\\GitHub\\entmoot\\.tmp\\performance-go-unbounded-57c2bf3\\data\\workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\current\\generation-cB7LxY\\graph.json.knowledge.view.json",
+      "source_root": "\\\\?\\G:\\GitHub\\entmoot\\.tmp\\performance-qualification-20261018\\source"
+    },
+    "snapshot": {
+      "repository_id": "local/source",
+      "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+      "source_state": "working_tree",
+      "snapshot_digest": "blake3:7de154a93f4740cbdebe7f1088e33072fa455184b8d7faa5f85929f1d12421e0"
+    },
+    "policy_ids": [
+      "3c7aae582d62f65064f0a5144cf3bedcbbafd05854a0202151fc7d08d41cc0e8"
+    ],
+    "execution_policy": "safe",
+    "full": false,
+    "require_native": false,
+    "plan_only": false,
+    "structural_only": true,
+    "stages": [
+      {
+        "family": "clang",
+        "languages": [
+          "c",
+          "cpp"
+        ],
+        "stage": "skipped",
+        "input_key": "blake3:e59e6f18edf9ddd695a5f9adc50b3bcadb761d0c586bb6079e9b36f9393c30f1",
+        "reuse_policy": "unqualified_external_closure",
+        "adapter_path": "\\\\?\\G:\\GitHub\\entmoot\\.entmoot\\adapters\\clang\\entmoot-clang-resolver.py",
+        "producer_digest": "blake3:4d84ba1b0cebf6a62708028672dd19f319389fe7e05c4d357eb733519645ecb2",
+        "manifest": null,
+        "native_receipt": null,
+        "attachment": null,
+        "work": null,
+        "events": [
+          "planned"
+        ],
+        "limitations": [
+          "structural_only_requested; run entmoot bind for available resolver evidence"
+        ]
+      },
+      {
+        "family": "go",
+        "languages": [
+          "go"
+        ],
+        "stage": "skipped",
+        "input_key": "blake3:62a077e29a871c19068c1d2aab26656d73ed214909b18962306312abdac4ab48",
+        "reuse_policy": "unqualified_external_closure",
+        "adapter_path": "\\\\?\\G:\\GitHub\\entmoot\\.entmoot\\adapters\\go\\entmoot-go-resolver.exe",
+        "producer_digest": "blake3:4d84ba1b0cebf6a62708028672dd19f319389fe7e05c4d357eb733519645ecb2",
+        "manifest": null,
+        "native_receipt": null,
+        "attachment": null,
+        "work": null,
+        "events": [
+          "planned"
+        ],
+        "limitations": [
+          "structural_only_requested; run entmoot bind for available resolver evidence"
+        ]
+      },
+      {
+        "family": "oxc",
+        "languages": [
+          "javascript"
+        ],
+        "stage": "skipped",
+        "input_key": "blake3:0c6fa6f800ab1da399b5579b423c0c6adbb6fa8d2f9f6ff451b4372baae434a5",
+        "reuse_policy": "entmoot.oxc.same_snapshot_local_lexical.v3",
+        "adapter_path": null,
+        "producer_digest": "blake3:4d84ba1b0cebf6a62708028672dd19f319389fe7e05c4d357eb733519645ecb2",
+        "manifest": null,
+        "native_receipt": null,
+        "attachment": null,
+        "work": null,
+        "events": [
+          "planned"
+        ],
+        "limitations": [
+          "structural_only_requested; run entmoot bind for available resolver evidence"
+        ]
+      },
+      {
+        "family": "python",
+        "languages": [
+          "python"
+        ],
+        "stage": "skipped",
+        "input_key": "blake3:7d724c3b868c5d6210ac1924f249b4fd8c352138871c09ab1ca89489965667db",
+        "reuse_policy": "unqualified_external_closure",
+        "adapter_path": "\\\\?\\G:\\GitHub\\entmoot\\.entmoot\\adapters\\pyright-program\\entmoot-pyright.cjs",
+        "producer_digest": "blake3:4d84ba1b0cebf6a62708028672dd19f319389fe7e05c4d357eb733519645ecb2",
+        "manifest": null,
+        "native_receipt": null,
+        "attachment": null,
+        "work": null,
+        "events": [
+          "planned"
+        ],
+        "limitations": [
+          "structural_only_requested; run entmoot bind for available resolver evidence"
+        ]
+      }
+    ],
+    "coverage": {
+      "findings_total": 0,
+      "traces_total": 0,
+      "trace_steps_total": 0,
+      "locations_total": 0,
+      "attachments_total": 0,
+      "assertions_total": 0,
+      "attachment_density": {
+        "file": 0,
+        "callable": 0,
+        "call_site": 0,
+        "resource": 0,
+        "excluded": 0,
+        "unresolved": 0,
+        "invalid": 0,
+        "other": 0
+      },
+      "findings_by_producer": {},
+      "providers": [],
+      "provider_roles_present": false,
+      "no_provider_native_roles": true,
+      "partial_scope_artifacts": []
+    },
+    "wall_seconds": 2575.0532145,
+    "budget_seconds": 3600,
+    "limitations": [
+      "binding evidence is not runtime validation or dispatch completeness",
+      "automatic reuse is same-snapshot Oxc lexical only; other families require fresh production",
+      "peak RSS is not measured by this local receipt"
+    ],
+    "adapter_profile": {
+      "schema_version": "entmoot.adapter_profile.v1",
+      "adapters_root": "G:\\GitHub\\entmoot\\.entmoot\\adapters",
+      "producer_features": false,
+      "families": [
+        {
+          "family": "rust",
+          "availability": "informational",
+          "selection": "producer_feature",
+          "pin": "0.0.358",
+          "integrity": "missing",
+          "detail": "rebuild entmoot with --features producer for in-process native",
+          "hard": false
+        },
+        {
+          "family": "oxc",
+          "availability": "informational",
+          "selection": "producer_feature",
+          "pin": "0.153.0",
+          "integrity": "missing",
+          "detail": "rebuild entmoot with --features producer for in-process native",
+          "hard": false
+        },
+        {
+          "family": "go",
+          "availability": "available",
+          "selection": "process_env",
+          "path": "G:\\GitHub\\entmoot\\.entmoot\\adapters\\go\\entmoot-go-resolver.exe",
+          "pin": "go_types_sidecar.isolated_modules.v1",
+          "integrity": "unchecked",
+          "hard": false
+        },
+        {
+          "family": "roslyn",
+          "availability": "available",
+          "selection": "process_env",
+          "path": "G:\\GitHub\\entmoot\\.entmoot\\adapters\\roslyn\\bin\\Release\\net9.0\\Entmoot.RoslynSolver.dll",
+          "pin": "catalog roslyn artifact",
+          "integrity": "unchecked",
+          "hard": false
+        },
+        {
+          "family": "java",
+          "availability": "available",
+          "selection": "process_env",
+          "path": "G:\\GitHub\\entmoot\\.entmoot\\adapters\\java\\entmoot-java-resolver.jar",
+          "pin": "catalog java jar",
+          "integrity": "unchecked",
+          "hard": false
+        },
+        {
+          "family": "clang",
+          "availability": "available",
+          "selection": "process_env",
+          "path": "G:\\GitHub\\entmoot\\.entmoot\\adapters\\clang\\entmoot-clang-resolver.py",
+          "pin": "libclang 18.1.1",
+          "integrity": "unchecked",
+          "hard": false
+        },
+        {
+          "family": "python",
+          "availability": "available",
+          "selection": "process_env",
+          "path": "G:\\GitHub\\entmoot\\.entmoot\\adapters\\pyright-program\\entmoot-pyright.cjs",
+          "pin": "pyright-program/1.1.414",
+          "integrity": "unchecked",
+          "hard": false
+        },
+        {
+          "family": "typescript",
+          "availability": "available",
+          "selection": "catalog",
+          "path": "G:\\GitHub\\entmoot\\.entmoot\\adapters\\typescript-program/entmoot-typescript.cjs",
+          "pin": "typescript.program/1",
+          "integrity": "unchecked",
+          "hard": false
+        }
+      ],
+      "limitations": [
+        "adapter_profile_records_discovery_only",
+        "entmoot_does_not_download_toolchains",
+        "process_ENTMOOT_env_overrides_profile_when_set"
+      ]
+    },
+    "publication_outcome": "replaced",
+    "publication_digest": "blake3:2e63c803ad788c4368aad11ce597b5e559cbfbc7536797a775172e874dbef78a"
+  },
+  "raw_evidence": "G:\\GitHub\\entmoot\\.tmp\\performance-go-unbounded-57c2bf3",
+  "cleanup": "Removed prior two failed publication data stores; retained recipes, measurements and source oracle. Successful store retained.",
+  "qualification_scope": "Single structural publication; warm queries, refresh and native semantics unmeasured.",
+  "verification": {
+    "source_after": {
+      "tracked_files": 16087,
+      "tracked_bytes": 154889445,
+      "all_bytes_match_frozen_oracle": true
+    },
+    "binary_unchanged": true,
+    "implementation_after": "57c2bf369831832cb97723045abff0e94f67c7ab",
+    "worktree_clean": false,
+    "worktree_changes": "PLANNING and performance reports only"
+  },
+  "artifacts": {
+    "total_bytes": 21674701334,
+    "largest_files": [
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\knowledge.sqlite3",
+        "bytes": 18700222464
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\current\\generation-cB7LxY\\graph.json",
+        "bytes": 2974466957
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\current\\generation-cB7LxY\\summary.json",
+        "bytes": 7882
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\adapter-profile.json",
+        "bytes": 2635
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\current.json",
+        "bytes": 1108
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\current\\generation-cB7LxY\\graph.json.knowledge.view.json",
+        "bytes": 282
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\write.lock",
+        "bytes": 4
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\.gitignore",
+        "bytes": 2
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\knowledge.sqlite3.lease",
+        "bytes": 0
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\knowledge.sqlite3.startup.lease",
+        "bytes": 0
+      }
+    ],
+    "current_pointers": [
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\current.json",
+        "bytes": 1108
+      }
+    ]
+  }
+}

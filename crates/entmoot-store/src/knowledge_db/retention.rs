@@ -123,20 +123,21 @@ impl Maintenance {
                 "scoped_record_owners",
                 "scoped_records",
                 "scoped_metadata",
-                "inventory_nodes",
-                "inventory_files",
                 "inventory_headers",
+                "file_fact_manifests",
             ] {
                 transaction.execute(&format!("DELETE FROM {table} WHERE view_id=?1"), [view])?;
             }
         }
         // Mark every retained membership, including inactive records. Metadata
         // references are codec-owned; malformed envelopes abort the transaction.
-        transaction.execute_batch("DELETE FROM file_syntax_cache; DELETE FROM syntax_cache_header;
+        transaction.execute_batch("DELETE FROM file_fact_units WHERE unit_id NOT IN (SELECT unit_id FROM file_fact_membership);
+            DELETE FROM inventory_node_versions WHERE node_key NOT IN (SELECT node_key FROM inventory_nodes);
             CREATE TEMP TABLE retained_payloads(id INTEGER PRIMARY KEY);
             INSERT OR IGNORE INTO retained_payloads SELECT payload FROM scoped_records;
-            INSERT OR IGNORE INTO retained_payloads SELECT payload FROM inventory_nodes;
+            INSERT OR IGNORE INTO retained_payloads SELECT payload FROM inventory_node_versions;
             INSERT OR IGNORE INTO retained_payloads SELECT payload FROM inventory_headers;
+            INSERT OR IGNORE INTO retained_payloads SELECT parts FROM file_fact_membership WHERE parts IS NOT NULL;
             INSERT OR IGNORE INTO retained_payloads SELECT payload FROM local_file_progress;
             INSERT OR IGNORE INTO retained_payloads SELECT payload FROM local_git_captures;
             INSERT OR IGNORE INTO retained_payloads SELECT payload FROM local_file_outcomes WHERE payload IS NOT NULL;
@@ -144,10 +145,11 @@ impl Maintenance {
             DELETE FROM shared_payloads WHERE payload_id NOT IN (SELECT id FROM retained_payloads);
             CREATE TEMP TABLE retained_metadata(id INTEGER PRIMARY KEY);
             INSERT OR IGNORE INTO retained_metadata SELECT j.value FROM shared_payloads p, json_each(CAST(p.body AS TEXT),'$.metadata') j;
+            INSERT OR IGNORE INTO retained_metadata SELECT metadata FROM file_fact_sites;
             DELETE FROM shared_metadata WHERE metadata_id NOT IN (SELECT id FROM retained_metadata);
-            DELETE FROM shared_definitions WHERE definition_id NOT IN (SELECT definition_id FROM inventory_nodes WHERE definition_id IS NOT NULL);
+            DELETE FROM shared_definitions WHERE definition_id NOT IN (SELECT definition_id FROM inventory_node_versions WHERE definition_id IS NOT NULL);
             DELETE FROM shared_source_files WHERE file_id NOT IN (SELECT file_id FROM inventory_files UNION SELECT file_id FROM local_git_files);
-            DELETE FROM shared_paths WHERE path_id NOT IN (SELECT path_id FROM inventory_nodes WHERE path_id IS NOT NULL UNION SELECT path_id FROM inventory_files);
+            DELETE FROM shared_paths WHERE path_id NOT IN (SELECT path_id FROM inventory_node_versions WHERE path_id IS NOT NULL UNION SELECT path_id FROM inventory_files);
             DROP TABLE retained_payloads; DROP TABLE retained_metadata;")?;
         if transaction
             .prepare("PRAGMA foreign_key_check")?
@@ -203,6 +205,7 @@ const TABLES: &[&str] = &[
     "storage_fingerprint",
     "shared_metadata",
     "shared_payloads",
+    "shared_claim_links",
     "scoped_records",
     "scoped_metadata",
     "scoped_record_owners",
@@ -214,7 +217,11 @@ const TABLES: &[&str] = &[
     "shared_source_files",
     "inventory_headers",
     "inventory_nodes",
+    "inventory_node_versions",
     "inventory_files",
-    "syntax_cache_header",
-    "file_syntax_cache",
+    "file_fact_units",
+    "file_fact_callables",
+    "file_fact_sites",
+    "file_fact_manifests",
+    "file_fact_membership",
 ];

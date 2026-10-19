@@ -1,0 +1,193 @@
+{
+  "kind": "local_performance_qualification_follow_up",
+  "date_local": "2026-10-18",
+  "outcome": "not_qualified",
+  "plan": {
+    "implementation_revision": "57c2bf369831832cb97723045abff0e94f67c7ab",
+    "source": {
+      "tracked_files": 16087,
+      "tracked_bytes": 154889445,
+      "all_bytes_match_frozen_oracle": true
+    },
+    "source_path": "G:\\GitHub\\entmoot\\.tmp\\performance-qualification-20261018\\source",
+    "source_revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+    "binary": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\target\\commit-check\\release\\entmoot.exe",
+    "sha256": "ffa56f62357649c6513f31d8a63b1e4b26c851df5f771cc499425772f02b7e3f",
+    "profile": "release",
+    "features": [],
+    "arguments": [
+      "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\target\\commit-check\\release\\entmoot.exe",
+      "--json",
+      "--standalone",
+      "init",
+      "--root",
+      "G:\\GitHub\\entmoot\\.tmp\\performance-qualification-20261018\\source",
+      "--structural-only"
+    ],
+    "timeout_seconds": 1200,
+    "sampling_interval_seconds": 0.05,
+    "scope": "one full-repository fresh structural publication; warm reads and refresh not scheduled",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "memory_before": {
+      "total": 66094223360,
+      "available": 25589850112,
+      "percent": 61.3,
+      "used": 40504373248,
+      "free": 25589850112
+    },
+    "limitations": [
+      "one trial",
+      "uncontrolled OS cache and concurrent host workloads",
+      "sampled RSS lower bound; native allocator included; no allocation attribution"
+    ]
+  },
+  "build_seconds": 509,
+  "build_command": "cargo build --release -p entmoot",
+  "fingerprint": {
+    "series": "entmoot.storage.v1",
+    "implementation": {
+      "contracts": "blake3:8a2b9234dbb4fae645c92d6ea8e04914fc5049bbf3d26c1dcaace80da3023f5f",
+      "derivation": "blake3:86b2d077d68a58f1af8725cd09264a7e04b5f14c0343bb7459b2e1283615220b"
+    },
+    "layout": "blake3:77f306cce2d19425ebe5da3997f4ecf092b3f7aa9ed119200681544168a67ce6"
+  },
+  "measurement": {
+    "status": "timeout",
+    "exit_code": 1,
+    "arguments": [
+      "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\target\\commit-check\\release\\entmoot.exe",
+      "--json",
+      "--standalone",
+      "init",
+      "--root",
+      "G:\\GitHub\\entmoot\\.tmp\\performance-qualification-20261018\\source",
+      "--structural-only"
+    ],
+    "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-qualification-20261018\\source",
+    "started_utc": "2026-10-19T01:57:32.550438+00:00",
+    "wall_seconds": 1200.5976661999593,
+    "launch_error": null,
+    "sampled_peak_tree_rss_bytes": 6876921856,
+    "os_peak_main_working_set_bytes": 6876921856,
+    "sampled_tree_cpu_seconds": 1231.171875,
+    "sampled_tree_read_bytes": 286434996074,
+    "sampled_tree_write_bytes": 495651882290,
+    "resource_method": {
+      "sampling_interval_seconds": 0.05,
+      "samples": 15455,
+      "observed_processes": 1,
+      "cpu": "sum_last_observed_process_counters"
+    },
+    "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-go-current-57c2bf3\\commands\\fresh-1-3cf90hw7\\stdout",
+    "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-go-current-57c2bf3\\commands\\fresh-1-3cf90hw7\\stderr",
+    "input": null,
+    "output": {
+      "stdout": {
+        "bytes": 0,
+        "characters": 0,
+        "character_encoding": "utf8_replace",
+        "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+        "tokens": null,
+        "tokenizer": null,
+        "token_status": "not_requested"
+      },
+      "stderr": {
+        "bytes": 0,
+        "characters": 0,
+        "character_encoding": "utf8_replace",
+        "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+        "tokens": null,
+        "tokenizer": null,
+        "token_status": "not_requested"
+      }
+    },
+    "limitations": [
+      "rss_sum_can_count_shared_pages_more_than_once",
+      "short_lived_children_may_be_unobserved"
+    ]
+  },
+  "verification": {
+    "source_after": {
+      "tracked_files": 16087,
+      "tracked_bytes": 154889445,
+      "all_bytes_match_frozen_oracle": true
+    },
+    "binary_unchanged": true,
+    "implementation_after": "57c2bf369831832cb97723045abff0e94f67c7ab",
+    "worktree_clean": true
+  },
+  "artifacts": {
+    "total_bytes": 12782324487,
+    "largest_files": [
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\knowledge.sqlite3-wal",
+        "bytes": 6827375632
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\current\\generation-9BujG8\\graph.json",
+        "bytes": 2974466957
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\entmoot-publication-P7xVa8\\stage.sqlite3",
+        "bytes": 2966933504
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\knowledge.sqlite3-shm",
+        "bytes": 13271040
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\knowledge.sqlite3",
+        "bytes": 274432
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\adapter-profile.json",
+        "bytes": 2635
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\current\\generation-9BujG8\\graph.json.knowledge.view.json",
+        "bytes": 280
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\write.lock",
+        "bytes": 5
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\.gitignore",
+        "bytes": 2
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\knowledge.sqlite3.lease",
+        "bytes": 0
+      },
+      {
+        "path": "workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\knowledge.sqlite3.startup.lease",
+        "bytes": 0
+      }
+    ],
+    "current_pointers": []
+  },
+  "comparison": {
+    "baseline_report": "performance-go-2026-10-18.json",
+    "same_full_checkout_and_verified_source_bytes": true,
+    "same_release_profile_features_arguments_and_timeout": true,
+    "fresh_isolated_store_each_attempt": true,
+    "baseline_peak_rss_bytes": 23098880000,
+    "current_peak_rss_bytes": 6876921856,
+    "peak_rss_reduction_percent": 70.22833204034136,
+    "both_timeout": true,
+    "latency_improvement_established": false,
+    "host_available_memory_differs": true
+  },
+  "assessment": [
+    "Full-repository timeout persists with current optimized CLI; no current publication was exposed.",
+    "Observed peak RSS is approximately 70% lower; one trial per implementation on an uncontrolled host is descriptive evidence.",
+    "WAL and CPU counters advanced during the run. No phase timings or stack profile were captured; the precise bottleneck is not established.",
+    "Windows process I/O counters are cumulative process counters, not physical disk traffic.",
+    "Warm queries, refresh, recovery and native semantics were not qualified by this attempt."
+  ],
+  "raw_evidence": "G:\\GitHub\\entmoot\\.tmp\\performance-go-current-57c2bf3",
+  "recipes": [
+    "run.py",
+    "report.py"
+  ]
+}

@@ -34,9 +34,12 @@ mod fingerprint;
 mod operations;
 pub use fingerprint::current as storage_fingerprint;
 pub use operations::{OperationError, OperationRepository};
+mod file_facts;
+mod indexed_reads;
 mod inventory;
 mod layout;
 pub mod retention;
+mod structural;
 pub mod syntax_cache;
 pub use inventory::KnowledgeViewLocator;
 use layout::{hydrate_payload, hydrate_record, intern_payload, payload_matches};
@@ -493,7 +496,7 @@ impl SqliteKnowledgeRepository {
             }
             transaction.execute_batch(layout::SCHEMA)?;
             transaction.execute_batch(inventory::SCHEMA)?;
-            transaction.execute_batch(syntax_cache::SCHEMA)?;
+            transaction.execute_batch(file_facts::SCHEMA)?;
             transaction.execute_batch(&operations::schema())?;
             fingerprint::initialize(&transaction)?;
         } else {
@@ -787,6 +790,62 @@ impl KnowledgeRepository for SqliteKnowledgeRepository {
 }
 
 impl crate::read::KnowledgeRead for SqliteKnowledgeRepository {
+    fn retained_call_edges(
+        &self,
+        addresses: &[Address],
+        direction: entmoot_contracts::query::CallDirection,
+        after: Option<&str>,
+        limit: usize,
+    ) -> Result<Option<crate::read::RelationReadPage>, KnowledgeRepositoryError> {
+        self.read_call_edges(addresses, direction, after, limit)
+            .map(Some)
+    }
+    fn retained_unresolved(
+        &self,
+        addresses: &[Address],
+        after: Option<&str>,
+        limit: usize,
+    ) -> Result<Option<crate::read::UnresolvedReadPage>, KnowledgeRepositoryError> {
+        self.read_unresolved_page(addresses, after, limit).map(Some)
+    }
+    fn retained_relation_context(
+        &self,
+        edges: &[&RelationEdge],
+        artifact_ids: &[String],
+        coverage_limit: usize,
+    ) -> Result<Option<crate::read::RelationReadContext>, KnowledgeRepositoryError> {
+        self.read_relation_context(edges, artifact_ids, coverage_limit)
+            .map(Some)
+    }
+    fn inventory_resource(
+        &self,
+        id: &str,
+    ) -> Result<Option<entmoot_contracts::ResourceRecord>, KnowledgeRepositoryError> {
+        self.load_record("resources", id)
+    }
+    fn inventory_nodes_matching(
+        &self,
+        path: Option<&str>,
+        exact: &[String],
+        after: Option<i64>,
+        limit: usize,
+    ) -> Result<Option<crate::read::InventoryNodePage>, KnowledgeRepositoryError> {
+        SqliteKnowledgeRepository::inventory_nodes_matching(self, path, exact, after, limit)
+    }
+    fn inventory_nodes(
+        &self,
+        path: Option<&str>,
+        after: Option<i64>,
+        limit: usize,
+    ) -> Result<Option<crate::read::InventoryNodePage>, KnowledgeRepositoryError> {
+        SqliteKnowledgeRepository::inventory_nodes(self, path, after, limit)
+    }
+    fn inventory_metadata(
+        &self,
+    ) -> Result<Option<crate::read::InventoryMetadata>, KnowledgeRepositoryError> {
+        SqliteKnowledgeRepository::inventory_metadata(self)
+    }
+
     fn relation_claim_by_id(
         &self,
         id: &str,
@@ -1563,6 +1622,19 @@ fn drain_visibility_queue(
     Ok(stats)
 }
 
+fn intern_row_payload(
+    connection: &Connection,
+    row: &StoredRow,
+) -> Result<i64, KnowledgeRepositoryError> {
+    let payload = intern_payload(connection, &row.payload)?;
+    for target in &row.contradicts {
+        connection
+            .prepare_cached("INSERT OR IGNORE INTO shared_claim_links VALUES(?1,?2)")?
+            .execute(params![payload, target])?;
+    }
+    Ok(payload)
+}
+
 fn insert_owned_row(
     transaction: &Transaction<'_>,
     row: &StoredRow,
@@ -1581,7 +1653,7 @@ fn insert_owned_row(
             row.proposition_id,
             row.predicate,
             row.location_id,
-            intern_payload(transaction, &row.payload)?,
+            intern_row_payload(transaction, row)?,
         ],
     )?;
     Ok(())
@@ -1642,8 +1714,13 @@ struct StoreValidationContext<'a> {
     artifacts: BTreeMap<&'a str, &'a ArtifactManifest>,
     locations: BTreeMap<&'a str, &'a LocationRecord>,
     component_ids: BTreeSet<&'a str>,
-    propositions: BTreeMap<&'a str, &'a Proposition>,
+    propositions: BTreeMap<&'a str, PropositionContext<'a>>,
     relation_edges: BTreeMap<&'a str, &'a entmoot_contracts::RelationEdge>,
+}
+
+enum PropositionContext<'a> {
+    Record(&'a Proposition),
+    Edge(&'a RelationEdge),
 }
 
 impl<'a> StoreValidationContext<'a> {
@@ -1678,7 +1755,7 @@ impl<'a> StoreValidationContext<'a> {
                 store
                     .propositions
                     .iter()
-                    .map(|value| (value.id.as_str(), value)),
+                    .map(|value| (value.id.as_str(), PropositionContext::Record(value))),
             );
             context.relation_edges.extend(
                 store
@@ -1688,6 +1765,39 @@ impl<'a> StoreValidationContext<'a> {
             );
         }
         context
+    }
+
+    /// An already validated graph supplies the same forward-reference context as
+    /// a complete knowledge publication. Borrow it instead of writing and reading
+    /// another temporary database. Propositions are projected one at a time.
+    fn from_graph(graph: &'a crate::TopologyGraph) -> Self {
+        Self {
+            artifacts: graph
+                .artifacts
+                .iter()
+                .map(|value| (value.artifact_id.as_str(), value))
+                .collect(),
+            locations: graph
+                .locations
+                .iter()
+                .map(|value| (value.location_id.as_str(), value))
+                .collect(),
+            component_ids: graph
+                .components
+                .iter()
+                .map(|value| value.occurrence_id.as_str())
+                .collect(),
+            propositions: graph
+                .relation_edges
+                .iter()
+                .map(|edge| (edge.proposition_id.as_str(), PropositionContext::Edge(edge)))
+                .collect(),
+            relation_edges: graph
+                .relation_edges
+                .iter()
+                .map(|edge| (edge.id.as_str(), edge))
+                .collect(),
+        }
     }
 }
 
@@ -1717,10 +1827,10 @@ impl StoreRecordContext for StoreValidationContext<'_> {
         &self,
         id: &str,
     ) -> Result<Option<std::borrow::Cow<'_, Proposition>>, KnowledgeRepositoryError> {
-        Ok(self
-            .propositions
-            .get(id)
-            .map(|value| std::borrow::Cow::Borrowed(*value)))
+        Ok(self.propositions.get(id).map(|value| match value {
+            PropositionContext::Record(value) => std::borrow::Cow::Borrowed(*value),
+            PropositionContext::Edge(edge) => std::borrow::Cow::Owned(edge.proposition()),
+        }))
     }
     fn relation_edge(
         &self,
@@ -1952,6 +2062,7 @@ struct StoredRow {
     predicate: Option<String>,
     location_id: Option<String>,
     payload: Vec<u8>,
+    contradicts: Vec<String>,
 }
 
 impl StoredRow {
@@ -1968,6 +2079,7 @@ impl StoredRow {
             predicate: None,
             location_id: None,
             payload,
+            contradicts: Vec::new(),
         })
     }
 }
@@ -2091,7 +2203,11 @@ fn for_each_store_row(
         emit!(row);
     }
     plain_rows!("resolutions", &store.resolutions);
-    plain_rows!("resolver_coverages", &store.resolver_coverages);
+    for coverage in &store.resolver_coverages {
+        let mut row = StoredRow::new("resolver_coverages", coverage)?;
+        row.artifact_id = Some(coverage.artifact_id.clone());
+        emit!(row);
+    }
     for record in &store.resolved_identities {
         let mut row = StoredRow::new("resolved_identities", record)?;
         row.record_id = record.record_id();
@@ -2123,6 +2239,7 @@ fn for_each_store_row(
     for claim in &store.relation_claims {
         let mut row = StoredRow::new("relation_claims", claim)?;
         row.record_id = claim.id.as_str().to_string();
+        row.contradicts = claim.contradicts.iter().map(ToString::to_string).collect();
         row.subject_id = Some(match &claim.subject {
             entmoot_contracts::SubjectId::Address { address } => {
                 format!("address:{}", address_identity_key(address))
@@ -2456,7 +2573,7 @@ fn insert_store_chunk(
             row.proposition_id,
             row.predicate,
             row.location_id,
-            intern_payload(transaction, &row.payload)?,
+            intern_row_payload(transaction, &row)?,
         ])?;
         Ok(())
     })?;
@@ -2482,7 +2599,7 @@ fn insert_rows_into_incoming(
             row.proposition_id,
             row.predicate,
             row.location_id,
-            intern_payload(transaction, &row.payload)?,
+            intern_row_payload(transaction, row)?,
         ])?;
     }
     Ok(())

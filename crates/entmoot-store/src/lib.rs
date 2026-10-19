@@ -14,6 +14,7 @@ pub mod inventory;
 pub mod inventory_stitch;
 pub mod location;
 pub mod manifest_state;
+pub mod measurement;
 pub mod revalidation;
 pub mod scan_topology;
 pub mod source_store;

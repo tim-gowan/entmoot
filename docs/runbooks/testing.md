@@ -280,3 +280,13 @@ including target-specific and optional dependencies, lockfile and toolchain.
 Cargo still verifies build fingerprints; test success is never cached. Release
 publication order is derived from the same production DAG. Regenerate release
 inputs after source changes before relying on compatibility or package checks.
+
+For isolated read measurements, build
+`cargo build --release -p entmoot-query --example measure_reads`. Run the example
+with a pinned publication locator and a file containing one ordinary typed
+`QueryRequest`. It reports open cost, one cold request and five warm requests on
+the same handle, serialized response size/digest, and phase RSS endpoints. Keep
+the first response to inspect uncertainty and continuation; use external process
+sampling for peaks. This target links no native producer or workspace orchestrator.
+Repeat in separate processes for cold handles; this does not flush OS caches or
+establish semantic correctness by itself.

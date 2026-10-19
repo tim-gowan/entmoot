@@ -20,8 +20,8 @@ pub use open::{
 };
 
 use crate::{
-    native_resolver::*, KnowledgeRead, KnowledgeRepository, KnowledgeStoreBatches,
-    PublicationBuffer, SqliteKnowledgeRepository, TopologyGraph,
+    native_resolver::*, KnowledgeRead, KnowledgeRepository, SqliteKnowledgeRepository,
+    TopologyGraph,
 };
 use entmoot_contracts::{blake3_hex, SourceSnapshot};
 use entmoot_native::AdapterDiscovery;
@@ -56,11 +56,16 @@ pub struct BindStage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct WorkspaceSummary {
+    /// Timed phase endpoints; RSS samples are not phase peak measurements.
+    #[serde(default)]
+    pub phases: Vec<entmoot_store::measurement::PhaseMeasurement>,
     #[serde(default)]
     pub indexed_files: usize,
     #[serde(default)]
     pub reused_syntax_files: usize,
     #[serde(default)]
+    /// Kept for receipt compatibility; disposable syntax graphs are rebuilt,
+    /// so this counter is zero. Parsed-file reuse is reported separately.
     pub reused_extraction_files: usize,
     #[serde(default)]
     pub reused_stitching_files: usize,
@@ -103,28 +108,6 @@ pub struct BindOptions {
     pub budget: ProducerBudget,
 }
 
-fn sync_graph(
-    graph: &TopologyGraph,
-    location: &PublicationLocation,
-) -> Result<crate::BufferedPublicationReceipt, WorkspaceError> {
-    let mut store = SqliteKnowledgeRepository::open(&location.store).map_err(failure)?;
-    let buffer = PublicationBuffer::default();
-    let mut batches = KnowledgeStoreBatches::from_graph(graph, buffer).map_err(failure)?;
-    let receipt = store
-        .replace_owner_buffered(
-            &format!("snapshot:{}", graph.snapshot.repository_id),
-            &mut batches,
-            buffer,
-        )
-        .map_err(failure)?;
-    // Rematerialize the disposable graph projection only when membership changed
-    // or the projection is missing (PLANNING publication working-set ceiling).
-    if !receipt.outcome.is_unchanged() || !location.graph.is_file() {
-        crate::write_graph_json(graph, &location.graph).map_err(failure)?;
-    }
-    Ok(receipt)
-}
-
 // The OS releases this lock on process exit, including abnormal termination.
 // Keep the sidecar: unlinking it could give concurrent writers different inodes.
 struct WriteGuard {
@@ -165,9 +148,12 @@ fn ignore_publications(root: &Path) -> Result<(), WorkspaceError> {
 }
 
 fn languages(graph: &TopologyGraph) -> BTreeSet<String> {
+    inventory_languages(&graph.snapshot_files)
+}
+
+fn inventory_languages(files: &[crate::SnapshotFileDigest]) -> BTreeSet<String> {
     let hasher = entmoot_core::StructuralHasher::new();
-    graph
-        .snapshot_files
+    files
         .iter()
         .filter_map(|file| {
             let ext = Path::new(&file.path).extension()?.to_str()?;
@@ -277,7 +263,12 @@ fn bind_graph(
     use crate::AnalysisWorkQueue;
     let languages = languages(graph);
     let families: BTreeSet<_> = languages.iter().map(|lang| family(lang)).collect();
-    let executable = blake3_hex(&fs::read(std::env::current_exe()?)?);
+    let mut executable_hash = blake3::Hasher::new();
+    std::io::copy(
+        &mut fs::File::open(std::env::current_exe()?)?,
+        &mut executable_hash,
+    )?;
+    let executable = format!("blake3:{}", executable_hash.finalize().to_hex());
     let mut planned = Vec::new();
     let mut jobs = Vec::new();
     for family in families {
@@ -664,6 +655,7 @@ pub fn initialize_workspace(
     };
     if !options.plan_only {
         ignore_publications(&root)?;
+        retention::check_admission(&root)?;
     }
     let pointer = storage_directory(&root)?.join("current.json");
     let previous = if pointer.exists() {
@@ -681,12 +673,101 @@ pub fn initialize_workspace(
             .verify_inventory_export(&previous.current.graph)
             .map_err(failure)?;
     }
-    let (graph, cache) = crate::build_topology_with_syntax_cache(
-        &root,
-        build_options,
-        previous.as_ref().map(|p| p.current.store.as_path()),
-    )
-    .map_err(failure)?;
+    let previous_receipt = previous_summary(previous.as_ref())?;
+    if options.structural_only && !options.plan_only && !options.canon {
+        let reusable = previous_receipt.as_ref().is_some_and(|receipt| {
+            receipt.structural_only
+                && receipt.stages.iter().all(|stage| stage.stage == "skipped")
+                && receipt.snapshot.subject == options.subject
+                && receipt.snapshot.subject_aliases == options.subject_aliases
+        });
+        let prior_metadata = if reusable {
+            let previous = previous
+                .as_ref()
+                .ok_or_else(|| failure("receipt lacks publication"))?;
+            let metadata = SqliteKnowledgeRepository::open_read_snapshot(&previous.current.store)
+                .map_err(failure)?
+                .inventory_metadata()
+                .map_err(failure)?
+                .ok_or_else(|| failure("publication has no retained inventory"))?;
+            let receipt = previous_receipt
+                .as_ref()
+                .ok_or_else(|| failure("publication lacks receipt"))?;
+            if metadata.snapshot != receipt.snapshot || metadata.policy_ids != receipt.policy_ids {
+                return Err(failure(
+                    "publication receipt disagrees with retained inventory",
+                ));
+            }
+            Some(metadata)
+        } else {
+            None
+        };
+        match entmoot_store::retain_structural_inventory(
+            &root,
+            build_options,
+            previous.as_ref().map(|p| p.current.store.as_path()),
+            &storage_directory(&root)?.join("knowledge.sqlite3"),
+            reusable,
+            options.subject.as_ref(),
+            &options.subject_aliases,
+        )
+        .map_err(failure)?
+        {
+            entmoot_store::StructuralRefresh::Retained {
+                metadata,
+                view,
+                outcome,
+                cache,
+            } => {
+                return publish_retained_structural(
+                    root, *metadata, view, outcome, previous, options, cache,
+                );
+            }
+            entmoot_store::StructuralRefresh::Unchanged(mut cache) => {
+                let metadata = prior_metadata
+                    .ok_or_else(|| failure("unchanged publication lacks verified metadata"))?;
+                let receipt = previous_receipt
+                    .as_ref()
+                    .ok_or_else(|| failure("unchanged publication lacks receipt"))?;
+                let started = std::time::Instant::now();
+                let fence =
+                    entmoot_store::measurement::PhaseTimer::start("publication_source_fence");
+                verify_source_manifest(&metadata.snapshot, &metadata.snapshot_files, &root)?;
+                cache.phases.push(fence.finish());
+                let families: Vec<_> = inventory_languages(&metadata.snapshot_files)
+                    .into_iter()
+                    .collect();
+                let profile = entmoot_native::HostNative::new(&root)
+                    .discover_and_store(Some(&families))
+                    .map_err(failure)?;
+                return Ok(reused_summary(
+                    receipt,
+                    options,
+                    Some(&cache),
+                    profile,
+                    started.elapsed().as_secs_f64(),
+                ));
+            }
+            entmoot_store::StructuralRefresh::Rebuilt { .. } => {
+                return Err(failure("retained initialization returned an eager graph"))
+            }
+        }
+    }
+    let built = if options.plan_only {
+        crate::build_topology_with_syntax_cache(
+            &root,
+            build_options,
+            previous.as_ref().map(|p| p.current.store.as_path()),
+        )
+    } else {
+        entmoot_store::build_topology_with_retained_facts(
+            &root,
+            build_options,
+            previous.as_ref().map(|p| p.current.store.as_path()),
+            &storage_directory(&root)?.join("knowledge.sqlite3"),
+        )
+    };
+    let (graph, cache) = built.map_err(failure)?;
     publish(root, graph, previous, options, None, Some(&cache))
 }
 
@@ -725,7 +806,7 @@ pub fn bind_publication(
     };
     let store_path = store_path
         .map(Path::to_path_buf)
-        .unwrap_or_else(|| PathBuf::from(format!("{}.knowledge.sqlite3", graph_path.display())));
+        .unwrap_or_else(|| default_store_path(graph_path));
     let repository = SqliteKnowledgeRepository::open_read_only(&store_path).map_err(failure)?;
     let mut graph = repository
         .load()
@@ -814,15 +895,118 @@ pub fn working_tree_graph(
 /// Declared `subject` / `subject_aliases` are publication metadata stamped after
 /// observation; the fence compares materialization identity and file digests only.
 pub fn verify_sources(graph: &TopologyGraph, root: &Path) -> Result<(), WorkspaceError> {
-    let observed = observe_source_inventory(root, &graph.snapshot.repository_id)?;
-    if !materialization_eq(&observed.snapshot, &graph.snapshot)
-        || observed.snapshot_files != graph.snapshot_files
+    verify_source_manifest(&graph.snapshot, &graph.snapshot_files, root)
+}
+
+fn verify_source_manifest(
+    snapshot: &SourceSnapshot,
+    files: &[crate::SnapshotFileDigest],
+    root: &Path,
+) -> Result<(), WorkspaceError> {
+    let observed = observe_source_inventory(root, &snapshot.repository_id)?;
+    if !materialization_eq(&observed.snapshot, snapshot)
+        || observed.snapshot_files.as_slice() != files
     {
         return Err(failure(
             "source snapshot changed; run entmoot init (or index) before bind",
         ));
     }
     Ok(())
+}
+
+fn reused_summary(
+    previous: &WorkspaceSummary,
+    options: &BindOptions,
+    cache: Option<&crate::knowledge_db::syntax_cache::SyntaxCache>,
+    adapter_profile: entmoot_contracts::AdapterProfile,
+    publication_wall: f64,
+) -> WorkspaceSummary {
+    let mut receipt = previous.clone();
+    receipt.publication_outcome = "unchanged".into();
+    receipt.wall_seconds = cache.map_or(0.0, |cache| cache.build_wall_seconds) + publication_wall;
+    receipt.phases = cache.map_or_else(Vec::new, |cache| cache.phases.clone());
+    receipt.adapter_profile = Some(adapter_profile);
+    receipt.full = options.full;
+    receipt.require_native = options.require_native;
+    receipt.budget_seconds = options.budget.wall.as_secs();
+    receipt.indexed_files = cache.map_or(0, |cache| cache.len() - cache.reused);
+    receipt.reused_syntax_files = cache.map_or(0, |cache| cache.reused);
+    receipt.reused_extraction_files = cache.map_or(0, |cache| cache.reused_extraction);
+    receipt.reused_stitching_files = cache.map_or(0, |cache| cache.reused_stitching);
+    receipt
+        .limitations
+        .retain(|limitation| !limitation.starts_with("adapter_profile_gap:"));
+    append_adapter_profile_limitations(&mut receipt);
+    receipt
+}
+
+fn publish_retained_structural(
+    root: PathBuf,
+    mut metadata: TopologyGraph,
+    view: String,
+    outcome: crate::PublicationOutcome,
+    previous: Option<WorkspacePublication>,
+    options: &BindOptions,
+    cache: crate::knowledge_db::syntax_cache::SyntaxCache,
+) -> Result<WorkspaceSummary, WorkspaceError> {
+    let started = std::time::Instant::now();
+    let mut phases = cache.phases.clone();
+    let fence = entmoot_store::measurement::PhaseTimer::start("publication_source_fence");
+    verify_sources(&metadata, &root)?;
+    phases.push(fence.finish());
+    let families: Vec<_> = languages(&metadata).into_iter().collect();
+    let native = entmoot_native::HostNative::new(&root);
+    let profile = native
+        .discover_and_store(Some(&families))
+        .map_err(failure)?;
+    let storage = storage_directory(&root)?;
+    let generations = storage.join("current");
+    fs::create_dir_all(&generations)?;
+    let generation = tempfile::Builder::new()
+        .prefix("generation-")
+        .tempdir_in(&generations)?;
+    let location = PublicationLocation {
+        graph: generation.path().join("publication.view.json"),
+        store: generation.path().join("publication.view.json"),
+        source_root: root.clone(),
+    };
+    let database = storage.join("knowledge.sqlite3");
+    let stages = bind_graph(
+        &mut metadata,
+        &location,
+        &artifact_store_path(&database)?,
+        options,
+        None,
+        None,
+        &native,
+    )?;
+    write_json(
+        &location.store,
+        &crate::KnowledgeViewLocator { database, view },
+    )?;
+    let mut report = summary(
+        &metadata,
+        location.clone(),
+        stages,
+        options,
+        cache.build_wall_seconds + started.elapsed().as_secs_f64(),
+        &outcome,
+    );
+    report.adapter_profile = Some(profile);
+    report.phases = phases;
+    report.indexed_files = cache.len() - cache.reused;
+    report.reused_syntax_files = cache.reused;
+    report.reused_extraction_files = cache.reused_extraction;
+    report.reused_stitching_files = cache.reused_stitching;
+    append_adapter_profile_limitations(&mut report);
+    commit_publication(
+        &root,
+        &metadata.snapshot,
+        previous.as_ref(),
+        location,
+        report,
+        generation,
+    )
 }
 
 fn materialization_eq(
@@ -858,6 +1042,8 @@ fn publish(
     let database = storage.join("knowledge.sqlite3");
     let objects = artifact_store_path(&database)?;
     let started = std::time::Instant::now();
+    let build_wall = syntax_cache.map_or(0.0, |cache| cache.build_wall_seconds);
+    let mut phases = syntax_cache.map_or_else(Vec::new, |cache| cache.phases.clone());
     let inventory_families: Vec<String> = languages(&graph).into_iter().collect();
     // plan_only must not write a publication or adapter profile to workspace storage.
     let adapter_profile = if options.plan_only {
@@ -878,11 +1064,6 @@ fn publish(
                 .is_some_and(|locator| locator.view == digest)
             {
                 verify_sources(&graph, &root)?;
-                let mut receipt = receipt.clone();
-                receipt.publication_outcome = "unchanged".into();
-                receipt.wall_seconds = started.elapsed().as_secs_f64();
-                receipt.adapter_profile = Some(adapter_profile);
-                append_adapter_profile_limitations(&mut receipt);
                 if let Some(cache) = syntax_cache {
                     if cache.reused != cache.len() {
                         retention::check_admission(&root)?;
@@ -891,11 +1072,14 @@ fn publish(
                         .map_err(failure)?
                         .store_syntax_cache(cache)
                         .map_err(failure)?;
-                    receipt.indexed_files = cache.len() - cache.reused;
-                    receipt.reused_syntax_files = cache.reused;
-                    receipt.reused_extraction_files = cache.reused_extraction;
-                    receipt.reused_stitching_files = cache.reused_stitching;
                 }
+                let receipt = reused_summary(
+                    receipt,
+                    options,
+                    syntax_cache,
+                    adapter_profile,
+                    started.elapsed().as_secs_f64(),
+                );
                 return Ok(receipt);
             }
         }
@@ -930,10 +1114,11 @@ fn publish(
             location,
             stages,
             options,
-            started.elapsed().as_secs_f64(),
+            build_wall + started.elapsed().as_secs_f64(),
             &crate::PublicationOutcome::default(),
         );
         report.adapter_profile = Some(adapter_profile);
+        report.phases = phases;
         append_adapter_profile_limitations(&mut report);
         return Ok(report);
     }
@@ -942,11 +1127,19 @@ fn publish(
         .prefix("generation-")
         .tempdir_in(&generations)?;
     let mut location = PublicationLocation {
-        graph: generation.path().join("graph.json"),
+        graph: generation.path().join("input.native.json"),
         store: generation.path().join("graph.json.knowledge.sqlite3"),
         source_root: root.clone(),
     };
-    crate::write_graph_json(&graph, &location.graph).map_err(failure)?;
+    // Native sessions consume exact structural join sites and the source manifest.
+    // Streaming this transport does not duplicate the repository graph in memory.
+    if !options.structural_only {
+        let timer = entmoot_store::measurement::PhaseTimer::start("native_input_export");
+        entmoot_native::native_resolver::input::write_native_input(&graph, &location.graph)
+            .map_err(failure)?;
+        phases.push(timer.finish());
+    }
+    let native_timer = entmoot_store::measurement::PhaseTimer::start("native_binding");
     let mut stages = {
         bind_graph(
             &mut graph,
@@ -958,26 +1151,31 @@ fn publish(
             &entmoot_native::HostNative::new(&root),
         )
     }?;
+    phases.push(native_timer.finish());
     // Verify bytes and the full path set again before the publication becomes visible.
+    let fence_timer = entmoot_store::measurement::PhaseTimer::start("publication_source_fence");
     verify_sources(&graph, &root)?;
+    phases.push(fence_timer.finish());
     let staged_store = location.store.clone();
     retention::check_admission(&root)?;
     let locator = crate::KnowledgeViewLocator {
         database,
         view: graph.content_digest()?,
     };
-    location.store = generation.path().join("graph.json.knowledge.view.json");
+    location.store = generation.path().join("publication.view.json");
     write_json(&location.store, &locator)?;
-    let publication_receipt = sync_graph(&graph, &location)?;
+    let inventory_timer = entmoot_store::measurement::PhaseTimer::start("sealed_publication");
     let mut shared = SqliteKnowledgeRepository::open(&location.store).map_err(failure)?;
     let source = crate::GixSourceStore::open(&root).map_err(failure)?;
-    shared
-        .store_inventory(&graph, Some(&source))
+    let publication_outcome = shared
+        .seal_inventory(&graph, Some(&source), syntax_cache)
         .map_err(failure)?;
-    if let Some(cache) = syntax_cache {
-        shared.store_syntax_cache(cache).map_err(failure)?;
-    }
     drop(shared);
+    phases.push(inventory_timer.finish());
+    if location.graph.is_file() {
+        fs::remove_file(&location.graph)?;
+    }
+    location.graph = location.store.clone();
     // The shared commit and inventory are complete before exposing the pointer.
     // Only this generation's private staging database can be discarded here.
     crate::knowledge_db::remove_store_files(&staged_store).map_err(failure)?;
@@ -1006,10 +1204,11 @@ fn publish(
         location.clone(),
         stages,
         options,
-        started.elapsed().as_secs_f64(),
-        &publication_receipt.outcome,
+        build_wall + started.elapsed().as_secs_f64(),
+        &publication_outcome,
     );
     summary.adapter_profile = Some(adapter_profile);
+    summary.phases = phases;
     if let Some(cache) = syntax_cache {
         summary.indexed_files = cache.len() - cache.reused;
         summary.reused_syntax_files = cache.reused;
@@ -1017,10 +1216,28 @@ fn publish(
         summary.reused_stitching_files = cache.reused_stitching;
     }
     append_adapter_profile_limitations(&mut summary);
+    commit_publication(
+        &root,
+        &graph.snapshot,
+        previous.as_ref(),
+        location,
+        summary,
+        generation,
+    )
+}
+
+fn commit_publication(
+    root: &Path,
+    snapshot: &SourceSnapshot,
+    previous: Option<&WorkspacePublication>,
+    location: PublicationLocation,
+    summary: WorkspaceSummary,
+    generation: tempfile::TempDir,
+) -> Result<WorkspaceSummary, WorkspaceError> {
     let summary_path = generation.path().join("summary.json");
     write_json(&summary_path, &summary)?;
     let base = previous.as_ref().and_then(|p| {
-        if p.snapshot == graph.snapshot {
+        if &p.snapshot == snapshot {
             p.base.clone()
         } else {
             Some(p.current.clone())
@@ -1030,12 +1247,12 @@ fn publish(
         schema_version: "entmoot.workspace_publication.v1".into(),
         current: location,
         base,
-        snapshot: graph.snapshot.clone(),
+        snapshot: snapshot.clone(),
         summary: summary_path,
     };
     // Retain the complete generation before the single atomic visibility change.
     let _generation_path = generation.keep();
-    write_json(&storage.join("current.json"), &publication)?;
+    write_json(&storage_directory(root)?.join("current.json"), &publication)?;
     Ok(summary)
 }
 
@@ -1048,6 +1265,7 @@ fn summary(
     outcome: &crate::PublicationOutcome,
 ) -> WorkspaceSummary {
     WorkspaceSummary {
+        phases: Vec::new(),
         indexed_files: 0, reused_syntax_files: 0,
         reused_extraction_files: 0, reused_stitching_files: 0,
         schema_version: "entmoot.workspace_summary.v1".into(), publication,
@@ -1083,7 +1301,6 @@ pub struct OpenedPublication {
     pub engine: crate::QueryEngine,
     /// Digest of the export paired with this inventory, pinned at open time.
     pub publication_digest: String,
-    pub compare: Option<std::sync::Arc<TopologyGraph>>,
     /// Effective source root after graph.root discovery.
     pub source_root: Option<PathBuf>,
 }
@@ -1121,33 +1338,43 @@ fn open_query_publication_options(
     repository
         .verify_inventory_export(graph_path)
         .map_err(failure)?;
-    let stored = repository.load_inventory(true).map_err(failure)?;
+    let stored = repository.inventory_metadata().map_err(failure)?;
     let retained_inventory = stored.is_some();
-    let (graph, publication_digest) = match stored {
-        Some(graph) => {
+    let (mut engine, publication_digest) = match stored {
+        Some(metadata) => {
             let digest = repository
                 .inventory_export_digest()
                 .map_err(failure)?
                 .ok_or_else(|| failure("stored inventory has no publication digest"))?;
-            (graph, digest)
+            (
+                crate::QueryEngine::with_retained_metadata(
+                    metadata,
+                    digest.clone(),
+                    store,
+                    options,
+                ),
+                digest,
+            )
         }
         None => {
             let bytes = fs::read(graph_path)?;
             let mut graph: TopologyGraph = serde_json::from_slice(&bytes)?;
             graph.rebuild_indexes();
             graph.validate().map_err(failure)?;
-            (graph, blake3_hex(&bytes))
+            (
+                crate::QueryEngine::with_options(graph, store, options),
+                blake3_hex(&bytes),
+            )
         }
     };
     let lifecycle_lease = repository.lifecycle_lease();
     drop(repository);
     let explicit_source = source_root.is_some();
     let source_root = source_root.map(PathBuf::from).or_else(|| {
-        let root = PathBuf::from(&graph.root);
+        let root = PathBuf::from(engine.publication_root());
         root.is_dir().then_some(root)
     });
-    let mut engine = crate::QueryEngine::with_options(graph, store, options)
-        .with_lifecycle_lease(lifecycle_lease);
+    engine = engine.with_lifecycle_lease(lifecycle_lease);
     if retained_inventory {
         engine = engine.with_source_store(std::sync::Arc::new(
             crate::source_store::PublicationSourceStore::new(store),
@@ -1172,16 +1399,47 @@ fn open_query_publication_options(
             Err(_) => {}
         }
     }
-    let mut compare = None;
     if let Some(path) = compare_graph {
-        let compare_graph = crate::load_graph_json(path).map_err(failure)?;
-        compare = Some(std::sync::Arc::new(compare_graph.clone()));
-        engine = engine.with_compare_graph(compare_graph);
+        if let Some(locator) = crate::KnowledgeViewLocator::read(path).map_err(failure)? {
+            let base =
+                SqliteKnowledgeRepository::open_view_read_only(&locator.database, &locator.view)
+                    .map_err(failure)?;
+            let expected = base
+                .inventory_export_digest()
+                .map_err(failure)?
+                .ok_or_else(|| failure("comparison publication has no inventory commitment"))?;
+            let lease = base.lifecycle_lease();
+            engine = engine.with_compare_loader(move || {
+                let _lease = &lease;
+                let base = SqliteKnowledgeRepository::open_view_read_only(
+                    &locator.database,
+                    &locator.view,
+                )?;
+                if base.inventory_export_digest()?.as_ref() != Some(&expected) {
+                    return Err(crate::QueryError::Unavailable(
+                        "comparison publication changed".into(),
+                    ));
+                }
+                base.load_inventory(false)?.ok_or_else(|| {
+                    crate::QueryError::Unavailable("comparison inventory is missing".into())
+                })
+            });
+        } else {
+            // Explicit exports are caller-owned files. Pin their bytes so later
+            // replacement cannot silently select a different comparison base.
+            let bytes = fs::read(path)?;
+            engine = engine.with_compare_loader(move || {
+                let mut base: TopologyGraph = serde_json::from_slice(&bytes)?;
+                base.rebuild_indexes();
+                base.validate()
+                    .map_err(|error| crate::QueryError::InvalidInput(error.to_string()))?;
+                Ok(base)
+            });
+        }
     }
     Ok(OpenedPublication {
         engine,
         publication_digest,
-        compare,
         source_root,
     })
 }
@@ -1261,6 +1519,31 @@ mod tests {
             );
         }
         graph.validate().expect("graph validates");
+        let repeated = initialize_workspace(
+            dir.path(),
+            Some("authored/fixture"),
+            &policy(),
+            &BindOptions {
+                structural_only: true,
+                subject: Some(subject),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(repeated.publication_outcome, "unchanged");
+        let unstamped = initialize_workspace(
+            dir.path(),
+            Some("authored/fixture"),
+            &policy(),
+            &BindOptions {
+                structural_only: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(unstamped.publication_outcome, "replaced");
+        assert!(unstamped.snapshot.subject.is_none());
+        assert_ne!(unstamped.publication.graph, repeated.publication.graph);
     }
 
     #[test]
@@ -1582,7 +1865,11 @@ mod tests {
             store: output.path().join("store.sqlite3"),
             source_root: source.path().to_path_buf(),
         };
-        sync_graph(&graph, &location).unwrap();
+        SqliteKnowledgeRepository::open(&location.store)
+            .unwrap()
+            .replace_all(&crate::KnowledgeStore::extract_from_graph(&graph))
+            .unwrap();
+        crate::write_graph_json(&graph, &location.graph).unwrap();
         let options = BindOptions {
             structural_only: true,
             ..Default::default()

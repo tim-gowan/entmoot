@@ -105,9 +105,37 @@ impl QueryEngine {
         Ok(digest)
     }
 
-    pub(super) fn deliver_query(
+    pub(super) fn deliver_query(&self, request: QueryRequest) -> Result<QueryResponse, QueryError> {
+        validate(request.output())?;
+        if self.deferred_navigation.is_some() {
+            if let QueryRequest::Inspect {
+                request: inspect, ..
+            } = &request
+            {
+                if let Some((projected, result)) = self.retained_call_inspect(inspect)? {
+                    return projected.deliver_prepared_query(request, Some(result));
+                }
+            }
+        }
+        if self.deferred_navigation.is_some()
+            && !matches!(
+                &request,
+                QueryRequest::Read { .. }
+                    | QueryRequest::Find {
+                        request: super::FindQuery::Subject { .. },
+                        ..
+                    }
+            )
+        {
+            return self.navigation()?.deliver_query(request);
+        }
+        self.deliver_prepared_query(request, None)
+    }
+
+    fn deliver_prepared_query(
         &self,
         mut request: QueryRequest,
+        prepared: Option<QueryResult>,
     ) -> Result<QueryResponse, QueryError> {
         let options = request.output().clone();
         validate(&options)?;
@@ -144,12 +172,16 @@ impl QueryEngine {
         }
         // Detail policy is applied before per-hop arrays are built. Claims still
         // participate in classification regardless of which records are displayed.
-        let result = match execution {
-            QueryRequest::Find { request, .. } => self.find(request),
-            QueryRequest::Inspect { request, .. } => self.inspect(request),
-            QueryRequest::Traverse { request, .. } => self.traverse(request),
-            QueryRequest::Read { request, .. } => self.read(request),
-        }?;
+        let result = if let Some(result) = prepared {
+            result
+        } else {
+            match execution {
+                QueryRequest::Find { request, .. } => self.find(request),
+                QueryRequest::Inspect { request, .. } => self.inspect(request),
+                QueryRequest::Traverse { request, .. } => self.traverse(request),
+                QueryRequest::Read { request, .. } => self.read(request),
+            }?
+        };
         if let Some(cursor) = &mut cursor {
             cursor.search_slice = traversal_receipt(&result).and_then(|r| r.slice_token.clone());
         }
@@ -204,7 +236,14 @@ impl QueryEngine {
                 let mut digest = blake3::Hasher::new();
                 serde_json::to_writer(
                     &mut digest,
-                    &(request, comparison.then_some(self.compare_graph.as_deref())),
+                    &(
+                        request,
+                        if comparison {
+                            Some(self.comparison_graph()?)
+                        } else {
+                            None
+                        },
+                    ),
                 )?;
                 ContentDigest::from_trusted(format!("blake3:{}", digest.finalize().to_hex()))
             },

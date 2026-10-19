@@ -94,7 +94,7 @@ fn run(engine: &QueryEngine, request: Value) -> Value {
 fn rooted_routes_filter_terminals_preserve_direction_and_original_evidence() {
     let dir = tempfile::tempdir().unwrap();
     let engine = open(fixture(), &dir);
-    let before = serde_json::to_vec(engine.graph()).unwrap();
+    let before = serde_json::to_vec(engine.graph().unwrap()).unwrap();
     let result = run(&engine, request("origin", "callees", "sink", false));
     assert_eq!(result["items"].as_array().unwrap().len(), 1);
     let hit = &result["items"][0];
@@ -141,7 +141,7 @@ fn rooted_routes_filter_terminals_preserve_direction_and_original_evidence() {
         .as_array()
         .unwrap()
         .contains(&json!("dataflow_not_established")));
-    assert_eq!(serde_json::to_vec(engine.graph()).unwrap(), before);
+    assert_eq!(serde_json::to_vec(engine.graph().unwrap()).unwrap(), before);
 }
 
 #[test]

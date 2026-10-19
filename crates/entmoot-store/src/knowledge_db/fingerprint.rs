@@ -13,7 +13,7 @@ pub fn current() -> StorageFingerprint {
         SCHEMA,
         layout::SCHEMA,
         inventory::SCHEMA,
-        syntax_cache::SCHEMA,
+        file_facts::SCHEMA,
         operational_schema.as_str(),
     ] {
         let normalized = sql.replace("\r\n", "\n");

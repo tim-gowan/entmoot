@@ -68,6 +68,19 @@ pub(super) fn schema() -> String {
             ("DELETE", "view_id=OLD.view_id"),
             ("UPDATE", "view_id=OLD.view_id OR view_id=NEW.view_id"),
         ] {
+            let condition = if matches!(table, "inventory_nodes" | "inventory_files") {
+                condition
+                    .replace(
+                        "NEW.view_id",
+                        "(SELECT view_id FROM inventory_headers WHERE view_key=NEW.view_key)",
+                    )
+                    .replace(
+                        "OLD.view_id",
+                        "(SELECT view_id FROM inventory_headers WHERE view_key=OLD.view_key)",
+                    )
+            } else {
+                condition.to_owned()
+            };
             sql.push_str(&format!("CREATE TRIGGER seal_{table}_{action} BEFORE {action} ON {table} WHEN EXISTS(SELECT 1 FROM local_view_seals WHERE {condition}) BEGIN SELECT RAISE(ABORT,'registered knowledge view is immutable; publish a new view'); END;\n"));
         }
     }

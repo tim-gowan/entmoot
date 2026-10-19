@@ -14,7 +14,13 @@ pub fn write_graph_json(
     Ok(())
 }
 
+/// Load an explicit graph export or project a pinned store locator on demand.
 pub fn load_graph_json(path: &Path) -> Result<TopologyGraph, Box<dyn std::error::Error>> {
+    if crate::KnowledgeViewLocator::read(path)?.is_some() {
+        return crate::SqliteKnowledgeRepository::open_read_snapshot(path)?
+            .load_inventory(false)?
+            .ok_or_else(|| "publication has no retained inventory".into());
+    }
     let file = std::fs::File::open(path)?;
     let mut graph: TopologyGraph = match serde_json::from_reader(std::io::BufReader::new(file)) {
         Ok(graph) => graph,

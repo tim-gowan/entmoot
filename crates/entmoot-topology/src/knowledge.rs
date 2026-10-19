@@ -424,31 +424,7 @@ impl KnowledgeStore {
         inventory.unresolved_relations = self.unresolved_relations;
         inventory.diagnostics = self.diagnostics;
         inventory.edges = self.structural_edges.into();
-        // SQLite reads and first ingestion can supply different row orders.
-        // Canonicalize Resolver collections before publishing the projection;
-        // otherwise an idempotent attach changes its byte digest on replay.
-        inventory
-            .artifacts
-            .sort_by(|a, b| a.artifact_id.cmp(&b.artifact_id));
-        inventory
-            .resolutions
-            .sort_by(|a, b| a.resolution_id.cmp(&b.resolution_id));
-        inventory
-            .resolver_coverages
-            .sort_by(|a, b| a.coverage_id.cmp(&b.coverage_id));
-        inventory
-            .resolved_identities
-            .sort_by_cached_key(ResolvedIdentityRecord::record_id);
-        inventory
-            .relation_edges
-            .sort_by(|a, b| a.id.as_str().cmp(b.id.as_str()));
-        inventory
-            .relation_claims
-            .sort_by(|a, b| a.id.as_str().cmp(b.id.as_str()));
-        inventory
-            .unresolved_relations
-            .sort_by(|a, b| a.id.as_str().cmp(b.id.as_str()));
-        inventory.rebuild_indexes();
+        inventory.canonicalize_inventory();
         inventory
     }
 

@@ -402,7 +402,7 @@ impl QueryEngine {
         assess_unused(&self.assessment_graph()?, request)
     }
     pub fn test_impact(&self, request: TestImpactRequest) -> Result<TestImpactReport, QueryError> {
-        let base = self.compare_graph.as_deref().ok_or_else(|| {
+        let base = self.comparison_graph()?.ok_or_else(|| {
             QueryError::InvalidInput("test impact requires both revision sides".into())
         })?;
         assess_test_impact(base, &self.assessment_graph()?, request)

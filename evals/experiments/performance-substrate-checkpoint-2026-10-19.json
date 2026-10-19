@@ -1,0 +1,1797 @@
+{
+  "kind": "intermediate_substrate_checkpoint_characterization",
+  "plan": {
+    "source_revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+    "initial_source": {
+      "tracked_files": 16087,
+      "changed_inputs": {},
+      "all_bytes_verified": true
+    },
+    "source": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+    "base_revision": "57c2bf369831832cb97723045abff0e94f67c7ab",
+    "implementation": "uncommitted frozen checkpoint; see patch and input manifest",
+    "binaries_sha256": {
+      "entmoot-mcp.exe": "ab019b592b135acdd161082401e30ac600aed725f41828049af7be5e4ccbf3c1",
+      "entmoot-producer.exe": "f578a364f81b1268dc392e6d3d7fdec5303197e16ccea4c804af342898da72f9",
+      "entmoot.exe": "a3394cc56d83fa5644bd782dcb5346a8c6c663c9184253c31acaaf9bbfc5b589",
+      "measure_reads.exe": "7218ca92bf1b02d65773579cf11b0276f6e3e4300a9b4bbac341f59d32bdc7e6"
+    },
+    "profile": "release",
+    "features": [
+      "producer"
+    ],
+    "timeout_seconds": null,
+    "sequence": [
+      "fresh",
+      "no-change",
+      "read-probes",
+      "comment",
+      "body",
+      "add",
+      "rename",
+      "delete"
+    ],
+    "host": "Windows-11-10.0.26300-SP0",
+    "memory_before": {
+      "total": 66094223360,
+      "available": 23905038336,
+      "percent": 63.8,
+      "used": 42189185024,
+      "free": 23905038336
+    },
+    "limitations": [
+      "one trial per phase",
+      "uncontrolled OS caches and host workloads",
+      "sampled RSS is a lower bound",
+      "storage measurements are post-command, not temporary/WAL peaks",
+      "structural workflow only; adapter controls are separate",
+      "comparison with prior non-producer binary includes build-feature differences",
+      "the repository-wide graph cutover is incomplete"
+    ]
+  },
+  "fingerprint": {
+    "series": "entmoot.storage.v1",
+    "implementation": {
+      "contracts": "blake3:906fbb6ea01fcf12e5c3bf02f6e63f5aa4da617e569ee69c3c0beb80755869f1",
+      "derivation": "blake3:fe2ed2ec972be2436efe6709abe0aa66c83a5253b62ac405ce4731b91343a400"
+    },
+    "layout": "blake3:9fcff9e3dc4eca713b14fdf5fbf2686a4b5340c63f6e07531d41dcb0832d2b9c"
+  },
+  "completion": {
+    "status": "complete",
+    "binaries_unchanged": true
+  },
+  "source_restored": {
+    "tracked_files": 16087,
+    "changed_inputs": {},
+    "all_bytes_verified": true
+  },
+  "phases": {
+    "fresh": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T07:38:17.779980+00:00",
+        "wall_seconds": 1136.0015908999485,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 6027845632,
+        "os_peak_main_working_set_bytes": 6027845632,
+        "sampled_tree_cpu_seconds": 1102.375,
+        "sampled_tree_read_bytes": 177638877069,
+        "sampled_tree_write_bytes": 340083639167,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 14628,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\fresh-nx_as55t\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\fresh-nx_as55t\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6966,
+            "characters": 6966,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:60f70026a541592397711dca3da4b4e36fe41951d2dc83fefb892e7fea6839e2",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 589,
+            "characters": 573,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:b35d702c78f0a60f141350cc1bdfe60829f6d9c813802289994ee6887697561c",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "retained_bytes": 8158274085,
+      "publication_outcome": "replaced",
+      "publication_digest": "blake3:61b9123575563817004cf8e5727fc1a611e616b78c409671700638bc035b618f",
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {},
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {},
+          "all_bytes_verified": true
+        }
+      },
+      "phase_measurements": [
+        {
+          "phase": "source_observation",
+          "wall_seconds": 0.5441825,
+          "rss_before_bytes": 10362880,
+          "rss_after_bytes": 37687296
+        },
+        {
+          "phase": "parse_and_retain_file_facts",
+          "wall_seconds": 83.1620362,
+          "rss_before_bytes": 37687296,
+          "rss_after_bytes": 173879296
+        },
+        {
+          "phase": "syntax_projection",
+          "wall_seconds": 22.2449109,
+          "rss_before_bytes": 173879296,
+          "rss_after_bytes": 4093284352
+        },
+        {
+          "phase": "structural_resolution",
+          "wall_seconds": 23.6803094,
+          "rss_before_bytes": 4093284352,
+          "rss_after_bytes": 5594820608
+        },
+        {
+          "phase": "inventory_finalization",
+          "wall_seconds": 22.5241047,
+          "rss_before_bytes": 5594820608,
+          "rss_after_bytes": 5602832384
+        },
+        {
+          "phase": "native_binding",
+          "wall_seconds": 0.0538338,
+          "rss_before_bytes": 5602885632,
+          "rss_after_bytes": 5602992128
+        },
+        {
+          "phase": "publication_source_fence",
+          "wall_seconds": 0.7347195,
+          "rss_before_bytes": 5602992128,
+          "rss_after_bytes": 5603147776
+        },
+        {
+          "phase": "sealed_publication",
+          "wall_seconds": 959.0166396,
+          "rss_before_bytes": 5603291136,
+          "rss_after_bytes": 5626433536
+        }
+      ]
+    },
+    "no-change": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T07:58:34.305212+00:00",
+        "wall_seconds": 102.20536680001533,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 6002720768,
+        "os_peak_main_working_set_bytes": 6002720768,
+        "sampled_tree_cpu_seconds": 102.71875,
+        "sampled_tree_read_bytes": 5101117059,
+        "sampled_tree_write_bytes": 226330454,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 1316,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\no-change-dxg890r6\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\no-change-dxg890r6\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6627,
+            "characters": 6627,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:56bd5d428db100005945ea173baf544c42d41c717887867bc17a91e441100229",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 588,
+            "characters": 572,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:b244c2d5688ecfe2314a49e66c2b606830e9b6b091944bec602d3b9bdf41853c",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "retained_bytes": 8158274085,
+      "publication_outcome": "unchanged",
+      "publication_digest": "blake3:61b9123575563817004cf8e5727fc1a611e616b78c409671700638bc035b618f",
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {},
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {},
+          "all_bytes_verified": true
+        }
+      },
+      "phase_measurements": [
+        {
+          "phase": "source_observation",
+          "wall_seconds": 0.5954866,
+          "rss_before_bytes": 15433728,
+          "rss_after_bytes": 51044352
+        },
+        {
+          "phase": "parse_and_retain_file_facts",
+          "wall_seconds": 21.3805941,
+          "rss_before_bytes": 51044352,
+          "rss_after_bytes": 128839680
+        },
+        {
+          "phase": "syntax_projection",
+          "wall_seconds": 22.6747145,
+          "rss_before_bytes": 128839680,
+          "rss_after_bytes": 4106547200
+        },
+        {
+          "phase": "structural_resolution",
+          "wall_seconds": 10.8056582,
+          "rss_before_bytes": 4106547200,
+          "rss_after_bytes": 5569708032
+        },
+        {
+          "phase": "inventory_finalization",
+          "wall_seconds": 22.6922753,
+          "rss_before_bytes": 5569708032,
+          "rss_after_bytes": 5577707520
+        }
+      ]
+    },
+    "comment": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T08:06:50.417682+00:00",
+        "wall_seconds": 1065.5420644000405,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 5983162368,
+        "os_peak_main_working_set_bytes": 5983162368,
+        "sampled_tree_cpu_seconds": 1047.34375,
+        "sampled_tree_read_bytes": 172799974723,
+        "sampled_tree_write_bytes": 282072806372,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 13736,
+          "observed_processes": 4,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\comment-bbiuad9j\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\comment-bbiuad9j\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6967,
+            "characters": 6967,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:b8ffd9400e2ec29a3ec6f2856b5d770fe7ca273c8b39a164c6b97ebe39466030",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 589,
+            "characters": 573,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:4dbc110d64dafada4480d2f69aa6f271f5c8907ccc16548d55a7516fb2bcd684",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "retained_bytes": 12648138871,
+      "publication_outcome": "replaced",
+      "publication_digest": "blake3:51fdf8326aa48bd080fb2c17796a5af51578da52dd4a2f0dffa6b94651201271",
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 411,
+              "blake3": "522f6719aa8f6e29102bdbe23392fe40380531754378386d4152a3f8546addbb"
+            }
+          },
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 411,
+              "blake3": "522f6719aa8f6e29102bdbe23392fe40380531754378386d4152a3f8546addbb"
+            }
+          },
+          "all_bytes_verified": true
+        }
+      },
+      "phase_measurements": [
+        {
+          "phase": "source_observation",
+          "wall_seconds": 0.5921431,
+          "rss_before_bytes": 15491072,
+          "rss_after_bytes": 35254272
+        },
+        {
+          "phase": "parse_and_retain_file_facts",
+          "wall_seconds": 21.733381,
+          "rss_before_bytes": 35254272,
+          "rss_after_bytes": 111017984
+        },
+        {
+          "phase": "syntax_projection",
+          "wall_seconds": 22.6422404,
+          "rss_before_bytes": 111017984,
+          "rss_after_bytes": 4093751296
+        },
+        {
+          "phase": "structural_resolution",
+          "wall_seconds": 11.0994641,
+          "rss_before_bytes": 4093751296,
+          "rss_after_bytes": 5550067712
+        },
+        {
+          "phase": "inventory_finalization",
+          "wall_seconds": 28.3545705,
+          "rss_before_bytes": 5550067712,
+          "rss_after_bytes": 5558226944
+        },
+        {
+          "phase": "native_binding",
+          "wall_seconds": 0.053061,
+          "rss_before_bytes": 5558710272,
+          "rss_after_bytes": 5558833152
+        },
+        {
+          "phase": "publication_source_fence",
+          "wall_seconds": 0.7736784,
+          "rss_before_bytes": 5558833152,
+          "rss_after_bytes": 5558923264
+        },
+        {
+          "phase": "sealed_publication",
+          "wall_seconds": 941.4395676,
+          "rss_before_bytes": 5558956032,
+          "rss_after_bytes": 5571858432
+        }
+      ]
+    },
+    "body": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T08:25:56.491408+00:00",
+        "wall_seconds": 941.445697499963,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 5986975744,
+        "os_peak_main_working_set_bytes": 5986975744,
+        "sampled_tree_cpu_seconds": 931.203125,
+        "sampled_tree_read_bytes": 175027894843,
+        "sampled_tree_write_bytes": 278868000911,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 12145,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\body-29udse8h\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\body-29udse8h\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6966,
+            "characters": 6966,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:9b0799f597fcfed43b25a7ece44bc6674c8b4030c3826d1b3eed75fc52d3ee4a",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 588,
+            "characters": 572,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:892e062764e2ecd1bee8d5678967c3b9bc8d48ed701be715beabea7bb19d53e6",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "retained_bytes": 17147415723,
+      "publication_outcome": "replaced",
+      "publication_digest": "blake3:7d19fe009c48061551e556c52216e7457cd629cf58fbdddc4c51e177ba01a5f0",
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            }
+          },
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            }
+          },
+          "all_bytes_verified": true
+        }
+      },
+      "phase_measurements": [
+        {
+          "phase": "source_observation",
+          "wall_seconds": 0.9248522,
+          "rss_before_bytes": 15437824,
+          "rss_after_bytes": 35155968
+        },
+        {
+          "phase": "parse_and_retain_file_facts",
+          "wall_seconds": 21.5398855,
+          "rss_before_bytes": 35155968,
+          "rss_after_bytes": 95436800
+        },
+        {
+          "phase": "syntax_projection",
+          "wall_seconds": 22.8817489,
+          "rss_before_bytes": 95436800,
+          "rss_after_bytes": 4092702720
+        },
+        {
+          "phase": "structural_resolution",
+          "wall_seconds": 10.6065233,
+          "rss_before_bytes": 4092702720,
+          "rss_after_bytes": 5553967104
+        },
+        {
+          "phase": "inventory_finalization",
+          "wall_seconds": 22.482046,
+          "rss_before_bytes": 5553967104,
+          "rss_after_bytes": 5562040320
+        },
+        {
+          "phase": "native_binding",
+          "wall_seconds": 0.0549973,
+          "rss_before_bytes": 5562515456,
+          "rss_after_bytes": 5562732544
+        },
+        {
+          "phase": "publication_source_fence",
+          "wall_seconds": 0.7707303,
+          "rss_before_bytes": 5562732544,
+          "rss_after_bytes": 5562834944
+        },
+        {
+          "phase": "sealed_publication",
+          "wall_seconds": 823.9962482,
+          "rss_before_bytes": 5562867712,
+          "rss_after_bytes": 5576810496
+        }
+      ]
+    },
+    "add": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T08:41:40.007084+00:00",
+        "wall_seconds": 922.2412949999562,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 5983625216,
+        "os_peak_main_working_set_bytes": 5983625216,
+        "sampled_tree_cpu_seconds": 920.0,
+        "sampled_tree_read_bytes": 176640762644,
+        "sampled_tree_write_bytes": 288729629685,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 11882,
+          "observed_processes": 4,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\add-1omydcwp\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\add-1omydcwp\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6964,
+            "characters": 6964,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:00e78d227d3b31fe4b6525cd664f73db1ec2f964de41347a36afa5145d1562f2",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 588,
+            "characters": 572,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:8c59d76cb09212093c93561cf21ae943c3dcc42ccad992fc1073e5e713bfbfec",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "retained_bytes": 21645234397,
+      "publication_outcome": "replaced",
+      "publication_digest": "blake3:33ee396e6d5db6da54da1a439aee5c437c559590006da0bb194f2a1d2bbe7f01",
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            },
+            "src/math/entmoot_probe.go": {
+              "bytes": 68,
+              "blake3": "25f9a132c0c692eb1559f804ba0846412388dc79bdc11af5f54cf2380e46bd19"
+            }
+          },
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            },
+            "src/math/entmoot_probe.go": {
+              "bytes": 68,
+              "blake3": "25f9a132c0c692eb1559f804ba0846412388dc79bdc11af5f54cf2380e46bd19"
+            }
+          },
+          "all_bytes_verified": true
+        }
+      },
+      "phase_measurements": [
+        {
+          "phase": "source_observation",
+          "wall_seconds": 0.608832,
+          "rss_before_bytes": 15486976,
+          "rss_after_bytes": 35848192
+        },
+        {
+          "phase": "parse_and_retain_file_facts",
+          "wall_seconds": 21.6399853,
+          "rss_before_bytes": 35848192,
+          "rss_after_bytes": 117272576
+        },
+        {
+          "phase": "syntax_projection",
+          "wall_seconds": 22.181816,
+          "rss_before_bytes": 117276672,
+          "rss_after_bytes": 4089479168
+        },
+        {
+          "phase": "structural_resolution",
+          "wall_seconds": 9.9344354,
+          "rss_before_bytes": 4089479168,
+          "rss_after_bytes": 5550596096
+        },
+        {
+          "phase": "inventory_finalization",
+          "wall_seconds": 22.4709256,
+          "rss_before_bytes": 5550596096,
+          "rss_after_bytes": 5558697984
+        },
+        {
+          "phase": "native_binding",
+          "wall_seconds": 0.057015,
+          "rss_before_bytes": 5559181312,
+          "rss_after_bytes": 5559296000
+        },
+        {
+          "phase": "publication_source_fence",
+          "wall_seconds": 0.741446,
+          "rss_before_bytes": 5559296000,
+          "rss_after_bytes": 5559377920
+        },
+        {
+          "phase": "sealed_publication",
+          "wall_seconds": 806.4184737,
+          "rss_before_bytes": 5559427072,
+          "rss_after_bytes": 5573607424
+        }
+      ]
+    },
+    "rename": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T08:57:04.369843+00:00",
+        "wall_seconds": 931.614673300006,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 5984149504,
+        "os_peak_main_working_set_bytes": 5984149504,
+        "sampled_tree_cpu_seconds": 926.03125,
+        "sampled_tree_read_bytes": 177837897472,
+        "sampled_tree_write_bytes": 280775749416,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 12006,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\rename-4dcmtmyb\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\rename-4dcmtmyb\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6967,
+            "characters": 6967,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:58f33b34f54337ad051dd1767b4652a93072f7224812c1ba19ffa8ce8e8c9b43",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 588,
+            "characters": 572,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:f0c112f9b071a4122321b9e5dd028296bfc4a70e0acb5aeefe00d8960c2421d9",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "retained_bytes": 26135049490,
+      "publication_outcome": "replaced",
+      "publication_digest": "blake3:480abd489a65429743c689ad67ce04956cf0801ef348d452dd194c532f22f728",
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            },
+            "src/math/entmoot_probe_moved.go": {
+              "bytes": 68,
+              "blake3": "25f9a132c0c692eb1559f804ba0846412388dc79bdc11af5f54cf2380e46bd19"
+            }
+          },
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            },
+            "src/math/entmoot_probe_moved.go": {
+              "bytes": 68,
+              "blake3": "25f9a132c0c692eb1559f804ba0846412388dc79bdc11af5f54cf2380e46bd19"
+            }
+          },
+          "all_bytes_verified": true
+        }
+      },
+      "phase_measurements": [
+        {
+          "phase": "source_observation",
+          "wall_seconds": 0.5781583,
+          "rss_before_bytes": 15486976,
+          "rss_after_bytes": 34762752
+        },
+        {
+          "phase": "parse_and_retain_file_facts",
+          "wall_seconds": 21.4288888,
+          "rss_before_bytes": 34762752,
+          "rss_after_bytes": 93413376
+        },
+        {
+          "phase": "syntax_projection",
+          "wall_seconds": 22.1335676,
+          "rss_before_bytes": 93413376,
+          "rss_after_bytes": 4092100608
+        },
+        {
+          "phase": "structural_resolution",
+          "wall_seconds": 10.5791978,
+          "rss_before_bytes": 4092100608,
+          "rss_after_bytes": 5550985216
+        },
+        {
+          "phase": "inventory_finalization",
+          "wall_seconds": 22.7745304,
+          "rss_before_bytes": 5550985216,
+          "rss_after_bytes": 5559214080
+        },
+        {
+          "phase": "native_binding",
+          "wall_seconds": 0.0545324,
+          "rss_before_bytes": 5559689216,
+          "rss_after_bytes": 5559803904
+        },
+        {
+          "phase": "publication_source_fence",
+          "wall_seconds": 0.7644239,
+          "rss_before_bytes": 5559803904,
+          "rss_after_bytes": 5559992320
+        },
+        {
+          "phase": "sealed_publication",
+          "wall_seconds": 815.2534748,
+          "rss_before_bytes": 5560025088,
+          "rss_after_bytes": 5571739648
+        }
+      ]
+    },
+    "delete": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T09:12:37.950771+00:00",
+        "wall_seconds": 145.45893040002557,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 5985624064,
+        "os_peak_main_working_set_bytes": 5985624064,
+        "sampled_tree_cpu_seconds": 146.265625,
+        "sampled_tree_read_bytes": 5316651206,
+        "sampled_tree_write_bytes": 226341363,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 1874,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\delete-wcr3hj74\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\delete-wcr3hj74\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6966,
+            "characters": 6966,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:cce8f7a9bf82d019441a5bc4d0eb05c14789938b34369be078c9c820d1a98374",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 589,
+            "characters": 573,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:82036310f12d9f967789a2cc0b400e7bd2bdfa7a7e59f7a84d19befbfd9c9a19",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "retained_bytes": 26135058758,
+      "publication_outcome": "unchanged",
+      "publication_digest": "blake3:7d19fe009c48061551e556c52216e7457cd629cf58fbdddc4c51e177ba01a5f0",
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            }
+          },
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            }
+          },
+          "all_bytes_verified": true
+        }
+      },
+      "phase_measurements": [
+        {
+          "phase": "source_observation",
+          "wall_seconds": 0.5967608,
+          "rss_before_bytes": 15433728,
+          "rss_after_bytes": 35184640
+        },
+        {
+          "phase": "parse_and_retain_file_facts",
+          "wall_seconds": 21.606012,
+          "rss_before_bytes": 35184640,
+          "rss_after_bytes": 91205632
+        },
+        {
+          "phase": "syntax_projection",
+          "wall_seconds": 22.1125481,
+          "rss_before_bytes": 91205632,
+          "rss_after_bytes": 4093079552
+        },
+        {
+          "phase": "structural_resolution",
+          "wall_seconds": 10.3852408,
+          "rss_before_bytes": 4093079552,
+          "rss_after_bytes": 5552566272
+        },
+        {
+          "phase": "inventory_finalization",
+          "wall_seconds": 22.3826963,
+          "rss_before_bytes": 5552566272,
+          "rss_after_bytes": 5560700928
+        },
+        {
+          "phase": "native_binding",
+          "wall_seconds": 0.0540659,
+          "rss_before_bytes": 5561184256,
+          "rss_after_bytes": 5561303040
+        },
+        {
+          "phase": "publication_source_fence",
+          "wall_seconds": 0.7648564,
+          "rss_before_bytes": 5561303040,
+          "rss_after_bytes": 5561483264
+        },
+        {
+          "phase": "sealed_publication",
+          "wall_seconds": 30.1905573,
+          "rss_before_bytes": 5561520128,
+          "rss_after_bytes": 5561946112
+        }
+      ]
+    }
+  },
+  "reads": {
+    "find-path": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\data\\workspaces\\blake3-7d219d4bc131b8d5afc87007a03f50cf412fe6167e286e0238d7b29854561750\\store\\current\\generation-VK3oqm\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\find-path-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T08:00:17.600851+00:00",
+        "wall_seconds": 2.2008429000270553,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 22523904,
+        "os_peak_main_working_set_bytes": 22523904,
+        "sampled_tree_cpu_seconds": 1.84375,
+        "sampled_tree_read_bytes": 3389266314,
+        "sampled_tree_write_bytes": 0,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 25,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\find-path-3knlsvnj\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\find-path-3knlsvnj\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 4110,
+            "characters": 4110,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:a1a5b14ed4d04adc8501a0019a0112d3dad64f492ceef48fb724e5fb7aa5fd10",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18857984,
+        "rss_before_bytes": 5627904,
+        "wall_seconds": 0.0534507
+      },
+      "requests": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 20226048,
+            "rss_before_bytes": 18857984,
+            "wall_seconds": 0.3262136
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20361216,
+            "rss_before_bytes": 20238336,
+            "wall_seconds": 0.3065031
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20164608,
+            "rss_before_bytes": 20369408,
+            "wall_seconds": 0.3077927
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20434944,
+            "rss_before_bytes": 20164608,
+            "wall_seconds": 0.3072934
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20418560,
+            "rss_before_bytes": 20434944,
+            "wall_seconds": 0.2944236
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20529152,
+            "rss_before_bytes": 20418560,
+            "wall_seconds": 0.3003893
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ]
+    },
+    "find-id": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\data\\workspaces\\blake3-7d219d4bc131b8d5afc87007a03f50cf412fe6167e286e0238d7b29854561750\\store\\current\\generation-VK3oqm\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\find-id-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T08:00:19.808467+00:00",
+        "wall_seconds": 3.8937695000204258,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 22798336,
+        "os_peak_main_working_set_bytes": 22798336,
+        "sampled_tree_cpu_seconds": 3.796875,
+        "sampled_tree_read_bytes": 6837797132,
+        "sampled_tree_write_bytes": 0,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 50,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\find-id-59c2jksp\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\find-id-59c2jksp\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 3659,
+            "characters": 3659,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:93723f63a5661d59dc2187bb4f580879222f1dbba26c0aa1fed4b3f52254a15e",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18857984,
+        "rss_before_bytes": 5627904,
+        "wall_seconds": 0.0343629
+      },
+      "requests": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 20258816,
+            "rss_before_bytes": 18857984,
+            "wall_seconds": 0.6225169
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20512768,
+            "rss_before_bytes": 20271104,
+            "wall_seconds": 0.6196713
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20127744,
+            "rss_before_bytes": 20520960,
+            "wall_seconds": 0.6151618
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20496384,
+            "rss_before_bytes": 20127744,
+            "wall_seconds": 0.6235684
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20156416,
+            "rss_before_bytes": 20496384,
+            "wall_seconds": 0.6375984
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 21131264,
+            "rss_before_bytes": 20156416,
+            "wall_seconds": 0.7051448
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ]
+    },
+    "read-source": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\data\\workspaces\\blake3-7d219d4bc131b8d5afc87007a03f50cf412fe6167e286e0238d7b29854561750\\store\\current\\generation-VK3oqm\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\read-source-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T08:00:23.710162+00:00",
+        "wall_seconds": 0.09286599996266887,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 11243520,
+        "os_peak_main_working_set_bytes": 12988416,
+        "sampled_tree_cpu_seconds": 0.015625,
+        "sampled_tree_read_bytes": 86547,
+        "sampled_tree_write_bytes": 0,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 1,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\read-source-foh2k9i5\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\read-source-foh2k9i5\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 4626,
+            "characters": 4626,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:2a3bfc0927e76fc108897eab7580c5f1f2d5ee4df330e948ea0b9e2e1b4085b7",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18841600,
+        "rss_before_bytes": 5611520,
+        "wall_seconds": 0.0354657
+      },
+      "requests": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 19836928,
+            "rss_before_bytes": 18841600,
+            "wall_seconds": 0.0039768
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:f42b50b09582e86489e0c8d7e8629d4342e4a825e3e142734579099033bdae64",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20045824,
+            "rss_before_bytes": 19849216,
+            "wall_seconds": 0.0031314
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:f42b50b09582e86489e0c8d7e8629d4342e4a825e3e142734579099033bdae64",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 19742720,
+            "rss_before_bytes": 20054016,
+            "wall_seconds": 0.0032457
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:f42b50b09582e86489e0c8d7e8629d4342e4a825e3e142734579099033bdae64",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 19730432,
+            "rss_before_bytes": 19742720,
+            "wall_seconds": 0.0031148
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:f42b50b09582e86489e0c8d7e8629d4342e4a825e3e142734579099033bdae64",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20094976,
+            "rss_before_bytes": 19730432,
+            "wall_seconds": 0.0033842
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:f42b50b09582e86489e0c8d7e8629d4342e4a825e3e142734579099033bdae64",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20127744,
+            "rss_before_bytes": 20094976,
+            "wall_seconds": 0.0029385
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:f42b50b09582e86489e0c8d7e8629d4342e4a825e3e142734579099033bdae64",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ]
+    },
+    "inspect-subject": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\data\\workspaces\\blake3-7d219d4bc131b8d5afc87007a03f50cf412fe6167e286e0238d7b29854561750\\store\\current\\generation-VK3oqm\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\inspect-subject-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T08:00:23.810717+00:00",
+        "wall_seconds": 119.4965680000023,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 9656860672,
+        "os_peak_main_working_set_bytes": 9656864768,
+        "sampled_tree_cpu_seconds": 118.890625,
+        "sampled_tree_read_bytes": 35976716005,
+        "sampled_tree_write_bytes": 5090,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 1540,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\inspect-subject-di_bob_h\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\inspect-subject-di_bob_h\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 5090,
+            "characters": 5090,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:f34cf5bd4c371bba33c2ff96298a53a25596aeb6330bbadae466c01734bdbc9d",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18853888,
+        "rss_before_bytes": 5615616,
+        "wall_seconds": 0.0348016
+      },
+      "requests": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 9617149952,
+            "rss_before_bytes": 18853888,
+            "wall_seconds": 109.8121278
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9617162240,
+            "rss_before_bytes": 9617162240,
+            "wall_seconds": 0.0036873
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9617203200,
+            "rss_before_bytes": 9617170432,
+            "wall_seconds": 0.0038871
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9617203200,
+            "rss_before_bytes": 9617203200,
+            "wall_seconds": 0.003932
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9617203200,
+            "rss_before_bytes": 9617203200,
+            "wall_seconds": 0.0034093
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9617203200,
+            "rss_before_bytes": 9617203200,
+            "wall_seconds": 0.0039268
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ]
+    },
+    "inspect-callers": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\data\\workspaces\\blake3-7d219d4bc131b8d5afc87007a03f50cf412fe6167e286e0238d7b29854561750\\store\\current\\generation-VK3oqm\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\inspect-callers-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T08:02:23.312883+00:00",
+        "wall_seconds": 124.08702189999167,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 9653936128,
+        "os_peak_main_working_set_bytes": 9653940224,
+        "sampled_tree_cpu_seconds": 123.453125,
+        "sampled_tree_read_bytes": 35975659237,
+        "sampled_tree_write_bytes": 4112,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 1600,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\inspect-callers-e1gb6hw5\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\inspect-callers-e1gb6hw5\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 4112,
+            "characters": 4112,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:8035fce897e205d1673d18808d3c971a2ecba7aebad464ef9f1b633a0ec7b2d4",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18857984,
+        "rss_before_bytes": 5619712,
+        "wall_seconds": 0.0372418
+      },
+      "requests": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 9613910016,
+            "rss_before_bytes": 18857984,
+            "wall_seconds": 111.7458764
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9613922304,
+            "rss_before_bytes": 9613922304,
+            "wall_seconds": 0.0037026
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9613930496,
+            "rss_before_bytes": 9613930496,
+            "wall_seconds": 0.0035745
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9613930496,
+            "rss_before_bytes": 9613930496,
+            "wall_seconds": 0.0037607
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9613930496,
+            "rss_before_bytes": 9613930496,
+            "wall_seconds": 0.0041381
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9613930496,
+            "rss_before_bytes": 9613930496,
+            "wall_seconds": 0.0041346
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ]
+    },
+    "inspect-callees": {
+      "measurement": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\data\\workspaces\\blake3-7d219d4bc131b8d5afc87007a03f50cf412fe6167e286e0238d7b29854561750\\store\\current\\generation-VK3oqm\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\inspect-callees-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\source",
+        "started_utc": "2026-10-19T08:04:27.404790+00:00",
+        "wall_seconds": 142.00088760000654,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 9656434688,
+        "os_peak_main_working_set_bytes": 9656438784,
+        "sampled_tree_cpu_seconds": 141.125,
+        "sampled_tree_read_bytes": 35976543973,
+        "sampled_tree_write_bytes": 4306,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 1829,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\inspect-callees-u__f17mu\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019\\commands\\inspect-callees-u__f17mu\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 4306,
+            "characters": 4306,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:d2bdb99a0744708ab77640f3739e3d63df63ea89336d11425c8b4162ccdc15cc",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18857984,
+        "rss_before_bytes": 5619712,
+        "wall_seconds": 0.0382731
+      },
+      "requests": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 9616850944,
+            "rss_before_bytes": 18857984,
+            "wall_seconds": 132.2830246
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9616863232,
+            "rss_before_bytes": 9616863232,
+            "wall_seconds": 0.0035492
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9616920576,
+            "rss_before_bytes": 9616871424,
+            "wall_seconds": 0.0035773
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9616924672,
+            "rss_before_bytes": 9616920576,
+            "wall_seconds": 0.0038341
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9616924672,
+            "rss_before_bytes": 9616924672,
+            "wall_seconds": 0.0039144
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9616924672,
+            "rss_before_bytes": 9616924672,
+            "wall_seconds": 0.0034367
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ]
+    }
+  },
+  "evidence_root": "G:\\GitHub\\entmoot\\.tmp\\performance-substrate-20261019",
+  "implementation_inputs_sha256": "a91576cc2b38154c38b7ef089acb80e5ed6d8199fcb9b204fabb99548b16b2dd",
+  "implementation_patch_sha256": "e4f932d4c6dce8288456fdd9d6d8006ac9c2b5287d68ab9d3e33fd1462487f3f",
+  "scope": "Precedes streamed publication, shared node versions, revision-scoped call summaries and indexed calls. Does not qualify the later implementation.",
+  "limitations": [
+    "Single trial per phase; OS caches and host workload uncontrolled.",
+    "Sampled process-tree RSS is not a hard bound; process I/O counters are not physical disk traffic.",
+    "Mutation trials are cumulative and contain a prior comment/body edit; deletion restores a previously published source state.",
+    "Read response repetition is not an independent correctness oracle.",
+    "No current/base comparison or interrupted recovery was measured in this checkpoint."
+  ]
+}

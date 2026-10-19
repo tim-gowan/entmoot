@@ -1121,6 +1121,7 @@ dependencies = [
  "serde_json",
  "tempfile",
  "thiserror",
+ "tracing",
  "tree-sitter",
  "tree-sitter-hcl",
  "tree-sitter-json",

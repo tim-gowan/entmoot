@@ -29,10 +29,12 @@ mod output;
 mod read;
 mod receipt;
 mod requests;
+mod retained_calls;
 mod roles;
 mod seeds;
 mod selection;
 mod status;
+mod subject_search;
 mod substring;
 mod unresolved;
 mod walk;
@@ -322,14 +324,38 @@ pub struct QueryEngine {
     continuations: std::sync::Arc<continuation::Searches>,
     options: QueryEngineOptions,
     graph: std::sync::Arc<TopologyGraph>,
+    deferred_navigation: Option<std::sync::Arc<DeferredNavigation>>,
+    publication_digest: Option<String>,
     store_path: PathBuf,
     reader: std::sync::Arc<dyn crate::RepositoryReader>,
     checkpoints: Option<std::sync::Arc<dyn crate::QueryCheckpoints>>,
     indexes: std::sync::Arc<QueryIndexes>,
     output_generation: std::sync::Arc<std::sync::OnceLock<entmoot_contracts::ContentDigest>>,
     source_store: Option<std::sync::Arc<dyn SourceStore>>,
-    compare_graph: Option<std::sync::Arc<TopologyGraph>>,
+    compare_graph: Option<std::sync::Arc<QueryComparison>>,
     compatibility: Option<std::sync::Arc<QueryCompatibility>>,
+}
+
+type DeferredNavigation = std::sync::OnceLock<Result<Box<QueryEngine>, String>>;
+
+enum QueryComparison {
+    Ready(TopologyGraph),
+    Deferred {
+        load: Box<dyn Fn() -> Result<TopologyGraph, QueryError> + Send + Sync>,
+        value: std::sync::OnceLock<Result<TopologyGraph, String>>,
+    },
+}
+
+impl QueryComparison {
+    fn get(&self) -> Result<&TopologyGraph, QueryError> {
+        match self {
+            Self::Ready(graph) => Ok(graph),
+            Self::Deferred { load, value } => value
+                .get_or_init(|| load().map_err(|error| error.to_string()))
+                .as_ref()
+                .map_err(|message| QueryError::Unavailable(message.clone())),
+        }
+    }
 }
 
 type CompatibilityLoader = dyn Fn(&TopologyGraph) -> Result<crate::compatibility::CompatibilityCatalog, QueryServiceError>
@@ -405,6 +431,8 @@ impl QueryEngine {
         let indexes = QueryIndexes::new(&graph, options.substring_postings_budget);
         Self {
             graph: std::sync::Arc::new(graph),
+            deferred_navigation: None,
+            publication_digest: None,
             lifecycle_lease: None,
             walk_cache: options.cache_walk_discovery.then(Default::default),
             shortcuts: std::sync::Arc::new(walk_cache::BoundedCache::new(
@@ -425,10 +453,100 @@ impl QueryEngine {
         }
     }
 
+    /// Open a retained publication without hydrating nodes, relations or provider
+    /// evidence. Navigation is projected once, on demand; source reads use only
+    /// the verified source manifest. Failure never becomes an empty graph.
+    pub fn from_retained(
+        store: impl Into<PathBuf>,
+        options: QueryEngineOptions,
+    ) -> Result<Self, QueryError> {
+        let store = store.into();
+        let repository = entmoot_store::SqliteKnowledgeRepository::open_read_snapshot(&store)?;
+        let metadata = repository.inventory_metadata()?.ok_or_else(|| {
+            QueryError::Unavailable("publication has no retained inventory".into())
+        })?;
+        let digest = repository.inventory_export_digest()?.ok_or_else(|| {
+            QueryError::Unavailable("publication has no inventory commitment".into())
+        })?;
+        Ok(
+            Self::with_retained_metadata(metadata, digest, store, options)
+                .with_lifecycle_lease(repository.lifecycle_lease()),
+        )
+    }
+
+    /// Construct from metadata verified in the caller's pinned store read.
+    pub fn with_retained_metadata(
+        metadata: entmoot_store::read::InventoryMetadata,
+        digest: String,
+        store: impl Into<PathBuf>,
+        options: QueryEngineOptions,
+    ) -> Self {
+        let mut header = TopologyGraph::new(metadata.root);
+        header.snapshot = metadata.snapshot;
+        header.policy_ids = metadata.policy_ids;
+        header.snapshot_files = metadata.snapshot_files.into();
+        let mut engine = Self::with_options(header, store, options);
+        engine.deferred_navigation = Some(Default::default());
+        engine.publication_digest = Some(digest);
+        engine
+    }
+
+    /// Identity available without allocating a navigation projection.
+    pub fn publication_snapshot(&self) -> &entmoot_contracts::SourceSnapshot {
+        &self.graph.snapshot
+    }
+
+    /// Local source wiring, not an assertion that the checkout still matches.
+    pub fn publication_root(&self) -> &str {
+        &self.graph.root
+    }
+
+    fn reset_navigation(&mut self) {
+        if self.deferred_navigation.is_some() {
+            self.deferred_navigation = Some(Default::default());
+        }
+    }
+
+    fn navigation(&self) -> Result<&Self, QueryError> {
+        let Some(deferred) = &self.deferred_navigation else {
+            return Ok(self);
+        };
+        deferred
+            .get_or_init(|| {
+                let graph = self
+                    .repository()
+                    .and_then(|repository| {
+                        repository.load_inventory(true)?.ok_or_else(|| {
+                            QueryError::Unavailable(
+                                "retained navigation inventory is missing".into(),
+                            )
+                        })
+                    })
+                    .map_err(|e| e.to_string())?;
+                if graph.snapshot != self.graph.snapshot
+                    || graph.policy_ids != self.graph.policy_ids
+                {
+                    return Err("publication inventory changed; reopen the query engine".into());
+                }
+                let mut projected = self.clone();
+                projected.indexes = std::sync::Arc::new(QueryIndexes::new(
+                    &graph,
+                    self.options.substring_postings_budget,
+                ));
+                projected.graph = std::sync::Arc::new(graph);
+                projected.deferred_navigation = None;
+                Ok(Box::new(projected))
+            })
+            .as_ref()
+            .map(Box::as_ref)
+            .map_err(|message| QueryError::Unavailable(message.clone()))
+    }
+
     pub fn with_lifecycle_lease(
         mut self,
         lease: Option<crate::storage_lease::StorageLease>,
     ) -> Self {
+        self.reset_navigation();
         self.lifecycle_lease = lease;
         self
     }
@@ -436,14 +554,15 @@ impl QueryEngine {
     /// Configure authoritative source fallback without coupling queries to a
     /// checkout path or source-system implementation.
     pub fn with_source_store(mut self, source_store: std::sync::Arc<dyn SourceStore>) -> Self {
+        self.reset_navigation();
         self.source_store = Some(source_store);
         self
     }
 
-    /// Hot navigation projection. Cold evidence may be unloaded; operations
-    /// requiring a complete graph must explicitly request `complete_graph`.
-    pub fn graph(&self) -> &TopologyGraph {
-        &self.graph
+    /// Explicitly materialize the navigation projection. Cold evidence may remain
+    /// unloaded; complete export/comparison uses `complete_graph` instead.
+    pub fn graph(&self) -> Result<&TopologyGraph, QueryError> {
+        Ok(&self.navigation()?.graph)
     }
 
     /// Rehydrate complete evidence in one pinned read transaction. Comparison
@@ -469,6 +588,7 @@ impl QueryEngine {
         mut self,
         catalog: crate::compatibility::CompatibilityCatalog,
     ) -> Self {
+        self.reset_navigation();
         self.compatibility = Some(std::sync::Arc::new(QueryCompatibility::Ready(catalog)));
         self
     }
@@ -484,6 +604,7 @@ impl QueryEngine {
             + Sync
             + 'static,
     ) -> Self {
+        self.reset_navigation();
         self.compatibility = Some(std::sync::Arc::new(QueryCompatibility::Deferred {
             load: Box::new(load),
             value: Default::default(),
@@ -511,6 +632,12 @@ impl QueryEngine {
     }
 
     pub fn find(&self, request: FindQuery) -> Result<QueryResult, QueryError> {
+        if self.deferred_navigation.is_some() {
+            if let Some(result) = self.retained_subject_find(&request)? {
+                return Ok(result);
+            }
+            return self.navigation()?.find(request);
+        }
         let value = match request {
             FindQuery::CallBoundary { request } => self.call_boundaries(&request),
             FindQuery::Initializer {
@@ -552,6 +679,12 @@ impl QueryEngine {
     }
 
     pub fn inspect(&self, request: InspectQuery) -> Result<QueryResult, QueryError> {
+        if self.deferred_navigation.is_some() {
+            if let Some((_, result)) = self.retained_call_inspect(&request)? {
+                return Ok(result);
+            }
+            return self.navigation()?.inspect(request);
+        }
         let value = match request {
             InspectQuery::Subject { id, limit } => self.get_subject_context(&id, limit),
             InspectQuery::Evidence { id } => self.explain_evidence(&id),
@@ -572,6 +705,9 @@ impl QueryEngine {
     }
 
     pub fn traverse(&self, request: TraverseQuery) -> Result<QueryResult, QueryError> {
+        if self.deferred_navigation.is_some() {
+            return self.navigation()?.traverse(request);
+        }
         if request.resumable() {
             return self.resume_traverse(request);
         }
@@ -628,7 +764,15 @@ impl QueryEngine {
     }
 
     fn repository(&self) -> Result<Box<dyn KnowledgeRead>, QueryError> {
-        Ok(self.reader.open_read()?)
+        let repository = self.reader.open_read()?;
+        if let Some(expected) = &self.publication_digest {
+            if repository.inventory_export_digest()?.as_ref() != Some(expected) {
+                return Err(QueryError::Unavailable(
+                    "publication changed; reopen the query engine".into(),
+                ));
+            }
+        }
+        Ok(repository)
     }
 
     fn relation_claims(&self, edge: &str) -> Result<Value, QueryError> {
@@ -649,6 +793,17 @@ impl QueryEngine {
         direction: CallDirection,
         after: Option<&CallPageCursor>,
         requested_limit: Option<usize>,
+    ) -> Result<Value, QueryError> {
+        self.call_neighborhood_page(subject, direction, after, requested_limit, None)
+    }
+
+    fn call_neighborhood_page(
+        &self,
+        subject: &str,
+        direction: CallDirection,
+        after: Option<&CallPageCursor>,
+        requested_limit: Option<usize>,
+        retained: Option<entmoot_store::read::RelationReadPage>,
     ) -> Result<Value, QueryError> {
         let limit = requested_limit.unwrap_or(50);
         if !(1..=1_000).contains(&limit) {
@@ -706,29 +861,38 @@ impl QueryEngine {
             ));
         }
         let forward = direction == CallDirection::Callees;
-        let mut edges: Vec<_> = keys
-            .iter()
-            .flat_map(|key| {
-                self.indexes
-                    .relations
-                    .postings(key, forward)
-                    .into_iter()
-                    .flatten()
-            })
-            .map(|index| &self.graph.relation_edges[*index])
-            .filter(|edge| edge.predicate == RelationKind::Calls)
-            .collect();
-        edges.sort_by(|left, right| left.id.as_str().cmp(right.id.as_str()));
-        edges.dedup_by(|left, right| left.id == right.id);
-        let total = edges.len();
-        let offset = after.map_or(0, |cursor| {
-            edges.partition_point(|edge| edge.id.as_str() <= cursor.relation_edge_id.as_str())
-        });
-        let page = edges
-            .into_iter()
-            .skip(offset)
-            .take(limit)
-            .collect::<Vec<_>>();
+        let (page, total, offset) = if let Some(retained) = &retained {
+            (
+                retained.edges.iter().collect::<Vec<_>>(),
+                retained.total,
+                retained.offset,
+            )
+        } else {
+            let mut edges: Vec<_> = keys
+                .iter()
+                .flat_map(|key| {
+                    self.indexes
+                        .relations
+                        .postings(key, forward)
+                        .into_iter()
+                        .flatten()
+                })
+                .map(|index| &self.graph.relation_edges[*index])
+                .filter(|edge| edge.predicate == RelationKind::Calls)
+                .collect();
+            edges.sort_by(|left, right| left.id.as_str().cmp(right.id.as_str()));
+            edges.dedup_by(|left, right| left.id == right.id);
+            let total = edges.len();
+            let offset = after.map_or(0, |cursor| {
+                edges.partition_point(|edge| edge.id.as_str() <= cursor.relation_edge_id.as_str())
+            });
+            let page = edges
+                .into_iter()
+                .skip(offset)
+                .take(limit)
+                .collect::<Vec<_>>();
+            (page, total, offset)
+        };
         let mut items = Vec::new();
         let claim_batches = repository.relation_claims_for_edges(&page)?;
         for (edge, mut claims) in page.iter().zip(claim_batches) {
@@ -1175,7 +1339,6 @@ impl QueryEngine {
         requested_limit: Option<usize>,
         selector: Option<&entmoot_contracts::query::SubjectSelector>,
     ) -> Result<Value, QueryError> {
-        let compiled = selector.map(selection::CompiledSelector::new).transpose()?;
         let query = query.map(str::trim).filter(|value| !value.is_empty());
         let path = path
             .map(|value| value.trim().replace('\\', "/"))
@@ -1185,7 +1348,6 @@ impl QueryEngine {
                 "query, path or selector is required".into(),
             ));
         }
-        let limit = bounded_limit(requested_limit);
         let path_ok = |node: &TopologyNode| {
             path.as_deref()
                 .is_none_or(|expected| node.path.as_deref() == Some(expected))
@@ -1268,71 +1430,17 @@ impl QueryEngine {
             }
             (None, None) => scored.extend((0..self.graph.nodes.len()).map(|i| (i, 1))),
         }
-        let mut receipt = entmoot_contracts::query::SelectionReceipt::default();
-        let mut explanations = HashMap::new();
-        if let Some(compiled) = &compiled {
-            scored.retain(|index, _| {
-                receipt.examined += 1;
-                let (state, explanation) = compiled.matches(&self.graph.nodes[*index]);
-                match state {
-                    selection::MatchState::Yes => {
-                        receipt.matched += 1;
-                        explanations.insert(*index, explanation);
-                        true
-                    }
-                    selection::MatchState::Unknown => {
-                        receipt.unknown += 1;
-                        false
-                    }
-                    selection::MatchState::No => false,
-                }
-            });
+        let mut search = subject_search::SubjectSearch::new(
+            query,
+            path.as_deref(),
+            line,
+            requested_limit,
+            selector,
+        )?;
+        for index in scored.keys() {
+            search.consider(&self.graph.nodes[*index]);
         }
-        let mut matches: Vec<(&TopologyNode, u8)> = scored
-            .into_iter()
-            .map(|(index, score)| (&self.graph.nodes[index], score))
-            .collect();
-        matches.sort_by(|(left, left_score), (right, right_score)| {
-            right_score
-                .cmp(left_score)
-                .then_with(|| line_distance(left, line).cmp(&line_distance(right, line)))
-                .then_with(|| left.id.cmp(&right.id))
-        });
-        let total = matches.len();
-        let candidates: Vec<_> = matches
-            .into_iter()
-            .take(limit)
-            .map(|(node, score)| {
-                let mut candidate = subject_candidate(node, score);
-                if let Some(explanation) = self
-                    .graph
-                    .node_by_id
-                    .get(&node.id)
-                    .and_then(|i| explanations.get(i))
-                {
-                    candidate["selection_match"] = json!(explanation);
-                }
-                candidate
-            })
-            .collect();
-        let status = if total > limit {
-            "truncated"
-        } else if total == 0 {
-            "unknown"
-        } else {
-            "known"
-        };
-        Ok(json!({
-            "schema_version": QUERY_RESULT_SCHEMA,
-            "operation": "find",
-            "view": "subject",
-            "snapshot": self.graph.snapshot,
-            "status": status,
-            "selection": selector.map(|_| receipt),
-            "items": candidates,
-            "gaps": if total == 0 { vec!["no_inventory_subject_matched"] } else { Vec::<&str>::new() },
-            "bounds": ResultBounds::page(limit, limit.min(total), total),
-        }))
+        Ok(search.finish(&self.graph.snapshot))
     }
 
     /// Resolve an exact source location to the most specific represented site,
@@ -2664,6 +2772,198 @@ mod tests {
     }
 
     #[test]
+    fn comparisons_are_lazy_shared_and_never_needed_by_subject_output() {
+        use std::sync::{
+            atomic::{AtomicUsize, Ordering},
+            Arc,
+        };
+        let directory = tempfile::tempdir().unwrap();
+        let mut graph = TopologyGraph::new(directory.path().to_string_lossy());
+        graph.upsert_node(TopologyNode::shell(
+            "target-id",
+            NodeKind::Callable,
+            "target",
+            None,
+        ));
+        let store = directory.path().join("knowledge.sqlite3");
+        let mut repository = SqliteKnowledgeRepository::open(&store).unwrap();
+        repository
+            .replace_all(&KnowledgeStore::extract_from_graph(&graph))
+            .unwrap();
+        repository.store_inventory(&graph, None).unwrap();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let observed = calls.clone();
+        let base = graph.clone();
+        let engine = QueryEngine::new(graph, store).with_compare_loader(move || {
+            observed.fetch_add(1, Ordering::SeqCst);
+            Ok(base.clone())
+        });
+        assert!(engine.has_comparison());
+        engine
+            .deliver_query(entmoot_contracts::query::QueryRequest::Find {
+                request: FindQuery::Subject {
+                    query: Some("target".into()),
+                    path: None,
+                    line: None,
+                    limit: Some(1),
+                    selector: None,
+                },
+                output: Default::default(),
+            })
+            .unwrap();
+        assert_eq!(calls.load(Ordering::SeqCst), 0);
+        let cloned = engine.clone();
+        let first = engine.comparison_graph().unwrap().unwrap();
+        assert_eq!(first.nodes[0].id, "target-id");
+        assert!(std::ptr::eq(
+            first,
+            cloned.comparison_graph().unwrap().unwrap()
+        ));
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        let failed_calls = Arc::new(AtomicUsize::new(0));
+        let failed_observed = failed_calls.clone();
+        let failed = engine.with_compare_loader(move || {
+            failed_observed.fetch_add(1, Ordering::SeqCst);
+            Err(QueryError::Unavailable(
+                "fixture base is unavailable".into(),
+            ))
+        });
+        for _ in 0..2 {
+            assert!(failed
+                .comparison_graph()
+                .unwrap_err()
+                .to_string()
+                .contains("fixture base is unavailable"));
+        }
+        assert_eq!(failed_calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[test]
+    fn retained_subject_search_counts_all_pages_and_ranks_only_bounded_cards() {
+        let directory = tempfile::tempdir().unwrap();
+        let mut graph = TopologyGraph::new(directory.path().to_string_lossy());
+        for i in 0..1100 {
+            let mut node =
+                TopologyNode::shell(format!("node-{i:04}"), NodeKind::Callable, "target", None);
+            node.path = Some(if i % 2 == 0 { "a.py" } else { "b.py" }.into());
+            node.start_line = Some(i + 1);
+            graph.upsert_node(node);
+        }
+        let store = directory.path().join("knowledge.sqlite3");
+        let mut repository = SqliteKnowledgeRepository::open(&store).unwrap();
+        repository
+            .replace_all(&KnowledgeStore::extract_from_graph(&graph))
+            .unwrap();
+        repository.store_inventory(&graph, None).unwrap();
+        let eager = QueryEngine::new(graph, &store);
+        let retained = QueryEngine::from_retained(&store, Default::default()).unwrap();
+        let request = FindQuery::Subject {
+            selector: None,
+            query: Some("TARGET".into()),
+            path: Some("a.py".into()),
+            line: Some(601),
+            limit: Some(3),
+        };
+        let result = retained.find(request.clone()).unwrap();
+        assert_eq!(result, eager.find(request).unwrap());
+        let json = serde_json::to_value(result).unwrap();
+        assert_eq!(json["bounds"]["total_matches"], 550);
+        assert_eq!(json["items"].as_array().unwrap().len(), 3);
+        assert_eq!(json["items"][0]["node_id"], "node-0600");
+        assert!(retained
+            .deferred_navigation
+            .as_ref()
+            .unwrap()
+            .get()
+            .is_none());
+        let unknown = retained
+            .find(FindQuery::Subject {
+                selector: None,
+                query: Some("missing".into()),
+                path: Some("missing.py".into()),
+                line: None,
+                limit: Some(3),
+            })
+            .unwrap();
+        assert_eq!(serde_json::to_value(unknown).unwrap()["status"], "unknown");
+    }
+
+    #[test]
+    fn retained_open_and_verified_reads_do_not_materialize_navigation() {
+        let source = tempfile::tempdir().unwrap();
+        let data = tempfile::tempdir().unwrap();
+        let text = "def caller():\n    return target()\ndef target():\n    return 7\n";
+        std::fs::write(source.path().join("a.py"), text).unwrap();
+        let graph = build_topology_from_repo_with_options(
+            source.path(),
+            TopologyBuildOptions {
+                repository: Some("deferred-fixture"),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let store = data.path().join("knowledge.sqlite3");
+        let mut repository = SqliteKnowledgeRepository::open(&store).unwrap();
+        repository
+            .replace_all(&KnowledgeStore::extract_from_graph(&graph))
+            .unwrap();
+        let sources = std::sync::Arc::new(MemorySourceStore {
+            files: HashMap::from([("a.py".into(), text.as_bytes().to_vec())]),
+        });
+        repository
+            .store_inventory(&graph, Some(sources.as_ref()))
+            .unwrap();
+        drop(repository);
+        let eager = QueryEngine::new(graph.clone(), &store).with_source_store(sources.clone());
+        let deferred = QueryEngine::from_retained(&store, Default::default())
+            .unwrap()
+            .with_source_store(sources);
+        assert!(deferred.graph.nodes.is_empty());
+        let read = ReadQuery::Source {
+            path: "a.py".into(),
+            start_line: 1,
+            end_line: Some(2),
+            context_lines: Some(0),
+            max_bytes: Some(1024),
+        };
+        assert_eq!(
+            deferred.read(read.clone()).unwrap(),
+            eager.read(read).unwrap()
+        );
+        assert!(deferred
+            .deferred_navigation
+            .as_ref()
+            .unwrap()
+            .get()
+            .is_none());
+        assert_eq!(deferred.publication_snapshot(), &graph.snapshot);
+        let request = FindQuery::Subject {
+            selector: None,
+            query: Some("target".into()),
+            path: None,
+            line: None,
+            limit: Some(10),
+        };
+        assert_eq!(
+            deferred.find(request.clone()).unwrap(),
+            eager.find(request).unwrap()
+        );
+        assert!(deferred
+            .deferred_navigation
+            .as_ref()
+            .unwrap()
+            .get()
+            .is_none());
+        assert!(!deferred.graph().unwrap().nodes.is_empty());
+        assert!(deferred
+            .deferred_navigation
+            .as_ref()
+            .unwrap()
+            .get()
+            .is_some());
+    }
+
+    #[test]
     fn repeated_discovery_reuses_witnesses_but_preserves_budget_and_generation() {
         let dir = tempfile::tempdir().unwrap();
         let store = dir.path().join("reuse.sqlite3");
@@ -3227,7 +3527,9 @@ mod tests {
             assert_eq!(warm["search_receipt"]["reused_discovery"], true);
             assert_eq!(warm["paths"][0]["classification"], "candidate");
             repository
-                .replace_all(&KnowledgeStore::extract_from_graph(service.graph()))
+                .replace_all(&KnowledgeStore::extract_from_graph(
+                    service.graph().unwrap(),
+                ))
                 .unwrap();
             assert_eq!(result["hops"][0]["relation_claim_count"], 1);
             assert_eq!(
@@ -3876,8 +4178,12 @@ mod tests {
             .unwrap();
         assert!(cold_graph.traces.is_empty());
         let cold = QueryEngine::new(cold_graph, service.store_path.clone());
-        let eager_comparison = service.clone().with_compare_graph(service.graph().clone());
-        let cold_comparison = cold.clone().with_compare_graph(service.graph().clone());
+        let eager_comparison = service
+            .clone()
+            .with_compare_graph(service.graph().unwrap().clone());
+        let cold_comparison = cold
+            .clone()
+            .with_compare_graph(service.graph().unwrap().clone());
         let mut relay = entmoot_contracts::query::ImpactRelayRequest::default();
         relay.output.limit = 4;
         assert_eq!(
@@ -3885,7 +4191,7 @@ mod tests {
             cold_comparison.relay_impact(relay).unwrap(),
         );
         let status = entmoot_contracts::query::StatusRequest {
-            compare_revision: Some(service.graph().snapshot.revision.clone()),
+            compare_revision: Some(service.graph().unwrap().snapshot.revision.clone()),
             ..Default::default()
         };
         assert_eq!(

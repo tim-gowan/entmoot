@@ -17,6 +17,9 @@ impl QueryEngine {
         &self,
         request: CallComponentsRequest,
     ) -> Result<CallComponentsReport, QueryError> {
+        if self.deferred_navigation.is_some() {
+            return self.navigation()?.call_components(request);
+        }
         let predicate = request.predicate.trim().to_ascii_lowercase();
         if predicate != "calls" {
             return Err(QueryError::InvalidInput(format!(

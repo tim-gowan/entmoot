@@ -26,6 +26,46 @@ follow-up if large-source operator feedback warrants asynchronous preparation.
 
 ## Architecture qualification follow-up
 
+The canonical-file substrate cutover is in progress. File facts now precede
+graph production, sealed units can survive an interrupted init, source-byte
+admission is bounded, syntax graph fragments are no longer cached, and managed
+publications no longer retain mandatory graph JSON. Immutable publication selects
+one sealed view without per-fact owner/visibility histories. Opening a query,
+verified source reads and bounded subject searches no longer hydrate a graph;
+unscoped text search still scans node pages. Exact hash selectors use indexed
+node columns, and comparison bases hydrate only when required. Inventory
+membership uses integer revision keys. The
+[10,020-node layout sample](evals/experiments/substrate-node-layout-2026-10-19.json)
+uses 10.37 MB versus 13.32 MB for the prior membership/payload layout, including
+the additional indexes and node commitments. This excludes unchanged shared
+metadata and is not whole-store or query-latency qualification. Phase measurements separate
+source observation, file-fact production, graph projection, structural resolution
+and publication, with RSS endpoints explicitly distinguished from peaks.
+
+Ordinary structural init now writes file projections directly to a sealed view;
+only its callable lookup index spans files. Verified unchanged refreshes skip
+projection/resolution/publication. Callers, callees and unresolved reads use
+retained indexes. Node versions and syntax bodies share storage across revisions
+and referring records; the earlier layout sample does not measure this newer
+schema. Incompatible stores require an explicit rebuild and are preserved.
+
+Remaining qualification/implementation: measure the final streamed publisher on
+the pinned full Go workflow, including current/base comparisons and interrupted
+recovery. Native/canon production still uses graph views; native output is one
+complete family artifact, although every family now consumes compact pinned
+structural input. Subject-context, traversal, impact and advanced reads still
+hydrate a deferred graph. Replace those only with scoped reads that preserve
+full counts, provenance and explicit unknowns; do not claim a total RSS ceiling
+or sub-second latency from worker admission limits or successful fixture tests.
+
+The [intermediate checkpoint](evals/experiments/performance-substrate-checkpoint-2026-10-19.json)
+completed the same full Go workflow: fresh publication took 1,136s, peaked at
+6.03GB process RSS and retained 8.16GB; no-change refresh took 102s. Caller/callee
+processes still took 124/142s and about 9.65GB RSS. That frozen build predates the
+streamed publisher, shared node versions and indexed calls. It motivates those
+changes but does not qualify them. Comment/body/add/rename/delete trials completed;
+current/base comparisons and interrupted recovery were not measured there.
+
 The split preserves a conservative v1 whole-engine derivation fence. Qualify
 component-specific fingerprints before narrowing its invalidation scope. Measure
 the standalone query benchmark after resolving the initial-publication scale
@@ -37,6 +77,23 @@ unavailable; two remaining fresh trials were unrun. Profile the initial
 publication owner before attributing an inner bottleneck or narrowing the
 workload. The crate split alone establishes no latency improvement or monorepo
 readiness; the Windows host was under memory pressure.
+
+The [full-repository rerun](evals/experiments/performance-go-current-2026-10-18.json)
+with the optimized `57c2bf3` CLI verified the same source bytes and used the same
+fresh-store command and 1,200s timeout. It timed out again at 1,200.6s without a
+current publication. Peak RSS fell to 6.88GB (about 70% lower), while incomplete
+artifacts reached 12.78GB, including a 6.83GB WAL and 2.97GB disposable staging
+database. Memory reduction did not resolve publication latency. CPU and WAL
+growth continued; phase timings and profiling are still needed to attribute the
+remaining cost. Warm reads, refresh and interrupted-run recovery remain unqualified.
+
+The [unbounded full-repository rerun](evals/experiments/performance-go-unbounded-2026-10-18.json)
+with the same `57c2bf3` release binary completed successfully in 2,720.1s with
+7.17GB peak RSS and 11,832 indexed files. Its fresh structural publication returned
+`replaced`; the earlier timeouts do not establish a deadlock. Initial publication
+latency remains a blocker. This single run does not qualify warm reads, refresh,
+recovery or native semantics. Prior failed-run stores were removed after retaining
+their measurement evidence; the successful publication remains available.
 
 The [memory attribution follow-up](evals/experiments/memory-go-2026-10-18.json)
 prioritizes representation and ownership before worker orchestration. Reloading

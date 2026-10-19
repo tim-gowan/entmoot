@@ -1,5 +1,44 @@
 # Changelog
 
+## 2026-10-19: Retain canonical file facts before projection
+
+- Consolidate callable identity and signature facts, retain sealed file units
+  with binary digests and immutable publication membership, and reuse completed
+  units after interrupted initialization. Source bytes remain digest-verified.
+- Bound structural batches by file count and source bytes. Hydrate retained facts
+  lazily and derive syntax graph fragments instead of persisting another copy.
+- Publish pinned store locators instead of mandatory graph JSON. Keep explicit
+  graph exports and deferred compatibility projections; adapt retention checks.
+- Hand parser results directly to one writer through bounded worker channels;
+  seal immutable publications without mutable per-fact owner/visibility histories.
+- Defer query graph hydration. Verify source from publication metadata and search
+  subjects in bounded node pages, retaining only the requested ranked cards.
+- Store inventory membership with integer revision keys and indexed node fields
+  without repeating them in detail payloads. Narrow exact hash reads before
+  hydration; keep ambiguous identities and verify hot fields against commitments.
+- Pin comparison bases without loading their graphs; share the eventual result
+  or explicit failure. Use one active native compiler session across nested jobs.
+- Share canonical inventory ordering between fresh production and retained
+  projections so reloads preserve structural and relation ordering.
+- Supply every native family with source commitments and exact join sites instead
+  of a full graph. Stream artifact commitments and omit null evidence index keys.
+- Preserve unchanged generated release inputs so rerunning generation does not
+  invalidate Cargo or require write access to byte-identical Rust helpers.
+- Stream ordinary structural publication file by file, retaining only its callable
+  index across jobs. Preserve canonical graph digests, source fences, atomic
+  publication and historical reads; skip projection on verified unchanged scans.
+- Share immutable node versions across revision memberships and syntax bodies
+  across file IR, node detail and scoped records. Keep exact identity indexes.
+- Attach call summaries to revision file membership and remove the duplicate
+  global cache tables. Restore historical selections with verified dependencies.
+  Use indexed endpoint lookups and an integer permutation for canonical ordering
+  to prevent repeated full membership scans during streamed publication.
+- Read callers, callees and unresolved attempts from retained indexes without
+  graph hydration; preserve continuation fences and cross-page contradictions.
+- Report phase elapsed time and RSS endpoints. Native/canon production and other
+  graph-backed reads remain in PLANNING; these changes alone do not establish
+  large-repository performance qualification.
+
 ## 2026-10-18: Reduce operation payload lifetimes
 
 - Emit graph knowledge in bounded chunks and stage serialized batches plus

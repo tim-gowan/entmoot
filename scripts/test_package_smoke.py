@@ -13,6 +13,32 @@ from scripts import package_smoke
 
 
 class PackageSmokeTests(unittest.TestCase):
+    def test_release_inputs_preserve_unchanged_files_and_reject_stale_check(self):
+        from scripts import prepare_release_inputs
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "package_fingerprint.rs"
+            with patch.object(prepare_release_inputs, "ROOT", root), \
+                    patch.object(prepare_release_inputs, "outputs", return_value=[(output, "// first\n")]), \
+                    patch("sys.argv", ["prepare_release_inputs"]):
+                prepare_release_inputs.main()
+                os.utime(output, ns=(1_000_000_000, 1_000_000_000))
+                before = output.stat().st_mtime_ns
+                prepare_release_inputs.main()
+                self.assertEqual(output.stat().st_mtime_ns, before,
+                                 "identical generated Rust must not invalidate Cargo or need a write lock")
+            with patch.object(prepare_release_inputs, "ROOT", root), \
+                    patch.object(prepare_release_inputs, "outputs", return_value=[(output, "// changed\n")]), \
+                    patch("sys.argv", ["prepare_release_inputs", "--check"]):
+                with self.assertRaisesRegex(SystemExit, "Regenerate release inputs"):
+                    prepare_release_inputs.main()
+                self.assertEqual(output.read_text(), "// first\n")
+            with patch.object(prepare_release_inputs, "ROOT", root), \
+                    patch.object(prepare_release_inputs, "outputs", return_value=[(output, "// changed\n")]), \
+                    patch("sys.argv", ["prepare_release_inputs"]):
+                prepare_release_inputs.main()
+                self.assertEqual(output.read_text(), "// changed\n")
+
     def test_prebuilt_baseline_still_builds_archives_and_rejects_fingerprint_drift(self):
         with TemporaryDirectory() as directory:
             root = Path(directory).resolve()

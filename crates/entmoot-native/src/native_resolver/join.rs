@@ -17,13 +17,41 @@ use entmoot_contracts::{
     NativeCallFact, NativeCallTarget, NativeRawObservation, NativeReferenceFact, NativeSpanRef,
 };
 
-use crate::graph::{NodeKind, TopologyGraph, TopologyNode};
+use super::input::{NativeInventory, NativeSite};
+use crate::graph::{NodeKind, TopologyGraph};
 
 pub const METHOD_ID: &str = "entmoot.native_compiler_exact_spans.v1";
 
-/// Positive reference uses only; provider strings never close the use universe.
+/// Compatibility projection for callers that explicitly hold a topology graph.
 pub fn normalize_reference_uses(
     graph: &TopologyGraph,
+    raw: &NativeRawObservation,
+    language: &str,
+) -> Vec<entmoot_contracts::AssessmentObservation> {
+    normalize_inventory_references(&NativeInventory::from(graph), raw, language)
+}
+
+/// Compatibility projection; ordinary native production uses compact inventory.
+pub fn project_calls_onto_inventory(
+    graph: &TopologyGraph,
+    raw: &NativeRawObservation,
+    language: &str,
+) -> Vec<NativeCallFact> {
+    project_inventory_calls(&NativeInventory::from(graph), raw, language)
+}
+
+/// Compatibility projection; native evidence never changes the supplied IDs.
+pub fn normalize_observations(
+    graph: &TopologyGraph,
+    raw: &NativeRawObservation,
+    language: &str,
+) -> Vec<ResolverObservation> {
+    normalize_inventory_observations(&NativeInventory::from(graph), raw, language)
+}
+
+/// Positive reference uses only; provider strings never close the use universe.
+pub(super) fn normalize_inventory_references(
+    graph: &NativeInventory,
     raw: &NativeRawObservation,
     language: &str,
 ) -> Vec<entmoot_contracts::AssessmentObservation> {
@@ -183,7 +211,7 @@ fn build_resolver_target(
     observation_index: usize,
     target_index: usize,
     target: &NativeCallTarget,
-    declarations: &BTreeMap<(String, usize, usize), Vec<&TopologyNode>>,
+    declarations: &BTreeMap<(String, usize, usize), Vec<&NativeSite>>,
 ) -> ResolverTarget {
     let local = target.location.repository();
     let address = if let Some(site) = local {
@@ -372,11 +400,11 @@ fn path_segments_for_language(
 /// exact: a class and its final method can share an end offset. Other adapters
 /// can include leading documentation, but still need one unambiguous match.
 pub(super) fn matching_declaration<'a>(
-    nodes: &[&'a TopologyNode],
+    nodes: &[&'a NativeSite],
     start: usize,
     end: usize,
     language: &str,
-) -> Option<&'a TopologyNode> {
+) -> Option<&'a NativeSite> {
     if start >= end {
         return None;
     }
@@ -401,12 +429,12 @@ pub(super) fn matching_declaration<'a>(
 /// facts survive projection for explicit ambiguity; identical repeats coalesce.
 /// Python declaration ranges are exact; other adapters may include leading
 /// documentation. Arbitrary containment never establishes callable identity.
-pub fn project_calls_onto_inventory(
-    graph: &TopologyGraph,
+fn project_inventory_calls(
+    graph: &NativeInventory,
     raw: &NativeRawObservation,
     language: &str,
 ) -> Vec<NativeCallFact> {
-    let mut callables: BTreeMap<(&str, usize), Vec<&TopologyNode>> = BTreeMap::new();
+    let mut callables: BTreeMap<(&str, usize), Vec<&NativeSite>> = BTreeMap::new();
     for node in &graph.nodes {
         if node.kind == NodeKind::Callable {
             if let (Some(path), Some(end)) = (node.path.as_deref(), node.end_byte) {
@@ -488,8 +516,8 @@ pub fn project_calls_onto_inventory(
 }
 
 /// Join every inventoried call stub for `language` onto native facts.
-pub fn normalize_observations(
-    graph: &TopologyGraph,
+pub(super) fn normalize_inventory_observations(
+    graph: &NativeInventory,
     raw: &NativeRawObservation,
     language: &str,
 ) -> Vec<ResolverObservation> {
@@ -510,9 +538,9 @@ pub fn normalize_observations(
         return Vec::new();
     }
 
-    let projected = project_calls_onto_inventory(graph, raw, language);
+    let projected = project_inventory_calls(graph, raw, language);
 
-    let mut declarations: BTreeMap<(String, usize, usize), Vec<&TopologyNode>> = BTreeMap::new();
+    let mut declarations: BTreeMap<(String, usize, usize), Vec<&NativeSite>> = BTreeMap::new();
     for node in &graph.nodes {
         if node.kind == NodeKind::Callable {
             if let (Some(path), Some(start), Some(end)) =
@@ -548,7 +576,7 @@ pub fn normalize_observations(
         }
     }
 
-    let mut sites: Vec<&TopologyNode> = graph
+    let mut sites: Vec<&NativeSite> = graph
         .nodes
         .iter()
         .filter(|node| {

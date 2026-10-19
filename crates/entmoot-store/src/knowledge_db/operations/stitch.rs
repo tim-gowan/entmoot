@@ -242,7 +242,7 @@ impl SqliteKnowledgeRepository {
         let mut cache = syntax_cache::SyntaxCache::new(syntax_cache::SyntaxCache::context(
             repository, policy,
         )?)?;
-        let mut statement = tx.prepare("SELECT f.path,f.digest,f.payload,s.payload,c.payload FROM local_file_outcomes f JOIN local_inventory_parts s ON s.operation_id=f.operation_id AND s.ordinal=f.ordinal AND s.phase='syntax' JOIN local_inventory_parts c ON c.operation_id=f.operation_id AND c.ordinal=f.ordinal AND c.phase='calls' WHERE f.operation_id=?1")?;
+        let mut statement = tx.prepare("SELECT f.path,f.digest,f.payload,c.payload FROM local_file_outcomes f JOIN local_inventory_parts s ON s.operation_id=f.operation_id AND s.ordinal=f.ordinal AND s.phase='syntax' JOIN local_inventory_parts c ON c.operation_id=f.operation_id AND c.ordinal=f.ordinal AND c.phase='calls' WHERE f.operation_id=?1")?;
         let mut rows = statement.query([id])?;
         let mut count = 0;
         while let Some(row) = rows.next()? {
@@ -256,14 +256,11 @@ impl SqliteKnowledgeRepository {
             let Some(record) = outcome.record else {
                 continue;
             };
-            let Part::Syntax(syntax) = hydrate_record(&tx, row.get(3)?)? else {
-                return Err(invalid("unexpected syntax cache part"));
-            };
-            let Part::Calls(calls) = hydrate_record(&tx, row.get(4)?)? else {
+            let Part::Calls(calls) = hydrate_record(&tx, row.get(3)?)? else {
                 return Err(invalid("unexpected call cache part"));
             };
             cache.insert_record(path.clone(), digest, &record)?;
-            cache.insert_parts(&path, &syntax_cache::FileParts { syntax, calls })?;
+            cache.insert_calls(&path, &calls)?;
         }
         if count != total {
             return Err(invalid("inventory cache is missing files"));

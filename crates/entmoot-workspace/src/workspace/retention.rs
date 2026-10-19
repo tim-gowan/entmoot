@@ -208,8 +208,8 @@ fn build_plan(
         if summary.schema_version != "entmoot.workspace_summary.v1" {
             return Err(failure("unsupported generation summary schema"));
         }
-        if summary.publication.graph != entry.path().join("graph.json")
-            || summary.publication.store != entry.path().join("graph.json.knowledge.view.json")
+        if summary.publication.graph != entry.path().join("publication.view.json")
+            || summary.publication.store != entry.path().join("publication.view.json")
         {
             return Err(failure(
                 "generation summary paths do not match managed layout",
@@ -589,10 +589,20 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let first = publish(dir.path(), 0);
         let second = publish(dir.path(), 0);
-        let left: serde_json::Value =
-            serde_json::from_slice(&fs::read(&first.publication.graph).unwrap()).unwrap();
-        let right: serde_json::Value =
-            serde_json::from_slice(&fs::read(&second.publication.graph).unwrap()).unwrap();
+        assert_eq!(first.publication.graph, first.publication.store);
+        assert!(!first
+            .publication
+            .graph
+            .parent()
+            .unwrap()
+            .join("graph.json")
+            .exists());
+        let left = serde_json::to_value(crate::load_graph_json(&first.publication.graph).unwrap())
+            .unwrap();
+        let right =
+            serde_json::to_value(crate::load_graph_json(&second.publication.graph).unwrap())
+                .unwrap();
+        assert!(!left["nodes"].as_array().unwrap().is_empty());
         for (key, value) in left.as_object().unwrap() {
             if key == "nodes" {
                 for (a, b) in value

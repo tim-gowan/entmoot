@@ -88,9 +88,10 @@ def main():
     args = parser.parse_args()
     stale = []
     for path, expected in outputs():
+        if path.exists() and path.read_text(encoding="utf-8") == expected:
+            continue
         if args.check:
-            if not path.exists() or path.read_text(encoding="utf-8") != expected:
-                stale.append(str(path.relative_to(ROOT)))
+            stale.append(str(path.relative_to(ROOT)))
         else:
             path.write_text(expected, encoding="utf-8", newline="\n")
     if stale:

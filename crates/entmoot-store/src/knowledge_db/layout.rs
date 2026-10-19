@@ -9,6 +9,11 @@ CREATE TABLE IF NOT EXISTS shared_metadata (
 CREATE TABLE IF NOT EXISTS shared_payloads (
     payload_id INTEGER PRIMARY KEY, digest BLOB NOT NULL UNIQUE, body BLOB NOT NULL
 );
+CREATE TABLE IF NOT EXISTS shared_claim_links (
+    payload INTEGER NOT NULL REFERENCES shared_payloads ON DELETE CASCADE,
+    target TEXT NOT NULL, PRIMARY KEY(payload,target)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS claim_links_by_target ON shared_claim_links(target,payload);
 CREATE TABLE IF NOT EXISTS scoped_records (
     view_id TEXT NOT NULL, collection TEXT NOT NULL, record_id TEXT NOT NULL,
     artifact_id TEXT, subject_id TEXT, object_id TEXT, proposition_id TEXT,
@@ -17,11 +22,11 @@ CREATE TABLE IF NOT EXISTS scoped_records (
     ownership_managed INTEGER NOT NULL DEFAULT 0 CHECK(ownership_managed IN(0,1)),
     PRIMARY KEY(view_id,collection,record_id)
 ) WITHOUT ROWID;
-CREATE INDEX IF NOT EXISTS knowledge_by_artifact ON scoped_records(view_id,artifact_id,collection);
-CREATE INDEX IF NOT EXISTS knowledge_by_subject_predicate ON scoped_records(view_id,collection,subject_id,predicate);
-CREATE INDEX IF NOT EXISTS knowledge_by_object_predicate ON scoped_records(view_id,collection,object_id,predicate);
-CREATE INDEX IF NOT EXISTS knowledge_by_location ON scoped_records(view_id,collection,location_id);
-CREATE INDEX IF NOT EXISTS knowledge_by_proposition ON scoped_records(view_id,collection,proposition_id);
+CREATE INDEX IF NOT EXISTS knowledge_by_artifact ON scoped_records(view_id,artifact_id,collection) WHERE artifact_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS knowledge_by_subject_predicate ON scoped_records(view_id,collection,subject_id,predicate) WHERE subject_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS knowledge_by_object_predicate ON scoped_records(view_id,collection,object_id,predicate) WHERE object_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS knowledge_by_location ON scoped_records(view_id,collection,location_id) WHERE location_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS knowledge_by_proposition ON scoped_records(view_id,collection,proposition_id) WHERE proposition_id IS NOT NULL;
 CREATE TABLE IF NOT EXISTS scoped_metadata (
     view_id TEXT NOT NULL, key TEXT NOT NULL, value TEXT NOT NULL,
     PRIMARY KEY(view_id,key)
@@ -133,6 +138,8 @@ pub(super) fn intern_payload(
                         | "call_site"
                         | "declaration"
                         | "marker"
+                        | "contract"
+                        | "code_contract"
                 ) && (value.is_object() || value.is_array())
             })
             .map(|(key, _)| key.clone())
@@ -146,16 +153,7 @@ pub(super) fn intern_payload(
                 object.insert(key, value);
                 continue;
             }
-            let digest = blake3::hash(&bytes);
-            connection.execute(
-                "INSERT OR IGNORE INTO shared_metadata(digest,body) VALUES(?1,?2)",
-                params![digest.as_bytes().as_slice(), bytes],
-            )?;
-            let id = connection.query_row(
-                "SELECT metadata_id FROM shared_metadata WHERE digest=?1",
-                [digest.as_bytes().as_slice()],
-                |r| r.get(0),
-            )?;
+            let id = intern_metadata_bytes(connection, &bytes)?;
             metadata.insert(key, id);
         }
     }
@@ -167,6 +165,37 @@ pub(super) fn intern_payload(
         ],
     )?;
     Ok(connection.last_insert_rowid())
+}
+
+/// Content-addressed JSON shared by file facts, node detail and scoped records.
+/// Callers supply canonical JSON; scope remains on the referring record.
+pub(super) fn intern_metadata_bytes(
+    connection: &Connection,
+    bytes: &[u8],
+) -> Result<i64, KnowledgeRepositoryError> {
+    let digest = blake3::hash(bytes);
+    connection.execute(
+        "INSERT OR IGNORE INTO shared_metadata(digest,body) VALUES(?1,?2)",
+        params![digest.as_bytes().as_slice(), bytes],
+    )?;
+    Ok(connection.query_row(
+        "SELECT metadata_id FROM shared_metadata WHERE digest=?1",
+        [digest.as_bytes().as_slice()],
+        |row| row.get(0),
+    )?)
+}
+
+pub(super) fn hydrate_metadata_bytes(
+    connection: &Connection,
+    id: i64,
+) -> Result<Vec<u8>, KnowledgeRepositoryError> {
+    let (digest, bytes): (Vec<u8>, Vec<u8>) = connection
+        .prepare_cached("SELECT digest,body FROM shared_metadata WHERE metadata_id=?1")?
+        .query_row([id], |row| Ok((row.get(0)?, row.get(1)?)))?;
+    if blake3::hash(&bytes).as_bytes().as_slice() != digest {
+        return Err(invalid_record("metadata", "content digest mismatch"));
+    }
+    Ok(bytes)
 }
 
 pub(super) fn hydrate_payload(

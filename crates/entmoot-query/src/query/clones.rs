@@ -13,6 +13,9 @@ use super::{QueryEngine, QueryError};
 impl QueryEngine {
     /// Find bounded repeated syntax patterns in the indexed source snapshot.
     pub fn clones(&self, mut request: CloneRequest) -> Result<CloneReport, QueryError> {
+        if self.deferred_navigation.is_some() {
+            return self.navigation()?.clones(request);
+        }
         let path = super::selection::CompiledPath::from_request(
             request.path_selector.as_ref(),
             request.path.as_deref(),

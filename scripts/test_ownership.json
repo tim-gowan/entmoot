@@ -27,6 +27,7 @@
     "scripts/__init__.py"
   ],
   "shared_core_owners": [
+    "crates/entmoot-contracts/src/file_facts.rs",
     "crates/entmoot-core/src/declaration_syntax.rs",
     "crates/entmoot-core/src/call_ports.rs",
     "crates/entmoot-core/src/hasher.rs",
@@ -113,6 +114,10 @@
         {
           "kind": "file_prefix",
           "path": "crates/entmoot-store/src/knowledge_db/syntax_cache.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-store/src/knowledge_db/file_facts.rs"
         }
       ],
       "extensions": []

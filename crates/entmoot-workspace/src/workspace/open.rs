@@ -26,7 +26,6 @@ pub struct PublicationOpenSpec {
 /// Opened publication with compatibility evidence deferred until first use.
 pub struct OpenedQueryBundle {
     pub engine: entmoot_query::QueryEngine,
-    pub compare: Option<std::sync::Arc<crate::TopologyGraph>>,
     pub source_root: Option<PathBuf>,
 }
 
@@ -71,7 +70,6 @@ pub fn open_query_bundle(
     let OpenedPublication {
         engine,
         publication_digest,
-        compare,
         source_root,
     } = opened;
     let discovery = spec
@@ -79,22 +77,52 @@ pub fn open_query_bundle(
         .clone()
         .or_else(|| source_root.clone())
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
-    let graph_bytes =
-        std::fs::read(&spec.graph).map_err(|error| unavailable_open(WorkspaceError::Io(error)))?;
+    let locator = crate::KnowledgeViewLocator::read(&spec.graph)
+        .map_err(|error| QueryServiceError::Unavailable(error.to_string()))?;
+    let graph_bytes = if locator.is_none() {
+        Some(
+            std::fs::read(&spec.graph)
+                .map_err(|error| unavailable_open(WorkspaceError::Io(error)))?,
+        )
+    } else {
+        None
+    };
     let objects = crate::FilesystemArtifactObjectRepository::new(
         super::artifact_store_path(&spec.store).map_err(unavailable_open)?,
     );
     let providers = spec.providers.clone();
     let engine = engine.with_compatibility_loader(move |_graph| {
-        // Pin compatibility to the graph bytes observed at open so CLI assess
-        // and MCP reads stay aligned even when inventory-backed navigation uses
-        // a hydrated projection of the same publication.
-        let mut graph: crate::TopologyGraph =
-            serde_json::from_slice(&graph_bytes).map_err(|error| {
+        // Pin the immutable store view, or legacy export bytes, at open. The
+        // full compatibility projection is allocated only when requested.
+        let mut graph: crate::TopologyGraph = if let Some(locator) = &locator {
+            let repository = crate::SqliteKnowledgeRepository::open_view_read_only(
+                &locator.database,
+                &locator.view,
+            )
+            .map_err(|error| QueryServiceError::Unavailable(error.to_string()))?;
+            if repository
+                .inventory_export_digest()
+                .map_err(|error| QueryServiceError::Unavailable(error.to_string()))?
+                .as_deref()
+                != Some(&publication_digest)
+            {
+                return Err(QueryServiceError::Unavailable(
+                    "compatibility publication changed".into(),
+                ));
+            }
+            repository
+                .load_inventory(false)
+                .map_err(|error| QueryServiceError::Unavailable(error.to_string()))?
+                .ok_or_else(|| {
+                    QueryServiceError::Unavailable("compatibility inventory missing".into())
+                })?
+        } else {
+            serde_json::from_slice(graph_bytes.as_deref().unwrap_or_default()).map_err(|error| {
                 QueryServiceError::Unavailable(format!(
                     "compatibility graph bytes are invalid: {error}"
                 ))
-            })?;
+            })?
+        };
         graph.rebuild_indexes();
         let consumer = crate::compatibility::PackagePublication::from_graph(
             &graph,
@@ -125,7 +153,6 @@ pub fn open_query_bundle(
     );
     Ok(OpenedQueryBundle {
         engine,
-        compare,
         source_root,
     })
 }
@@ -135,7 +162,7 @@ fn open_expected(
     expected: Option<&entmoot_contracts::SourceSnapshot>,
 ) -> Result<OpenedQueryBundle, QueryServiceError> {
     let bundle = open_query_bundle(spec)?;
-    if expected.is_some_and(|snapshot| snapshot != &bundle.engine.graph().snapshot) {
+    if expected.is_some_and(|snapshot| snapshot != bundle.engine.publication_snapshot()) {
         return Err(QueryServiceError::Unavailable(
             "publication pointer snapshot differs from its graph".into(),
         ));
@@ -208,7 +235,8 @@ impl DeferredQueryBundle {
                                     || (follow_compare && compare != current.compare_graph);
                                 let mismatched =
                                     bundle.try_get().and_then(Result::ok).is_some_and(|opened| {
-                                        opened.engine.graph().snapshot != publication.snapshot
+                                        opened.engine.publication_snapshot()
+                                            != &publication.snapshot
                                     });
                                 if changed {
                                     let mut replacement = current.clone();
@@ -537,6 +565,7 @@ mod tests {
         let node = first
             .engine
             .graph()
+            .unwrap()
             .nodes
             .iter()
             .find(|n| n.kind == crate::NodeKind::Callable)
@@ -553,7 +582,7 @@ mod tests {
         };
         let token = path.search_receipt.slice_token.as_deref().unwrap();
         deferred
-            .refresh(&spec, Some(&first.engine.graph().snapshot), 2)
+            .refresh(&spec, Some(&first.engine.graph().unwrap().snapshot), 2)
             .unwrap();
         let second = deferred.wait(Duration::ZERO).unwrap();
         assert!(!Arc::ptr_eq(&first, &second));
@@ -566,7 +595,7 @@ mod tests {
         let mut replay = request;
         replay.set_continuation(Some(token.into()));
         assert_eq!(first.engine.traverse(replay).unwrap(), result);
-        let mut wrong = first.engine.graph().snapshot.clone();
+        let mut wrong = first.engine.graph().unwrap().snapshot.clone();
         wrong.revision = "wrong".into();
         assert!(deferred.refresh(&spec, Some(&wrong), 2).is_err());
         assert!(deferred
@@ -577,14 +606,14 @@ mod tests {
             .contains("publication_refresh_failed"));
         assert!(deferred.wait_for_token(Some(token), Duration::ZERO).is_ok());
         deferred
-            .refresh(&spec, Some(&first.engine.graph().snapshot), 2)
+            .refresh(&spec, Some(&first.engine.graph().unwrap().snapshot), 2)
             .unwrap();
         assert!(deferred
             .wait_for_token(Some(token), Duration::ZERO)
             .is_err());
         assert_eq!(
-            first.engine.graph().snapshot,
-            second.engine.graph().snapshot
+            first.engine.graph().unwrap().snapshot,
+            second.engine.graph().unwrap().snapshot
         );
     }
 
@@ -626,7 +655,10 @@ mod tests {
         loop {
             if let Ok(current) = deferred.wait(Duration::ZERO) {
                 if !Arc::ptr_eq(&current, &inflight) {
-                    assert_ne!(current.engine.graph().root, inflight.engine.graph().root);
+                    assert_ne!(
+                        current.engine.graph().unwrap().root,
+                        inflight.engine.graph().unwrap().root
+                    );
                     break;
                 }
             }
@@ -645,7 +677,7 @@ mod tests {
         let bundle = deferred
             .wait(Duration::from_secs(60))
             .expect("open should succeed");
-        assert!(!bundle.engine.graph().nodes.is_empty());
+        assert!(!bundle.engine.graph().unwrap().nodes.is_empty());
         assert!(matches!(deferred.try_get(), Some(Ok(_))));
     }
 
@@ -688,7 +720,7 @@ mod tests {
     fn sync_open_bundle_matches_publication() {
         let (_dir, graph, store) = fixture_publication();
         let bundle = open_query_bundle_paths(&graph, &store, None, None, false).unwrap();
-        assert!(!bundle.engine.graph().nodes.is_empty());
+        assert!(!bundle.engine.graph().unwrap().nodes.is_empty());
     }
 
     #[test]

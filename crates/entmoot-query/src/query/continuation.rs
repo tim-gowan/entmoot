@@ -248,12 +248,14 @@ impl QueryEngine {
     /// Enable repository-backed checkpoints for explicitly resumable queries.
     /// This changes only operational metadata, never knowledge publication.
     pub fn with_durable_continuations(mut self) -> Self {
+        self.reset_navigation();
         self.options.durable_continuations = true;
         self
     }
     /// Configure explicit retention for standalone durable searches. Zero disables
     /// retention; frontends should require a positive allowance when enabled.
     pub fn with_durable_continuation_lifetime(mut self, idle_seconds: u64) -> Self {
+        self.reset_navigation();
         self.options.durable_continuations = true;
         self.options.continuation_idle_seconds = idle_seconds;
         self.continuations = Arc::new(Searches::new(self.options));
@@ -359,6 +361,7 @@ impl QueryEngine {
     }
 
     pub fn share_continuation_limits(&mut self, previous: &QueryEngine) {
+        self.reset_navigation();
         let mut registry = Searches::new(self.options);
         registry.bytes = previous.continuations.bytes.clone();
         registry.count = previous.continuations.count.clone();

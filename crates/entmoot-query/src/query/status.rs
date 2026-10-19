@@ -21,12 +21,42 @@ const DEFAULT_MIN_FAN_DEGREE: usize = 8;
 impl QueryEngine {
     /// Optional compare publication for `changed_subject` status/find facets.
     pub fn with_compare_graph(mut self, graph: crate::TopologyGraph) -> Self {
-        self.compare_graph = Some(std::sync::Arc::new(graph));
+        self.reset_navigation();
+        self.compare_graph = Some(std::sync::Arc::new(super::QueryComparison::Ready(graph)));
         self
+    }
+
+    /// Pin comparison wiring at open, while allocating its projection only for
+    /// a comparison operation. Clones share both the result and any failure.
+    pub fn with_compare_loader(
+        mut self,
+        load: impl Fn() -> Result<crate::TopologyGraph, QueryError> + Send + Sync + 'static,
+    ) -> Self {
+        self.reset_navigation();
+        self.compare_graph = Some(std::sync::Arc::new(super::QueryComparison::Deferred {
+            load: Box::new(load),
+            value: Default::default(),
+        }));
+        self
+    }
+
+    /// Whether a base was configured; this does not read its inventory.
+    pub fn has_comparison(&self) -> bool {
+        self.compare_graph.is_some()
+    }
+
+    pub fn comparison_graph(&self) -> Result<Option<&crate::TopologyGraph>, QueryError> {
+        self.compare_graph
+            .as_ref()
+            .map(|comparison| comparison.get())
+            .transpose()
     }
 
     /// Report publication health and bounded high-signal find selectors.
     pub fn status(&self, request: StatusRequest) -> Result<StatusReport, QueryError> {
+        if self.deferred_navigation.is_some() {
+            return self.navigation()?.status(request);
+        }
         let max_samples = request
             .max_samples_per_suggestion
             .clamp(1, DEFAULT_STATUS_SAMPLE_LIMIT.max(100));
@@ -760,8 +790,8 @@ impl QueryEngine {
             .filter(|v| !v.is_empty())
             .ok_or_else(|| "compare_revision_not_provided".to_owned())?;
         let compare = self
-            .compare_graph
-            .as_ref()
+            .comparison_graph()
+            .map_err(|error| format!("compare_failed:{error}"))?
             .ok_or_else(|| "compare_graph_not_configured".to_owned())?;
         if compare.snapshot.revision != compare_revision {
             return Err(format!(

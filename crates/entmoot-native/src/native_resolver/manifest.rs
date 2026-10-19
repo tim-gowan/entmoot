@@ -4,12 +4,11 @@ use std::fs;
 use std::path::Path;
 
 use entmoot_contracts::{
-    blake3_hex, ArtifactFormat, ArtifactManifest, ArtifactProducer, ScopeCompleteness,
-    ScopeUniverse,
+    ArtifactFormat, ArtifactManifest, ArtifactProducer, ScopeCompleteness, ScopeUniverse,
 };
 use thiserror::Error;
 
-use crate::export::load_graph_json;
+use super::input::NativeInventory;
 use crate::graph::TopologyGraph;
 
 #[derive(Debug, Error)]
@@ -33,7 +32,48 @@ pub fn prepare_resolver_manifest(
     language: &str,
     included_paths: &[String],
 ) -> Result<ArtifactManifest, ManifestPrepError> {
-    let bytes = fs::read(artifact_path)?;
+    prepare_manifest(
+        &graph.snapshot,
+        &graph.snapshot_files,
+        artifact_path,
+        producer_name,
+        producer_version,
+        language,
+        included_paths,
+    )
+}
+
+pub(super) fn prepare_inventory_manifest(
+    input: &NativeInventory,
+    artifact_path: &Path,
+    producer_name: &str,
+    producer_version: &str,
+    language: &str,
+    included_paths: &[String],
+) -> Result<ArtifactManifest, ManifestPrepError> {
+    prepare_manifest(
+        &input.snapshot,
+        &input.snapshot_files,
+        artifact_path,
+        producer_name,
+        producer_version,
+        language,
+        included_paths,
+    )
+}
+
+#[allow(clippy::too_many_arguments)] // Both input representations share the same manifest contract.
+fn prepare_manifest(
+    snapshot: &entmoot_contracts::SourceSnapshot,
+    snapshot_files: &[crate::SnapshotFileDigest],
+    artifact_path: &Path,
+    producer_name: &str,
+    producer_version: &str,
+    language: &str,
+    included_paths: &[String],
+) -> Result<ArtifactManifest, ManifestPrepError> {
+    let mut digest = blake3::Hasher::new();
+    std::io::copy(&mut fs::File::open(artifact_path)?, &mut digest)?;
     let provisional = ScopeUniverse::from_selectors(
         "native-resolver",
         vec![],
@@ -47,15 +87,13 @@ pub fn prepare_resolver_manifest(
         None,
     );
     let paths = if included_paths.is_empty() {
-        graph
-            .snapshot_files
+        snapshot_files
             .iter()
             .filter(|file| crate::native_resolver::join::language_matches(language, &file.path))
             .map(|file| file.path.clone())
             .collect::<Vec<_>>()
     } else {
-        graph
-            .snapshot_files
+        snapshot_files
             .iter()
             .filter_map(|file| {
                 provisional
@@ -87,9 +125,9 @@ pub fn prepare_resolver_manifest(
             ruleset_id: Some("entmoot.native_resolver.v1".into()),
             config_class: Some("entmoot.native_resolver.v1".into()),
         },
-        graph.snapshot.clone(),
+        snapshot.clone(),
         scope,
-        blake3_hex(&bytes),
+        format!("blake3:{}", digest.finalize().to_hex()),
         None,
     )
     .map_err(|error| ManifestPrepError::Manifest(error.to_string()))?;
@@ -99,7 +137,7 @@ pub fn prepare_resolver_manifest(
     Ok(manifest)
 }
 
-/// Load graph JSON then prepare a resolver manifest.
+/// Load pinned structural input or an explicit graph, then prepare a manifest.
 pub fn prepare_resolver_manifest_from_paths(
     graph_path: &Path,
     artifact_path: &Path,
@@ -107,13 +145,10 @@ pub fn prepare_resolver_manifest_from_paths(
     producer_version: &str,
     included_paths: &[String],
 ) -> Result<ArtifactManifest, ManifestPrepError> {
-    let graph = load_graph_json(graph_path).map_err(|error| {
+    let graph = NativeInventory::load(graph_path).map_err(|error| {
         ManifestPrepError::Graph(format!("failed to load {}: {error}", graph_path.display()))
     })?;
-    graph
-        .validate()
-        .map_err(|error| ManifestPrepError::Graph(error.to_string()))?;
-    prepare_resolver_manifest(
+    prepare_inventory_manifest(
         &graph,
         artifact_path,
         producer_name,

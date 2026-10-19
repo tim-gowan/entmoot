@@ -4,6 +4,33 @@ use entmoot_contracts::{CallableBoundaryRecord, DefinitionRecord, FileIndexRecor
 
 use crate::granular::GranularHashResult;
 
+/// Consume the parse result into canonical file facts without duplicating its
+/// occurrence identifiers into definition and boundary collections.
+pub fn build_file_facts(result: GranularHashResult) -> entmoot_contracts::FileFacts {
+    let mut callables: Vec<_> = result
+        .callables
+        .into_values()
+        .map(|callable| entmoot_contracts::CallableFact {
+            occurrence: entmoot_contracts::OccurrenceRef {
+                address_id: entmoot_contracts::AddressId::from_trusted(callable.address_id),
+                logic_address: callable.logic_address,
+            },
+            structural_hash: callable.structural_hash,
+            exact_body_id: callable.exact_body_id,
+            signature_hash: callable.signature_hash,
+            syntactic_signature: callable.signature,
+        })
+        .collect();
+    callables.sort_by(|a, b| a.occurrence.address_id.cmp(&b.occurrence.address_id));
+    entmoot_contracts::FileFacts {
+        policy_id: result.policy_id,
+        file_hash: result.file_hash,
+        module_shell_hash: result.module_shell_hash,
+        callables,
+        markers: result.markers,
+    }
+}
+
 /// Build per-file index records from a granular hash result.
 pub fn build_file_index(result: &GranularHashResult) -> FileIndexRecord {
     let mut definitions: Vec<DefinitionRecord> = Vec::new();
@@ -53,6 +80,35 @@ mod tests {
     use crate::logic_address::LogicKind;
     use entmoot_contracts::{DefMarker, FileMarkers, PolicyId};
     use std::collections::HashMap;
+
+    #[test]
+    fn canonical_facts_preserve_occurrences_boundaries_and_declaration_sites() {
+        let hasher = crate::StructuralHasher::new();
+        let source = "def same(x):\n    return x\ndef same(x):\n    return x\nhandler = lambda y: same(y)\n";
+        let parse = || {
+            hasher
+                .compute_granular_hash_with_analysis_at(source, "python", Some("leaf.py"), Some("fixture"), None)
+                .unwrap()
+        };
+        let expected = build_file_index(&parse());
+        let facts = build_file_facts(parse());
+        assert_eq!(facts.callables.len(), 3);
+        assert_eq!(facts.to_index(), expected);
+        let same: Vec<_> = facts
+            .callables
+            .iter()
+            .filter(|c| c.occurrence.logic_address.contains("|same|"))
+            .collect();
+        assert_eq!(same.len(), 2);
+        assert_ne!(same[0].occurrence.address_id, same[1].occurrence.address_id);
+        assert_eq!(same[0].structural_hash, same[1].structural_hash);
+        let declaration = &facts.markers.as_ref().unwrap().declarations[0];
+        assert_ne!(
+            declaration.site.occurrence,
+            declaration.callable.as_ref().unwrap().occurrence
+        );
+        assert_eq!(declaration.name, "handler");
+    }
 
     fn sample_result() -> GranularHashResult {
         let mut callables = HashMap::new();

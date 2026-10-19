@@ -1,0 +1,68 @@
+{
+  "scope": "Inventory membership/index and node payload layout sample, not full-store or end-to-end qualification",
+  "source_database": "G:\\GitHub\\entmoot\\.tmp\\performance-go-unbounded-57c2bf3\\data\\workspaces\\blake3-2c4ee55b0c2a611b9d921f0b991712fed787eb685a1d8d3d45a7b3166ce4c755\\store\\knowledge.sqlite3",
+  "source_nodes": 1933828,
+  "sample_rows": 10020,
+  "sample_step": 193,
+  "sample_kinds": {
+    "call_stub": 4104,
+    "control_site": 2263,
+    "callable": 752,
+    "declaration": 2643,
+    "file": 94,
+    "module_stub": 164
+  },
+  "results": {
+    "prior_layout": {
+      "retained_sample_bytes": 13316096,
+      "write_seconds": 0.09955479996278882,
+      "queries": 101,
+      "warm_lookup_median_seconds": 1.1992394999833778,
+      "query_plan": [
+        [
+          4,
+          0,
+          0,
+          "SEARCH n USING PRIMARY KEY (view_id=?)"
+        ],
+        [
+          10,
+          0,
+          0,
+          "SEARCH p USING INTEGER PRIMARY KEY (rowid=?)"
+        ]
+      ]
+    },
+    "indexed_integer_membership": {
+      "retained_sample_bytes": 10371072,
+      "write_seconds": 0.22161800001049414,
+      "queries": 101,
+      "warm_lookup_median_seconds": 0.17616249999264255,
+      "query_plan": [
+        [
+          3,
+          0,
+          0,
+          "SEARCH inventory_nodes USING PRIMARY KEY (view_key=?)"
+        ]
+      ],
+      "forced_index_warm_lookup_median_seconds": 0.0031555999885313213,
+      "forced_query_plan": [
+        [
+          4,
+          0,
+          0,
+          "SEARCH inventory_nodes USING INDEX inventory_by_display (view_key=? AND display_ref=?)"
+        ]
+      ]
+    }
+  },
+  "limitations": [
+    "Python SQLite runtime",
+    "OS caches uncontrolled",
+    "Source path/definition tables and unchanged shared metadata excluded from both layouts",
+    "Fixed ordinal stride sample of one publication",
+    "Display lookup scans serialized bodies only in the prior SQL control; prior production loaded the whole graph instead",
+    "Current exact-identity union explicitly selects its indexes; report includes automatic and forced plans. No claim of agent latency is inferred from this SQL-only microbenchmark."
+  ]
+}

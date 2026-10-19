@@ -10,8 +10,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use super::ProducerCapabilityProfile;
-use crate::graph::TopologyGraph;
 use crate::native_resolver::budget::BudgetWatch;
+use crate::native_resolver::input::NativeInventory;
 use crate::native_resolver::pipeline::NativeProducerError;
 use entmoot_contracts::NativeRawObservation;
 
@@ -672,7 +672,7 @@ mod collect_impl {
 
     pub fn collect(
         source_root: &Path,
-        graph: &TopologyGraph,
+        graph: &NativeInventory,
         watch: &BudgetWatch,
     ) -> Result<NativeRawObservation, NativeProducerError> {
         let root = std::fs::canonicalize(source_root)?;
@@ -683,9 +683,9 @@ mod collect_impl {
             ));
         }
         let graph_paths: BTreeMap<String, ()> = graph
-            .nodes
+            .snapshot_files
             .iter()
-            .filter_map(|node| node.path.clone().map(|path| (path, ())))
+            .map(|file| (file.path.clone(), ()))
             .collect();
         // Build qualified export routes once. Local imports use the compiler
         // declaration's exact source range, including aliases and reexports.
@@ -896,7 +896,7 @@ mod collect_impl {
 /// Collect Oxc lexical observations for inventoried JS/TS call stubs.
 pub fn collect_oxc_observation(
     source_root: &Path,
-    graph: &TopologyGraph,
+    graph: &NativeInventory,
     watch: &BudgetWatch,
 ) -> Result<NativeRawObservation, NativeProducerError> {
     #[cfg(feature = "resolved-oxc")]

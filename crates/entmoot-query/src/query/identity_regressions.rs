@@ -64,6 +64,22 @@ fn cross_edge_disagreement_survives_reload_and_query_without_endpoint_rewriting(
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("claims.sqlite3");
     let mut graph = graph();
+    graph.root = dir.path().to_string_lossy().into_owned();
+    let fixture_scope = crate::relation_claims::graph_relation_scope(&graph);
+    graph.relation_edges = graph
+        .relation_edges
+        .iter()
+        .map(|edge| {
+            relation_edge_with_id(
+                &edge.schema_domain,
+                edge.subject.clone(),
+                edge.predicate,
+                edge.object.clone(),
+                fixture_scope.clone(),
+                edge.occurrence_id.clone(),
+            )
+        })
+        .collect();
     let expected = graph.relation_edges.clone();
     graph.relation_claims = expected
         .iter()
@@ -77,7 +93,7 @@ fn cross_edge_disagreement_survives_reload_and_query_without_endpoint_rewriting(
                     state: ResolutionState::Candidate,
                 },
                 producer(),
-                scope(),
+                fixture_scope.clone(),
                 vec![],
                 None,
             )
@@ -96,6 +112,42 @@ fn cross_edge_disagreement_survives_reload_and_query_without_endpoint_rewriting(
         assert!(graph.relation_edges.contains(edge));
     }
     let engine = QueryEngine::new(graph.clone(), path.clone());
+    SqliteKnowledgeRepository::open(&path)
+        .unwrap()
+        .store_inventory(&graph, None)
+        .unwrap();
+    let retained = QueryEngine::from_retained(&path, Default::default()).unwrap();
+    // One-edge pages must include disagreements originating outside that page.
+    // Exercise each direction of the sparse reverse-claim lookup after restart.
+    for edge in &expected {
+        let entmoot_contracts::Address::Opaque { value: target, .. } = &edge.object else {
+            panic!("fixture target must be a topology address");
+        };
+        let request = InspectQuery::Callers {
+            id: target.clone(),
+            after: None,
+            limit: Some(1),
+        };
+        let actual = retained
+            .inspect(request.clone())
+            .unwrap()
+            .into_value()
+            .unwrap();
+        assert_eq!(
+            actual,
+            engine.inspect(request).unwrap().into_value().unwrap()
+        );
+        assert_eq!(
+            actual["receipt"]["relations"]["conflicted_relation_edge_ids"],
+            json!([edge.id])
+        );
+    }
+    assert!(retained
+        .deferred_navigation
+        .as_ref()
+        .unwrap()
+        .get()
+        .is_none());
     let calls = engine
         .inspect(InspectQuery::Callees {
             id: "a".into(),

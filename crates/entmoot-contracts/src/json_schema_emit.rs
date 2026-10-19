@@ -50,6 +50,7 @@ fn def<T: JsonSchema>(defs: &mut Map<String, Value>, name: &str) -> Result<(), s
 /// Pretty-printed JSON Schema document covering Entmoot interchange contracts.
 pub fn emit_contract_schemas_json() -> Result<String, serde_json::Error> {
     let mut defs = Map::new();
+    def::<crate::FileFacts>(&mut defs, "FileFacts")?;
     def::<crate::WorkspacePublication>(&mut defs, "WorkspacePublication")?;
     def::<crate::GitTreeCapture>(&mut defs, "GitTreeCapture")?;
     def::<crate::IntegrationRequest>(&mut defs, "IntegrationRequest")?;

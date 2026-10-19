@@ -365,7 +365,7 @@ fn shared_worktree_cache_replays_fresh_scopes_across_restarts_and_contexts() {
         let mut item = run_bounded(&store, &peer, job.id.as_str(), "parse", 1, 8, None).unwrap();
         assert_eq!(item.checkpoint["inventory"]["reused_files"], parse);
         for (phase, counter, expected) in [
-            ("syntax", "reused_extraction_files", parse),
+            ("syntax", "reused_extraction_files", 0),
             ("calls", "reused_stitching_files", calls),
         ] {
             resume(&store, job.id.as_str());
@@ -416,7 +416,11 @@ fn failed_cache_publication_rolls_back_graph_seal_and_preserves_complete_frontie
     );
     let connection = rusqlite::Connection::open(&store).unwrap();
     let old_digest: String = connection
-        .query_row("SELECT digest FROM syntax_cache_header", [], |r| r.get(0))
+        .query_row(
+            "SELECT digest FROM file_fact_manifests ORDER BY view_id",
+            [],
+            |r| r.get(0),
+        )
         .unwrap();
     std::fs::write(root.join("new.py"), "def addition(): return 1\n").unwrap();
     let job = submit(
@@ -428,13 +432,16 @@ fn failed_cache_publication_rolls_back_graph_seal_and_preserves_complete_frontie
     .unwrap();
     let ready = run_bounded(&store, &root, job.id.as_str(), "frontiers", 3, 8, None).unwrap();
     assert_eq!(ready.checkpoint["inventory"]["stitched_files"], 2);
-    connection.execute_batch("CREATE TRIGGER fail_cache BEFORE INSERT ON file_syntax_cache WHEN NEW.path='new.py' BEGIN SELECT RAISE(ABORT,'cache write failed'); END;").unwrap();
+    connection.execute_batch("CREATE TRIGGER fail_cache BEFORE INSERT ON file_fact_membership WHEN NEW.path='new.py' BEGIN SELECT RAISE(ABORT,'cache write failed'); END;").unwrap();
     resume(&store, job.id.as_str());
     assert!(run(&store, &root, job.id.as_str(), "failed", 1).is_err());
     assert_eq!(
         connection
-            .query_row("SELECT digest FROM syntax_cache_header", [], |r| r
-                .get::<_, String>(0))
+            .query_row(
+                "SELECT digest FROM file_fact_manifests ORDER BY view_id",
+                [],
+                |r| r.get::<_, String>(0)
+            )
             .unwrap(),
         old_digest
     );
@@ -468,12 +475,25 @@ fn failed_cache_publication_rolls_back_graph_seal_and_preserves_complete_frontie
             .state,
         OperationState::Completed
     );
-    assert_ne!(
+    assert_eq!(
         connection
-            .query_row("SELECT digest FROM syntax_cache_header", [], |r| r
-                .get::<_, String>(0))
+            .query_row(
+                "SELECT count(DISTINCT digest) FROM file_fact_manifests",
+                [],
+                |r| r.get::<_, i64>(0)
+            )
             .unwrap(),
-        old_digest
+        2
+    );
+    assert_eq!(
+        connection
+            .query_row(
+                "SELECT count(*) FROM file_fact_manifests WHERE digest=?1",
+                [&old_digest],
+                |r| r.get::<_, i64>(0)
+            )
+            .unwrap(),
+        1
     );
 }
 

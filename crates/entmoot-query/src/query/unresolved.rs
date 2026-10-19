@@ -76,49 +76,66 @@ impl QueryEngine {
             }));
         }
         let node = candidates[0];
-        let mut attempts = Vec::new();
-        for address in node_addresses(&self.graph, node) {
-            attempts.extend(repository.unresolved_for_source(&address)?);
-        }
-        attempts.sort_by(|a, b| a.id.as_str().cmp(b.id.as_str()));
-        attempts.dedup_by(|a, b| a.id == b.id);
-        // Visibility changes invalidate even identical collections. Comparing the
-        // complete bytes also catches replacement through legacy publication.
+        let addresses = node_addresses(&self.graph, node);
+        let selected = match repository.retained_unresolved(
+            &addresses,
+            after.map(|cursor| cursor.unresolved_relation_id.as_str()),
+            limit,
+        )? {
+            Some(page) => page,
+            None => {
+                // Backends without an indexed page retain their prior behavior.
+                let mut attempts = Vec::new();
+                for address in &addresses {
+                    attempts.extend(repository.unresolved_for_source(address)?);
+                }
+                attempts.sort_by(|a, b| a.id.as_str().cmp(b.id.as_str()));
+                attempts.dedup_by(|a, b| a.id == b.id);
+                let collection_digest =
+                    ContentDigest::from_trusted(blake3_hex(&serde_json::to_vec(&attempts)?));
+                let position = after.map(|cursor| {
+                    attempts.binary_search_by(|attempt| {
+                        attempt
+                            .id
+                            .as_str()
+                            .cmp(cursor.unresolved_relation_id.as_str())
+                    })
+                });
+                let offset = position
+                    .as_ref()
+                    .and_then(|result| result.as_ref().ok())
+                    .map_or(0, |position| position + 1);
+                entmoot_store::read::UnresolvedReadPage {
+                    total: attempts.len(),
+                    offset,
+                    collection_digest,
+                    after_present: position.is_none_or(|result| result.is_ok()),
+                    items: attempts.into_iter().skip(offset).take(limit).collect(),
+                }
+            }
+        };
         if repository.current_visibility_cursor()? != visibility_cursor {
             return Err(QueryError::InvalidInput(
                 "unresolved-attempt evidence changed while reading; restart paging".into(),
             ));
         }
-        let collection_digest =
-            ContentDigest::from_trusted(blake3_hex(&serde_json::to_vec(&attempts)?));
-        let offset = if let Some(cursor) = after {
+        if let Some(cursor) = after {
             if cursor.subject_id != node.id
                 || cursor.snapshot != self.graph.snapshot
                 || cursor.visibility_cursor != visibility_cursor
-                || cursor.collection_digest != collection_digest
+                || cursor.collection_digest != selected.collection_digest
             {
+                return Err(QueryError::InvalidInput("unresolved-attempt cursor does not match subject, snapshot or evidence; restart paging".into()));
+            }
+            if !selected.after_present {
                 return Err(QueryError::InvalidInput(
-                    "unresolved-attempt cursor does not match subject, snapshot or evidence; restart paging".into(),
+                    "unresolved-attempt cursor key is absent; restart paging".into(),
                 ));
             }
-            attempts
-                .binary_search_by(|attempt| {
-                    attempt
-                        .id
-                        .as_str()
-                        .cmp(cursor.unresolved_relation_id.as_str())
-                })
-                .map_err(|_| {
-                    QueryError::InvalidInput(
-                        "unresolved-attempt cursor key is absent; restart paging".into(),
-                    )
-                })?
-                + 1
-        } else {
-            0
-        };
-        let total = attempts.len();
-        let page = attempts.iter().skip(offset).take(limit).collect::<Vec<_>>();
+        }
+        let offset = selected.offset;
+        let total = selected.total;
+        let page = selected.items;
         let truncated = offset.saturating_add(page.len()) < total;
         let next_cursor = if truncated {
             page.last().map(|attempt| UnresolvedPageCursor {
@@ -126,7 +143,7 @@ impl QueryEngine {
                 subject_id: node.id.clone(),
                 snapshot: self.graph.snapshot.clone(),
                 visibility_cursor,
-                collection_digest,
+                collection_digest: selected.collection_digest,
             })
         } else {
             None

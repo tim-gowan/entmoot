@@ -38,10 +38,98 @@ pub fn build_topology_with_syntax_cache(
     options: TopologyBuildOptions<'_>,
     store: Option<&Path>,
 ) -> Result<(TopologyGraph, knowledge_db::syntax_cache::SyntaxCache), Box<dyn std::error::Error>> {
+    build_with_file_facts(root, options, store, None, false, BuildTarget::Graph)?.into_graph()
+}
+
+/// Retain immutable file units before graph derivation. Failed production leaves
+/// sealed units reusable; it does not change the current publication manifest.
+pub fn build_topology_with_retained_facts(
+    root: &Path,
+    options: TopologyBuildOptions<'_>,
+    prior: Option<&Path>,
+    units: &Path,
+) -> Result<(TopologyGraph, knowledge_db::syntax_cache::SyntaxCache), Box<dyn std::error::Error>> {
+    build_with_file_facts(root, options, prior, Some(units), false, BuildTarget::Graph)?
+        .into_graph()
+}
+
+/// A verified unchanged scan has no repository graph allocation. The façade
+/// keeps the existing publication and refreshes its operator receipt/discovery.
+pub enum StructuralRefresh {
+    Unchanged(knowledge_db::syntax_cache::SyntaxCache),
+    /// A sealed view whose full syntax and relations remain in the repository.
+    Retained {
+        /// Publication identity, source manifest, configuration and coverage only;
+        /// this is not a complete graph or a navigation projection.
+        metadata: Box<TopologyGraph>,
+        view: String,
+        outcome: PublicationOutcome,
+        cache: knowledge_db::syntax_cache::SyntaxCache,
+    },
+    Rebuilt {
+        graph: Box<TopologyGraph>,
+        cache: knowledge_db::syntax_cache::SyntaxCache,
+    },
+}
+
+impl StructuralRefresh {
+    fn into_graph(
+        self,
+    ) -> Result<(TopologyGraph, knowledge_db::syntax_cache::SyntaxCache), Box<dyn std::error::Error>>
+    {
+        match self {
+            Self::Rebuilt { graph, cache } => Ok((*graph, cache)),
+            Self::Unchanged(_) | Self::Retained { .. } => {
+                Err("graph projection required by this caller".into())
+            }
+        }
+    }
+}
+
+enum BuildTarget<'a> {
+    Graph,
+    Retained {
+        subject: Option<&'a entmoot_contracts::SourceSubject>,
+        aliases: &'a [entmoot_contracts::SourceSubject],
+    },
+}
+
+/// Retain a structural publication with file-sized projections. `reuse` is valid
+/// only when the façade has verified unchanged subject/evidence selection.
+/// The result is private until the façade verifies source and publishes a locator.
+pub fn retain_structural_inventory(
+    root: &Path,
+    options: TopologyBuildOptions<'_>,
+    prior: Option<&Path>,
+    units: &Path,
+    reuse: bool,
+    subject: Option<&entmoot_contracts::SourceSubject>,
+    aliases: &[entmoot_contracts::SourceSubject],
+) -> Result<StructuralRefresh, Box<dyn std::error::Error>> {
+    build_with_file_facts(
+        root,
+        options,
+        prior,
+        Some(units),
+        reuse,
+        BuildTarget::Retained { subject, aliases },
+    )
+}
+
+fn build_with_file_facts(
+    root: &Path,
+    options: TopologyBuildOptions<'_>,
+    store: Option<&Path>,
+    units: Option<&Path>,
+    reuse_publication: bool,
+    target: BuildTarget<'_>,
+) -> Result<StructuralRefresh, Box<dyn std::error::Error>> {
+    let started = std::time::Instant::now();
+    let observe = crate::measurement::PhaseTimer::start("source_observation");
     let prepared = prepare_topology_scan(root, &options)?;
     let policy = options.policy.cloned().unwrap_or_default();
     use inventory_stitch::{CallPart, SyntaxPart};
-    use knowledge_db::syntax_cache::{FileParts, SyntaxCache};
+    use knowledge_db::syntax_cache::SyntaxCache;
     let context = SyntaxCache::context(&prepared.repository_id, &policy)?;
     let prior = match store {
         Some(path) => {
@@ -50,38 +138,55 @@ pub fn build_topology_with_syntax_cache(
         None => SyntaxCache::new(context)?,
     };
     let mut cache = SyntaxCache::new(prior.context.clone())?;
+    if let Some(units) = units {
+        cache.retain_units_in(units)?;
+    }
     let manifest = entmoot_core::scan::source_manifest(&prepared.root)?;
+    cache.phases.push(observe.finish());
+    let parse = crate::measurement::PhaseTimer::start("parse_and_retain_file_facts");
     let workers = entmoot_core::scan::ScanWorkers::new()?;
     let mut scan = entmoot_core::scan::ScanMetadata::from_manifest(&prepared.root, &manifest);
     // Persist parser IR before deriving any graph. Each file is an independent
     // parse job; source commitments and explicit skips survive the phase barrier.
-    for inputs in manifest.inputs.chunks(32) {
-        let records = prior.records_for_inputs(inputs)?;
-        let (batch, reused) = workers.scan_cached(
+    for inputs in manifest.batches().flat_map(|batch| batch.chunks(4)) {
+        let mut facts = prior.facts_for_inputs(inputs)?;
+        let missing: Vec<_> = inputs
+            .iter()
+            .filter(|input| !facts.contains_key(&input.path))
+            .cloned()
+            .collect();
+        facts.extend(cache.facts_for_inputs(&missing)?);
+        workers.scan_facts_into(
             &prepared.root,
             &prepared.repository_id,
             &policy,
             inputs,
-            &records,
+            &facts,
+            |mut outcome| {
+                cache.reused += usize::from(outcome.reused);
+                if outcome.facts.is_none() {
+                    cache.retain_source(&outcome.input.content_digest, &outcome.source)?;
+                }
+                if let Some(facts) = outcome.facts.take() {
+                    cache.insert_facts(
+                        outcome.input.path.clone(),
+                        outcome.input.content_digest.clone(),
+                        &facts,
+                        Some(&outcome.source),
+                    )?;
+                }
+                if let Some(reason) = outcome.skipped {
+                    scan.skipped.push(entmoot_core::scan::SkippedFile {
+                        path: prepared.root.join(outcome.input.path),
+                        reason,
+                    });
+                }
+                Ok::<_, Box<dyn std::error::Error>>(())
+            },
         )?;
-        cache.reused += reused;
-        for mut outcome in batch {
-            if let Some(record) = outcome.record.take() {
-                cache.insert_record(
-                    outcome.input.path.clone(),
-                    outcome.input.content_digest.clone(),
-                    &record,
-                )?;
-            }
-            if let Some(reason) = outcome.skipped {
-                scan.skipped.push(entmoot_core::scan::SkippedFile {
-                    path: prepared.root.join(outcome.input.path),
-                    reason,
-                });
-            }
-        }
     }
     drop(workers);
+    cache.phases.push(parse.finish());
     let snapshot = snapshot_from_scan_with_subject(
         &prepared.root,
         &prepared.repository_id,
@@ -90,6 +195,144 @@ pub fn build_topology_with_syntax_cache(
         None,
         Vec::new(),
     )?;
+    let gaps: Vec<_> = scan
+        .skipped
+        .iter()
+        .map(|file| (relative_scan_path(&prepared.root, &file.path), &file.reason))
+        .collect();
+    cache.scan_commitment = Some(entmoot_contracts::blake3_hex(&serde_json::to_vec(&(
+        "entmoot.structural_scan_inputs.v1",
+        &prepared.root,
+        &snapshot,
+        &cache.context,
+        &manifest.inputs,
+        &manifest.exclusions,
+        gaps,
+    ))?));
+    if reuse_publication {
+        let reuse = crate::measurement::PhaseTimer::start("verify_sealed_scan_reuse");
+        let unchanged = store
+            .map(|path| cache.reuse_sealed_scan(&prior, path))
+            .transpose()?
+            .unwrap_or(false);
+        cache.phases.push(reuse.finish());
+        if unchanged {
+            cache.build_wall_seconds = started.elapsed().as_secs_f64();
+            return Ok(StructuralRefresh::Unchanged(cache));
+        }
+    }
+    if let BuildTarget::Retained { subject, aliases } = target {
+        let finalize = crate::measurement::PhaseTimer::start("inventory_metadata");
+        let mut extractor = crate::extractor::MarkerTopologyExtractor::with_snapshot(
+            prepared.root.to_string_lossy(),
+            snapshot,
+        );
+        extractor.on_repo_begin(&prepared.root.to_string_lossy());
+        let (mut metadata, _) = extractor.finish_syntax();
+        // Metadata finalization needs only file membership and configuration;
+        // parsed file nodes replace its placeholders during retention.
+        finalize_topology_inventory(&prepared, &scan, &mut metadata)?;
+        if !cache.is_empty() {
+            metadata.record_policy_id(policy.fingerprint().as_str());
+        }
+        metadata.snapshot.subject = subject.cloned();
+        metadata.snapshot.subject_aliases = aliases.to_vec();
+        for coverage in &mut metadata.coverages {
+            coverage.snapshot = metadata.snapshot.clone();
+            coverage.coverage_id = coverage.derive_id()?;
+        }
+        cache.phases.push(finalize.finish());
+        let database = units.ok_or("retained structural production requires a unit store")?;
+        let mut repository = SqliteKnowledgeRepository::open(database)?;
+        let retain = crate::measurement::PhaseTimer::start("streamed_structural_publication");
+        let paths: Vec<_> = cache.paths().map(str::to_owned).collect();
+        let (view, outcome) =
+            repository.seal_structural_parts(&metadata, &mut cache, |writer, cache| {
+                let mut index = crate::resolve_edges::StructuralCallIndex::default();
+                let mut header = TopologyGraph::new(metadata.root.clone());
+                header.snapshot = metadata.snapshot.clone();
+                header.policy_ids = metadata.policy_ids.clone();
+                let extract = crate::measurement::PhaseTimer::start("syntax_projection");
+                for path in &paths {
+                    let digest = cache.source_digest(path).ok_or_else(|| {
+                        KnowledgeRepositoryError::InvalidRecord {
+                            collection: "file_facts",
+                            reason: "IR lacks source commitment".into(),
+                        }
+                    })?;
+                    let record = cache.record(path)?.ok_or_else(|| {
+                        KnowledgeRepositoryError::InvalidRecord {
+                            collection: "file_facts",
+                            reason: "file lacks parser IR".into(),
+                        }
+                    })?;
+                    let source = cache.source(path)?.ok_or_else(|| {
+                        KnowledgeRepositoryError::InvalidRecord {
+                            collection: "file_facts",
+                            reason: "file lacks captured source".into(),
+                        }
+                    })?;
+                    let syntax =
+                        SyntaxPart::build_source(&prepared.root, path, digest, &record, &source)
+                            .map_err(|error| KnowledgeRepositoryError::InvalidRecord {
+                                collection: "inventory",
+                                reason: error.to_string(),
+                            })?;
+                    let mut part = header.clone();
+                    part.snapshot_files = vec![SnapshotFileDigest {
+                        path: path.clone(),
+                        content_digest: digest.to_owned(),
+                    }]
+                    .into();
+                    syntax.apply(&mut part);
+                    index.extend_nodes(&part.nodes);
+                    writer.append(&part)?;
+                }
+                cache.phases.push(extract.finish());
+                let resolve = crate::measurement::PhaseTimer::start("structural_resolution");
+                for path in &paths {
+                    let digest = cache.source_digest(path).ok_or_else(|| {
+                        KnowledgeRepositoryError::InvalidRecord {
+                            collection: "file_facts",
+                            reason: "IR lacks source commitment".into(),
+                        }
+                    })?;
+                    let calls = match prior
+                        .qualified_calls(path, digest)?
+                        .filter(|calls| calls.matches(&index))
+                    {
+                        Some(calls) => {
+                            cache.reused_stitching += 1;
+                            calls
+                        }
+                        None => {
+                            let record = cache.record(path)?.ok_or_else(|| {
+                                KnowledgeRepositoryError::InvalidRecord {
+                                    collection: "file_facts",
+                                    reason: "file lacks parser IR".into(),
+                                }
+                            })?;
+                            CallPart::build_record(&index, path, Some(&record))
+                        }
+                    };
+                    let mut part = header.clone();
+                    calls.apply(&mut part);
+                    writer.append(&part)?;
+                    cache.insert_calls(path, &calls)?;
+                }
+                cache.phases.push(resolve.finish());
+                Ok(())
+            })?;
+        cache.phases.push(retain.finish());
+        cache.build_wall_seconds = started.elapsed().as_secs_f64();
+        return Ok(StructuralRefresh::Retained {
+            metadata: Box::new(metadata),
+            view,
+            outcome,
+            cache,
+        });
+    }
+    let extract = crate::measurement::PhaseTimer::start("syntax_projection");
     let mut extractor = crate::extractor::MarkerTopologyExtractor::with_snapshot(
         prepared.root.to_string_lossy(),
         snapshot,
@@ -101,23 +344,16 @@ pub fn build_topology_with_syntax_cache(
         let digest = cache
             .source_digest(path)
             .ok_or("IR lacks source commitment")?;
-        let syntax = match prior.qualified_parts(path, digest)? {
-            Some(parts) => {
-                cache.reused_extraction += 1;
-                cache.insert_parts(path, &parts)?;
-                parts.syntax
-            }
-            None => {
-                let record = cache.record(path)?.ok_or("file lacks parser IR")?;
-                let syntax = SyntaxPart::build_record(&prepared.root, path, digest, Some(&record))?;
-                cache.insert_syntax(path, &syntax)?;
-                syntax
-            }
-        };
+        let record = cache.record(path)?.ok_or("file lacks parser IR")?;
+        let source = cache
+            .source(path)?
+            .ok_or("file facts lack captured source")?;
+        let syntax = SyntaxPart::build_source(&prepared.root, path, digest, &record, &source)?;
         syntax.apply(&mut graph);
     }
     let prior_files = prior.len();
-    drop(prior);
+    cache.phases.push(extract.finish());
+    let resolve = crate::measurement::PhaseTimer::start("structural_resolution");
     // Imports are lookup inputs, not proof of a closed component. All symbol
     // inventory must exist before positive, negative or ambiguous call lookups.
     let index = crate::resolve_edges::StructuralCallIndex::new(&graph);
@@ -125,31 +361,34 @@ pub fn build_topology_with_syntax_cache(
         let digest = cache
             .source_digest(path)
             .ok_or("IR lacks source commitment")?;
-        let cached = cache.qualified_parts(path, digest)?;
-        let (syntax, calls) = match cached.filter(|parts| parts.calls.matches(&index)) {
-            Some(parts) => {
+        let cached = prior.qualified_calls(path, digest)?;
+        let calls = match cached.filter(|calls| calls.matches(&index)) {
+            Some(calls) => {
                 cache.reused_stitching += 1;
-                (parts.syntax, parts.calls)
+                calls
             }
             None => {
                 let record = cache.record(path)?.ok_or("file lacks parser IR")?;
-                (
-                    cache.syntax(path)?,
-                    CallPart::build_record(&index, path, Some(&record)),
-                )
+                CallPart::build_record(&index, path, Some(&record))
             }
         };
         calls.apply(&mut graph);
-        cache.insert_parts(path, &FileParts { syntax, calls })?;
+        cache.insert_calls(path, &calls)?;
     }
     drop(index);
+    cache.phases.push(resolve.finish());
+    let finalize = crate::measurement::PhaseTimer::start("inventory_finalization");
     cache.unchanged = cache.len() == prior_files
         && cache.reused == cache.len()
-        && cache.reused_extraction == cache.len()
         && cache.reused_stitching == cache.len()
         && store.is_some();
     finalize_topology_inventory(&prepared, &scan, &mut graph)?;
-    Ok((graph, cache))
+    cache.phases.push(finalize.finish());
+    cache.build_wall_seconds = started.elapsed().as_secs_f64();
+    Ok(StructuralRefresh::Rebuilt {
+        graph: Box::new(graph),
+        cache,
+    })
 }
 
 /// Build a structural working-tree head, reusing unchanged-path inventory from `base`.
@@ -440,13 +679,7 @@ pub fn finalize_topology_inventory(
         &graph.snapshot_files,
     )?;
     apply_configuration_inventory(graph, configuration);
-    // Rehydration and file splicing may enumerate equivalent memberships in a
-    // different order. Canonical inventory ordering keeps repeats byte-stable.
-    graph.nodes.sort_by(|a, b| a.id.cmp(&b.id));
-    graph
-        .edges
-        .sort_by(|a, b| (&a.from, &a.to, a.kind as u8).cmp(&(&b.from, &b.to, b.kind as u8)));
-    graph.rebuild_indexes();
+    graph.canonicalize_inventory();
     graph.validate()?;
     Ok(())
 }
@@ -958,5 +1191,184 @@ mod tests {
             serde_json::to_value(reused).unwrap(),
             serde_json::to_value(full).unwrap()
         );
+    }
+}
+
+#[cfg(test)]
+mod retained_structural_tests {
+    use super::*;
+
+    #[test]
+    fn streamed_file_publication_matches_fresh_graph_across_revision_changes() {
+        let source = tempfile::tempdir().unwrap();
+        let data = tempfile::tempdir().unwrap();
+        let database = data.path().join("knowledge.sqlite3");
+        std::fs::write(
+            source.path().join("a.py"),
+            "from .b import leaf\ndef caller():\n    leaf()\n    missing()\n",
+        )
+        .unwrap();
+        std::fs::write(source.path().join("b.py"), "def leaf():\n    return 1\n").unwrap();
+        std::fs::write(
+            source.path().join("notes.txt"),
+            "unsupported inventory member",
+        )
+        .unwrap();
+        let options = || TopologyBuildOptions {
+            repository: Some("streamed-fixture"),
+            ..Default::default()
+        };
+        let mut previous = None;
+        let mut histories = Vec::new();
+        let mut stable_caller = None;
+        std::fs::write(source.path().join("service.yaml"), "apiVersion: v1\nkind: Service\nmetadata:\n  name: endpoint\nspec:\n  ports:\n    - port: 80\n").unwrap();
+        for step in 0..5 {
+            match step {
+                1 => std::fs::write(source.path().join("b.py"), "def leaf():\n    return 2\n")
+                    .unwrap(),
+                2 => std::fs::write(source.path().join("c.py"), "def another():\n    return 3\n")
+                    .unwrap(),
+                3 => std::fs::rename(source.path().join("b.py"), source.path().join("moved.py"))
+                    .unwrap(),
+                4 => std::fs::remove_file(source.path().join("moved.py")).unwrap(),
+                _ => (),
+            }
+            let expected = build_topology_with_syntax_cache(source.path(), options(), None)
+                .unwrap()
+                .0;
+            let StructuralRefresh::Retained {
+                metadata,
+                view,
+                cache,
+                ..
+            } = retain_structural_inventory(
+                source.path(),
+                options(),
+                previous.as_deref(),
+                &database,
+                false,
+                None,
+                &[],
+            )
+            .unwrap()
+            else {
+                panic!("changed publication must be retained")
+            };
+            assert!(
+                metadata
+                    .nodes
+                    .iter()
+                    .all(|node| node.kind != NodeKind::Callable),
+                "publication metadata must not collect parsed nodes"
+            );
+            let caller = expected
+                .nodes
+                .iter()
+                .find(|node| node.kind == NodeKind::Callable && node.label == "caller")
+                .unwrap();
+            if let Some(stable) = &stable_caller {
+                assert_eq!(&caller.id, stable);
+            } else {
+                stable_caller = Some(caller.id.clone());
+            }
+            assert_eq!(
+                expected.resources.len(),
+                1,
+                "configuration inventory survives streaming publication"
+            );
+            entmoot_contracts::ContentDigest::parse(view.clone()).unwrap();
+            let locator = data.path().join(format!("{step}.view.json"));
+            std::fs::write(
+                &locator,
+                serde_json::to_vec(&KnowledgeViewLocator {
+                    database: database.clone(),
+                    view,
+                })
+                .unwrap(),
+            )
+            .unwrap();
+            let repository = SqliteKnowledgeRepository::open_read_snapshot(&locator).unwrap();
+            let mut export = blake3::Hasher::new();
+            serde_json::to_writer(&mut export, &expected).unwrap();
+            export.update(b"\n");
+            assert_eq!(
+                repository.inventory_export_digest().unwrap().unwrap(),
+                format!("blake3:{}", export.finalize().to_hex())
+            );
+            let actual = repository.load_inventory(false).unwrap().unwrap();
+            let notes = actual
+                .snapshot_files
+                .iter()
+                .find(|file| file.path == "notes.txt")
+                .unwrap();
+            let retained_source = repository
+                .retained_source(crate::SourceReadRequest {
+                    snapshot: &actual.snapshot,
+                    path: &notes.path,
+                    expected_content_digest: &notes.content_digest,
+                })
+                .unwrap()
+                .unwrap();
+            assert_eq!(retained_source.bytes, b"unsupported inventory member");
+            actual.validate().unwrap();
+            assert_eq!(
+                serde_json::to_value(&actual).unwrap(),
+                serde_json::to_value(&expected).unwrap()
+            );
+            let unresolved = actual.unresolved_relations.len();
+            assert_eq!(
+                unresolved,
+                if step < 3 { 1 } else { 2 },
+                "renamed/removed imports must reopen unresolved targets"
+            );
+            histories.push((locator.clone(), expected.content_digest().unwrap()));
+            previous = Some(locator.clone());
+            drop(repository);
+            drop(cache);
+            let repeat = retain_structural_inventory(
+                source.path(),
+                options(),
+                Some(&locator),
+                &database,
+                true,
+                None,
+                &[],
+            )
+            .unwrap();
+            assert!(
+                matches!(repeat, StructuralRefresh::Unchanged(_)),
+                "identical refresh must skip graph production"
+            );
+        }
+        let database_read = rusqlite::Connection::open(&database).unwrap();
+        let versions: i64 = database_read
+            .query_row(
+                "SELECT COUNT(*) FROM inventory_node_versions WHERE node_id=?1",
+                [&stable_caller],
+                |row| row.get(0),
+            )
+            .unwrap();
+        let memberships: i64 = database_read.query_row("SELECT COUNT(*) FROM inventory_nodes JOIN inventory_node_versions USING(node_key) WHERE node_id=?1", [&stable_caller], |row| row.get(0)).unwrap();
+        assert_eq!(
+            versions, 1,
+            "unchanged logical occurrence retains one node version across revisions"
+        );
+        assert_eq!(
+            memberships, 5,
+            "each revision still selects its exact node membership"
+        );
+        drop(database_read);
+        for (locator, expected) in histories {
+            let graph = SqliteKnowledgeRepository::open_read_snapshot(&locator)
+                .unwrap()
+                .load_inventory(false)
+                .unwrap()
+                .unwrap();
+            assert_eq!(
+                graph.content_digest().unwrap(),
+                expected,
+                "later writes must preserve historical revision membership"
+            );
+        }
     }
 }

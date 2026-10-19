@@ -359,6 +359,30 @@ impl TopologyNode {
 }
 
 impl TopologyGraph {
+    /// Stable projection order shared by fresh extraction and retained reloads.
+    /// Sorting preserves observations and IDs; provider trace step order remains
+    /// in its explicit ordinal fields and is not changed here.
+    pub fn canonicalize_inventory(&mut self) {
+        self.nodes.sort_by(|a, b| a.id.cmp(&b.id));
+        self.edges
+            .sort_by(|a, b| (&a.from, &a.to, a.kind as u8).cmp(&(&b.from, &b.to, b.kind as u8)));
+        self.artifacts
+            .sort_by(|a, b| a.artifact_id.cmp(&b.artifact_id));
+        self.resolutions
+            .sort_by(|a, b| a.resolution_id.cmp(&b.resolution_id));
+        self.resolver_coverages
+            .sort_by(|a, b| a.coverage_id.cmp(&b.coverage_id));
+        self.resolved_identities
+            .sort_by_cached_key(entmoot_contracts::ResolvedIdentityRecord::record_id);
+        self.relation_edges
+            .sort_by(|a, b| a.id.as_str().cmp(b.id.as_str()));
+        self.relation_claims
+            .sort_by(|a, b| a.id.as_str().cmp(b.id.as_str()));
+        self.unresolved_relations
+            .sort_by(|a, b| a.id.as_str().cmp(b.id.as_str()));
+        self.rebuild_indexes();
+    }
+
     pub fn new(root: impl Into<String>) -> Self {
         let root = root.into();
         let placeholder = entmoot_contracts::hash_parts(&["unbound_graph_snapshot", &root]);

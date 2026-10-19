@@ -1,6 +1,6 @@
 //! Convert explicit native package declarations to inventory addresses. No name joins.
 use super::pipeline::NativeProducerError;
-use crate::{NodeKind, TopologyGraph};
+use crate::NodeKind;
 use entmoot_contracts::NativeRawObservation;
 use entmoot_contracts::{
     package_api::*, topology_node_address, ProviderSymbolSpelling, ResolverObservation,
@@ -132,7 +132,7 @@ pub(super) fn merge_module_api(
 }
 
 pub(super) fn normalize(
-    graph: &TopologyGraph,
+    graph: &super::input::NativeInventory,
     raw: &NativeRawObservation,
     language: &str,
     observations: &[ResolverObservation],
@@ -385,11 +385,25 @@ mod tests {
                         "symbol": "leaf", "boundary_policy": "fixture.header.v1", "boundary_text": "header"}]}],
                 "references": [], "references_complete": true, "limitations": []
             }));
-            let valid = normalize(&graph, &raw, language, &[]).unwrap().unwrap();
+            let valid = normalize(
+                &super::super::input::NativeInventory::from(&graph),
+                &raw,
+                language,
+                &[],
+            )
+            .unwrap()
+            .unwrap();
             assert_eq!(valid.surfaces[0].exports.len(), 1, "{language}");
             let retained = raw.build_context.clone();
             raw.invalid_environment = true;
-            let failed = normalize(&graph, &raw, language, &[]).unwrap().unwrap();
+            let failed = normalize(
+                &super::super::input::NativeInventory::from(&graph),
+                &raw,
+                language,
+                &[],
+            )
+            .unwrap()
+            .unwrap();
             assert!(failed.surfaces[0].exports.is_empty(), "{language}");
             assert_eq!(
                 failed.surfaces[0].completeness,
@@ -469,9 +483,14 @@ mod tests {
                 .spelling,
             symbol
         );
-        let normalized = normalize(&graph, &raw, "go", &observations)
-            .unwrap()
-            .unwrap();
+        let normalized = normalize(
+            &super::super::input::NativeInventory::from(&graph),
+            &raw,
+            "go",
+            &observations,
+        )
+        .unwrap()
+        .unwrap();
         assert_eq!(normalized.references.len(), 1);
         assert!(
             !normalized.references_complete,
@@ -489,9 +508,14 @@ mod tests {
             .clone();
         duplicate.id.push_str("-duplicate");
         ambiguous.nodes.push(duplicate);
-        let normalized = normalize(&ambiguous, &raw, "go", &observations)
-            .unwrap()
-            .unwrap();
+        let normalized = normalize(
+            &super::super::input::NativeInventory::from(&ambiguous),
+            &raw,
+            "go",
+            &observations,
+        )
+        .unwrap()
+        .unwrap();
         assert!(
             normalized.references.is_empty(),
             "coincident inventory calls cannot choose the last span match"
@@ -560,19 +584,40 @@ mod tests {
                     "symbol": "api.leaf", "boundary_policy": "test.header.v1", "boundary_digest": entmoot_contracts::blake3_hex(b"header")}]}],
             "references": [], "references_complete": true, "limitations": []
         }));
-        let complete = normalize(&graph, &raw, "python", &[]).unwrap().unwrap();
+        let complete = normalize(
+            &super::super::input::NativeInventory::from(&graph),
+            &raw,
+            "python",
+            &[],
+        )
+        .unwrap()
+        .unwrap();
         assert_eq!(
             complete.surfaces[0].completeness,
             ScopeCompleteness::CompleteRelativeToUniverse
         );
         raw.invalid_environment = true;
-        let failed = normalize(&graph, &raw, "python", &[]).unwrap().unwrap();
+        let failed = normalize(
+            &super::super::input::NativeInventory::from(&graph),
+            &raw,
+            "python",
+            &[],
+        )
+        .unwrap()
+        .unwrap();
         assert_eq!(failed.surfaces[0].completeness, ScopeCompleteness::Partial);
         assert!(!failed.references_complete);
         raw.invalid_environment = false;
         raw.build_context.get_mut("package_api").unwrap()["surfaces"][0]["exports"][0]
             ["start_byte"] = (node.start_byte.unwrap() + 1).into();
-        let mismatch = normalize(&graph, &raw, "python", &[]).unwrap().unwrap();
+        let mismatch = normalize(
+            &super::super::input::NativeInventory::from(&graph),
+            &raw,
+            "python",
+            &[],
+        )
+        .unwrap()
+        .unwrap();
         assert_eq!(
             mismatch.surfaces[0].completeness,
             ScopeCompleteness::Partial
@@ -619,7 +664,14 @@ mod tests {
             if reverse {
                 ordered.nodes.reverse();
             }
-            let normalized = normalize(&ordered, &raw, "python", &[]).unwrap().unwrap();
+            let normalized = normalize(
+                &super::super::input::NativeInventory::from(&ordered),
+                &raw,
+                "python",
+                &[],
+            )
+            .unwrap()
+            .unwrap();
             assert_eq!(normalized.surfaces[0].exports.len(), 1);
             assert_eq!(
                 normalized.surfaces[0].exports[0].declaration,
@@ -632,7 +684,14 @@ mod tests {
         }
         raw.build_context.get_mut("package_api").unwrap()["surfaces"][0]["exports"][0]
             ["start_byte"] = (class.start_byte.unwrap() + 1).into();
-        let mismatch = normalize(&graph, &raw, "python", &[]).unwrap().unwrap();
+        let mismatch = normalize(
+            &super::super::input::NativeInventory::from(&graph),
+            &raw,
+            "python",
+            &[],
+        )
+        .unwrap()
+        .unwrap();
         assert!(mismatch.surfaces[0].exports.is_empty());
         assert_eq!(
             mismatch.surfaces[0].completeness,

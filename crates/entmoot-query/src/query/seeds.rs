@@ -10,6 +10,9 @@ impl QueryEngine {
     /// each discovered pair is checked by the existing scoped bidirectional query.
     /// Co-location and absent represented routes are not dataflow conclusions.
     pub fn trace_seeds(&self, request: SeededPathRequest) -> Result<SeededPathReport, QueryError> {
+        if self.deferred_navigation.is_some() {
+            return self.navigation()?.trace_seeds(request);
+        }
         let mut admission =
             super::admission::EdgeAdmission::new(self, &request.prune, request.evidence_filter)?;
         let repository = self.repository()?;
@@ -249,7 +252,7 @@ mod tests {
             .unwrap();
         assert!(capped.seeds_truncated);
         assert_eq!(capped.matching_assertions, 4);
-        let mut ambiguous = engine.graph().clone();
+        let mut ambiguous = engine.graph().unwrap().clone();
         let mut alternative = ambiguous.attachments[0].clone();
         alternative.attachment_id = "alternative-owner".into();
         alternative.selected_target.as_mut().unwrap().node_id = Some("b".into());

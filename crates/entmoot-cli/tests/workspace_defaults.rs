@@ -1384,7 +1384,7 @@ fn java_adapter_pin_is_exclusive_in_plan_summaries() {
 
 #[test]
 #[cfg(feature = "producer")]
-fn independent_families_overlap_attach_in_order_and_fail_atomically() {
+fn native_sessions_are_serial_attach_in_order_and_fail_atomically() {
     let root = WorkspaceFixture::new();
     let adapters = tempfile::tempdir().unwrap();
     fs::write(
@@ -1399,7 +1399,7 @@ fn independent_families_overlap_attach_in_order_and_fail_atomically() {
     .unwrap();
     fs::write(root.path().join("main.c"), "int main(void) { return 0; }\n").unwrap();
     fs::write(root.path().join("compile_commands.json"), "[]").unwrap();
-    for (family, peer) in [("clang", "go"), ("go", "clang")] {
+    for family in ["clang", "go"] {
         fs::write(
             adapters.path().join(format!("{family}.py")),
             format!(
@@ -1407,12 +1407,20 @@ fn independent_families_overlap_attach_in_order_and_fail_atomically() {
 request = json.load(sys.stdin)
 markers = pathlib.Path(__file__).resolve().parent / 'markers'
 markers.mkdir(exist_ok=True)
-(markers / '{family}.started').write_text('started')
-end = time.monotonic() + 3
-while not (markers / '{peer}.started').exists() and time.monotonic() < end:
-    time.sleep(0.01)
-print(json.dumps({{'invalid_environment': not (markers / '{peer}.started').exists(),
-    'compiler_version': 'fixture', 'build_context': {{'module_scope':'single_module.v1'}}}}))
+active = markers / 'active'
+try:
+    active.mkdir()
+except FileExistsError:
+    print(json.dumps({{'invalid_environment': True}}))
+else:
+    try:
+        (markers / '{family}.started').write_text('started')
+        time.sleep(0.1)
+        (markers / '{family}.finished').write_text('finished')
+        print(json.dumps({{'invalid_environment': False,
+            'compiler_version': 'fixture', 'build_context': {{'module_scope':'single_module.v1'}}}}))
+    finally:
+        active.rmdir()
 "#
             ),
         )
@@ -1433,6 +1441,13 @@ print(json.dumps({{'invalid_environment': not (markers / '{peer}.started').exist
         String::from_utf8_lossy(&first.stderr)
     );
     let report: Value = serde_json::from_slice(&first.stdout).unwrap();
+    for family in ["clang", "go"] {
+        assert!(adapters
+            .path()
+            .join(format!("markers/{family}.finished"))
+            .is_file());
+    }
+    assert!(!adapters.path().join("markers/active").exists());
     let stages = report["stages"].as_array().unwrap();
     assert_eq!(
         stages

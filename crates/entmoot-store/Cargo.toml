@@ -12,8 +12,9 @@ entmoot-contracts = { version = "=0.0.1-alpha.1", path = "../entmoot-contracts" 
 entmoot-core = { version = "=0.0.1-alpha.1", path = "../entmoot-core" }
 entmoot-topology = { version = "=0.0.1-alpha.1", path = "../entmoot-topology" }
 serde = { version = "1.0.228", features = ["derive", "rc"] }
-serde_json = "1.0.148"
+serde_json = { version = "1.0.148", features = ["raw_value"] }
 thiserror = "2.0.17"
+tracing = "0.1"
 blake3 = "1.8.2"
 tempfile = "3.10.1"
 gix = "0.87.1"
@@ -25,7 +26,7 @@ tree-sitter-json = "=0.24.8"
 rayon = "1.11.0"
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.62.2", features = ["Win32_System_Threading"] }
+windows = { version = "0.62.2", features = ["Win32_System_Threading", "Win32_System_ProcessStatus"] }
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
 [lints]

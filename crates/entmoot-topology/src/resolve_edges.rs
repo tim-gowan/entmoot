@@ -26,6 +26,7 @@ pub fn apply_resolved_call_edges(graph: &mut TopologyGraph, records: &[(String, 
 
 /// A disposable callable index over the complete syntax inventory. It can stitch
 /// independent file frontiers without rebuilding indexes or changing resolution.
+#[derive(Default)]
 pub struct StructuralCallIndex {
     by_path_name: HashMap<(String, String), Vec<String>>,
     by_fqn: HashMap<String, UniqueNodeId>,
@@ -33,29 +34,24 @@ pub struct StructuralCallIndex {
 }
 impl StructuralCallIndex {
     pub fn new(graph: &TopologyGraph) -> Self {
-        let mut by_path_name: HashMap<(String, String), Vec<String>> = HashMap::new();
-        let mut by_fqn: HashMap<String, UniqueNodeId> = HashMap::new();
-        let mut callable_ids = HashSet::new();
-
-        for node in &graph.nodes {
-            if node.kind != NodeKind::Callable {
-                continue;
-            }
-            callable_ids.insert(node.id.clone());
-            if let Some(path) = node.path.as_ref() {
-                by_path_name
+        let mut index = Self::default();
+        index.extend_nodes(&graph.nodes);
+        index
+    }
+    /// Add one file's callable inventory before any call decisions are made.
+    /// Import lookups still see the complete repository index after this barrier.
+    pub fn extend_nodes(&mut self, nodes: &[crate::TopologyNode]) {
+        for node in nodes.iter().filter(|node| node.kind == NodeKind::Callable) {
+            self.callable_ids.insert(node.id.clone());
+            if let Some(path) = &node.path {
+                self.by_path_name
                     .entry((path.clone(), node.label.clone()))
                     .or_default()
                     .push(node.id.clone());
             }
-            if let Some(fqn) = node.fqn.as_ref() {
-                insert_unique_node(&mut by_fqn, fqn, &node.id);
+            if let Some(fqn) = &node.fqn {
+                insert_unique_node(&mut self.by_fqn, fqn, &node.id);
             }
-        }
-        Self {
-            by_path_name,
-            by_fqn,
-            callable_ids,
         }
     }
     fn apply(&self, graph: &mut TopologyGraph, resolved: Vec<ResolvedCall>) {

@@ -524,9 +524,7 @@ impl EntmootMcp {
                     );
                 }
             };
-            let working_tree_root = bundle
-                .compare
-                .is_none()
+            let working_tree_root = (!bundle.engine.has_comparison())
                 .then(|| bundle.source_root.clone())
                 .flatten();
             let result = bundle
@@ -542,10 +540,14 @@ impl EntmootMcp {
                         )
                         .map_err(|error| ("invalid_input", error.to_string()))
                     } else {
-                        let base = bundle.compare.as_deref().ok_or((
-                            "invalid_input",
-                            "operation requires --compare-graph at server startup".into(),
-                        ))?;
+                        let base = bundle
+                            .engine
+                            .comparison_graph()
+                            .map_err(|error| ("invalid_input", error.to_string()))?
+                            .ok_or((
+                                "invalid_input",
+                                "operation requires --compare-graph at server startup".into(),
+                            ))?;
                         entmoot_workspace::compare_revision_impact(base, &graph)
                             .map_err(|error| ("invalid_input", error.to_string()))
                     }

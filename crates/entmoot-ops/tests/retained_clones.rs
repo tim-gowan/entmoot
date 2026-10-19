@@ -41,7 +41,7 @@ fn groups_retained_occurrences_without_reparsing_the_checkout() {
     };
     let report = engine.clones(request.clone()).unwrap();
     assert_eq!(report.scanned_files, 1);
-    let mut stale_graph = engine.graph().clone();
+    let mut stale_graph = engine.graph().unwrap().clone();
     stale_graph.snapshot.revision = "different-revision".into();
     let stale = QueryEngine::new(stale_graph, path)
         .clones(request.clone())
@@ -56,10 +56,12 @@ fn groups_retained_occurrences_without_reparsing_the_checkout() {
         .unwrap();
     assert_eq!(group.members.len(), 2);
     assert_ne!(group.members[0].node_id, group.members[1].node_id);
-    assert!(group
-        .members
+    assert!(group.members.iter().all(|m| engine
+        .graph()
+        .unwrap()
+        .nodes
         .iter()
-        .all(|m| engine.graph().nodes.iter().any(|n| n.id == m.node_id)));
+        .any(|n| n.id == m.node_id)));
     let limited = engine
         .clones(CloneRequest {
             max_patterns: 1,

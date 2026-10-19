@@ -5,7 +5,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use entmoot_contracts::{
-    blake3_hex, ContentDigest, ResolverArtifact, ResolverArtifactProducer, RESOLVER_ARTIFACT_SCHEMA,
+    ContentDigest, ResolverArtifact, ResolverArtifactProducer, RESOLVER_ARTIFACT_SCHEMA,
 };
 use entmoot_contracts::{
     ExecutionPolicy, NativeProducerContext, NativeRawEnvelope, NativeRawSeries, NativeReceipt,
@@ -14,11 +14,10 @@ use entmoot_contracts::{
 use serde::Serialize;
 use thiserror::Error;
 
-use crate::export::load_graph_json;
-use crate::graph::TopologyGraph;
+use super::input::NativeInventory;
 use crate::native_resolver::budget::{BudgetWatch, ProducerBudget, ProducerBudgetError};
-use crate::native_resolver::join::{language_matches, normalize_observations, METHOD_ID};
-use crate::native_resolver::manifest::{prepare_resolver_manifest, ManifestPrepError};
+use crate::native_resolver::join::{language_matches, normalize_inventory_observations, METHOD_ID};
+use crate::native_resolver::manifest::{prepare_inventory_manifest, ManifestPrepError};
 use crate::native_resolver::producers::{clang, go, java, oxc, python, roslyn, typescript};
 
 use entmoot_contracts::NativeRawObservation;
@@ -27,6 +26,8 @@ use entmoot_contracts::NativeRawObservation;
 #[serde(deny_unknown_fields)]
 pub struct NativeProduceRequest {
     pub canon: bool,
+    /// Compact `.native.json` structural input, a retained publication locator,
+    /// or an explicit graph export for standalone compatibility.
     pub graph_path: PathBuf,
     pub source_root: PathBuf,
     pub output_dir: PathBuf,
@@ -91,11 +92,13 @@ pub enum NativeProducerError {
 }
 
 fn digest_file(path: &Path) -> Result<String, NativeProducerError> {
-    Ok(blake3_hex(&fs::read(path)?))
+    let mut digest = blake3::Hasher::new();
+    std::io::copy(&mut fs::File::open(path)?, &mut digest)?;
+    Ok(format!("blake3:{}", digest.finalize().to_hex()))
 }
 
 fn freeze_snapshot_digests(
-    graph: &TopologyGraph,
+    graph: &NativeInventory,
     root: &Path,
 ) -> Result<BTreeMap<String, String>, NativeProducerError> {
     let mut observed = BTreeMap::new();
@@ -188,16 +191,16 @@ fn write_atomic_dir<T>(
 }
 
 fn build_artifact(
-    graph: &TopologyGraph,
+    graph: &NativeInventory,
     raw: &NativeRawObservation,
     language: &str,
     producer: &str,
     version: &str,
     build_context_digest: ContentDigest,
 ) -> Result<ResolverArtifact, NativeProducerError> {
-    let observations = normalize_observations(graph, raw, language);
+    let observations = normalize_inventory_observations(graph, raw, language);
     let artifact = ResolverArtifact {
-        assessments: super::join::normalize_reference_uses(graph, raw, language),
+        assessments: super::join::normalize_inventory_references(graph, raw, language),
         package_api: super::package_api::normalize(graph, raw, language, &observations)?,
         schema_version: RESOLVER_ARTIFACT_SCHEMA.into(),
         implementation: crate::implementation_fingerprint(),
@@ -261,16 +264,12 @@ fn produce_with_collector<F>(
 where
     F: FnOnce(
         &NativeProduceRequest,
-        &TopologyGraph,
+        &NativeInventory,
         &BudgetWatch,
     ) -> Result<NativeRawObservation, NativeProducerError>,
 {
     let watch = BudgetWatch::start(request.budget);
-    let graph = load_graph_json(&request.graph_path)
-        .map_err(|error| NativeProducerError::Graph(error.to_string()))?;
-    graph
-        .validate()
-        .map_err(|error| NativeProducerError::Graph(error.to_string()))?;
+    let graph = NativeInventory::load(&request.graph_path)?;
     let root = fs::canonicalize(&request.source_root)?;
     let before = freeze_snapshot_digests(&graph, &root)?;
     watch.check_files(before.len())?;
@@ -414,7 +413,7 @@ where
 
     let artifact_path = request.output_dir.join("resolver.json");
     let producer_label = format!("native-{}", config.producer);
-    let manifest = prepare_resolver_manifest(
+    let manifest = prepare_inventory_manifest(
         &graph,
         &artifact_path,
         &producer_label,
@@ -439,7 +438,7 @@ where
 #[cfg(feature = "resolved-rust-analyzer")]
 fn collect_rust(
     request: &NativeProduceRequest,
-    graph: &TopologyGraph,
+    graph: &NativeInventory,
     watch: &BudgetWatch,
 ) -> Result<NativeRawObservation, NativeProducerError> {
     crate::native_resolver::rust_analyzer::collect(request, graph, watch)
@@ -448,7 +447,7 @@ fn collect_rust(
 #[cfg(not(feature = "resolved-rust-analyzer"))]
 fn collect_rust(
     _request: &NativeProduceRequest,
-    _graph: &TopologyGraph,
+    _graph: &NativeInventory,
     _watch: &BudgetWatch,
 ) -> Result<NativeRawObservation, NativeProducerError> {
     Err(NativeProducerError::AdapterUnavailable)
@@ -650,7 +649,7 @@ mod status_tests {
         .unwrap();
         assert_eq!(fs::read(output.join("payload.json")).unwrap(), expected);
         assert_eq!(length, expected.len());
-        assert_eq!(digest.as_str(), blake3_hex(&expected));
+        assert_eq!(digest.as_str(), entmoot_contracts::blake3_hex(&expected));
         let rejected = directory.path().join("rejected");
         let result: Result<(), _> = write_atomic_dir(&rejected, |staging| {
             write_json(&staging.join("payload.json"), &value)?;
@@ -683,8 +682,8 @@ mod status_tests {
             fs::write(root.join(".entmoot/lock_bindings.json"), b"{invalid}").unwrap();
             let graph =
                 crate::build_topology_from_repo_with_options(&root, Default::default()).unwrap();
-            let graph_path = temp.path().join("graph.json");
-            crate::write_graph_json(&graph, &graph_path).unwrap();
+            let graph_path = temp.path().join("input.native.json");
+            super::super::input::write_native_input(&graph, &graph_path).unwrap();
             let result = produce_with_collector(
                 NativeProduceRequest {
                     canon: false,

@@ -11,6 +11,9 @@ use crate::NodeKind;
 impl QueryEngine {
     /// Page materialized inventory subjects for review.
     pub fn inventory(&self, request: InventoryRequest) -> Result<InventoryReport, QueryError> {
+        if self.deferred_navigation.is_some() {
+            return self.navigation()?.inventory(request);
+        }
         let compiled = request
             .selector
             .as_ref()

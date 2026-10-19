@@ -1,0 +1,167 @@
+{
+  "experiment": "nullable SQLite lookup indexes on retained Go records",
+  "observed_date": "2026-10-19",
+  "implementation_base": "57c2bf369831832cb97723045abff0e94f67c7ab",
+  "source_repository": "https://go.googlesource.com/go",
+  "source_revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+  "sample": {
+    "selection": "first 4000 records ordered by record_id from each listed collection in the completed baseline view",
+    "collections": {
+      "call_sites": 4000,
+      "code_contracts": 4000,
+      "declaration_sites": 4000,
+      "propositions": 4000,
+      "relation_edges": 4000,
+      "relation_claims": 4000,
+      "structural_edges": 4000,
+      "unresolved_relations": 4000
+    },
+    "total_records": 32000,
+    "same_rows_and_lookup_results_verified": true
+  },
+  "runtime": {
+    "python": "3.13.2",
+    "sqlite": "3.45.3",
+    "platform": "Windows-11-10.0.26300-SP0"
+  },
+  "results": {
+    "composite_without_rowid": {
+      "table_plus_unique_index_bytes": 9764864,
+      "secondary_indexes_incremental_bytes": {
+        "knowledge_by_artifact": 5402624,
+        "knowledge_by_location": 5402624,
+        "knowledge_by_object_predicate": 6205440,
+        "knowledge_by_proposition": 5971968,
+        "knowledge_by_subject_predicate": 7340032
+      },
+      "retained_bytes": 40087552,
+      "write_seconds": 0.3710817000246607,
+      "warm_lookup_median_seconds": 0.24067219998687506,
+      "lookup_queries_per_trial": 904,
+      "production_forced_index": {
+        "forced_production_index_plan": [
+          [
+            4,
+            0,
+            0,
+            "SEARCH scoped_records USING INDEX knowledge_by_subject_predicate (view_id=? AND collection=? AND subject_id=?)"
+          ],
+          [
+            25,
+            0,
+            0,
+            "USE TEMP B-TREE FOR ORDER BY"
+          ]
+        ],
+        "warm_lookup_median_seconds": 0.037559300020802766,
+        "queries": 904
+      }
+    },
+    "integer_record_key": {
+      "table_plus_unique_index_bytes": 15134720,
+      "secondary_indexes_incremental_bytes": {
+        "knowledge_by_artifact": 3141632,
+        "knowledge_by_location": 3141632,
+        "knowledge_by_object_predicate": 3932160,
+        "knowledge_by_proposition": 3739648,
+        "knowledge_by_subject_predicate": 5083136
+      },
+      "retained_bytes": 34172928,
+      "write_seconds": 0.33343379996949807,
+      "warm_lookup_median_seconds": 0.5847933000186458,
+      "lookup_queries_per_trial": 904,
+      "production_forced_index": {
+        "forced_production_index_plan": [
+          [
+            4,
+            0,
+            0,
+            "SEARCH scoped_records USING INDEX knowledge_by_subject_predicate (view_id=? AND collection=? AND subject_id=?)"
+          ],
+          [
+            22,
+            0,
+            0,
+            "USE TEMP B-TREE FOR ORDER BY"
+          ]
+        ],
+        "warm_lookup_median_seconds": 0.033440700033679605,
+        "queries": 904
+      }
+    },
+    "partial_without_rowid": {
+      "table_plus_unique_index_bytes": 9764864,
+      "secondary_indexes_incremental_bytes": {
+        "knowledge_by_artifact": 4096,
+        "knowledge_by_location": 4096,
+        "knowledge_by_object_predicate": 2056192,
+        "knowledge_by_proposition": 1945600,
+        "knowledge_by_subject_predicate": 6651904
+      },
+      "retained_bytes": 20426752,
+      "write_seconds": 0.23495419998653233,
+      "warm_lookup_median_seconds": 0.24288949999026954,
+      "lookup_queries_per_trial": 904,
+      "production_forced_index": {
+        "forced_production_index_plan": [
+          [
+            4,
+            0,
+            0,
+            "SEARCH scoped_records USING INDEX knowledge_by_subject_predicate (view_id=? AND collection=? AND subject_id=?)"
+          ],
+          [
+            25,
+            0,
+            0,
+            "USE TEMP B-TREE FOR ORDER BY"
+          ]
+        ],
+        "warm_lookup_median_seconds": 0.03808450000360608,
+        "queries": 904
+      }
+    },
+    "partial_integer_record_key": {
+      "table_plus_unique_index_bytes": 15134720,
+      "secondary_indexes_incremental_bytes": {
+        "knowledge_by_artifact": 4096,
+        "knowledge_by_location": 4096,
+        "knowledge_by_object_predicate": 1433600,
+        "knowledge_by_proposition": 1376256,
+        "knowledge_by_subject_predicate": 6905856
+      },
+      "retained_bytes": 24858624,
+      "write_seconds": 0.2368057999992743,
+      "warm_lookup_median_seconds": 0.5822377000004053,
+      "lookup_queries_per_trial": 904,
+      "production_forced_index": {
+        "forced_production_index_plan": [
+          [
+            3,
+            0,
+            0,
+            "SEARCH scoped_records USING COVERING INDEX knowledge_by_subject_predicate (view_id=? AND collection=? AND subject_id=?)"
+          ],
+          [
+            20,
+            0,
+            0,
+            "USE TEMP B-TREE FOR ORDER BY"
+          ]
+        ],
+        "warm_lookup_median_seconds": 0.029418300022371113,
+        "queries": 904
+      }
+    }
+  },
+  "selected_layout": "partial_without_rowid",
+  "decision": "Omit NULL keys from the five evidence lookup indexes. Retain composite record identity for now; the partial integer-key variant retains more bytes in this sample. Production forced-index lookups are the relevant latency comparison.",
+  "limitations": [
+    "Not an end-to-end publication or query latency qualification.",
+    "One ordered, stratified sample rather than a random sample or full database.",
+    "SQLite runtime is Python sqlite3; the Rust bundled runtime needs ordinary correctness and query-plan tests.",
+    "Retained bytes cover the sampled record table and its indexes only, excluding payloads and all other tables.",
+    "Each warm timing is the median of five trials following one warmup; OS cache is uncontrolled.",
+    "Initial timings allowed automatic index selection. The separately retained forced-index timings match production lookup routing."
+  ]
+}

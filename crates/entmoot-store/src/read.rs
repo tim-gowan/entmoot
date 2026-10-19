@@ -5,6 +5,49 @@ use crate::{KnowledgeStore, TopologyGraph};
 use entmoot_contracts::*;
 use std::path::{Path, PathBuf};
 
+/// Small publication header sufficient for source reads and deferred navigation.
+/// It deliberately cannot be mistaken for a complete inventory projection.
+#[derive(Debug, Clone)]
+pub struct InventoryMetadata {
+    pub root: String,
+    pub snapshot: SourceSnapshot,
+    pub policy_ids: Vec<String>,
+    pub snapshot_files: Vec<crate::SnapshotFileDigest>,
+}
+
+/// Internal keyset page over an immutable inventory. Ordinals are storage
+/// positions, never public identities or portable cursors.
+pub struct InventoryNodePage {
+    pub nodes: Vec<crate::TopologyNode>,
+    pub next_ordinal: Option<i64>,
+}
+
+/// Exact counts accompany a bounded keyset page over retained relation edges.
+pub struct RelationReadPage {
+    pub edges: Vec<RelationEdge>,
+    pub offset: usize,
+    pub total: usize,
+}
+
+/// The collection commitment is streamed across the complete selected attempt
+/// set. Only this page is retained in memory; absence never implies resolution.
+pub struct UnresolvedReadPage {
+    pub items: Vec<UnresolvedRelation>,
+    pub offset: usize,
+    pub total: usize,
+    pub collection_digest: ContentDigest,
+    pub after_present: bool,
+}
+
+/// Evidence required to interpret selected edges, including incoming explicit
+/// contradictions. Coverage retains one lookahead item for bounded receipts.
+pub struct RelationReadContext {
+    pub edge_claims: Vec<Vec<RelationClaim>>,
+    pub related_claims: Vec<RelationClaim>,
+    pub artifacts: Vec<ArtifactManifest>,
+    pub resolver_coverages: Vec<ResolverCoverageObservation>,
+}
+
 /// One transactionally pinned, immutable knowledge view.
 ///
 /// ```compile_fail
@@ -14,6 +57,72 @@ use std::path::{Path, PathBuf};
 /// }
 /// ```
 pub trait KnowledgeRead {
+    fn retained_call_edges(
+        &self,
+        _addresses: &[Address],
+        _direction: query::CallDirection,
+        _after: Option<&str>,
+        _limit: usize,
+    ) -> Result<Option<RelationReadPage>, KnowledgeRepositoryError> {
+        Ok(None)
+    }
+
+    fn retained_unresolved(
+        &self,
+        _addresses: &[Address],
+        _after: Option<&str>,
+        _limit: usize,
+    ) -> Result<Option<UnresolvedReadPage>, KnowledgeRepositoryError> {
+        Ok(None)
+    }
+
+    fn retained_relation_context(
+        &self,
+        _edges: &[&RelationEdge],
+        _artifact_ids: &[String],
+        _coverage_limit: usize,
+    ) -> Result<Option<RelationReadContext>, KnowledgeRepositoryError> {
+        Ok(None)
+    }
+
+    fn inventory_resource(
+        &self,
+        _id: &str,
+    ) -> Result<Option<ResourceRecord>, KnowledgeRepositoryError> {
+        Ok(None)
+    }
+    /// Indexed exact identities, including all supplied hash spellings. An
+    /// unsupported backend returns None, never a false empty match.
+    fn inventory_nodes_matching(
+        &self,
+        path: Option<&str>,
+        exact: &[String],
+        after: Option<i64>,
+        limit: usize,
+    ) -> Result<Option<InventoryNodePage>, KnowledgeRepositoryError> {
+        if exact.is_empty() {
+            self.inventory_nodes(path, after, limit)
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Path narrowing happens before hydration. None means unsupported by this
+    /// backend; it does not establish an empty inventory.
+    fn inventory_nodes(
+        &self,
+        _path: Option<&str>,
+        _after: Option<i64>,
+        _limit: usize,
+    ) -> Result<Option<InventoryNodePage>, KnowledgeRepositoryError> {
+        Ok(None)
+    }
+
+    /// None means this backend does not retain a source inventory header.
+    fn inventory_metadata(&self) -> Result<Option<InventoryMetadata>, KnowledgeRepositoryError> {
+        Ok(None)
+    }
+
     fn query_checkpoint(
         &self,
         key: &str,
@@ -149,6 +258,63 @@ pub trait KnowledgeRead {
     ) -> Result<Vec<TraceStepRecord>, KnowledgeRepositoryError>;
 }
 impl KnowledgeRead for Box<dyn KnowledgeRead> {
+    fn retained_call_edges(
+        &self,
+        addresses: &[Address],
+        direction: query::CallDirection,
+        after: Option<&str>,
+        limit: usize,
+    ) -> Result<Option<RelationReadPage>, KnowledgeRepositoryError> {
+        self.as_ref()
+            .retained_call_edges(addresses, direction, after, limit)
+    }
+    fn retained_unresolved(
+        &self,
+        addresses: &[Address],
+        after: Option<&str>,
+        limit: usize,
+    ) -> Result<Option<UnresolvedReadPage>, KnowledgeRepositoryError> {
+        self.as_ref().retained_unresolved(addresses, after, limit)
+    }
+    fn retained_relation_context(
+        &self,
+        edges: &[&RelationEdge],
+        artifact_ids: &[String],
+        coverage_limit: usize,
+    ) -> Result<Option<RelationReadContext>, KnowledgeRepositoryError> {
+        self.as_ref()
+            .retained_relation_context(edges, artifact_ids, coverage_limit)
+    }
+    fn inventory_resource(
+        &self,
+        id: &str,
+    ) -> Result<Option<ResourceRecord>, KnowledgeRepositoryError> {
+        self.as_ref().inventory_resource(id)
+    }
+    fn inventory_nodes_matching(
+        &self,
+        path: Option<&str>,
+        exact: &[String],
+        after: Option<i64>,
+        limit: usize,
+    ) -> Result<Option<InventoryNodePage>, KnowledgeRepositoryError> {
+        self.as_ref()
+            .inventory_nodes_matching(path, exact, after, limit)
+    }
+
+    fn inventory_nodes(
+        &self,
+        path: Option<&str>,
+        after: Option<i64>,
+        limit: usize,
+    ) -> Result<Option<InventoryNodePage>, KnowledgeRepositoryError> {
+        self.as_ref().inventory_nodes(path, after, limit)
+    }
+
+    fn inventory_metadata(&self) -> Result<Option<InventoryMetadata>, KnowledgeRepositoryError> {
+        self.as_ref().inventory_metadata()
+    }
+
     fn query_checkpoint(
         &self,
         key: &str,

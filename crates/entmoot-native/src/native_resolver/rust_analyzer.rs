@@ -23,7 +23,8 @@ use ra_ap_syntax::ast::HasName;
 use ra_ap_syntax::{ast, AstNode, Edition, SyntaxKind, TextRange, TextSize};
 use ra_ap_vfs::{FileId, Vfs};
 
-use crate::graph::{NodeKind, TopologyGraph, TopologyNode};
+use super::input::{NativeInventory, NativeSite};
+use crate::graph::NodeKind;
 use crate::native_resolver::budget::BudgetWatch;
 use entmoot_contracts::{
     NativeCallFact, NativeCallTarget, NativeRawObservation, NativeReferenceFact, NativeSpanRef,
@@ -962,7 +963,7 @@ fn enclosing_fn_span(node: &ra_ap_syntax::SyntaxNode) -> Option<(usize, usize, S
     None
 }
 
-type CallableIndex<'a> = BTreeMap<(String, String, usize), Vec<&'a TopologyNode>>;
+type CallableIndex<'a> = BTreeMap<(String, String, usize), Vec<&'a NativeSite>>;
 
 fn join_inventory_callable<'a>(
     index: &CallableIndex<'a>,
@@ -970,8 +971,8 @@ fn join_inventory_callable<'a>(
     name: &str,
     compiler_start: usize,
     compiler_end: usize,
-) -> Option<&'a TopologyNode> {
-    let mut matches: Vec<&TopologyNode> = index
+) -> Option<&'a NativeSite> {
+    let mut matches: Vec<&NativeSite> = index
         .get(&(path.to_owned(), name.to_owned(), compiler_end))
         .into_iter()
         .flatten()
@@ -1035,7 +1036,7 @@ fn collect_workspace(
     request: &NativeProduceRequest,
     root: &Path,
     workspace: &WorkspaceFiles,
-    graph: &TopologyGraph,
+    graph: &NativeInventory,
     watch: &BudgetWatch,
     raw: &mut NativeRawObservation,
 ) -> Result<(), NativeProducerError> {
@@ -1163,7 +1164,7 @@ fn collect_workspace(
 fn collect_workspace_attached(
     root: &Path,
     workspace: &WorkspaceFiles,
-    graph: &TopologyGraph,
+    graph: &NativeInventory,
     watch: &BudgetWatch,
     raw: &mut NativeRawObservation,
     db: &RootDatabase,
@@ -1187,7 +1188,7 @@ fn collect_workspace_attached(
         }
     }
 
-    let mut sites_by_file: BTreeMap<String, Vec<&TopologyNode>> = BTreeMap::new();
+    let mut sites_by_file: BTreeMap<String, Vec<&NativeSite>> = BTreeMap::new();
     for node in &graph.nodes {
         if node.kind != NodeKind::CallStub {
             continue;
@@ -1805,7 +1806,7 @@ fn collect_workspace_attached(
 /// Collect Rust call observations for inventoried sites.
 pub fn collect(
     request: &NativeProduceRequest,
-    graph: &TopologyGraph,
+    graph: &NativeInventory,
     watch: &BudgetWatch,
 ) -> Result<NativeRawObservation, NativeProducerError> {
     // Cargo propagates its workspace spelling into OUT_DIR. MSVC rejects the

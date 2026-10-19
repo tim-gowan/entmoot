@@ -8,6 +8,7 @@ pub mod budget;
 mod canon;
 pub mod environment;
 pub mod family_registry;
+pub mod input;
 pub mod join;
 mod lock_instances;
 pub mod manifest;

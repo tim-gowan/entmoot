@@ -213,7 +213,7 @@ pub fn run_bounded(
                             &item.spec.repository_id,
                             policy,
                         )?;
-                        prior_cache = Some(db.load_syntax_cache(&context)?);
+                        prior_cache = Some(db.load_latest_syntax_cache(&context)?);
                     }
                     let prior = prior_cache
                         .as_ref()
@@ -255,18 +255,7 @@ pub fn run_bounded(
                             Phase::Syntax => frontier
                                 .outcomes
                                 .iter()
-                                .map(|outcome| {
-                                    match prior.qualified_parts(
-                                        &outcome.input.path,
-                                        &outcome.input.content_digest,
-                                    )? {
-                                        Some(parts) => {
-                                            reused += 1;
-                                            Ok(Part::Syntax(parts.syntax))
-                                        }
-                                        None => SyntaxPart::build(&root, outcome).map(Part::Syntax),
-                                    }
-                                })
+                                .map(|outcome| SyntaxPart::build(&root, outcome).map(Part::Syntax))
                                 .collect::<Result<Vec<_>, _>>()?,
                             Phase::Calls => {
                                 if syntax_graph.is_none() {
@@ -288,15 +277,15 @@ pub fn run_bounded(
                                     .iter()
                                     .map(|outcome| {
                                         let cached = prior
-                                            .qualified_parts(
+                                            .qualified_calls(
                                                 &outcome.input.path,
                                                 &outcome.input.content_digest,
                                             )?
-                                            .filter(|parts| parts.calls.matches(index));
+                                            .filter(|calls| calls.matches(index));
                                         Ok(Part::Calls(match cached {
-                                            Some(parts) => {
+                                            Some(calls) => {
                                                 reused += 1;
-                                                parts.calls
+                                                calls
                                             }
                                             None => CallPart::build(index, outcome),
                                         }))

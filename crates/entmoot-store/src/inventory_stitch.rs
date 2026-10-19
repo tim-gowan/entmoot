@@ -26,7 +26,6 @@ impl SyntaxPart {
         digest: &str,
         record: Option<&FileIndexRecord>,
     ) -> Result<Self, OperationError> {
-        let mut extractor = crate::extractor::MarkerTopologyExtractor::new(root.to_string_lossy());
         // The complete graph owns its repository node. File parts must not
         // retain a host-root label that prevents sharing across worktrees.
         if let Some(record) = record {
@@ -34,16 +33,34 @@ impl SyntaxPart {
                 .map_err(|e| OperationError::Invalid(e.to_string()))?;
             let bytes = std::fs::read(root.join(relative))
                 .map_err(|e| OperationError::Unavailable(e.to_string()))?;
-            if entmoot_contracts::blake3_hex(&bytes) != digest {
-                return Err(OperationError::Conflict(
-                    "inventory syntax source changed".into(),
-                ));
-            }
-            // Keep the ordinary extractor's UTF-8 display-source convention.
-            let source = std::str::from_utf8(&bytes).ok();
-            extractor.on_file(path, record, source);
-            extractor.on_file_end(&crate::graph::file_node_id(path));
+            return Self::build_source(root, path, digest, record, &bytes);
         }
+        Ok(Self {
+            nodes: Vec::new(),
+            edges: Vec::new(),
+            policies: Vec::new(),
+        })
+    }
+    /// Derive a disposable projection from the bytes captured by the parser.
+    /// Live-tree drift is checked separately at publication, not silently used
+    /// as another version of a previously parsed file.
+    pub fn build_source(
+        root: &Path,
+        path: &str,
+        digest: &str,
+        record: &FileIndexRecord,
+        bytes: &[u8],
+    ) -> Result<Self, OperationError> {
+        let mut extractor = crate::extractor::MarkerTopologyExtractor::new(root.to_string_lossy());
+        if entmoot_contracts::blake3_hex(bytes) != digest {
+            return Err(OperationError::Conflict(
+                "inventory syntax source changed".into(),
+            ));
+        }
+        // Keep the ordinary extractor's UTF-8 display-source convention.
+        let source = std::str::from_utf8(bytes).ok();
+        extractor.on_file(path, record, source);
+        extractor.on_file_end(&crate::graph::file_node_id(path));
         let (graph, _) = extractor.finish_syntax();
         Ok(Self {
             nodes: graph.nodes.into_inner(),

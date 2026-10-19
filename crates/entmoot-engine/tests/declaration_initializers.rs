@@ -59,9 +59,10 @@ fn revision_sequence_invalidates_negative_lookups_and_reuses_unchanged_targets()
         (2, 1, Some("leaf.ts"), false),
         (3, 2, None, true),
         (3, 2, Some("leaf.js"), false),
-        (2, 1, None, false),
+        (2, 2, None, false), // Restore the complete first publication, including both call summaries.
         (1, 1, None, false),
-        (2, 2, None, false),
+        // Re-adding identical path/content reuses its historical sealed file unit.
+        (3, 2, None, false),
         (2, 2, None, false),
     ]
     .into_iter()
@@ -94,10 +95,7 @@ fn revision_sequence_invalidates_negative_lookups_and_reuses_unchanged_targets()
         )
         .unwrap();
         assert_eq!(summary.reused_syntax_files, reused, "parse step {step}");
-        assert_eq!(
-            summary.reused_extraction_files, reused,
-            "extract step {step}"
-        );
+        assert_eq!(summary.reused_extraction_files, 0, "extract step {step}");
         assert_eq!(
             summary.reused_stitching_files, stitched,
             "stitch step {step}"
@@ -190,9 +188,28 @@ fn workspace_syntax_cache_skips_unchanged_parses_and_reindexes_full_changed_file
     .unwrap();
     assert_eq!(second.indexed_files, 0);
     assert_eq!(second.reused_syntax_files, CASES.len());
-    assert_eq!(second.reused_extraction_files, CASES.len());
+    assert_eq!(second.reused_extraction_files, 0);
     assert_eq!(second.reused_stitching_files, CASES.len());
     assert_eq!(second.publication.graph, first.publication.graph);
+    assert!(
+        second.phases.iter().all(|phase| !matches!(
+            phase.phase.as_str(),
+            "syntax_projection" | "structural_resolution" | "sealed_publication"
+        )),
+        "unchanged inputs must reuse the sealed publication before graph construction"
+    );
+    // Equal source bytes do not imply equal scan coverage.
+    std::fs::create_dir(root.path().join(".tmp")).unwrap();
+    let exclusions = initialize_workspace(
+        root.path(),
+        Some("all-families"),
+        &Default::default(),
+        &options,
+    )
+    .unwrap();
+    assert_eq!(exclusions.snapshot, second.snapshot);
+    assert_eq!(exclusions.publication_outcome, "replaced");
+    assert_ne!(exclusions.publication.graph, second.publication.graph);
     for &(path, source) in CASES {
         std::fs::write(root.path().join(path), source.replace("-1", "8192")).unwrap();
         let next = initialize_workspace(
@@ -204,7 +221,7 @@ fn workspace_syntax_cache_skips_unchanged_parses_and_reindexes_full_changed_file
         .unwrap();
         assert_eq!(next.indexed_files, 1, "{path}");
         assert_eq!(next.reused_syntax_files, CASES.len() - 1, "{path}");
-        assert_eq!(next.reused_extraction_files, CASES.len() - 1, "{path}");
+        assert_eq!(next.reused_extraction_files, 0, "{path}");
         assert_eq!(next.reused_stitching_files, CASES.len() - 1, "{path}");
         let graph = entmoot_engine::load_graph_json(&next.publication.graph).unwrap();
         let cold = entmoot_engine::build_topology_from_repo_with_options(
@@ -227,7 +244,11 @@ fn workspace_syntax_cache_skips_unchanged_parses_and_reindexes_full_changed_file
 fn graph_fragment_membership_is_verified_before_reuse_or_publication() {
     use entmoot_engine::workspace::{initialize_workspace, BindOptions};
     let root = tempfile::tempdir().unwrap();
-    std::fs::write(root.path().join("first.py"), "def first(): return 1\n").unwrap();
+    std::fs::write(
+        root.path().join("first.py"),
+        "def first(): return missing()\n",
+    )
+    .unwrap();
     std::fs::write(root.path().join("second.py"), "def second(): return 2\n").unwrap();
     let options = BindOptions {
         structural_only: true,
@@ -251,20 +272,31 @@ fn graph_fragment_membership_is_verified_before_reuse_or_publication() {
     let db = rusqlite::Connection::open(&locator.database).unwrap();
     let first: i64 = db
         .query_row(
-            "SELECT parts FROM file_syntax_cache WHERE path='first.py'",
+            "SELECT parts FROM file_fact_membership WHERE path='first.py'",
             [],
             |r| r.get(0),
         )
         .unwrap();
+    let second: i64 = db
+        .query_row(
+            "SELECT parts FROM file_fact_membership WHERE path='second.py'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_ne!(
+        first, second,
+        "corruption control requires distinct call summaries"
+    );
     for sql in [
-        "UPDATE file_syntax_cache SET parts=(SELECT parts FROM file_syntax_cache WHERE path='second.py') WHERE path='first.py'",
-        "UPDATE file_syntax_cache SET parts=NULL WHERE path='first.py'",
+        "UPDATE file_fact_membership SET parts=(SELECT parts FROM file_fact_membership WHERE path='second.py') WHERE path='first.py'",
+        "UPDATE file_fact_membership SET parts=NULL WHERE path='first.py'",
     ] {
         db.execute(sql, []).unwrap();
         let error = initialize_workspace(root.path(), Some("cache-integrity"), &Default::default(), &options).unwrap_err();
         assert!(error.to_string().contains("membership commitment"), "{error}");
         assert_eq!(std::fs::read(entmoot_engine::workspace::storage_directory(root.path()).unwrap().join("current.json")).unwrap(), pointer);
-        db.execute("UPDATE file_syntax_cache SET parts=?1 WHERE path='first.py'", [first]).unwrap();
+        db.execute("UPDATE file_fact_membership SET parts=?1 WHERE path='first.py'", [first]).unwrap();
     }
     let restored = initialize_workspace(
         root.path(),
@@ -273,7 +305,7 @@ fn graph_fragment_membership_is_verified_before_reuse_or_publication() {
         &options,
     )
     .unwrap();
-    assert_eq!(restored.reused_extraction_files, 2);
+    assert_eq!(restored.reused_extraction_files, 0);
     assert_eq!(restored.publication.graph, initial.publication.graph);
 }
 
@@ -305,7 +337,7 @@ fn unchanged_caller_syntax_rebinds_after_sibling_module_ambiguity() {
         initialize_workspace(root.path(), Some("fixture"), &Default::default(), &options).unwrap();
     assert_eq!(next.indexed_files, 1);
     assert_eq!(next.reused_syntax_files, 2);
-    assert_eq!(next.reused_extraction_files, 2);
+    assert_eq!(next.reused_extraction_files, 0);
     assert_eq!(next.reused_stitching_files, 1);
     let graph = entmoot_engine::load_graph_json(&next.publication.graph).unwrap();
     let cold = entmoot_engine::build_topology_from_repo_with_options(
