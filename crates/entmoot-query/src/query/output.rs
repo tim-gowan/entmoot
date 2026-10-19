@@ -200,10 +200,14 @@ impl QueryEngine {
         let cursor = OutputCursor {
             search_slice: options.after.as_ref().and_then(|c| c.search_slice.clone()),
             snapshot: self.graph.snapshot.clone(),
-            query_digest: ContentDigest::from_trusted(blake3_hex(&serde_json::to_vec(&(
-                request,
-                comparison.then_some(self.compare_graph.as_deref()),
-            ))?)),
+            query_digest: {
+                let mut digest = blake3::Hasher::new();
+                serde_json::to_writer(
+                    &mut digest,
+                    &(request, comparison.then_some(self.compare_graph.as_deref())),
+                )?;
+                ContentDigest::from_trusted(format!("blake3:{}", digest.finalize().to_hex()))
+            },
             generation_digest: self.publication_generation_digest(&repository)?,
             visibility_cursor: repository.current_visibility_cursor()?,
             offset: options.after.as_ref().map_or(0, |c| c.offset),

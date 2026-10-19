@@ -262,7 +262,8 @@ mod tests {
         graph.snapshot_files = vec![SnapshotFileDigest {
             path: "app.py".into(),
             content_digest: format!("blake3:{}", revision.to_string().repeat(64)),
-        }];
+        }]
+        .into();
         graph
     }
 

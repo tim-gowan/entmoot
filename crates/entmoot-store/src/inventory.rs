@@ -753,7 +753,7 @@ pub fn observe_source_inventory(
         .collect();
     let mut inventory = TopologyGraph::new(root.to_string_lossy().into_owned());
     inventory.snapshot = snapshot;
-    inventory.snapshot_files = files;
+    inventory.snapshot_files = files.into();
     Ok(inventory)
 }
 

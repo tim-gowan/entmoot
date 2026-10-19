@@ -141,10 +141,31 @@ positive, negative and ambiguous lookup dependencies across added/deleted/rename
 files. No import-only partition may convert missing evidence into absence.
 
 Topology nodes box sparse contract/declaration/call-site payloads without
-changing JSON or IDs. View digests stream compact JSON into BLAKE3. Publication
-preparation retains content commitments instead of a second serialized payload
-set, but typed batches and the complete validation context still remain resident;
-the graph and publisher are not yet fully streaming.
+changing JSON or IDs; claims box sparse assessment/derivation payloads as well.
+Candidate views share syntax buffers, snapshot membership and syntax indexes
+through copy-on-write ownership. Artifact attachment keeps rollback isolation;
+changing resource inventory detaches those buffers before mutation. Evidence
+collections remain candidate-owned, and only a validated candidate replaces the
+original view. Sharing changes neither serialized records nor structural IDs.
+
+View/cursor digests and native/helper output stream canonical JSON. Graph
+publication projects syntax in 32-node chunks and other collections in at most
+1,024-record chunks, then applies the existing record/byte buffer limits. Schema
+references no longer require repeated context records in every batch. Private
+disk staging owns serialized batches and indexed validation context until all forward
+references and collisions are checked. Owner commitments retain the unchanged
+shortcut before the durable transaction; imports retain their existing atomic
+graph/seal/checkpoint transaction. Disposable staging is not a recovery protocol.
+The complete graph and compact identity/dependency maps still determine memory;
+chunk admission and encoded byte limits do not establish a total RSS ceiling.
+
+Reload verifies original inventory membership while releasing declaration and
+contract payloads that will be reattached from visible, snapshot-matched records.
+An owning knowledge projection moves evidence collections into the graph.
+Revision change inventory shares full impact's validation/correspondence and gap
+policies while omitting unrequested evidence/rescan/contract output. Conflict
+batches reuse their frozen left-side change inventory across peers. Full impact
+continues to report cold evidence dispositions explicitly.
 
 ## Declared code contracts
 

@@ -148,7 +148,9 @@ pub fn join(
         let claim = relation_claim_with_id(
             subject,
             "assessment.observation",
-            RelationClaimValue::Assessment { observation },
+            RelationClaimValue::Assessment {
+                observation: Box::new(observation),
+            },
             artifact.producer.clone(),
             Scope {
                 domain: artifact.snapshot.repository_id.clone(),

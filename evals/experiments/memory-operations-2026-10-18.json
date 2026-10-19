@@ -1,0 +1,2381 @@
+{
+  "kind": "operation_memory_comparison",
+  "date": "2026-10-18",
+  "implementation": {
+    "base_revision": "e79953ad5718b465fbe90aef518c0d1cad32d3c9",
+    "changed_file_blake3": {
+      "Cargo.lock": "40b1322ebbc0c37eea369433ce1d6022632b106647404ad694f111b8f84e70a6",
+      "crates/entmoot-cli/src/main.rs": "0631b17febe9c7b0dfa99aedf292052b9ecb2c1490b23f2845f1e5ce0bf5f0a8",
+      "crates/entmoot-contracts/src/relation.rs": "ebbd92e298d230ac52c166562afae53922f78efb1ade803d7a20fe655ce8d5fa",
+      "crates/entmoot-engine/tests/branch_conflicts/git_capture.rs": "54e03e8bffab292e72cb1c932e0aa489f19bdcc2667816943696808033dd146b",
+      "crates/entmoot-evidence/src/artifact/assessment.rs": "5bb446aeaf15c776ee8a8a34022a3503f639adfe8ca0f9fe7a7eb67e79565909",
+      "crates/entmoot-evidence/src/ingest.rs": "4662d4970f62f43c08a902e82789a2396a8c0d10ae3db839a0cc1728d1a5b4c3",
+      "crates/entmoot-native/Cargo.toml": "c1e9e38d4a5eb175b9259e8661f880acf4de16ed4ed633f4bd24f7f5f81ea648",
+      "crates/entmoot-native/src/native_resolver/pipeline.rs": "4cce9a33539b206b89853c8fffe7a3b6078c64e08d75fc81df9bdeac58870871",
+      "crates/entmoot-ops/src/binding_operations.rs": "210bac6c034ccbe21516bb4651bd131427b55b87d5b3573721816d406968dc33",
+      "crates/entmoot-ops/src/canon.rs": "b2152017d773e3824d71e6013dba61229533e668e2f6321f6c6317bbd42fbeac",
+      "crates/entmoot-ops/src/collaboration.rs": "8058ace7c2d56bca28211739a2f403c9628662cc0cfffca3cae7f8a1cae00060",
+      "crates/entmoot-ops/src/collaboration_git/capture.rs": "92efb91f37ac5f3cb754bc1dc2a8c2340a05c7e632437decc14a42d962c931d1",
+      "crates/entmoot-ops/src/producer_operations.rs": "26b975c7be43bae71b2063fa0713f8735ef726910bec738e95ca5e92a6bfe2b4",
+      "crates/entmoot-ops/src/revalidation_operations.rs": "fa223ad5035373f2db5b677dd6067f718fb7017f27f07ba3f21153602d335602",
+      "crates/entmoot-ops/tests/store_git_capture.rs": "cdb0096ecfc3ec362d6e8f017af27a29a638770dd5bcd3944ebb987ce029fa04",
+      "crates/entmoot-query/src/query.rs": "4d20af6f53cc56d9520d33a7ba97ee5fb066180ae81224fbfb2e53b3fa913e57",
+      "crates/entmoot-query/src/query/assessments.rs": "232339dc2d213cb2808114b7d6621a0caf307383792413a218d6891b3e5ccff1",
+      "crates/entmoot-query/src/query/output.rs": "4af99b842114dd64321996d22457ae119c614b1828edea572fb17433184c98ae",
+      "crates/entmoot-query/src/query/read.rs": "e512bf0148345e97b9f37cc37325feb8cd7746e3f00d9005721f50f3e9c42b8f",
+      "crates/entmoot-query/src/query/status.rs": "e1b9b440b17e2cb3256e456da25b433b56112555a9a457cc4ebb8db1b1b8398c",
+      "crates/entmoot-query/tests/revision_impact.rs": "207282866a24c5120fefd5f393efb791b532a577c5cd2111c1aac0d0c8e8a6b3",
+      "crates/entmoot-store/src/analysis_work.rs": "a2462a65178946cee2c9b41018c9fc3717da13f0b605e4819e781996b7643247",
+      "crates/entmoot-store/src/checkpoints/git.rs": "ceedd0e5df401ffad7a4aca1c5d42be10657b88764f705bfbb0497ec370a6c2e",
+      "crates/entmoot-store/src/inventory.rs": "d5691004545a3fba2c6550eb758007d04ab576e38d6c108749daf5b4b7a3cee1",
+      "crates/entmoot-store/src/inventory_stitch.rs": "0ecb1cfd0b4446c518eef7401cd86c2449e3ff8173b50d9101a0e2d9f33974f8",
+      "crates/entmoot-store/src/knowledge_db.rs": "2ee9ad430041071f69a2e9d9b8b1cc68326b824d62909adcb9181b396bf45cb2",
+      "crates/entmoot-store/src/knowledge_db/buffered.rs": "17fee3f74a0d87aa77deca5f7e4b09b0137326add0407e0b2acdac134ce6e8e7",
+      "crates/entmoot-store/src/knowledge_db/buffered_stage.rs": "7d7fbd1c96658ceaed5e4d88b065f58b48201fc709f286a914272fe85f29f216",
+      "crates/entmoot-store/src/knowledge_db/inventory.rs": "fb10638b8557f418cb70598dd916dbd43fd3384f6a925a2d4bc72072f3d22d47",
+      "crates/entmoot-store/src/knowledge_db/operations/file_progress.rs": "3032d43f8f700cf750e7b44e3f5602641de1b16bc076557dd4854ed0507db073",
+      "crates/entmoot-store/src/knowledge_db/operations/git_capture.rs": "34419a838450f4ce5d5ff4ff1b83d70c736aeb76c3689f029b45d28cf0845081",
+      "crates/entmoot-store/src/knowledge_db/store_batches.rs": "0ba3095efd1ab0e95e56ce1e89ba0cf7bc665ffdd189f05f3defa791a170c990",
+      "crates/entmoot-store/src/revalidation.rs": "1401c7b0dcf61d21faa35093e974a63c66817fa204d535e4e842105eb8f1821a",
+      "crates/entmoot-topology/derivation-inputs.json": "ff51e6fb3ae206344cd35d75130763db5b83408ae0f3130d86fc80a5c6094091",
+      "crates/entmoot-topology/src/graph.rs": "5fa0a6df561140732245a490437aec2ce2ed052b15edb243ace7049f4f80080f",
+      "crates/entmoot-topology/src/impact.rs": "83d2d4668ca6396a867b0d0d133418da7041f1f3bf27fcc25370db773b296a63",
+      "crates/entmoot-topology/src/knowledge.rs": "54823be849c55faa4617278715ace2ba9581720fd4cb609559d3edf4d6a9865b",
+      "crates/entmoot-topology/src/knowledge/artifact_projection.rs": "324d0108bee4210c0867e76e058d8b4b2440301f7ad9b391af8c19819e409e05",
+      "crates/entmoot-topology/src/lib.rs": "db51eabbd317c25053eb63c296ec8f8857ea456a75040299322e9d86da046369",
+      "crates/entmoot-topology/src/overlay.rs": "31e2659d022e09adc51357220d1ee8ed3c9aef12d3bdad917e008f283799d791",
+      "crates/entmoot-topology/src/shared_inventory.rs": "8c3c4a417d3f4536299b79b61b2a6d8447223b49511c7209f771cf25fdafd33f",
+      "crates/entmoot-workspace/src/workspace.rs": "18243a4cde23a2062a23b60d7a985c1ebb20006a0618cdc9ecc0311bf70f8734",
+      "crates/entmoot-workspace/src/workspace/retention.rs": "d69501d9a97b7700b158566705979c50f0cfa2a9d0b4b7386a5095da12750304"
+    },
+    "probe_blake3": "0f82c03eebc7afa3b3028c5fdf7dd816c081587db83a8cdb2edb5f59fd2dcddd",
+    "probe_binary_blake3": "ca01344d30118c9a6095dd5cd7efb3854de0e7218533e4a6f0d85f80b25cb7f0",
+    "frozen_plan_blake3": "0c61a2959a761ef7c162f67048b05c27220bcd732e71b1c993cc53bc31d6f066"
+  },
+  "environment": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "profile": "test",
+    "opt_level": 1,
+    "debug": true,
+    "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)"
+  },
+  "source": {
+    "upstream_revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+    "selection": "Nested Go-only frames ordered by SHA256(memory-profile-20261018: + path); no selection on Entmoot output",
+    "files": [
+      64,
+      128,
+      256,
+      512
+    ],
+    "source_bytes_verified_before_and_after": true,
+    "raw_directory": "G:\\GitHub\\entmoot\\.tmp\\operation-memory-20261018-gated"
+  },
+  "baseline_report": "memory-ir-first-2026-10-18.json",
+  "audit_report": "operation-schema-memory-2026-10-18.json",
+  "previous_allocation_attempt": {
+    "raw_directory": "G:\\GitHub\\entmoot\\.tmp\\operation-memory-20261018",
+    "processes_complete": 15,
+    "note": "Preserved before queue startup hardening; rerun on identical frozen sources after the first commit hook exposed an unrelated cold-open protocol race."
+  },
+  "startup_regression": {
+    "failed_control": "analysis_work::tests::concurrent_first_open_of_the_legacy_queue_is_safe",
+    "fix": "Use the existing repository startup lease before opening SQLite; remove ineffective protocol retry additions.",
+    "focused_store_tests": {
+      "passed": 87,
+      "ignored": 2
+    },
+    "repeated_cold_open_control": {
+      "processes": 100,
+      "threads_per_process": 8,
+      "failed": 0
+    },
+    "evidence_directory": "G:\\GitHub\\entmoot\\.tmp\\operation-memory-20261018-gated\\qualification",
+    "limitation": "Focused controls do not replace the final workspace/hook qualification."
+  },
+  "processes": {
+    "attempted": 15,
+    "complete": 15,
+    "failed": 0
+  },
+  "measurement": {
+    "allocator": "Same calibrated System GlobalAlloc wrapper as baseline",
+    "units": "bytes; decimal MB in prose",
+    "limits": [
+      "Rust requested bytes exclude C/native allocations, stacks, allocator metadata, fragmentation and mappings; sampled RSS is reported separately.",
+      "Atomics and test-profile builds make this allocation attribution, not release latency qualification.",
+      "Prepare deliberately stops at iterator exhaustion before cross-batch validation/SQL; 64/512-file commit controls execute both.",
+      "Private staging adds temporary-file I/O. Process read/write counters are sampled; staged-disk high-water and recovery latency are unmeasured.",
+      "Prior observations are pinned historical controls, not randomized paired latency trials. These runs overlapped workspace/native validation.",
+      "Subset files lack complete package context and contain parse gaps. Inventory/extracted counts match baseline; no native dispatch/runtime claim.",
+      "Implementation fingerprints differ from baseline. Digest equality compares ordinary/staged builders within this current source only.",
+      "Rollback sharing control clones a structural graph with retained relations; it does not quantify artifact-heavy attachment or resource-edit peaks.",
+      "Other operation fixes have correctness controls and source ownership analysis; their representative memory peaks remain unmeasured.",
+      "No new large-repository, warm-refresh or leak-free qualification. Historical small repeated-build residual growth remains open."
+    ]
+  },
+  "compiled_inline_bytes": {
+    "before": {
+      "Address": 96,
+      "ArtifactInputReceipt": 808,
+      "ArtifactManifest": 816,
+      "ArtifactRevalidationReceipt": 1008,
+      "AssessmentObservation": 184,
+      "DerivationRecord": 168,
+      "KnowledgeRecordRef": 48,
+      "OperationRecord": 384,
+      "OperationSpec": 208,
+      "Option<DerivationRecord>": 168,
+      "Option<ProviderCallableRef>": 184,
+      "Option<ResolverDeclaration>": 56,
+      "ProducerRef": 144,
+      "Proposition": 272,
+      "Provenance": 120,
+      "ProviderCallableRef": 184,
+      "RelationClaim": 960,
+      "RelationClaimValue": 184,
+      "RelationEdge": 416,
+      "ResolvedIdentityRecord": 240,
+      "ResolverDeclaration": 56,
+      "ResolverObservation": 368,
+      "ResolverTarget": 504,
+      "RevalidationUnitReceipt": 3248,
+      "Scope": 120,
+      "SourceSnapshot": 176,
+      "SubjectId": 96,
+      "UnresolvedRelation": 592,
+      "entmoot_contracts::query::CompactItem": 80,
+      "entmoot_contracts::query::QueryPayload": 472,
+      "entmoot_contracts::query::QueryResult": 1232,
+      "entmoot_topology::StructuralEdge": 80,
+      "entmoot_topology::TopologyNode": 440
+    },
+    "after": {
+      "Address": 96,
+      "ArtifactInputReceipt": 808,
+      "ArtifactManifest": 816,
+      "ArtifactRevalidationReceipt": 1008,
+      "AssessmentObservation": 184,
+      "DerivationRecord": 168,
+      "KnowledgeRecordRef": 48,
+      "OperationRecord": 384,
+      "OperationSpec": 208,
+      "Option<DerivationRecord>": 168,
+      "Option<ProviderCallableRef>": 184,
+      "Option<ResolverDeclaration>": 56,
+      "ProducerRef": 144,
+      "Proposition": 272,
+      "Provenance": 120,
+      "ProviderCallableRef": 184,
+      "RelationClaim": 648,
+      "RelationClaimValue": 32,
+      "RelationEdge": 416,
+      "ResolvedIdentityRecord": 240,
+      "ResolverDeclaration": 56,
+      "ResolverObservation": 368,
+      "ResolverTarget": 504,
+      "RevalidationUnitReceipt": 3248,
+      "Scope": 120,
+      "SourceSnapshot": 176,
+      "SubjectId": 96,
+      "UnresolvedRelation": 592,
+      "entmoot_contracts::query::CompactItem": 80,
+      "entmoot_contracts::query::QueryPayload": 472,
+      "entmoot_contracts::query::QueryResult": 1232,
+      "entmoot_topology::StructuralEdge": 80,
+      "entmoot_topology::TopologyNode": 440
+    },
+    "limitation": "Target/compiler-dependent size_of, excludes heap allocations. JSON schemas remain unchanged."
+  },
+  "scaling": [
+    {
+      "files": 64,
+      "source_bytes": 794775,
+      "graph_counts": {
+        "cached_parts": 63,
+        "cached_records": 63,
+        "callable_nodes": 537,
+        "edges": 7309,
+        "nodes": 7252,
+        "relations": 399,
+        "snapshot_files": 64
+      },
+      "current_graph_digest": "12340f203a8ab8adac71cbfb3fe07f2521eebfe80feabfd4618ff3a0a42476d8",
+      "ordinary_streamed_digest_equal": true,
+      "baseline_counts_equal": true,
+      "prior_prepare_peak_requested_bytes": 50710386,
+      "materialized_prepare_peak_requested_bytes": 50710400,
+      "graph_prepare_peak_requested_bytes": 50710418,
+      "prepare_peak_reduction_fraction": -6.310344393689604e-07,
+      "graph_and_cache_live_requested_bytes": 18275962,
+      "publisher_live_requested_bytes": 22635606
+    },
+    {
+      "files": 128,
+      "source_bytes": 1170872,
+      "graph_counts": {
+        "cached_parts": 127,
+        "cached_records": 127,
+        "callable_nodes": 1333,
+        "edges": 15662,
+        "nodes": 15479,
+        "relations": 777,
+        "snapshot_files": 128
+      },
+      "current_graph_digest": "1e8c730f14ae549714cd567850c7210eb96be3b25992f7ebadbcb1f3603daa3f",
+      "ordinary_streamed_digest_equal": true,
+      "baseline_counts_equal": true,
+      "prior_prepare_peak_requested_bytes": 85944576,
+      "materialized_prepare_peak_requested_bytes": 66831594,
+      "graph_prepare_peak_requested_bytes": 66831612,
+      "prepare_peak_reduction_fraction": 0.22238708816249209,
+      "graph_and_cache_live_requested_bytes": 37543926,
+      "publisher_live_requested_bytes": 46741766
+    },
+    {
+      "files": 256,
+      "source_bytes": 2241795,
+      "graph_counts": {
+        "cached_parts": 255,
+        "cached_records": 255,
+        "callable_nodes": 2605,
+        "edges": 35190,
+        "nodes": 34646,
+        "relations": 1914,
+        "snapshot_files": 256
+      },
+      "current_graph_digest": "80d6b5fac15c5ac26a1e4be8a4e8cd19eb9d59bc653dbf59529922509fe759f1",
+      "ordinary_streamed_digest_equal": true,
+      "baseline_counts_equal": true,
+      "prior_prepare_peak_requested_bytes": 202412430,
+      "materialized_prepare_peak_requested_bytes": 154018319,
+      "graph_prepare_peak_requested_bytes": 121407331,
+      "prepare_peak_reduction_fraction": 0.4001982437541015,
+      "graph_and_cache_live_requested_bytes": 96756602,
+      "publisher_live_requested_bytes": 117582683
+    },
+    {
+      "files": 512,
+      "source_bytes": 4266424,
+      "graph_counts": {
+        "cached_parts": 510,
+        "cached_records": 510,
+        "callable_nodes": 5103,
+        "edges": 69925,
+        "nodes": 68835,
+        "relations": 3453,
+        "snapshot_files": 512
+      },
+      "current_graph_digest": "b3268650019cac355ce8dd7606b399ec5beed8d76257d9e0e9e7690e21173293",
+      "ordinary_streamed_digest_equal": true,
+      "baseline_counts_equal": true,
+      "prior_prepare_peak_requested_bytes": 410624888,
+      "materialized_prepare_peak_requested_bytes": 313595858,
+      "graph_prepare_peak_requested_bytes": 237642517,
+      "prepare_peak_reduction_fraction": 0.4212661629998423,
+      "graph_and_cache_live_requested_bytes": 194211749,
+      "publisher_live_requested_bytes": 235189104
+    }
+  ],
+  "commit_controls": [
+    {
+      "files": 64,
+      "allocations": 4972057,
+      "cumulative_requested_bytes": 818433229,
+      "detail": {
+        "batches": 689,
+        "peak_batch_bytes": 987249,
+        "peak_batch_records": 1024
+      },
+      "elapsed_seconds": 2.7990567,
+      "interval_peak_requested_bytes": 26470624,
+      "live_requested_bytes": 18353666,
+      "peak_requested_bytes": 50710415,
+      "stage": "publisher_committed"
+    },
+    {
+      "files": 512,
+      "allocations": 43969356,
+      "cumulative_requested_bytes": 7395939352,
+      "detail": {
+        "batches": 6450,
+        "peak_batch_bytes": 1011438,
+        "peak_batch_records": 1024
+      },
+      "elapsed_seconds": 55.4582983,
+      "interval_peak_requested_bytes": 239150599,
+      "live_requested_bytes": 194403013,
+      "peak_requested_bytes": 239150599,
+      "stage": "publisher_committed"
+    }
+  ],
+  "rollback_sharing_control": {
+    "files": 512,
+    "additional_live_requested_bytes": 38458982,
+    "shared": {
+      "shared_edges": true,
+      "shared_node_index": true,
+      "shared_nodes": true
+    },
+    "limitation": "Existing evidence still copied; actual syntax mutation detaches shared buffers."
+  },
+  "audit_follow_up": {
+    "publication_batches": "Disk-backed bounded typed-batch replay/context; graph source removes complete extracted copy. Compact identity/dependency maps remain resident.",
+    "reload_projection": "Consuming projection and streamed original membership validation release redundant syntax/evidence copies. Whole selected view still hydrates.",
+    "artifact_attachment": "Copy-on-write syntax/indexes share unchanged inventory during validated rollback. Evidence collections still copy; resource edits detach syntax.",
+    "native_family_results": "Workers return receipts/paths/requested canon facts; atomic outputs stream canonical bytes/digests. Single-family raw/normalized payloads still coexist.",
+    "git_capture_and_integration": "File-backed verified capture/reload and manifest-only reobservation. Integration packs remain materialized and need separate profiling.",
+    "impact_conflicts_and_test_selection": "Typed narrow change inventory, borrowed bindings and shared frozen left delta. Complete input graphs still hydrate.",
+    "query_cursor_and_delivery": "Stream exact comparison cursor tuple; no graph-sized serialized hash buffer.",
+    "runtime_indexes": "Deferred pending current attribution/lookup and occupancy measurements; no new index schema or scheduling.",
+    "revalidation_policy_preparation": "Selected record count precedes payload preparation. Complete graph hydration and artifact-specific read projections remain follow-up.",
+    "canon_and_clone_shards": "Borrowed contracts/facts and streamed file checkpoint assembly/encoded-size count. Term-construction peaks and fingerprint-only clone reads remain follow-up.",
+    "read_source_buffers": "Remove all-lines vector; complete digest/UTF-8 validation and bounded excerpts remain. Full source byte buffer retained.",
+    "sparse_contract_layouts": "Box assessment/derivation payloads; wire shapes/identities unchanged. Native target boxing deferred until occupancy/allocation measurement.",
+    "operation_control_rows": "Unchanged; lower priority until profiled."
+  },
+  "observations": [
+    {
+      "files": 64,
+      "mode": "graph-only",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 0.5829959000111558,
+        "sampled_peak_tree_rss_bytes": 70287360,
+        "os_peak_main_working_set_bytes": 94392320,
+        "sampled_tree_cpu_seconds": 0.515625,
+        "sampled_tree_read_bytes": 1196932,
+        "sampled_tree_write_bytes": 258,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 5,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:7571cbe0a6cfa7b43a983121cb4e82cf40d10b0b3031e5f376d646b2141d260e",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 674,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "graph-only"
+          },
+          "elapsed_seconds": 0.0011089,
+          "interval_peak_requested_bytes": 1040,
+          "live_requested_bytes": 1040,
+          "peak_requested_bytes": 1040,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 1598741,
+          "cumulative_requested_bytes": 207703753,
+          "detail": {
+            "nodes": 7252,
+            "relations": 399,
+            "snapshot_files": 64
+          },
+          "elapsed_seconds": 0.3373607,
+          "interval_peak_requested_bytes": 52459958,
+          "live_requested_bytes": 18203850,
+          "peak_requested_bytes": 52459958,
+          "stage": "graph_without_cache"
+        },
+        {
+          "allocations": 1598759,
+          "cumulative_requested_bytes": 207705962,
+          "detail": {
+            "blake3": "12340f203a8ab8adac71cbfb3fe07f2521eebfe80feabfd4618ff3a0a42476d8"
+          },
+          "elapsed_seconds": 0.3788547,
+          "interval_peak_requested_bytes": 18205293,
+          "live_requested_bytes": 18203956,
+          "peak_requested_bytes": 52459958,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 1598772,
+          "cumulative_requested_bytes": 207707440,
+          "detail": {},
+          "elapsed_seconds": 0.3900088,
+          "interval_peak_requested_bytes": 18205434,
+          "live_requested_bytes": 250836,
+          "peak_requested_bytes": 52459958,
+          "stage": "graph_dropped"
+        }
+      ]
+    },
+    {
+      "files": 64,
+      "mode": "prepare",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 0.9351487999665551,
+        "sampled_peak_tree_rss_bytes": 64364544,
+        "os_peak_main_working_set_bytes": 91795456,
+        "sampled_tree_cpu_seconds": 1.03125,
+        "sampled_tree_read_bytes": 16553746,
+        "sampled_tree_write_bytes": 27127044,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 12,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:fa5eec6acb11eef759a43e96ac123a958b81225807fd8b2b3027296630945b22",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 671,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "prepare"
+          },
+          "elapsed_seconds": 0.0011259,
+          "interval_peak_requested_bytes": 1028,
+          "live_requested_bytes": 1028,
+          "peak_requested_bytes": 1028,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 2996712,
+          "cumulative_requested_bytes": 465387044,
+          "detail": {
+            "cached_parts": 63,
+            "cached_records": 63,
+            "callable_nodes": 537,
+            "edges": 7309,
+            "nodes": 7252,
+            "relations": 399,
+            "snapshot_files": 64
+          },
+          "elapsed_seconds": 0.678992,
+          "interval_peak_requested_bytes": 50710400,
+          "live_requested_bytes": 18275944,
+          "peak_requested_bytes": 50710400,
+          "stage": "graph_and_cache"
+        },
+        {
+          "allocations": 2996734,
+          "cumulative_requested_bytes": 465389294,
+          "detail": {
+            "blake3": "12340f203a8ab8adac71cbfb3fe07f2521eebfe80feabfd4618ff3a0a42476d8"
+          },
+          "elapsed_seconds": 0.7220715,
+          "interval_peak_requested_bytes": 18277428,
+          "live_requested_bytes": 18276005,
+          "peak_requested_bytes": 50710400,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 3175901,
+          "cumulative_requested_bytes": 487081830,
+          "detail": {
+            "call_sites": 2995,
+            "code_contracts": 634,
+            "declarations": 1419,
+            "propositions": 142,
+            "relation_edges": 399,
+            "structural_edges": 7309
+          },
+          "elapsed_seconds": 0.7438124,
+          "interval_peak_requested_bytes": 29819223,
+          "live_requested_bytes": 29817877,
+          "peak_requested_bytes": 50710400,
+          "stage": "knowledge_extracted"
+        },
+        {
+          "allocations": 3175923,
+          "cumulative_requested_bytes": 487084655,
+          "detail": {
+            "max_bytes": 8388608,
+            "max_records": 1024,
+            "streamed": false
+          },
+          "elapsed_seconds": 0.7438526,
+          "interval_peak_requested_bytes": 29819370,
+          "live_requested_bytes": 29818499,
+          "peak_requested_bytes": 50710400,
+          "stage": "batch_adapter_ready"
+        },
+        {
+          "allocations": 3176053,
+          "cumulative_requested_bytes": 487210310,
+          "detail": {},
+          "elapsed_seconds": 0.7682318,
+          "interval_peak_requested_bytes": 29849779,
+          "live_requested_bytes": 29817895,
+          "peak_requested_bytes": 50710400,
+          "stage": "repository_open"
+        },
+        {
+          "allocations": 3522729,
+          "cumulative_requested_bytes": 586204096,
+          "detail": {
+            "batches": 22
+          },
+          "elapsed_seconds": 0.8746099,
+          "interval_peak_requested_bytes": 35144879,
+          "live_requested_bytes": 28848414,
+          "peak_requested_bytes": 50710400,
+          "stage": "publisher_collected_all"
+        },
+        {
+          "allocations": 3522746,
+          "cumulative_requested_bytes": 586207406,
+          "detail": {
+            "intentional_stop": true
+          },
+          "elapsed_seconds": 0.8786975,
+          "interval_peak_requested_bytes": 28849840,
+          "live_requested_bytes": 24435911,
+          "peak_requested_bytes": 50710400,
+          "stage": "publisher_preparation_released"
+        },
+        {
+          "allocations": 3522758,
+          "cumulative_requested_bytes": 586208848,
+          "detail": {},
+          "elapsed_seconds": 0.8790309,
+          "interval_peak_requested_bytes": 24437353,
+          "live_requested_bytes": 18275359,
+          "peak_requested_bytes": 50710400,
+          "stage": "batch_adapter_dropped"
+        },
+        {
+          "allocations": 3522771,
+          "cumulative_requested_bytes": 586210813,
+          "detail": {},
+          "elapsed_seconds": 0.8897411,
+          "interval_peak_requested_bytes": 18276144,
+          "live_requested_bytes": 18203301,
+          "peak_requested_bytes": 50710400,
+          "stage": "cache_dropped"
+        },
+        {
+          "allocations": 3522783,
+          "cumulative_requested_bytes": 586212227,
+          "detail": {
+            "cycle": 0
+          },
+          "elapsed_seconds": 0.9018125,
+          "interval_peak_requested_bytes": 18204078,
+          "live_requested_bytes": 251464,
+          "peak_requested_bytes": 50710400,
+          "stage": "all_owners_dropped"
+        }
+      ]
+    },
+    {
+      "files": 64,
+      "mode": "graph-prepare",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 0.9080809999722987,
+        "sampled_peak_tree_rss_bytes": 51359744,
+        "os_peak_main_working_set_bytes": 92573696,
+        "sampled_tree_cpu_seconds": 0.96875,
+        "sampled_tree_read_bytes": 16598802,
+        "sampled_tree_write_bytes": 28574123,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 12,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:b0aaa4d755739bf59f1d9c8094e9b0a3daa7273264b52d856557f022f3892758",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 677,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "graph-prepare"
+          },
+          "elapsed_seconds": 0.0011469,
+          "interval_peak_requested_bytes": 1052,
+          "live_requested_bytes": 1052,
+          "peak_requested_bytes": 1052,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 2996712,
+          "cumulative_requested_bytes": 465387056,
+          "detail": {
+            "cached_parts": 63,
+            "cached_records": 63,
+            "callable_nodes": 537,
+            "edges": 7309,
+            "nodes": 7252,
+            "relations": 399,
+            "snapshot_files": 64
+          },
+          "elapsed_seconds": 0.6709776,
+          "interval_peak_requested_bytes": 50710418,
+          "live_requested_bytes": 18275962,
+          "peak_requested_bytes": 50710418,
+          "stage": "graph_and_cache"
+        },
+        {
+          "allocations": 2996734,
+          "cumulative_requested_bytes": 465389306,
+          "detail": {
+            "blake3": "12340f203a8ab8adac71cbfb3fe07f2521eebfe80feabfd4618ff3a0a42476d8"
+          },
+          "elapsed_seconds": 0.7122937,
+          "interval_peak_requested_bytes": 18277446,
+          "live_requested_bytes": 18276023,
+          "peak_requested_bytes": 50710418,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 2996749,
+          "cumulative_requested_bytes": 465391424,
+          "detail": {
+            "streamed": true
+          },
+          "elapsed_seconds": 0.7128895,
+          "interval_peak_requested_bytes": 18277501,
+          "live_requested_bytes": 18275961,
+          "peak_requested_bytes": 50710418,
+          "stage": "graph_source_ready"
+        },
+        {
+          "allocations": 2996774,
+          "cumulative_requested_bytes": 465397858,
+          "detail": {
+            "max_bytes": 8388608,
+            "max_records": 1024,
+            "streamed": true
+          },
+          "elapsed_seconds": 0.7129564,
+          "interval_peak_requested_bytes": 18278913,
+          "live_requested_bytes": 18278797,
+          "peak_requested_bytes": 50710418,
+          "stage": "batch_adapter_ready"
+        },
+        {
+          "allocations": 2996904,
+          "cumulative_requested_bytes": 465523681,
+          "detail": {},
+          "elapsed_seconds": 0.7282594,
+          "interval_peak_requested_bytes": 18310089,
+          "live_requested_bytes": 18278193,
+          "peak_requested_bytes": 50710418,
+          "stage": "repository_open"
+        },
+        {
+          "allocations": 3527293,
+          "cumulative_requested_bytes": 582789246,
+          "detail": {
+            "batches": 689
+          },
+          "elapsed_seconds": 0.8492298,
+          "interval_peak_requested_bytes": 24855408,
+          "live_requested_bytes": 22635606,
+          "peak_requested_bytes": 50710418,
+          "stage": "publisher_collected_all"
+        },
+        {
+          "allocations": 3527310,
+          "cumulative_requested_bytes": 582792568,
+          "detail": {
+            "intentional_stop": true
+          },
+          "elapsed_seconds": 0.8532059,
+          "interval_peak_requested_bytes": 22637032,
+          "live_requested_bytes": 18352985,
+          "peak_requested_bytes": 50710418,
+          "stage": "publisher_preparation_released"
+        },
+        {
+          "allocations": 3527322,
+          "cumulative_requested_bytes": 582794010,
+          "detail": {},
+          "elapsed_seconds": 0.8532339,
+          "interval_peak_requested_bytes": 18354427,
+          "live_requested_bytes": 18275377,
+          "peak_requested_bytes": 50710418,
+          "stage": "batch_adapter_dropped"
+        },
+        {
+          "allocations": 3527335,
+          "cumulative_requested_bytes": 582795975,
+          "detail": {},
+          "elapsed_seconds": 0.8638918,
+          "interval_peak_requested_bytes": 18276162,
+          "live_requested_bytes": 18203319,
+          "peak_requested_bytes": 50710418,
+          "stage": "cache_dropped"
+        },
+        {
+          "allocations": 3527347,
+          "cumulative_requested_bytes": 582797389,
+          "detail": {
+            "cycle": 0
+          },
+          "elapsed_seconds": 0.8747627,
+          "interval_peak_requested_bytes": 18204096,
+          "live_requested_bytes": 251482,
+          "peak_requested_bytes": 50710418,
+          "stage": "all_owners_dropped"
+        }
+      ]
+    },
+    {
+      "files": 64,
+      "mode": "graph-commit",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 2.8581838000100106,
+        "sampled_peak_tree_rss_bytes": 72007680,
+        "os_peak_main_working_set_bytes": 91721728,
+        "sampled_tree_cpu_seconds": 2.90625,
+        "sampled_tree_read_bytes": 137537616,
+        "sampled_tree_write_bytes": 1198504141,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 37,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:741c01ec7feaf449a23e95c6223a1a0b086d474af22e2194ed99f482091900b8",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 676,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "graph-commit"
+          },
+          "elapsed_seconds": 0.0010983,
+          "interval_peak_requested_bytes": 1048,
+          "live_requested_bytes": 1048,
+          "peak_requested_bytes": 1048,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 2996711,
+          "cumulative_requested_bytes": 465386638,
+          "detail": {
+            "cached_parts": 63,
+            "cached_records": 63,
+            "callable_nodes": 537,
+            "edges": 7309,
+            "nodes": 7252,
+            "relations": 399,
+            "snapshot_files": 64
+          },
+          "elapsed_seconds": 0.644626,
+          "interval_peak_requested_bytes": 50710415,
+          "live_requested_bytes": 18275959,
+          "peak_requested_bytes": 50710415,
+          "stage": "graph_and_cache"
+        },
+        {
+          "allocations": 2996733,
+          "cumulative_requested_bytes": 465388888,
+          "detail": {
+            "blake3": "12340f203a8ab8adac71cbfb3fe07f2521eebfe80feabfd4618ff3a0a42476d8"
+          },
+          "elapsed_seconds": 0.6844065,
+          "interval_peak_requested_bytes": 18277443,
+          "live_requested_bytes": 18276020,
+          "peak_requested_bytes": 50710415,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 2996748,
+          "cumulative_requested_bytes": 465391006,
+          "detail": {
+            "streamed": true
+          },
+          "elapsed_seconds": 0.68461,
+          "interval_peak_requested_bytes": 18277498,
+          "live_requested_bytes": 18275958,
+          "peak_requested_bytes": 50710415,
+          "stage": "graph_source_ready"
+        },
+        {
+          "allocations": 2996773,
+          "cumulative_requested_bytes": 465397440,
+          "detail": {
+            "max_bytes": 8388608,
+            "max_records": 1024,
+            "streamed": true
+          },
+          "elapsed_seconds": 0.6846386,
+          "interval_peak_requested_bytes": 18278910,
+          "live_requested_bytes": 18278794,
+          "peak_requested_bytes": 50710415,
+          "stage": "batch_adapter_ready"
+        },
+        {
+          "allocations": 2996903,
+          "cumulative_requested_bytes": 465523235,
+          "detail": {},
+          "elapsed_seconds": 0.6998486,
+          "interval_peak_requested_bytes": 18310084,
+          "live_requested_bytes": 18278190,
+          "peak_requested_bytes": 50710415,
+          "stage": "repository_open"
+        },
+        {
+          "allocations": 3527292,
+          "cumulative_requested_bytes": 582788794,
+          "detail": {
+            "batches": 689
+          },
+          "elapsed_seconds": 0.8197844,
+          "interval_peak_requested_bytes": 24855404,
+          "live_requested_bytes": 22635602,
+          "peak_requested_bytes": 50710415,
+          "stage": "publisher_collected_all"
+        },
+        {
+          "allocations": 4972057,
+          "cumulative_requested_bytes": 818433229,
+          "detail": {
+            "batches": 689,
+            "peak_batch_bytes": 987249,
+            "peak_batch_records": 1024
+          },
+          "elapsed_seconds": 2.7990567,
+          "interval_peak_requested_bytes": 26470624,
+          "live_requested_bytes": 18353666,
+          "peak_requested_bytes": 50710415,
+          "stage": "publisher_committed"
+        },
+        {
+          "allocations": 4972071,
+          "cumulative_requested_bytes": 818434685,
+          "detail": {},
+          "elapsed_seconds": 2.7990972,
+          "interval_peak_requested_bytes": 18355122,
+          "live_requested_bytes": 18275962,
+          "peak_requested_bytes": 50710415,
+          "stage": "batch_adapter_dropped"
+        },
+        {
+          "allocations": 4972084,
+          "cumulative_requested_bytes": 818436650,
+          "detail": {},
+          "elapsed_seconds": 2.8091734,
+          "interval_peak_requested_bytes": 18276747,
+          "live_requested_bytes": 18203904,
+          "peak_requested_bytes": 50710415,
+          "stage": "cache_dropped"
+        },
+        {
+          "allocations": 4972096,
+          "cumulative_requested_bytes": 818438064,
+          "detail": {
+            "cycle": 0
+          },
+          "elapsed_seconds": 2.8253285,
+          "interval_peak_requested_bytes": 18204681,
+          "live_requested_bytes": 251479,
+          "peak_requested_bytes": 50710415,
+          "stage": "all_owners_dropped"
+        }
+      ]
+    },
+    {
+      "files": 128,
+      "mode": "graph-only",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 0.6926827999996021,
+        "sampled_peak_tree_rss_bytes": 90075136,
+        "os_peak_main_working_set_bytes": 102326272,
+        "sampled_tree_cpu_seconds": 1.0,
+        "sampled_tree_read_bytes": 1949126,
+        "sampled_tree_write_bytes": 852,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 9,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:833666af63716524f98843acecfc71b75ebdc3193d8a5bad53c99e00bbcab902",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 674,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "graph-only"
+          },
+          "elapsed_seconds": 0.0011273,
+          "interval_peak_requested_bytes": 1044,
+          "live_requested_bytes": 1044,
+          "peak_requested_bytes": 1044,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 2814475,
+          "cumulative_requested_bytes": 352256959,
+          "detail": {
+            "nodes": 15479,
+            "relations": 777,
+            "snapshot_files": 128
+          },
+          "elapsed_seconds": 0.5363446,
+          "interval_peak_requested_bytes": 62536662,
+          "live_requested_bytes": 37396905,
+          "peak_requested_bytes": 62536662,
+          "stage": "graph_without_cache"
+        },
+        {
+          "allocations": 2814493,
+          "cumulative_requested_bytes": 352259168,
+          "detail": {
+            "blake3": "1e8c730f14ae549714cd567850c7210eb96be3b25992f7ebadbcb1f3603daa3f"
+          },
+          "elapsed_seconds": 0.6326027,
+          "interval_peak_requested_bytes": 37398348,
+          "live_requested_bytes": 37397011,
+          "peak_requested_bytes": 62536662,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 2814506,
+          "cumulative_requested_bytes": 352260646,
+          "detail": {},
+          "elapsed_seconds": 0.6580709,
+          "interval_peak_requested_bytes": 37398489,
+          "live_requested_bytes": 250840,
+          "peak_requested_bytes": 62536662,
+          "stage": "graph_dropped"
+        }
+      ]
+    },
+    {
+      "files": 128,
+      "mode": "prepare",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 1.6824133000336587,
+        "sampled_peak_tree_rss_bytes": 97632256,
+        "os_peak_main_working_set_bytes": 101580800,
+        "sampled_tree_cpu_seconds": 1.96875,
+        "sampled_tree_read_bytes": 34879688,
+        "sampled_tree_write_bytes": 61554239,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 22,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:db2aa3de9755106b34f5bf4f6b4c2e9c7f1f43ef1a6834881729a529b4ae9c53",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 671,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "prepare"
+          },
+          "elapsed_seconds": 0.0012256,
+          "interval_peak_requested_bytes": 1032,
+          "live_requested_bytes": 1032,
+          "peak_requested_bytes": 1032,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 5851659,
+          "cumulative_requested_bytes": 904189962,
+          "detail": {
+            "cached_parts": 127,
+            "cached_records": 127,
+            "callable_nodes": 1333,
+            "edges": 15662,
+            "nodes": 15479,
+            "relations": 777,
+            "snapshot_files": 128
+          },
+          "elapsed_seconds": 1.1813387,
+          "interval_peak_requested_bytes": 66831594,
+          "live_requested_bytes": 37543908,
+          "peak_requested_bytes": 66831594,
+          "stage": "graph_and_cache"
+        },
+        {
+          "allocations": 5851681,
+          "cumulative_requested_bytes": 904192212,
+          "detail": {
+            "blake3": "1e8c730f14ae549714cd567850c7210eb96be3b25992f7ebadbcb1f3603daa3f"
+          },
+          "elapsed_seconds": 1.2761263,
+          "interval_peak_requested_bytes": 37545392,
+          "live_requested_bytes": 37543969,
+          "peak_requested_bytes": 66831594,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 6234729,
+          "cumulative_requested_bytes": 950632412,
+          "detail": {
+            "call_sites": 6441,
+            "code_contracts": 1635,
+            "declarations": 2422,
+            "propositions": 306,
+            "relation_edges": 777,
+            "structural_edges": 15662
+          },
+          "elapsed_seconds": 1.3282276,
+          "interval_peak_requested_bytes": 61715635,
+          "live_requested_bytes": 61712889,
+          "peak_requested_bytes": 66831594,
+          "stage": "knowledge_extracted"
+        },
+        {
+          "allocations": 6234751,
+          "cumulative_requested_bytes": 950635237,
+          "detail": {
+            "max_bytes": 8388608,
+            "max_records": 1024,
+            "streamed": false
+          },
+          "elapsed_seconds": 1.3282646,
+          "interval_peak_requested_bytes": 61714382,
+          "live_requested_bytes": 61713511,
+          "peak_requested_bytes": 66831594,
+          "stage": "batch_adapter_ready"
+        },
+        {
+          "allocations": 6234881,
+          "cumulative_requested_bytes": 950760920,
+          "detail": {},
+          "elapsed_seconds": 1.3482867,
+          "interval_peak_requested_bytes": 61744793,
+          "live_requested_bytes": 61712907,
+          "peak_requested_bytes": 66831594,
+          "stage": "repository_open"
+        },
+        {
+          "allocations": 6966166,
+          "cumulative_requested_bytes": 1159526928,
+          "detail": {
+            "batches": 39
+          },
+          "elapsed_seconds": 1.5907165,
+          "interval_peak_requested_bytes": 66750800,
+          "live_requested_bytes": 59540214,
+          "peak_requested_bytes": 66831594,
+          "stage": "publisher_collected_all"
+        },
+        {
+          "allocations": 6966183,
+          "cumulative_requested_bytes": 1159530240,
+          "detail": {
+            "intentional_stop": true
+          },
+          "elapsed_seconds": 1.5994538,
+          "interval_peak_requested_bytes": 59541640,
+          "live_requested_bytes": 50222051,
+          "peak_requested_bytes": 66831594,
+          "stage": "publisher_preparation_released"
+        },
+        {
+          "allocations": 6966195,
+          "cumulative_requested_bytes": 1159531682,
+          "detail": {},
+          "elapsed_seconds": 1.599874,
+          "interval_peak_requested_bytes": 50223493,
+          "live_requested_bytes": 37543323,
+          "peak_requested_bytes": 66831594,
+          "stage": "batch_adapter_dropped"
+        },
+        {
+          "allocations": 6966208,
+          "cumulative_requested_bytes": 1159533647,
+          "detail": {},
+          "elapsed_seconds": 1.6230199,
+          "interval_peak_requested_bytes": 37544108,
+          "live_requested_bytes": 37396356,
+          "peak_requested_bytes": 66831594,
+          "stage": "cache_dropped"
+        },
+        {
+          "allocations": 6966220,
+          "cumulative_requested_bytes": 1159535061,
+          "detail": {
+            "cycle": 0
+          },
+          "elapsed_seconds": 1.6483549,
+          "interval_peak_requested_bytes": 37397133,
+          "live_requested_bytes": 251468,
+          "peak_requested_bytes": 66831594,
+          "stage": "all_owners_dropped"
+        }
+      ]
+    },
+    {
+      "files": 128,
+      "mode": "graph-prepare",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 1.633619699976407,
+        "sampled_peak_tree_rss_bytes": 78749696,
+        "os_peak_main_working_set_bytes": 95666176,
+        "sampled_tree_cpu_seconds": 1.90625,
+        "sampled_tree_read_bytes": 34941128,
+        "sampled_tree_write_bytes": 63009310,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 21,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:d722a401a6c947b54df78acb647e1ec3ee212a02f67a7b39f1af27ba583d76c6",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 677,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "graph-prepare"
+          },
+          "elapsed_seconds": 0.0010669,
+          "interval_peak_requested_bytes": 1056,
+          "live_requested_bytes": 1056,
+          "peak_requested_bytes": 1056,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 5851672,
+          "cumulative_requested_bytes": 904200806,
+          "detail": {
+            "cached_parts": 127,
+            "cached_records": 127,
+            "callable_nodes": 1333,
+            "edges": 15662,
+            "nodes": 15479,
+            "relations": 777,
+            "snapshot_files": 128
+          },
+          "elapsed_seconds": 1.1650752,
+          "interval_peak_requested_bytes": 66831612,
+          "live_requested_bytes": 37543926,
+          "peak_requested_bytes": 66831612,
+          "stage": "graph_and_cache"
+        },
+        {
+          "allocations": 5851694,
+          "cumulative_requested_bytes": 904203056,
+          "detail": {
+            "blake3": "1e8c730f14ae549714cd567850c7210eb96be3b25992f7ebadbcb1f3603daa3f"
+          },
+          "elapsed_seconds": 1.2626605,
+          "interval_peak_requested_bytes": 37545410,
+          "live_requested_bytes": 37543987,
+          "peak_requested_bytes": 66831612,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 5851709,
+          "cumulative_requested_bytes": 904205174,
+          "detail": {
+            "streamed": true
+          },
+          "elapsed_seconds": 1.2632693,
+          "interval_peak_requested_bytes": 37545465,
+          "live_requested_bytes": 37543925,
+          "peak_requested_bytes": 66831612,
+          "stage": "graph_source_ready"
+        },
+        {
+          "allocations": 5851739,
+          "cumulative_requested_bytes": 904214544,
+          "detail": {
+            "max_bytes": 8388608,
+            "max_records": 1024,
+            "streamed": true
+          },
+          "elapsed_seconds": 1.2633049,
+          "interval_peak_requested_bytes": 37549813,
+          "live_requested_bytes": 37548161,
+          "peak_requested_bytes": 66831612,
+          "stage": "batch_adapter_ready"
+        },
+        {
+          "allocations": 5851869,
+          "cumulative_requested_bytes": 904340395,
+          "detail": {},
+          "elapsed_seconds": 1.2782279,
+          "interval_peak_requested_bytes": 37579455,
+          "live_requested_bytes": 37547557,
+          "peak_requested_bytes": 66831612,
+          "stage": "repository_open"
+        },
+        {
+          "allocations": 6976540,
+          "cumulative_requested_bytes": 1152462150,
+          "detail": {
+            "batches": 1463
+          },
+          "elapsed_seconds": 1.5437023,
+          "interval_peak_requested_bytes": 47804891,
+          "live_requested_bytes": 46741766,
+          "peak_requested_bytes": 66831612,
+          "stage": "publisher_collected_all"
+        },
+        {
+          "allocations": 6976557,
+          "cumulative_requested_bytes": 1152465474,
+          "detail": {
+            "intentional_stop": true
+          },
+          "elapsed_seconds": 1.5521462000000001,
+          "interval_peak_requested_bytes": 46743192,
+          "live_requested_bytes": 37696109,
+          "peak_requested_bytes": 66831612,
+          "stage": "publisher_preparation_released"
+        },
+        {
+          "allocations": 6976569,
+          "cumulative_requested_bytes": 1152466916,
+          "detail": {},
+          "elapsed_seconds": 1.5521932,
+          "interval_peak_requested_bytes": 37697551,
+          "live_requested_bytes": 37543341,
+          "peak_requested_bytes": 66831612,
+          "stage": "batch_adapter_dropped"
+        },
+        {
+          "allocations": 6976582,
+          "cumulative_requested_bytes": 1152468881,
+          "detail": {},
+          "elapsed_seconds": 1.5724117,
+          "interval_peak_requested_bytes": 37544126,
+          "live_requested_bytes": 37396374,
+          "peak_requested_bytes": 66831612,
+          "stage": "cache_dropped"
+        },
+        {
+          "allocations": 6976594,
+          "cumulative_requested_bytes": 1152470295,
+          "detail": {
+            "cycle": 0
+          },
+          "elapsed_seconds": 1.5978343000000002,
+          "interval_peak_requested_bytes": 37397151,
+          "live_requested_bytes": 251486,
+          "peak_requested_bytes": 66831612,
+          "stage": "all_owners_dropped"
+        }
+      ]
+    },
+    {
+      "files": 256,
+      "mode": "graph-only",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 1.3600838999846019,
+        "sampled_peak_tree_rss_bytes": 169607168,
+        "os_peak_main_working_set_bytes": 183828480,
+        "sampled_tree_cpu_seconds": 2.171875,
+        "sampled_tree_read_bytes": 4090972,
+        "sampled_tree_write_bytes": 855,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 17,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:0894fe7e0335fc77b5f8d0dd6af80559f4db961ca95a7a916d0e39d9aca26912",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 674,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "graph-only"
+          },
+          "elapsed_seconds": 0.0011236,
+          "interval_peak_requested_bytes": 1044,
+          "live_requested_bytes": 1044,
+          "peak_requested_bytes": 1044,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 5674289,
+          "cumulative_requested_bytes": 714845420,
+          "detail": {
+            "nodes": 34646,
+            "relations": 1914,
+            "snapshot_files": 256
+          },
+          "elapsed_seconds": 1.031747,
+          "interval_peak_requested_bytes": 152308623,
+          "live_requested_bytes": 96462294,
+          "peak_requested_bytes": 152308623,
+          "stage": "graph_without_cache"
+        },
+        {
+          "allocations": 5674307,
+          "cumulative_requested_bytes": 714847629,
+          "detail": {
+            "blake3": "80d6b5fac15c5ac26a1e4be8a4e8cd19eb9d59bc653dbf59529922509fe759f1"
+          },
+          "elapsed_seconds": 1.2629501,
+          "interval_peak_requested_bytes": 96463737,
+          "live_requested_bytes": 96462400,
+          "peak_requested_bytes": 152308623,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 5674320,
+          "cumulative_requested_bytes": 714849107,
+          "detail": {},
+          "elapsed_seconds": 1.3275109,
+          "interval_peak_requested_bytes": 96463878,
+          "live_requested_bytes": 250840,
+          "peak_requested_bytes": 152308623,
+          "stage": "graph_dropped"
+        }
+      ]
+    },
+    {
+      "files": 256,
+      "mode": "prepare",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 4.141901499999221,
+        "sampled_peak_tree_rss_bytes": 189964288,
+        "os_peak_main_working_set_bytes": 190140416,
+        "sampled_tree_cpu_seconds": 4.890625,
+        "sampled_tree_read_bytes": 77038399,
+        "sampled_tree_write_bytes": 140625898,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 53,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:b664d81cf42170adce9847f47c78de412942f20ba5b3de615f2dbb5e985b544a",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 671,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "prepare"
+          },
+          "elapsed_seconds": 0.0010801,
+          "interval_peak_requested_bytes": 1032,
+          "live_requested_bytes": 1032,
+          "peak_requested_bytes": 1032,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 12435571,
+          "cumulative_requested_bytes": 1958627693,
+          "detail": {
+            "cached_parts": 255,
+            "cached_records": 255,
+            "callable_nodes": 2605,
+            "edges": 35190,
+            "nodes": 34646,
+            "relations": 1914,
+            "snapshot_files": 256
+          },
+          "elapsed_seconds": 2.6066154,
+          "interval_peak_requested_bytes": 121407313,
+          "live_requested_bytes": 96756584,
+          "peak_requested_bytes": 121407313,
+          "stage": "graph_and_cache"
+        },
+        {
+          "allocations": 12435593,
+          "cumulative_requested_bytes": 1958629943,
+          "detail": {
+            "blake3": "80d6b5fac15c5ac26a1e4be8a4e8cd19eb9d59bc653dbf59529922509fe759f1"
+          },
+          "elapsed_seconds": 2.8358493,
+          "interval_peak_requested_bytes": 96758068,
+          "live_requested_bytes": 96756645,
+          "peak_requested_bytes": 121407313,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 13303078,
+          "cumulative_requested_bytes": 2058940190,
+          "detail": {
+            "call_sites": 14400,
+            "code_contracts": 3292,
+            "declarations": 6946,
+            "propositions": 726,
+            "relation_edges": 1914,
+            "structural_edges": 35190
+          },
+          "elapsed_seconds": 2.9663380999999998,
+          "interval_peak_requested_bytes": 149620268,
+          "live_requested_bytes": 149613690,
+          "peak_requested_bytes": 149620268,
+          "stage": "knowledge_extracted"
+        },
+        {
+          "allocations": 13303100,
+          "cumulative_requested_bytes": 2058943015,
+          "detail": {
+            "max_bytes": 8388608,
+            "max_records": 1024,
+            "streamed": false
+          },
+          "elapsed_seconds": 2.9663713,
+          "interval_peak_requested_bytes": 149615183,
+          "live_requested_bytes": 149614312,
+          "peak_requested_bytes": 149620268,
+          "stage": "batch_adapter_ready"
+        },
+        {
+          "allocations": 13303230,
+          "cumulative_requested_bytes": 2059068698,
+          "detail": {},
+          "elapsed_seconds": 2.981339,
+          "interval_peak_requested_bytes": 149645594,
+          "live_requested_bytes": 149613708,
+          "peak_requested_bytes": 149645594,
+          "stage": "repository_open"
+        },
+        {
+          "allocations": 14976972,
+          "cumulative_requested_bytes": 2520236386,
+          "detail": {
+            "batches": 81
+          },
+          "elapsed_seconds": 3.8848241,
+          "interval_peak_requested_bytes": 154018319,
+          "live_requested_bytes": 144818483,
+          "peak_requested_bytes": 154018319,
+          "stage": "publisher_collected_all"
+        },
+        {
+          "allocations": 14976989,
+          "cumulative_requested_bytes": 2520239698,
+          "detail": {
+            "intentional_stop": true
+          },
+          "elapsed_seconds": 3.9176389,
+          "interval_peak_requested_bytes": 144819909,
+          "live_requested_bytes": 123587823,
+          "peak_requested_bytes": 154018319,
+          "stage": "publisher_preparation_released"
+        },
+        {
+          "allocations": 14977001,
+          "cumulative_requested_bytes": 2520241140,
+          "detail": {},
+          "elapsed_seconds": 3.9194442,
+          "interval_peak_requested_bytes": 123589265,
+          "live_requested_bytes": 96755999,
+          "peak_requested_bytes": 154018319,
+          "stage": "batch_adapter_dropped"
+        },
+        {
+          "allocations": 14977014,
+          "cumulative_requested_bytes": 2520243105,
+          "detail": {},
+          "elapsed_seconds": 3.9772587,
+          "interval_peak_requested_bytes": 96756784,
+          "live_requested_bytes": 96461745,
+          "peak_requested_bytes": 154018319,
+          "stage": "cache_dropped"
+        },
+        {
+          "allocations": 14977026,
+          "cumulative_requested_bytes": 2520244519,
+          "detail": {
+            "cycle": 0
+          },
+          "elapsed_seconds": 4.1003203,
+          "interval_peak_requested_bytes": 96462522,
+          "live_requested_bytes": 251468,
+          "peak_requested_bytes": 154018319,
+          "stage": "all_owners_dropped"
+        }
+      ]
+    },
+    {
+      "files": 256,
+      "mode": "graph-prepare",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 4.111482800042722,
+        "sampled_peak_tree_rss_bytes": 144592896,
+        "os_peak_main_working_set_bytes": 146001920,
+        "sampled_tree_cpu_seconds": 4.78125,
+        "sampled_tree_read_bytes": 77169146,
+        "sampled_tree_write_bytes": 143782923,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 52,
+          "observed_processes": 4,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:7c37694f6d97667c5ed7d91a34165fd45e31061b6c02dfbe716d28fbae10a1d7",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 677,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "graph-prepare"
+          },
+          "elapsed_seconds": 0.0011406,
+          "interval_peak_requested_bytes": 1056,
+          "live_requested_bytes": 1056,
+          "peak_requested_bytes": 1056,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 12435572,
+          "cumulative_requested_bytes": 1958628121,
+          "detail": {
+            "cached_parts": 255,
+            "cached_records": 255,
+            "callable_nodes": 2605,
+            "edges": 35190,
+            "nodes": 34646,
+            "relations": 1914,
+            "snapshot_files": 256
+          },
+          "elapsed_seconds": 2.6619194,
+          "interval_peak_requested_bytes": 121407331,
+          "live_requested_bytes": 96756602,
+          "peak_requested_bytes": 121407331,
+          "stage": "graph_and_cache"
+        },
+        {
+          "allocations": 12435594,
+          "cumulative_requested_bytes": 1958630371,
+          "detail": {
+            "blake3": "80d6b5fac15c5ac26a1e4be8a4e8cd19eb9d59bc653dbf59529922509fe759f1"
+          },
+          "elapsed_seconds": 2.9053157,
+          "interval_peak_requested_bytes": 96758086,
+          "live_requested_bytes": 96756663,
+          "peak_requested_bytes": 121407331,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 12435609,
+          "cumulative_requested_bytes": 1958632489,
+          "detail": {
+            "streamed": true
+          },
+          "elapsed_seconds": 2.9055376,
+          "interval_peak_requested_bytes": 96758141,
+          "live_requested_bytes": 96756601,
+          "peak_requested_bytes": 121407331,
+          "stage": "graph_source_ready"
+        },
+        {
+          "allocations": 12435653,
+          "cumulative_requested_bytes": 1958654907,
+          "detail": {
+            "max_bytes": 8388608,
+            "max_records": 1024,
+            "streamed": true
+          },
+          "elapsed_seconds": 2.9055987,
+          "interval_peak_requested_bytes": 96769393,
+          "live_requested_bytes": 96764669,
+          "peak_requested_bytes": 121407331,
+          "stage": "batch_adapter_ready"
+        },
+        {
+          "allocations": 12435783,
+          "cumulative_requested_bytes": 1958780758,
+          "detail": {},
+          "elapsed_seconds": 2.9215514000000002,
+          "interval_peak_requested_bytes": 96795963,
+          "live_requested_bytes": 96764065,
+          "peak_requested_bytes": 121407331,
+          "stage": "repository_open"
+        },
+        {
+          "allocations": 14999253,
+          "cumulative_requested_bytes": 2516789679,
+          "detail": {
+            "batches": 3257
+          },
+          "elapsed_seconds": 3.8517672,
+          "interval_peak_requested_bytes": 119430100,
+          "live_requested_bytes": 117582683,
+          "peak_requested_bytes": 121407331,
+          "stage": "publisher_collected_all"
+        },
+        {
+          "allocations": 14999270,
+          "cumulative_requested_bytes": 2516793003,
+          "detail": {
+            "intentional_stop": true
+          },
+          "elapsed_seconds": 3.8805964,
+          "interval_peak_requested_bytes": 117584109,
+          "live_requested_bytes": 97064169,
+          "peak_requested_bytes": 121407331,
+          "stage": "publisher_preparation_released"
+        },
+        {
+          "allocations": 14999282,
+          "cumulative_requested_bytes": 2516794445,
+          "detail": {},
+          "elapsed_seconds": 3.8807032,
+          "interval_peak_requested_bytes": 97065611,
+          "live_requested_bytes": 96756017,
+          "peak_requested_bytes": 121407331,
+          "stage": "batch_adapter_dropped"
+        },
+        {
+          "allocations": 14999295,
+          "cumulative_requested_bytes": 2516796410,
+          "detail": {},
+          "elapsed_seconds": 3.9445646,
+          "interval_peak_requested_bytes": 96756802,
+          "live_requested_bytes": 96461763,
+          "peak_requested_bytes": 121407331,
+          "stage": "cache_dropped"
+        },
+        {
+          "allocations": 14999307,
+          "cumulative_requested_bytes": 2516797824,
+          "detail": {
+            "cycle": 0
+          },
+          "elapsed_seconds": 4.0428428,
+          "interval_peak_requested_bytes": 96462540,
+          "live_requested_bytes": 251486,
+          "peak_requested_bytes": 121407331,
+          "stage": "all_owners_dropped"
+        }
+      ]
+    },
+    {
+      "files": 512,
+      "mode": "graph-only",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 2.735009199997876,
+        "sampled_peak_tree_rss_bytes": 334696448,
+        "os_peak_main_working_set_bytes": 349077504,
+        "sampled_tree_cpu_seconds": 4.578125,
+        "sampled_tree_read_bytes": 8230450,
+        "sampled_tree_write_bytes": 863,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 35,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:307a543ff6164a8fe9db2b81f24786e7b106607f8e84300779b487058a307573",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 674,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "graph-only"
+          },
+          "elapsed_seconds": 0.0010704,
+          "interval_peak_requested_bytes": 1044,
+          "live_requested_bytes": 1044,
+          "peak_requested_bytes": 1044,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 11236225,
+          "cumulative_requested_bytes": 1403193239,
+          "detail": {
+            "nodes": 68835,
+            "relations": 3453,
+            "snapshot_files": 512
+          },
+          "elapsed_seconds": 2.1030996,
+          "interval_peak_requested_bytes": 308318011,
+          "live_requested_bytes": 193623318,
+          "peak_requested_bytes": 308318011,
+          "stage": "graph_without_cache"
+        },
+        {
+          "allocations": 11236243,
+          "cumulative_requested_bytes": 1403195448,
+          "detail": {
+            "blake3": "b3268650019cac355ce8dd7606b399ec5beed8d76257d9e0e9e7690e21173293"
+          },
+          "elapsed_seconds": 2.5623429,
+          "interval_peak_requested_bytes": 193624761,
+          "live_requested_bytes": 193623424,
+          "peak_requested_bytes": 308318011,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 11236256,
+          "cumulative_requested_bytes": 1403196926,
+          "detail": {},
+          "elapsed_seconds": 2.6904555,
+          "interval_peak_requested_bytes": 193624902,
+          "live_requested_bytes": 250840,
+          "peak_requested_bytes": 308318011,
+          "stage": "graph_dropped"
+        }
+      ]
+    },
+    {
+      "files": 512,
+      "mode": "prepare",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 9.22333550004987,
+        "sampled_peak_tree_rss_bytes": 341925888,
+        "os_peak_main_working_set_bytes": 345706496,
+        "sampled_tree_cpu_seconds": 10.578125,
+        "sampled_tree_read_bytes": 162811198,
+        "sampled_tree_write_bytes": 293133710,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 118,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:7eda05ff7d7e7ca644ab6e23ac9a2e93dfa6f2c90fa18ae24f5d8326c9dd02bb",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 671,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "prepare"
+          },
+          "elapsed_seconds": 0.0011312,
+          "interval_peak_requested_bytes": 1032,
+          "live_requested_bytes": 1032,
+          "peak_requested_bytes": 1032,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 24900379,
+          "cumulative_requested_bytes": 3971329315,
+          "detail": {
+            "cached_parts": 510,
+            "cached_records": 510,
+            "callable_nodes": 5103,
+            "edges": 69925,
+            "nodes": 68835,
+            "relations": 3453,
+            "snapshot_files": 512
+          },
+          "elapsed_seconds": 5.8893640000000005,
+          "interval_peak_requested_bytes": 218258934,
+          "live_requested_bytes": 194211731,
+          "peak_requested_bytes": 218258934,
+          "stage": "graph_and_cache"
+        },
+        {
+          "allocations": 24900401,
+          "cumulative_requested_bytes": 3971331565,
+          "detail": {
+            "blake3": "b3268650019cac355ce8dd7606b399ec5beed8d76257d9e0e9e7690e21173293"
+          },
+          "elapsed_seconds": 6.5009182,
+          "interval_peak_requested_bytes": 194213215,
+          "live_requested_bytes": 194211792,
+          "peak_requested_bytes": 218258934,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 26626796,
+          "cumulative_requested_bytes": 4182061422,
+          "detail": {
+            "call_sites": 27195,
+            "code_contracts": 6169,
+            "declarations": 17679,
+            "propositions": 1346,
+            "relation_edges": 3453,
+            "structural_edges": 69925
+          },
+          "elapsed_seconds": 6.8247934,
+          "interval_peak_requested_bytes": 308014080,
+          "live_requested_bytes": 308000870,
+          "peak_requested_bytes": 308014080,
+          "stage": "knowledge_extracted"
+        },
+        {
+          "allocations": 26626818,
+          "cumulative_requested_bytes": 4182064247,
+          "detail": {
+            "max_bytes": 8388608,
+            "max_records": 1024,
+            "streamed": false
+          },
+          "elapsed_seconds": 6.8248312,
+          "interval_peak_requested_bytes": 308002363,
+          "live_requested_bytes": 308001492,
+          "peak_requested_bytes": 308014080,
+          "stage": "batch_adapter_ready"
+        },
+        {
+          "allocations": 26626948,
+          "cumulative_requested_bytes": 4182189930,
+          "detail": {},
+          "elapsed_seconds": 6.8508936,
+          "interval_peak_requested_bytes": 308032774,
+          "live_requested_bytes": 308000888,
+          "peak_requested_bytes": 308032774,
+          "stage": "repository_open"
+        },
+        {
+          "allocations": 30009632,
+          "cumulative_requested_bytes": 5158189141,
+          "detail": {
+            "batches": 158
+          },
+          "elapsed_seconds": 8.7743688,
+          "interval_peak_requested_bytes": 313595858,
+          "live_requested_bytes": 297903824,
+          "peak_requested_bytes": 313595858,
+          "stage": "publisher_collected_all"
+        },
+        {
+          "allocations": 30009649,
+          "cumulative_requested_bytes": 5158192453,
+          "detail": {
+            "intentional_stop": true
+          },
+          "elapsed_seconds": 8.8424878,
+          "interval_peak_requested_bytes": 297905250,
+          "live_requested_bytes": 255661738,
+          "peak_requested_bytes": 313595858,
+          "stage": "publisher_preparation_released"
+        },
+        {
+          "allocations": 30009661,
+          "cumulative_requested_bytes": 5158193895,
+          "detail": {},
+          "elapsed_seconds": 8.8442346,
+          "interval_peak_requested_bytes": 255663180,
+          "live_requested_bytes": 194211146,
+          "peak_requested_bytes": 313595858,
+          "stage": "batch_adapter_dropped"
+        },
+        {
+          "allocations": 30009674,
+          "cumulative_requested_bytes": 5158195860,
+          "detail": {},
+          "elapsed_seconds": 8.9662555,
+          "interval_peak_requested_bytes": 194211931,
+          "live_requested_bytes": 193622769,
+          "peak_requested_bytes": 313595858,
+          "stage": "cache_dropped"
+        },
+        {
+          "allocations": 30009686,
+          "cumulative_requested_bytes": 5158197274,
+          "detail": {
+            "cycle": 0
+          },
+          "elapsed_seconds": 9.186056,
+          "interval_peak_requested_bytes": 193623546,
+          "live_requested_bytes": 251468,
+          "peak_requested_bytes": 313595858,
+          "stage": "all_owners_dropped"
+        }
+      ]
+    },
+    {
+      "files": 512,
+      "mode": "graph-prepare",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 9.009831200004555,
+        "sampled_peak_tree_rss_bytes": 262049792,
+        "os_peak_main_working_set_bytes": 264527872,
+        "sampled_tree_cpu_seconds": 10.3125,
+        "sampled_tree_read_bytes": 163145482,
+        "sampled_tree_write_bytes": 299583321,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 116,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:0ecd70d58334a5aedf7bb16ecefd1ef602a5ef869a4cf99062bc00c435834839",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 677,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "graph-prepare"
+          },
+          "elapsed_seconds": 0.0011641,
+          "interval_peak_requested_bytes": 1056,
+          "live_requested_bytes": 1056,
+          "peak_requested_bytes": 1056,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 24900380,
+          "cumulative_requested_bytes": 3971329743,
+          "detail": {
+            "cached_parts": 510,
+            "cached_records": 510,
+            "callable_nodes": 5103,
+            "edges": 69925,
+            "nodes": 68835,
+            "relations": 3453,
+            "snapshot_files": 512
+          },
+          "elapsed_seconds": 5.9534835,
+          "interval_peak_requested_bytes": 218258952,
+          "live_requested_bytes": 194211749,
+          "peak_requested_bytes": 218258952,
+          "stage": "graph_and_cache"
+        },
+        {
+          "allocations": 24900402,
+          "cumulative_requested_bytes": 3971331993,
+          "detail": {
+            "blake3": "b3268650019cac355ce8dd7606b399ec5beed8d76257d9e0e9e7690e21173293"
+          },
+          "elapsed_seconds": 6.5588351,
+          "interval_peak_requested_bytes": 194213233,
+          "live_requested_bytes": 194211810,
+          "peak_requested_bytes": 218258952,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 24900417,
+          "cumulative_requested_bytes": 3971334111,
+          "detail": {
+            "streamed": true
+          },
+          "elapsed_seconds": 6.5590482,
+          "interval_peak_requested_bytes": 194213288,
+          "live_requested_bytes": 194211748,
+          "peak_requested_bytes": 218258952,
+          "stage": "graph_source_ready"
+        },
+        {
+          "allocations": 24900484,
+          "cumulative_requested_bytes": 3971375449,
+          "detail": {
+            "max_bytes": 8388608,
+            "max_records": 1024,
+            "streamed": true
+          },
+          "elapsed_seconds": 6.5591118,
+          "interval_peak_requested_bytes": 194237316,
+          "live_requested_bytes": 194226448,
+          "peak_requested_bytes": 218258952,
+          "stage": "batch_adapter_ready"
+        },
+        {
+          "allocations": 24900614,
+          "cumulative_requested_bytes": 3971501300,
+          "detail": {},
+          "elapsed_seconds": 6.5814521,
+          "interval_peak_requested_bytes": 194257742,
+          "live_requested_bytes": 194225844,
+          "peak_requested_bytes": 218258952,
+          "stage": "repository_open"
+        },
+        {
+          "allocations": 30056745,
+          "cumulative_requested_bytes": 5112047823,
+          "detail": {
+            "batches": 6450
+          },
+          "elapsed_seconds": 8.5634857,
+          "interval_peak_requested_bytes": 237642517,
+          "live_requested_bytes": 235189104,
+          "peak_requested_bytes": 237642517,
+          "stage": "publisher_collected_all"
+        },
+        {
+          "allocations": 30056762,
+          "cumulative_requested_bytes": 5112051147,
+          "detail": {
+            "intentional_stop": true
+          },
+          "elapsed_seconds": 8.6293136,
+          "interval_peak_requested_bytes": 235190530,
+          "live_requested_bytes": 194402332,
+          "peak_requested_bytes": 237642517,
+          "stage": "publisher_preparation_released"
+        },
+        {
+          "allocations": 30056774,
+          "cumulative_requested_bytes": 5112052589,
+          "detail": {},
+          "elapsed_seconds": 8.629455,
+          "interval_peak_requested_bytes": 194403774,
+          "live_requested_bytes": 194211164,
+          "peak_requested_bytes": 237642517,
+          "stage": "batch_adapter_dropped"
+        },
+        {
+          "allocations": 30056787,
+          "cumulative_requested_bytes": 5112054554,
+          "detail": {},
+          "elapsed_seconds": 8.7509201,
+          "interval_peak_requested_bytes": 194211949,
+          "live_requested_bytes": 193622787,
+          "peak_requested_bytes": 237642517,
+          "stage": "cache_dropped"
+        },
+        {
+          "allocations": 30056799,
+          "cumulative_requested_bytes": 5112055968,
+          "detail": {
+            "cycle": 0
+          },
+          "elapsed_seconds": 8.9634354,
+          "interval_peak_requested_bytes": 193623564,
+          "live_requested_bytes": 251486,
+          "peak_requested_bytes": 237642517,
+          "stage": "all_owners_dropped"
+        }
+      ]
+    },
+    {
+      "files": 512,
+      "mode": "graph-commit",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 55.94260920002125,
+        "sampled_peak_tree_rss_bytes": 273960960,
+        "os_peak_main_working_set_bytes": 273960960,
+        "sampled_tree_cpu_seconds": 56.96875,
+        "sampled_tree_read_bytes": 8068363720,
+        "sampled_tree_write_bytes": 18179521271,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 709,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:2fa2676be56f08770d20354abec9a0ee49842c3b9f865e46650046a6cc4dc1a5",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 676,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "graph-commit"
+          },
+          "elapsed_seconds": 0.0011066,
+          "interval_peak_requested_bytes": 1052,
+          "live_requested_bytes": 1052,
+          "peak_requested_bytes": 1052,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 24900366,
+          "cumulative_requested_bytes": 3971318493,
+          "detail": {
+            "cached_parts": 510,
+            "cached_records": 510,
+            "callable_nodes": 5103,
+            "edges": 69925,
+            "nodes": 68835,
+            "relations": 3453,
+            "snapshot_files": 512
+          },
+          "elapsed_seconds": 5.7654505,
+          "interval_peak_requested_bytes": 218258949,
+          "live_requested_bytes": 194211746,
+          "peak_requested_bytes": 218258949,
+          "stage": "graph_and_cache"
+        },
+        {
+          "allocations": 24900388,
+          "cumulative_requested_bytes": 3971320743,
+          "detail": {
+            "blake3": "b3268650019cac355ce8dd7606b399ec5beed8d76257d9e0e9e7690e21173293"
+          },
+          "elapsed_seconds": 6.3529211,
+          "interval_peak_requested_bytes": 194213230,
+          "live_requested_bytes": 194211807,
+          "peak_requested_bytes": 218258949,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 24900403,
+          "cumulative_requested_bytes": 3971322861,
+          "detail": {
+            "streamed": true
+          },
+          "elapsed_seconds": 6.3531184,
+          "interval_peak_requested_bytes": 194213285,
+          "live_requested_bytes": 194211745,
+          "peak_requested_bytes": 218258949,
+          "stage": "graph_source_ready"
+        },
+        {
+          "allocations": 24900470,
+          "cumulative_requested_bytes": 3971364199,
+          "detail": {
+            "max_bytes": 8388608,
+            "max_records": 1024,
+            "streamed": true
+          },
+          "elapsed_seconds": 6.3531772,
+          "interval_peak_requested_bytes": 194237313,
+          "live_requested_bytes": 194226445,
+          "peak_requested_bytes": 218258949,
+          "stage": "batch_adapter_ready"
+        },
+        {
+          "allocations": 24900600,
+          "cumulative_requested_bytes": 3971490022,
+          "detail": {},
+          "elapsed_seconds": 6.3708966,
+          "interval_peak_requested_bytes": 194257737,
+          "live_requested_bytes": 194225841,
+          "peak_requested_bytes": 218258949,
+          "stage": "repository_open"
+        },
+        {
+          "allocations": 30056731,
+          "cumulative_requested_bytes": 5112036539,
+          "detail": {
+            "batches": 6450
+          },
+          "elapsed_seconds": 8.2824694,
+          "interval_peak_requested_bytes": 237642513,
+          "live_requested_bytes": 235189100,
+          "peak_requested_bytes": 237642513,
+          "stage": "publisher_collected_all"
+        },
+        {
+          "allocations": 43969356,
+          "cumulative_requested_bytes": 7395939352,
+          "detail": {
+            "batches": 6450,
+            "peak_batch_bytes": 1011438,
+            "peak_batch_records": 1024
+          },
+          "elapsed_seconds": 55.4582983,
+          "interval_peak_requested_bytes": 239150599,
+          "live_requested_bytes": 194403013,
+          "peak_requested_bytes": 239150599,
+          "stage": "publisher_committed"
+        },
+        {
+          "allocations": 43969370,
+          "cumulative_requested_bytes": 7395940808,
+          "detail": {},
+          "elapsed_seconds": 55.4584473,
+          "interval_peak_requested_bytes": 194404469,
+          "live_requested_bytes": 194211749,
+          "peak_requested_bytes": 239150599,
+          "stage": "batch_adapter_dropped"
+        },
+        {
+          "allocations": 43969383,
+          "cumulative_requested_bytes": 7395942773,
+          "detail": {},
+          "elapsed_seconds": 55.5934643,
+          "interval_peak_requested_bytes": 194212534,
+          "live_requested_bytes": 193623372,
+          "peak_requested_bytes": 239150599,
+          "stage": "cache_dropped"
+        },
+        {
+          "allocations": 43969395,
+          "cumulative_requested_bytes": 7395944187,
+          "detail": {
+            "cycle": 0
+          },
+          "elapsed_seconds": 55.9020217,
+          "interval_peak_requested_bytes": 193624149,
+          "live_requested_bytes": 251483,
+          "peak_requested_bytes": 239150599,
+          "stage": "all_owners_dropped"
+        }
+      ]
+    },
+    {
+      "files": 512,
+      "mode": "clone",
+      "process": {
+        "status": "complete",
+        "wall_seconds": 8.133231400046498,
+        "sampled_peak_tree_rss_bytes": 248000512,
+        "os_peak_main_working_set_bytes": 257421312,
+        "sampled_tree_cpu_seconds": 9.328125,
+        "sampled_tree_read_bytes": 157390554,
+        "sampled_tree_write_bytes": 191574771,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 102,
+          "observed_processes": 2,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "stdout_digest": "blake3:ddbd9bfb7f4d01964f98a25083ff7ca6ec4680d9ccb6f39bb02bcce2f65bca1e",
+      "points": [
+        {
+          "allocations": 4,
+          "cumulative_requested_bytes": 669,
+          "detail": {
+            "allocator_calibration_passed": true,
+            "mode": "clone"
+          },
+          "elapsed_seconds": 0.001421,
+          "interval_peak_requested_bytes": 1024,
+          "live_requested_bytes": 1024,
+          "peak_requested_bytes": 1024,
+          "stage": "baseline"
+        },
+        {
+          "allocations": 24900386,
+          "cumulative_requested_bytes": 3971334735,
+          "detail": {
+            "cached_parts": 510,
+            "cached_records": 510,
+            "callable_nodes": 5103,
+            "edges": 69925,
+            "nodes": 68835,
+            "relations": 3453,
+            "snapshot_files": 512
+          },
+          "elapsed_seconds": 7.0350629,
+          "interval_peak_requested_bytes": 218258928,
+          "live_requested_bytes": 194211725,
+          "peak_requested_bytes": 218258928,
+          "stage": "graph_and_cache"
+        },
+        {
+          "allocations": 24900408,
+          "cumulative_requested_bytes": 3971336985,
+          "detail": {
+            "blake3": "b3268650019cac355ce8dd7606b399ec5beed8d76257d9e0e9e7690e21173293"
+          },
+          "elapsed_seconds": 7.6843421,
+          "interval_peak_requested_bytes": 194213209,
+          "live_requested_bytes": 194211786,
+          "peak_requested_bytes": 218258928,
+          "stage": "graph_digest"
+        },
+        {
+          "allocations": 25362192,
+          "cumulative_requested_bytes": 4009798147,
+          "detail": {
+            "shared_edges": true,
+            "shared_node_index": true,
+            "shared_nodes": true
+          },
+          "elapsed_seconds": 7.7447234,
+          "interval_peak_requested_bytes": 232670768,
+          "live_requested_bytes": 232670768,
+          "peak_requested_bytes": 232670768,
+          "stage": "candidate_cloned"
+        },
+        {
+          "allocations": 25362206,
+          "cumulative_requested_bytes": 4009799600,
+          "detail": {},
+          "elapsed_seconds": 7.7716056,
+          "interval_peak_requested_bytes": 232672221,
+          "live_requested_bytes": 194211084,
+          "peak_requested_bytes": 232672221,
+          "stage": "candidate_released"
+        }
+      ]
+    }
+  ]
+}

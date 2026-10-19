@@ -828,7 +828,7 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db/"
+          "path": "crates/entmoot-store/src/knowledge_db/"
         },
         {
           "kind": "file_prefix",
@@ -865,7 +865,7 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db"
+          "path": "crates/entmoot-store/src/knowledge_db"
         },
         {
           "kind": "file_prefix",
@@ -904,11 +904,11 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/collaboration"
+          "path": "crates/entmoot-ops/src/collaboration"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db/operations"
+          "path": "crates/entmoot-store/src/knowledge_db/operations"
         },
         {
           "kind": "file_prefix",
@@ -933,23 +933,31 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db/layout.rs"
+          "path": "crates/entmoot-store/src/knowledge_db/layout.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db/inventory.rs"
+          "path": "crates/entmoot-store/src/knowledge_db/inventory.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db/operations/git_capture.rs"
+          "path": "crates/entmoot-store/src/knowledge_db/operations/git_capture.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-engine/src/collaboration"
+          "path": "crates/entmoot-ops/src/collaboration"
         },
         {
           "kind": "file_prefix",
           "path": "crates/entmoot-contracts/src/operations"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-topology/src/shared_inventory.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-store/src/checkpoints/git.rs"
         }
       ],
       "extensions": []
@@ -994,11 +1002,11 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db/operations.rs"
+          "path": "crates/entmoot-store/src/knowledge_db/operations.rs"
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db/inventory.rs"
+          "path": "crates/entmoot-store/src/knowledge_db/inventory.rs"
         },
         {
           "kind": "file_prefix",
@@ -1006,7 +1014,15 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db/operations/"
+          "path": "crates/entmoot-store/src/knowledge_db/operations/"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-store/src/knowledge_db/buffered_stage.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-store/src/knowledge_db/store_batches.rs"
         }
       ],
       "extensions": []
@@ -1035,7 +1051,7 @@
         },
         {
           "kind": "file_prefix",
-          "path": "crates/entmoot-topology/src/knowledge_db/operations/binding.rs"
+          "path": "crates/entmoot-store/src/knowledge_db/operations/binding.rs"
         },
         {
           "kind": "file_prefix",
@@ -1725,6 +1741,14 @@
         {
           "kind": "file_prefix",
           "path": "crates/entmoot-query/tests/revision_impact.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-topology/src/impact.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-topology/src/shared_inventory.rs"
         }
       ]
     },

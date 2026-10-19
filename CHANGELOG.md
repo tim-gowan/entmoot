@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-10-18: Reduce operation payload lifetimes
+
+- Emit graph knowledge in bounded chunks and stage serialized batches plus
+  reference context on disk before atomic publication. Remove the complete typed
+  publication copy and repeated reference payloads; preserve cross-batch
+  validation, collision checks, unchanged results and historical retrieval.
+- Consume loaded knowledge during graph projection. Share unchanged syntax and
+  indexes across artifact rollback candidates; actual syntax edits detach them.
+  Box sparse assessment/derivation slots without changing JSON or identities.
+- Stage Git capture blobs and reloaded captures on disk; reobserve source
+  membership without collecting a second blob corpus. Keep raw-byte verification,
+  final source/index/HEAD checks, cleanup and publication fencing.
+- Release native raw/artifact results inside each worker, stream atomic native
+  outputs and helper graphs, and stream canon file assembly. Narrow impact
+  consumers share comparison policies without constructing unused evidence,
+  rescan or contract details; peer comparisons reuse the frozen left delta.
+- Count revalidation records before preparing full policy evidence. Source
+  excerpts avoid an all-lines vector; cursor hashes stream the same JSON framing.
+- Use the repository's existing startup lease for legacy queue opens, including
+  read-only opens without sidecar creation. Serialize WAL initialization before
+  SQLite opens; ordinary transactions keep their existing concurrency rules.
+- The frozen 512-file Go [allocation comparison](evals/experiments/memory-operations-2026-10-18.json)
+  reduced publisher-preparation peak from 411MB to 238MB (42%); full validation
+  and publication completed at a 239MB Rust allocation peak. Relation claims
+  occupy 648 rather than 960 inline bytes. All four frames retain matching
+  ordinary/staged graph digests and baseline inventory/extracted record counts.
+  Other operation peaks, large-repository latency and repeated-build residual
+  growth remain qualification work; record limits do not establish an RSS bound.
+
 ## 2026-10-18: Stage structural IR before graph assembly
 
 - Persist per-file parser IR before graph extraction; hydrate records/fragments

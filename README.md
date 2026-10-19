@@ -279,12 +279,13 @@ Large-repository performance remains unqualified: the
 timed out during initial publication after 20 minutes on 16,087 tracked files
 (11,836 Go files), with 23.1GB sampled peak RSS. Warm-read and refresh measurements
 were unavailable. This Windows host was under memory pressure.
-The [memory follow-up](evals/experiments/memory-go-2026-10-18.json) identifies
-oversized node storage and retained graph/cache/publication copies; fixes and
-renewed scale qualification remain open. The
-[IR-first follow-up](evals/experiments/memory-ir-first-2026-10-18.json)
-reduces the frozen 512-file sample's publisher-preparation allocation peak from
-841MB to 411MB; this does not qualify large-repository latency.
+The [memory attribution](evals/experiments/memory-go-2026-10-18.json) led to compact
+nodes and disk-staged IR. On the frozen 512-file sample,
+[IR-first changes](evals/experiments/memory-ir-first-2026-10-18.json) reduced
+publisher-preparation peak Rust allocations from 841MB to 411MB; the
+[operation fixes](evals/experiments/memory-operations-2026-10-18.json) reduce it to
+238MB, with full publication at 239MB. These diagnostics do not qualify
+large-repository latency or establish a process RSS bound.
 
 | Capability | Maturity | Utility and limit / verification owner |
 |---|---|---|

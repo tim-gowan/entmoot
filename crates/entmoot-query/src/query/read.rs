@@ -45,11 +45,7 @@ impl QueryEngine {
         };
         let source = std::str::from_utf8(&source_file.bytes)
             .map_err(|_| QueryError::UnsupportedSourceEncoding(path.clone()))?;
-        let mut all_lines: Vec<&str> = source.split_terminator('\n').collect();
-        if all_lines.is_empty() {
-            all_lines.push("");
-        }
-        let total_lines = all_lines.len();
+        let total_lines = source.split_terminator('\n').count().max(1);
         if start_line > total_lines {
             return Ok(json!({
                 "schema_version": QUERY_RESULT_SCHEMA,
@@ -75,10 +71,15 @@ impl QueryEngine {
         let mut used_bytes = 0usize;
         let mut lines = Vec::new();
         let mut byte_truncated = false;
-        for number in requested_first..=maximum_last {
-            let text = all_lines[number - 1]
-                .strip_suffix('\r')
-                .unwrap_or(all_lines[number - 1]);
+        for (offset, line) in source
+            .split_terminator('\n')
+            .chain(source.is_empty().then_some(""))
+            .enumerate()
+            .skip(requested_first - 1)
+            .take(maximum_last - requested_first + 1)
+        {
+            let number = offset + 1;
+            let text = line.strip_suffix('\r').unwrap_or(line);
             if used_bytes.saturating_add(text.len()).saturating_add(1) > max_bytes {
                 byte_truncated = true;
                 break;

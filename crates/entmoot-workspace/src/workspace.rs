@@ -20,7 +20,7 @@ pub use open::{
 };
 
 use crate::{
-    native_resolver::*, KnowledgeRead, KnowledgeRepository, KnowledgeStore, KnowledgeStoreBatches,
+    native_resolver::*, KnowledgeRead, KnowledgeRepository, KnowledgeStoreBatches,
     PublicationBuffer, SqliteKnowledgeRepository, TopologyGraph,
 };
 use entmoot_contracts::{blake3_hex, SourceSnapshot};
@@ -109,8 +109,7 @@ fn sync_graph(
 ) -> Result<crate::BufferedPublicationReceipt, WorkspaceError> {
     let mut store = SqliteKnowledgeRepository::open(&location.store).map_err(failure)?;
     let buffer = PublicationBuffer::default();
-    let mut batches = KnowledgeStoreBatches::new(KnowledgeStore::extract_from_graph(graph), buffer)
-        .map_err(failure)?;
+    let mut batches = KnowledgeStoreBatches::from_graph(graph, buffer).map_err(failure)?;
     let receipt = store
         .replace_owner_buffered(
             &format!("snapshot:{}", graph.snapshot.repository_id),
@@ -411,7 +410,42 @@ fn bind_graph(
             *family,
             serde_json::from_value(serde_json::Value::String((*family).into()))
                 .map_err(|error| NativeProducerError::Message(error.to_string()))
-                .and_then(|family| native.produce_family(family, request.clone())),
+                .and_then(|family| native.produce_family(family, request.clone()))
+                .and_then(|result| {
+                    let context = options
+                        .canon
+                        .then(|| -> Result<_, NativeProducerError> {
+                            let mut digest = blake3::Hasher::new();
+                            serde_json::to_writer(
+                                &mut digest,
+                                &(&result.raw.build_context, &result.raw.tool_environment),
+                            )?;
+                            Ok(entmoot_contracts::CanonNativeContext {
+                                producer: result.receipt.producer.clone(),
+                                semantic_status: result.receipt.semantic_status,
+                                limitations: result.receipt.limitations.clone(),
+                                compiler_version: result.raw.compiler_version,
+                                environment_digest: entmoot_contracts::ContentDigest::from_trusted(
+                                    format!("blake3:{}", digest.finalize().to_hex()),
+                                ),
+                            })
+                        })
+                        .transpose()?;
+                    let facts = if options.canon {
+                        result.raw.expressions
+                    } else {
+                        vec![]
+                    };
+                    // The worker returns only what ordered attachment consumes.
+                    // Raw and normalized evidence remain in verified artifacts.
+                    Ok((
+                        result.receipt,
+                        result.manifest_path,
+                        result.artifact_path,
+                        context,
+                        facts,
+                    ))
+                }),
         )
     });
     let mut produced: std::collections::BTreeMap<_, _> = produced.into_iter().collect();
@@ -424,28 +458,17 @@ fn bind_graph(
         let decision = decisions.and_then(|rows| rows.iter().find(|row| row.family == family));
         if let Some(result) = produced.remove(family) {
             match result {
-                Ok(result) => {
-                    if options.canon {
-                        canon_context.push(entmoot_contracts::CanonNativeContext {
-                            producer: result.receipt.producer.clone(),
-                            semantic_status: result.receipt.semantic_status,
-                            limitations: result.receipt.limitations.clone(),
-                            compiler_version: result.raw.compiler_version.clone(),
-                            environment_digest: entmoot_contracts::ContentDigest::from_trusted(
-                                blake3_hex(&serde_json::to_vec(&(
-                                    &result.raw.build_context,
-                                    &result.raw.tool_environment,
-                                ))?),
-                            ),
-                        });
-                        canon_facts.extend(result.raw.expressions);
+                Ok((receipt, manifest_path, artifact_path, context, facts)) => {
+                    if let Some(context) = context {
+                        canon_context.push(context);
                     }
+                    canon_facts.extend(facts);
                     stage.stage = "produced".into();
                     stage.events.push("produced".into());
                     if let (Some(queue), Some(work)) = (&mut queue, &stage.work) {
-                        let manifest = serde_json::from_slice(&fs::read(&result.manifest_path)?)?;
+                        let manifest = serde_json::from_slice(&fs::read(&manifest_path)?)?;
                         let verified = crate::ManifestUnverified::new(manifest)
-                            .verify(&fs::read(&result.artifact_path)?, &graph.snapshot)
+                            .verify(&fs::read(&artifact_path)?, &graph.snapshot)
                             .map_err(failure)?;
                         let token = work
                             .fencing_token
@@ -458,8 +481,8 @@ fn bind_graph(
                         );
                         stage.events.push("artifact_ready".into());
                     }
-                    stage.manifest = Some(result.manifest_path);
-                    stage.native_receipt = Some(result.receipt);
+                    stage.manifest = Some(manifest_path);
+                    stage.native_receipt = Some(receipt);
                 }
                 Err(error) => {
                     stage.stage = "failed".into();
@@ -707,7 +730,7 @@ pub fn bind_publication(
     let mut graph = repository
         .load()
         .map_err(failure)?
-        .apply_to_inventory(crate::inventory_skeleton(&graph));
+        .into_inventory(crate::inventory_skeleton(&graph));
     graph.validate().map_err(failure)?;
     verify_sources(&graph, &root)?;
     // Physical source location is local wiring, never a structural identity.

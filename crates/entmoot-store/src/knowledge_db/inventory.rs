@@ -99,6 +99,16 @@ impl SqliteKnowledgeRepository {
             return Ok(None);
         };
         let mut graph: TopologyGraph = hydrate_record(&self.connection, payload)?;
+        // Preserve the exact membership encoding while releasing syntax that
+        // will be reattached from visible source-of-record rows below.
+        let mut commitment = blake3::Hasher::new();
+        commitment.update(b"[");
+        serde_json::to_writer(&mut commitment, "entmoot.inventory.membership.v1")?;
+        commitment.update(b",");
+        serde_json::to_writer(&mut commitment, &graph.snapshot)?;
+        commitment.update(b",");
+        serde_json::to_writer(&mut commitment, &graph.policy_ids)?;
+        commitment.update(b",[");
         let mut statement = self.connection.prepare_cached("SELECT n.payload,d.structural_hash,p.path FROM inventory_nodes n LEFT JOIN shared_definitions d USING(definition_id) LEFT JOIN shared_paths p USING(path_id) WHERE n.view_id=(SELECT id FROM temp.selected_knowledge_view) ORDER BY ordinal")?;
         let rows = statement.query_map([], |r| {
             Ok((
@@ -114,6 +124,12 @@ impl SqliteKnowledgeRepository {
                 node.structural_hash = Some(hash);
             }
             node.path = path;
+            if !graph.nodes.is_empty() {
+                commitment.update(b",");
+            }
+            serde_json::to_writer(&mut commitment, &node)?;
+            node.declaration = None;
+            node.code_contract = None;
             graph.nodes.push(node);
         }
         let mut statement = self.connection.prepare_cached("SELECT p.path,f.digest FROM inventory_files m JOIN shared_paths p USING(path_id) JOIN shared_source_files f USING(file_id) WHERE m.view_id=(SELECT id FROM temp.selected_knowledge_view) ORDER BY ordinal")?;
@@ -126,14 +142,17 @@ impl SqliteKnowledgeRepository {
             })?
             .collect::<Result<_, _>>()?;
         let expected: String = self.connection.query_row("SELECT inventory_digest FROM inventory_headers WHERE view_id=(SELECT id FROM temp.selected_knowledge_view)", [], |r|r.get(0))?;
-        if inventory_digest(&graph)? != expected {
+        commitment.update(b"],");
+        serde_json::to_writer(&mut commitment, &graph.snapshot_files)?;
+        commitment.update(b"]");
+        if format!("blake3:{}", commitment.finalize().to_hex()) != expected {
             return Err(invalid_record(
                 "inventory",
                 "membership or shared definition commitment mismatch",
             ));
         }
         let knowledge = self.load_mode(projection)?;
-        Ok(Some(knowledge.apply_to_inventory(graph)))
+        Ok(Some(knowledge.into_inventory(graph)))
     }
 
     pub fn inventory_export_digest(&self) -> Result<Option<String>, KnowledgeRepositoryError> {
@@ -395,11 +414,32 @@ pub(super) fn import_graph_in_transaction(
         }
         return Ok(());
     }
-    let store = KnowledgeStore::extract_from_graph(graph);
-    validate_store_records(&store)?;
+    let staged = super::buffered_stage::StagedBatches::new(transaction)?;
+    for batch in KnowledgeStoreBatches::from_graph(graph, PublicationBuffer::default())? {
+        let batch = batch?;
+        let mut rows = BTreeMap::new();
+        for_each_store_row(&batch.store, |row| {
+            rows.insert(
+                entmoot_contracts::KnowledgeRecordRef::new(row.collection, row.record_id.clone()),
+                row,
+            );
+            Ok(())
+        })?;
+        staged.push(&batch.store, &rows)?;
+    }
+    staged.finish()?;
+    staged.visit(|store| validate_store_records_in_context(&store, &staged))?;
     // New view: both knowledge and inventory become durable in this transaction.
-    let (_, digest) = insert_store_rows(transaction, &store)?;
-    set_store_digest(transaction, &digest)?;
+    // Row order is a derivation detail fenced by the implementation fingerprint.
+    let mut digest = store_digest_hasher();
+    staged.visit(|store| {
+        insert_store_chunk(transaction, &store, &mut digest)?;
+        Ok(())
+    })?;
+    set_store_digest(
+        transaction,
+        &format!("blake3:{}", digest.finalize().to_hex()),
+    )?;
     store_inventory_in_transaction(transaction, graph, source)
 }
 

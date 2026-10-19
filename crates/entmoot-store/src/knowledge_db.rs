@@ -42,9 +42,10 @@ pub use inventory::KnowledgeViewLocator;
 use layout::{hydrate_payload, hydrate_record, intern_payload, payload_matches};
 
 mod buffered;
+mod buffered_stage;
 pub use buffered::{BufferedPublicationReceipt, OwnerBatch, PublicationBuffer, PublicationOutcome};
 mod store_batches;
-pub use store_batches::KnowledgeStoreBatches;
+pub use store_batches::{GraphBatches, KnowledgeStoreBatches};
 
 #[derive(Debug, Error)]
 pub enum KnowledgeRepositoryError {
@@ -1617,6 +1618,26 @@ fn validate_store_records(store: &KnowledgeStore) -> Result<(), KnowledgeReposit
 
 /// Borrowed indexes over the complete publication, built once rather than once
 /// per batch. Existing database rows do not supply missing publication context.
+trait StoreRecordContext {
+    fn artifact(
+        &self,
+        id: &str,
+    ) -> Result<Option<std::borrow::Cow<'_, ArtifactManifest>>, KnowledgeRepositoryError>;
+    fn location(
+        &self,
+        id: &str,
+    ) -> Result<Option<std::borrow::Cow<'_, LocationRecord>>, KnowledgeRepositoryError>;
+    fn component_exists(&self, id: &str) -> Result<bool, KnowledgeRepositoryError>;
+    fn proposition(
+        &self,
+        id: &str,
+    ) -> Result<Option<std::borrow::Cow<'_, Proposition>>, KnowledgeRepositoryError>;
+    fn relation_edge(
+        &self,
+        id: &str,
+    ) -> Result<Option<std::borrow::Cow<'_, RelationEdge>>, KnowledgeRepositoryError>;
+}
+
 struct StoreValidationContext<'a> {
     artifacts: BTreeMap<&'a str, &'a ArtifactManifest>,
     locations: BTreeMap<&'a str, &'a LocationRecord>,
@@ -1670,9 +1691,51 @@ impl<'a> StoreValidationContext<'a> {
     }
 }
 
+impl StoreRecordContext for StoreValidationContext<'_> {
+    fn artifact(
+        &self,
+        id: &str,
+    ) -> Result<Option<std::borrow::Cow<'_, ArtifactManifest>>, KnowledgeRepositoryError> {
+        Ok(self
+            .artifacts
+            .get(id)
+            .map(|value| std::borrow::Cow::Borrowed(*value)))
+    }
+    fn location(
+        &self,
+        id: &str,
+    ) -> Result<Option<std::borrow::Cow<'_, LocationRecord>>, KnowledgeRepositoryError> {
+        Ok(self
+            .locations
+            .get(id)
+            .map(|value| std::borrow::Cow::Borrowed(*value)))
+    }
+    fn component_exists(&self, id: &str) -> Result<bool, KnowledgeRepositoryError> {
+        Ok(self.component_ids.contains(id))
+    }
+    fn proposition(
+        &self,
+        id: &str,
+    ) -> Result<Option<std::borrow::Cow<'_, Proposition>>, KnowledgeRepositoryError> {
+        Ok(self
+            .propositions
+            .get(id)
+            .map(|value| std::borrow::Cow::Borrowed(*value)))
+    }
+    fn relation_edge(
+        &self,
+        id: &str,
+    ) -> Result<Option<std::borrow::Cow<'_, RelationEdge>>, KnowledgeRepositoryError> {
+        Ok(self
+            .relation_edges
+            .get(id)
+            .map(|value| std::borrow::Cow::Borrowed(*value)))
+    }
+}
+
 fn validate_store_records_in_context(
     store: &KnowledgeStore,
-    context: &StoreValidationContext<'_>,
+    context: &impl StoreRecordContext,
 ) -> Result<(), KnowledgeRepositoryError> {
     for root in &store.input_roots {
         root.validate()
@@ -1684,10 +1747,7 @@ fn validate_store_records_in_context(
             .map_err(|error| invalid_record("artifacts", error))?;
     }
     for location in &store.locations {
-        if !context
-            .artifacts
-            .contains_key(location.artifact_id.as_str())
-        {
+        if context.artifact(location.artifact_id.as_str())?.is_none() {
             return Err(invalid_record("locations", "location artifact is missing"));
         }
         if let Some(region) = location.extent.region() {
@@ -1698,11 +1758,10 @@ fn validate_store_records_in_context(
     }
     for attachment in &store.attachments {
         let location = context
-            .locations
-            .get(attachment.location_id.as_str())
+            .location(attachment.location_id.as_str())?
             .ok_or_else(|| invalid_record("attachments", "attachment location is missing"))?;
         attachment
-            .validate_location(location)
+            .validate_location(&location)
             .map_err(|error| invalid_record("attachments", error))?;
     }
     for resource in &store.resources {
@@ -1714,10 +1773,7 @@ fn validate_store_records_in_context(
         component
             .validate()
             .map_err(|error| invalid_record("components", error))?;
-        if !context
-            .artifacts
-            .contains_key(component.artifact_id.as_str())
-        {
+        if context.artifact(component.artifact_id.as_str())?.is_none() {
             return Err(invalid_record(
                 "components",
                 format!("missing artifact {}", component.artifact_id),
@@ -1728,10 +1784,7 @@ fn validate_store_records_in_context(
         dependency
             .validate()
             .map_err(|error| invalid_record("component_dependencies", error))?;
-        if !context
-            .artifacts
-            .contains_key(dependency.artifact_id.as_str())
-        {
+        if context.artifact(dependency.artifact_id.as_str())?.is_none() {
             return Err(invalid_record(
                 "component_dependencies",
                 format!("missing artifact {}", dependency.artifact_id),
@@ -1744,7 +1797,7 @@ fn validate_store_records_in_context(
         .into_iter()
         .flatten()
         {
-            if !context.component_ids.contains(occurrence_id.as_str()) {
+            if !context.component_exists(occurrence_id.as_str())? {
                 return Err(invalid_record(
                     "component_dependencies",
                     format!("missing component {occurrence_id}"),
@@ -1756,9 +1809,9 @@ fn validate_store_records_in_context(
         vulnerability
             .validate()
             .map_err(|error| invalid_record("component_vulnerabilities", error))?;
-        if !context
-            .artifacts
-            .contains_key(vulnerability.artifact_id.as_str())
+        if context
+            .artifact(vulnerability.artifact_id.as_str())?
+            .is_none()
         {
             return Err(invalid_record(
                 "component_vulnerabilities",
@@ -1767,7 +1820,7 @@ fn validate_store_records_in_context(
         }
         for affect in &vulnerability.affects {
             if let Some(occurrence_id) = &affect.component_occurrence_id {
-                if !context.component_ids.contains(occurrence_id.as_str()) {
+                if !context.component_exists(occurrence_id.as_str())? {
                     return Err(invalid_record(
                         "component_vulnerabilities",
                         format!("missing component {occurrence_id}"),
@@ -1780,9 +1833,9 @@ fn validate_store_records_in_context(
         composition
             .validate()
             .map_err(|error| invalid_record("bom_compositions", error))?;
-        if !context
-            .artifacts
-            .contains_key(composition.artifact_id.as_str())
+        if context
+            .artifact(composition.artifact_id.as_str())?
+            .is_none()
         {
             return Err(invalid_record(
                 "bom_compositions",
@@ -1824,7 +1877,7 @@ fn validate_store_records_in_context(
         }
         if let Some(source) = record.binding.source() {
             let artifact_id = source.artifact.artifact_id.as_str();
-            let manifest = context.artifacts.get(artifact_id).ok_or_else(|| {
+            let manifest = context.artifact(artifact_id)?.ok_or_else(|| {
                 invalid_record(
                     "resolved_identities",
                     format!("missing artifact {artifact_id}"),
@@ -1832,7 +1885,7 @@ fn validate_store_records_in_context(
             })?;
             source
                 .artifact
-                .verify(manifest)
+                .verify(&manifest)
                 .map_err(|error| invalid_record("resolved_identities", error))?;
         }
     }
@@ -1852,9 +1905,8 @@ fn validate_store_records_in_context(
             .map_err(|error| invalid_record("relation_edges", error))?;
         let expected = edge.proposition();
         if context
-            .propositions
-            .get(edge.proposition_id.as_str())
-            .copied()
+            .proposition(edge.proposition_id.as_str())?
+            .as_deref()
             != Some(&expected)
         {
             return Err(invalid_record(
@@ -1871,7 +1923,7 @@ fn validate_store_records_in_context(
             .validate()
             .map_err(|error| invalid_record("relation_claims", error))?;
         if let entmoot_contracts::SubjectId::RelationEdge { edge_id } = &claim.subject {
-            if let Some(edge) = context.relation_edges.get(edge_id.as_str()) {
+            if let Some(edge) = context.relation_edge(edge_id.as_str())? {
                 if !edge.accepts_claim_scope(&claim.scope) {
                     return Err(invalid_record(
                         "relation_claims",
@@ -2370,6 +2422,16 @@ fn insert_store_rows(
     transaction: &Transaction<'_>,
     store: &KnowledgeStore,
 ) -> Result<(usize, String), KnowledgeRepositoryError> {
+    let mut digest = store_digest_hasher();
+    let count = insert_store_chunk(transaction, store, &mut digest)?;
+    Ok((count, format!("blake3:{}", digest.finalize().to_hex())))
+}
+
+fn insert_store_chunk(
+    transaction: &Transaction<'_>,
+    store: &KnowledgeStore,
+    digest: &mut blake3::Hasher,
+) -> Result<usize, KnowledgeRepositoryError> {
     let mut statement = transaction.prepare_cached(
         "INSERT INTO scoped_records
          (view_id, collection, record_id, artifact_id, subject_id, object_id, proposition_id, predicate, location_id, payload)
@@ -2383,9 +2445,8 @@ fn insert_store_rows(
            location_id=excluded.location_id,
            payload=excluded.payload",
     )?;
-    let mut digest = store_digest_hasher();
     let count = for_each_store_row(store, |row| {
-        update_store_digest(&mut digest, &row);
+        update_store_digest(digest, &row);
         statement.execute(params![
             row.collection,
             row.record_id,
@@ -2399,7 +2460,7 @@ fn insert_store_rows(
         ])?;
         Ok(())
     })?;
-    Ok((count, format!("blake3:{}", digest.finalize().to_hex())))
+    Ok(count)
 }
 
 fn insert_rows_into_incoming(

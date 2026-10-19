@@ -388,7 +388,7 @@ pub enum RelationClaimValue {
         digest: ContentDigest,
     },
     Assessment {
-        observation: crate::AssessmentObservation,
+        observation: Box<crate::AssessmentObservation>,
     },
     ResolutionState {
         state: ResolutionState,
@@ -579,7 +579,7 @@ pub struct RelationClaim {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub contradicts: Vec<RelationClaimId>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub derivation: Option<DerivationRecord>,
+    pub derivation: Option<Box<DerivationRecord>>,
 }
 
 impl RelationClaim {
@@ -1505,5 +1505,11 @@ mod tests {
         let _ = ArtifactId::from_trusted(
             "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         );
+    }
+
+    #[test]
+    fn sparse_resolution_claims_do_not_reserve_assessment_and_derivation_payloads() {
+        assert!(std::mem::size_of::<RelationClaimValue>() <= 64);
+        assert!(std::mem::size_of::<RelationClaim>() <= 704);
     }
 }

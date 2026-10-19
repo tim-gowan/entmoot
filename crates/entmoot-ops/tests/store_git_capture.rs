@@ -4,7 +4,7 @@ mod tests {
     use entmoot_contracts::GitTreeCapture;
     use entmoot_ops::checkpoints::git::RetainedGitCapture;
     use entmoot_ops::*;
-    use std::collections::{BTreeMap, BTreeSet};
+    use std::collections::BTreeSet;
     #[test]
     fn captures_share_bytes_and_survive_collection_until_their_pinned_view_is_released() {
         let dir = tempfile::tempdir().unwrap();
@@ -24,6 +24,8 @@ mod tests {
             .unwrap();
         let bytes = b"retained raw nonstructural input".to_vec();
         let digest = entmoot_contracts::blake3_hex(&bytes);
+        let mut blobs = entmoot_ops::checkpoints::git::CapturedBlobs::new_in(dir.path()).unwrap();
+        blobs.insert(&digest, &bytes).unwrap();
         let capture = RetainedGitCapture {
             receipt: GitTreeCapture {
                 view: row.view.clone(),
@@ -38,7 +40,7 @@ mod tests {
                 }],
                 limitations: vec![],
             },
-            blobs: BTreeMap::from([(digest.clone(), bytes.clone())]),
+            blobs,
         };
         let mut db = SqliteKnowledgeRepository::open(&store).unwrap();
         let row = db.publish_git_capture(row, &capture, 1).unwrap();
@@ -64,7 +66,10 @@ mod tests {
         assert!(maintenance.collect(&remove).is_err());
         drop(maintenance);
         let mut db = SqliteKnowledgeRepository::open(&store).unwrap();
-        assert_eq!(db.git_capture(&id).unwrap().blobs[&digest], bytes);
+        assert_eq!(
+            db.git_capture(&id).unwrap().blobs.read(&digest).unwrap(),
+            bytes
+        );
         db.control_operation(job.id.as_str(), entmoot_contracts::OperationControl::Cancel)
             .unwrap();
         drop(db);

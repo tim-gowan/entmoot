@@ -1041,6 +1041,7 @@ dependencies = [
 name = "entmoot-native"
 version = "0.0.1-alpha.1"
 dependencies = [
+ "blake3",
  "cap-std",
  "entmoot-contracts",
  "entmoot-core",

@@ -84,14 +84,32 @@ fn state(root: &Path, scratch: &Path) -> Result<State, OperationError> {
     })
 }
 
-type CapturedFiles = (Vec<GitTreeFile>, BTreeMap<String, Vec<u8>>);
+type CapturedFiles = (
+    Vec<GitTreeFile>,
+    entmoot_store::checkpoints::git::CapturedBlobs,
+);
 
 fn files(
     root: &Path,
     state: &State,
     max_files: usize,
     max_bytes: u64,
+    scratch: &Path,
 ) -> Result<CapturedFiles, OperationError> {
+    let mut blobs = entmoot_store::checkpoints::git::CapturedBlobs::new_in(scratch)?;
+    let manifest = observe_files(root, state, max_files, max_bytes, |digest, bytes| {
+        blobs.insert(&digest, &bytes)
+    })?;
+    Ok((manifest, blobs))
+}
+
+fn observe_files(
+    root: &Path,
+    state: &State,
+    max_files: usize,
+    max_bytes: u64,
+    mut accept: impl FnMut(String, Vec<u8>) -> Result<(), OperationError>,
+) -> Result<Vec<GitTreeFile>, OperationError> {
     if state
         .flags
         .split(|b| *b == 0)
@@ -132,7 +150,6 @@ fn files(
         ));
     }
     let mut files = Vec::new();
-    let mut blobs = BTreeMap::new();
     let mut remaining = max_bytes;
     for (path, mut mode) in paths {
         if !valid_path(&path) {
@@ -210,9 +227,9 @@ fn files(
             mode,
             content_digest: ContentDigest::from_trusted(digest.clone()),
         });
-        blobs.insert(digest, bytes);
+        accept(digest, bytes)?;
     }
-    Ok((files, blobs))
+    Ok(files)
 }
 
 /// Freeze raw files only after source, index, HEAD, path-set and byte rechecks.
@@ -264,10 +281,10 @@ pub fn capture_workspace(
             "Git parent differs from structural source observation".into(),
         ));
     }
-    let (manifest, blobs) = files(&root, &before, max_files, max_bytes)?;
+    let (manifest, blobs) = files(&root, &before, max_files, max_bytes, &scratch)?;
     let after = state(&root, &scratch)?;
     if before != after
-        || manifest != files(&root, &after, max_files, max_bytes)?.0
+        || manifest != observe_files(&root, &after, max_files, max_bytes, |_, _| Ok(()))?
         || after != state(&root, &scratch)?
     {
         return Err(OperationError::Conflict(
@@ -299,10 +316,7 @@ pub(super) fn materialize(
             quoted.push_str(&format!("\\{b:03o}"));
         }
         quoted.push('"');
-        let bytes = capture
-            .blobs
-            .get(file.content_digest.as_str())
-            .ok_or_else(|| invalid("missing captured bytes"))?;
+        let bytes = capture.blobs.read(file.content_digest.as_str())?;
         writeln!(
             input,
             "M {} inline {quoted}\ndata {}",
@@ -310,7 +324,7 @@ pub(super) fn materialize(
             bytes.len()
         )
         .map_err(invalid)?;
-        input.write_all(bytes).map_err(invalid)?;
+        input.write_all(&bytes).map_err(invalid)?;
         writeln!(input).map_err(invalid)?;
     }
     writeln!(input, "\ndone").map_err(invalid)?;

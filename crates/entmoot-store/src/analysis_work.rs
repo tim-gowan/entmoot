@@ -19,6 +19,8 @@ pub enum AnalysisWorkError {
     Sqlite(#[from] rusqlite::Error),
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 impl AnalysisWorkError {
@@ -27,7 +29,7 @@ impl AnalysisWorkError {
         match self {
             Self::Invalid(_) => "invalid_input",
             Self::Conflict(_) => "conflict",
-            Self::Sqlite(_) | Self::Json(_) => "storage_error",
+            Self::Sqlite(_) | Self::Json(_) | Self::Io(_) => "storage_error",
         }
     }
 }
@@ -282,15 +284,19 @@ pub struct SqliteAnalysisWorkQueue {
 
 impl SqliteAnalysisWorkQueue {
     pub fn open(path: &Path) -> Result<Self, AnalysisWorkError> {
-        Self::from_connection(Connection::open(crate::sqlite_startup::file_path(path))?)
+        let sqlite_path = crate::sqlite_startup::file_path(path);
+        // Join the repository's gate before SQLite opens or initializes WAL.
+        // Retrying after the protocol race does not release stranded peers.
+        let _initialization = crate::storage_lease::initialization(&sqlite_path)?;
+        Self::from_connection(Connection::open(sqlite_path)?)
     }
 
     /// Read existing work without initializing or modifying a queue.
     pub fn open_read_only(path: &Path) -> Result<Self, AnalysisWorkError> {
-        let connection = Connection::open_with_flags(
-            crate::sqlite_startup::file_path(path),
-            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
-        )?;
+        let sqlite_path = crate::sqlite_startup::file_path(path);
+        let _initialization = crate::storage_lease::initialization_read_only(&sqlite_path)?;
+        let connection =
+            Connection::open_with_flags(sqlite_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         connection.busy_timeout(std::time::Duration::from_secs(5))?;
         connection.prepare("SELECT work_id FROM analysis_work_items LIMIT 0")?;
         Ok(Self { connection })

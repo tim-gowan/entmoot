@@ -29,6 +29,7 @@ resolved-oxc = ["dep:oxc"]
 
 
 [dependencies]
+blake3 = "1.8.2"
 entmoot-contracts = { version = "=0.0.1-alpha.1", path = "../entmoot-contracts" }
 entmoot-core = { version = "=0.0.1-alpha.1", path = "../entmoot-core" }
 entmoot-store = { version = "=0.0.1-alpha.1", path = "../entmoot-store" }

@@ -560,6 +560,19 @@ impl<'a> RevalidationPlan<'a> {
     pub fn is_empty(&self) -> bool {
         self.units.is_empty()
     }
+    /// Count selected semantic records before cloning policy evidence. Input
+    /// roots are not included, matching the cumulative execution allowance.
+    pub fn record_count(&self, index: usize) -> Result<usize, RevalidationError> {
+        let policy = self.units.get(index).ok_or_else(|| {
+            RevalidationError::Invalid("revalidation ordinal out of range".into())
+        })?;
+        Ok(
+            KnowledgeStore::artifact_evidence_record_count(self.base, &policy.artifact.artifact_id)
+                .saturating_add(policy.fresh.as_ref().map_or(0, |(artifact, _, _, _)| {
+                    KnowledgeStore::artifact_evidence_record_count(self.head, &artifact.artifact_id)
+                })),
+        )
+    }
     pub fn prepare(&self, index: usize) -> Result<PreparedRevalidation<'_>, RevalidationError> {
         let policy = self.units.get(index).ok_or_else(|| {
             RevalidationError::Invalid("revalidation ordinal out of range".into())
@@ -706,14 +719,14 @@ pub fn revalidate_transition(
     let mut count = 0usize;
     let mut units = Vec::new();
     for index in 0..plan.len() {
-        let prepared = plan.prepare(index)?;
-        count = count.saturating_add(prepared.record_count());
+        count = count.saturating_add(plan.record_count(index)?);
         if count > request.max_records {
             return Err(RevalidationError::BudgetExceeded {
                 required: count,
                 limit: request.max_records,
             });
         }
+        let prepared = plan.prepare(index)?;
         units.push(prepared.apply(repository)?);
     }
     Ok(plan.receipt(units))

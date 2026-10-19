@@ -229,7 +229,7 @@ pub fn run(
                 .tempdir_in(&parent)
                 .map_err(invalid)?;
             let graph_path = scratch.path().join("graph.json");
-            fs::write(&graph_path, serde_json::to_vec(&graph)?).map_err(invalid)?;
+            crate::write_graph_json(&graph, &graph_path).map_err(invalid)?;
             let native = crate::NativeProduceRequest {
                 canon: false,
                 graph_path,

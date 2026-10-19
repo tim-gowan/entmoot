@@ -489,6 +489,7 @@ fn hash_tree(root: &Path, path: &Path, hasher: &mut blake3::Hasher) -> Result<()
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::KnowledgeStore;
 
     fn publish(root: &Path, value: usize) -> WorkspaceSummary {
         fs::write(

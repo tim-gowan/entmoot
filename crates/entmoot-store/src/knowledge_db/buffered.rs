@@ -85,12 +85,12 @@ pub(super) fn publish(
         ));
     }
 
-    // Pull all batches first so publication identity can be compared without a
-    // write transaction when nothing changed (ADR-0017 buffer limits still apply).
-    let mut collected = Vec::new();
+    // Private staging releases typed batches before cross-batch validation.
+    // The durable database is untouched until the complete publication is valid.
+    let staged = super::buffered_stage::StagedBatches::new(connection)?;
     let mut receipt = BufferedPublicationReceipt::default();
-    // Keep content commitments, not a second serialized copy of every payload.
-    // Typed batches retain the complete cross-batch validation context.
+    // Commitments retain publication identity; disk-backed context supplies
+    // forward references without keeping the complete typed publication alive.
     let mut union_rows: BTreeMap<KnowledgeRecordRef, String> = BTreeMap::new();
     let mut union_deps: BTreeMap<KnowledgeRecordRef, BTreeSet<KnowledgeRecordRef>> =
         BTreeMap::new();
@@ -151,15 +151,13 @@ pub(super) fn publish(
         receipt.batches += 1;
         receipt.peak_batch_records = receipt.peak_batch_records.max(count);
         receipt.peak_batch_bytes = receipt.peak_batch_bytes.max(bytes);
-        collected.push(batch);
+        staged.push(&batch.store, &rows)?;
     }
 
     // Batch boundaries have no semantic meaning. Validate references against
     // this publication before either the no-change shortcut or durable writes.
-    let context = StoreValidationContext::new(collected.iter().map(|batch| &batch.store));
-    for batch in &collected {
-        validate_store_records_in_context(&batch.store, &context)?;
-    }
+    staged.finish()?;
+    staged.visit(|store| validate_store_records_in_context(&store, &staged))?;
 
     let digest = owner_publication_digest_from_commitments(
         owner,
@@ -183,14 +181,13 @@ pub(super) fn publish(
         ) WITHOUT ROWID; DELETE FROM staged_owner_records;",
     )?;
     prepare_visibility_queue(&transaction)?;
-    for batch in &collected {
+    staged.visit(|store| {
         let mut rows: BTreeMap<KnowledgeRecordRef, StoredRow> = BTreeMap::new();
-        for_each_store_row(&batch.store, |row| {
+        for_each_store_row(&store, |row| {
             let record = KnowledgeRecordRef::new(row.collection, row.record_id.clone());
             rows.insert(record, row);
             Ok(())
         })?;
-        let dependencies = validate_dependency_batch(&rows, &batch.dependencies)?;
         for (record, row) in &rows {
             let prior = transaction
                 .query_row(
@@ -209,7 +206,7 @@ pub(super) fn publish(
                 receipt.publication.inserted_records += 1;
             }
             let empty = BTreeSet::new();
-            let inputs = dependencies.get(record).unwrap_or(&empty);
+            let inputs = union_deps.get(record).unwrap_or(&empty);
             let dep_digest = dependency_set_digest(inputs);
             let prior = transaction.query_row("SELECT dependency_set_digest FROM knowledge_record_dependency_sets WHERE collection=?1 AND record_id=?2",
                 params![record.collection, record.record_id], |r| r.get::<_, String>(0)).optional()?;
@@ -236,7 +233,8 @@ pub(super) fn publish(
                 params![record.collection, record.record_id],
             )?;
         }
-    }
+        Ok(())
+    })?;
     // Validate the complete universe after all batches, including forward references.
     let missing = transaction.query_row("SELECT d.input_collection, d.input_record_id
         FROM staged_owner_records s JOIN knowledge_record_dependencies d USING(collection,record_id)

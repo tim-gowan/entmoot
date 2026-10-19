@@ -454,7 +454,7 @@ impl QueryEngine {
             Some(graph) => graph,
             None => repository
                 .load()?
-                .apply_to_inventory(crate::knowledge::inventory_skeleton(&self.graph)),
+                .into_inventory(crate::knowledge::inventory_skeleton(&self.graph)),
         };
         if graph.snapshot != self.graph.snapshot || graph.policy_ids != self.graph.policy_ids {
             return Err(QueryError::InvalidInput(

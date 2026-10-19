@@ -46,8 +46,8 @@ impl SyntaxPart {
         }
         let (graph, _) = extractor.finish_syntax();
         Ok(Self {
-            nodes: graph.nodes,
-            edges: graph.edges,
+            nodes: graph.nodes.into_inner(),
+            edges: graph.edges.into_inner(),
             policies: graph.policy_ids,
         })
     }

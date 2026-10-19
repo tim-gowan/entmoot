@@ -355,6 +355,19 @@ impl SqliteKnowledgeRepository {
         Ok((cursor, outcomes))
     }
 
+    /// Visit verified canon outcomes in one pinned read, without retaining all shards.
+    pub fn visit_completed_canon(
+        &self,
+        id: &str,
+        visit: impl FnMut(CanonFileOutcome) -> Result<(), OperationError>,
+    ) -> Result<CanonCursor, OperationError> {
+        let metadata = self.visit_completed_files(id, visit)?;
+        let FileProgress::Canon(cursor) = metadata else {
+            return Err(invalid("checkpoint is not canon"));
+        };
+        Ok(cursor)
+    }
+
     /// Publication preparation consumes commitments and gaps, keeping parser IR
     /// in its durable per-file checkpoint instead of rehydrating it all at once.
     pub fn completed_inventory_metadata(
@@ -396,6 +409,19 @@ impl SqliteKnowledgeRepository {
         id: &str,
         mut project: impl FnMut(T) -> U,
     ) -> Result<(FileProgress, Vec<U>), OperationError> {
+        let mut outcomes = Vec::new();
+        let metadata = self.visit_completed_files(id, |outcome| {
+            outcomes.push(project(outcome));
+            Ok(())
+        })?;
+        Ok((metadata, outcomes))
+    }
+
+    fn visit_completed_files<T: FileOutcome>(
+        &self,
+        id: &str,
+        mut visit: impl FnMut(T) -> Result<(), OperationError>,
+    ) -> Result<FileProgress, OperationError> {
         let tx = self.connection.unchecked_transaction()?;
         require_complete_if_present(&tx, id)?;
         let (metadata, total): (i64, i64) = tx.query_row(
@@ -416,18 +442,19 @@ impl SqliteKnowledgeRepository {
                 r.get::<_, i64>(2)?,
             ))
         })?;
-        let mut outcomes = Vec::new();
+        let mut count = 0;
         for row in rows {
             let (path, digest, payload) = row?;
             let outcome: T = hydrate_record(&tx, payload)?;
             if outcome.input().path != path || outcome.input().content_digest != digest {
                 return Err(invalid("file checkpoint membership mismatch"));
             }
-            outcomes.push(project(outcome));
+            visit(outcome)?;
+            count += 1;
         }
-        if outcomes.len() != total {
+        if count != total {
             return Err(invalid("file checkpoint is missing manifest members"));
         }
-        Ok((metadata, outcomes))
+        Ok(metadata)
     }
 }

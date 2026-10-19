@@ -14,7 +14,7 @@ use entmoot_contracts::{
 use serde_json::{json, Value};
 
 use super::{bounded_limit, QueryEngine, QueryError, ResultBounds, QUERY_RESULT_SCHEMA};
-use crate::{compare_revision_impact, NodeKind};
+use crate::{compare_revision_changes, NodeKind};
 
 const DEFAULT_MIN_FAN_DEGREE: usize = 8;
 
@@ -777,7 +777,7 @@ impl QueryEngine {
         let head = self
             .complete_graph()
             .map_err(|error| format!("compare_failed:{error}"))?;
-        let impact = compare_revision_impact(compare, &head)
+        let impact = compare_revision_changes(compare, &head)
             .map_err(|error| format!("compare_failed:{error}"))?;
         let path = normalize_path(path.map(str::to_owned));
         let mut ids = Vec::new();

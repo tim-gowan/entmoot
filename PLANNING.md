@@ -53,8 +53,8 @@ to 195MB and publisher-preparation peak from 841MB to 411MB. Node slots are
 440 bytes. Current ordinary/staged graph digests agree at all four frame sizes;
 inventory and extracted record counts also match baseline. This is an allocation
 diagnostic with temporary-file I/O, not latency qualification or a strict RSS cap.
-Remove the remaining publication-wide typed batch retention while preserving
-validation, collisions, atomicity, no-change results and recovery. Smaller repeated
+Publication now stages bounded serialized batches and validation context on disk;
+graph-backed emission avoids a second complete knowledge projection. Smaller repeated
 graph-build residual growth remains unattributed; isolated source-observation and
 scan controls did not reproduce sustained growth. The current 20-cycle 128-file
 repeat still grows by 0.33MB between its first and twentieth released cycles after
@@ -62,59 +62,48 @@ a 200ms grace period, usually in 17,504-byte steps; this smaller issue is not fi
 by the representation changes. These allocation probes do not
 qualify latency or account for all native allocations in the failed initial run.
 
-### Remaining operation memory audit
+### Remaining operation memory qualification
 
 The [2026-10-18 schema/consumer audit](evals/experiments/operation-schema-memory-2026-10-18.json)
-at `6ebaf50` records 13 opportunities and 33 compiled inline type sizes. Apart
-from the earlier publisher diagnostic, priorities below follow source ownership
-and simultaneous lifetimes; their savings and operation peaks are unmeasured.
-Output/record limits and worker counts do not establish an RSS bound.
+at `6ebaf50` records 13 opportunities and 33 compiled inline type sizes. The
+operation fixes now consume loaded knowledge, stage publication context, share
+unchanged syntax during rollback, release native payloads within workers, stage
+Git blobs, narrow impact consumers and stream canon assembly, hashes and output.
+Revalidation counts selected records before cloning policy evidence. These changes
+preserve source fences, complete validation, atomicity and unknown outcomes.
+The [operation comparison](evals/experiments/memory-operations-2026-10-18.json)
+reduces the frozen 512-file publisher-preparation peak from 411MB to 238MB;
+full validation/publication reaches 239MB. Relation claims now occupy 648 rather
+than 960 inline bytes. The structural rollback-sharing control adds 38.5MB of
+live allocations while sharing syntax buffers/indexes; artifact-heavy attachment
+and syntax mutation costs remain unmeasured. These are Rust allocation diagnostics,
+not release latency or process RSS bounds.
 
-- **Reload and publication:** consume loaded knowledge when projecting it into
-  a graph; avoid hydrating syntax that is immediately discarded and reattached.
-  Remove publication-wide typed batch retention through the existing staging
-  owner, with complete cross-batch validation before atomic publication.
-- **Artifact attachment and native binding:** replace whole-graph rollback clones
-  with a validated staged delta. Native results should return receipts/paths and
-  requested canon facts instead of retaining raw and normalized payloads across
-  all completed families. Stream artifact/helper graph writes and hashes through
-  existing atomic output owners; keep provider execution and attachment ordered.
-- **Git capture/integration:** separate manifest-only source reobservation from
-  byte collection. The second verification currently collects another complete
-  blob map while the first is retained. Stage/read blobs and large packs through
-  existing source/checkpoint owners, preserving final source/index/HEAD checks,
-  raw bytes, deterministic restart and the publication CAS.
-- **Impact, conflicts, changed subjects and test selection:** derive only the
-  required paths/occurrences/bindings and limitations at the shared impact owner.
-  Reuse frozen base/left deltas across peers and borrow binding groups. Current
-  consumers construct complete manifests/views for much narrower questions.
-  Compact changed-subject cursor hashing also allocates the serialized comparison
-  graph; streaming the same tuple can preserve its digest without that buffer.
-- **Revalidation:** load selected artifact/support records from pinned views and
-  preflight compact counts before preparing full policy evidence. Preserve
-  independent/derived support, applicability transitions and exact membership;
-  the current record allowance is checked after materialization.
-- **Canon/clones and source reads:** retain existing file shards, compact group
-  ranking and cumulative limits. Stream final canon assembly instead of hydrating
-  all outcomes; admit work before oversized term construction. Clone reads can
-  use verified pattern/fingerprint projections without loading every term.
-  Source reads need no all-lines vector; bounded excerpts still require complete
-  digest and encoding verification, including bytes outside the requested range.
-- **Compact layouts/indexes after occupancy measurement:** relation claims occupy
-  960 inline bytes, including a 184-byte value slot and a 168-byte optional
-  derivation slot; resolver targets occupy 504 bytes. Benchmark sparse payload
-  boxing and generation-local interning/dense postings with allocation counts
-  and lookup costs. Reuse existing dense adjacency; retain distinct occurrence,
-  evidence and scope identities and checked cardinality conversions.
+Remaining costs require representative operation measurements before further
+representation or concurrency changes:
 
-First apply small changes that preserve bytes and digests, then reduce whole-view and
-publication lifetimes before raising concurrency. Measure preparation,
-validation, publication, reload and recovery separately on frozen representative
-inputs. Existing SQLite payload/metadata/source sharing, bounded continuations,
-paginated operation outputs and file-backed test diagnostics are useful owners
-to preserve. Whole operation-control JSON rewrites are a lower priority until
-profiles show them dominating. Monorepo latency remains unqualified; no new
-scheduler or storage protocol is proposed, and validation/retention remain required.
+- Artifact rollback still clones evidence collections; resource edits detach the
+  shared syntax buffers. Measure this before replacing the validated candidate
+  with an artifact delta. Normalization still hydrates one complete artifact.
+- Revalidation and comparisons still hydrate complete graph views. Qualify pinned
+  artifact/support read projections without losing independent/derived support,
+  applicability, exact membership or uncertainty from unselected evidence.
+- Canon bounds encoded file shards after term construction; clone reads hydrate
+  a complete bounded shard. Measure term peaks and a verified fingerprint-only
+  read projection while preserving candidate semantics and cumulative limits.
+- Git integration packs remain materialized. Qualify file-backed pack transport
+  separately from the now staged capture blobs, including restart and final CAS.
+- Measure native target occupancy and query index ownership before boxing more
+  payloads or adopting generation-local interning/dense postings. Allocating a
+  box for a mostly populated field can increase total memory. Keep occurrence,
+  evidence and scope distinctions and checked cardinality conversions.
+
+Measure preparation, validation, publication, reload and recovery separately.
+The complete graph and compact publication identity/dependency maps still grow
+with repository size; record limits and worker counts do not bound process RSS.
+Operation-control JSON rewrites remain lower priority until profiles show them
+dominating. Monorepo and warm-refresh latency remain unqualified; no new scheduler
+or durable storage protocol is proposed.
 
 ## Current qualification blockers
 

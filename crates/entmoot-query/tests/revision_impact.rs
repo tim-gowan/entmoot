@@ -42,8 +42,38 @@ mod tests {
         graph.snapshot_files = vec![SnapshotFileDigest {
             path: "app.py".into(),
             content_digest: format!("blake3:{}", revision.to_string().repeat(64)),
-        }];
+        }]
+        .into();
         graph
+    }
+
+    #[test]
+    fn change_inventory_keeps_body_boundary_and_unknown_evidence_without_cold_details() {
+        let base = graph("def entmoot_delta(value):\n    return value\n", 'a');
+        let head = graph(
+            "def entmoot_delta(value, extra=0):\n    return value + 1\n",
+            'b',
+        );
+        let changes = compare_revision_changes(&base, &head).unwrap();
+        assert_eq!(changes.files.len(), 1);
+        assert_eq!(changes.files[0].path, "app.py");
+        assert_eq!(changes.callables.len(), 1);
+        assert_eq!(
+            changes.callables[0].kind,
+            CallableImpactKind::BodyAndBoundaryChanged
+        );
+        assert!(changes
+            .gaps
+            .iter()
+            .any(|gap| gap == "resolved_identity_evidence_missing_on_one_or_both_snapshots"));
+        let complete = compare_revision_impact(&base, &head).unwrap();
+        assert_eq!(changes.files, complete.files);
+        assert_eq!(changes.callables, complete.callables);
+        assert_eq!(changes.gaps, complete.gaps);
+        assert_eq!(
+            changes.signal_limitations,
+            complete.breaking_change_signals.limitations
+        );
     }
 
     #[test]

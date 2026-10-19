@@ -112,70 +112,17 @@ pub struct KnowledgeStore {
 impl KnowledgeStore {
     /// Extract durable knowledge + exact edges from a materialized topology view.
     pub fn extract_from_graph(graph: &TopologyGraph) -> Self {
-        let digests: BTreeMap<_, _> = graph
+        let digests = graph
             .snapshot_files
             .iter()
             .map(|f| (f.path.as_str(), &f.content_digest))
             .collect();
-        let mut call_sites: Vec<_> = graph
-            .nodes
-            .iter()
-            .filter_map(|node| {
-                let path = node.path.as_deref()?;
-                let marker = node.call_site.as_deref()?.clone();
-                let mut site = entmoot_contracts::CallSiteRecord {
-                    site_id: String::new(),
-                    snapshot: graph.snapshot.clone(),
-                    path: path.to_owned(),
-                    content_digest: entmoot_contracts::ContentDigest::from_trusted(
-                        (*digests.get(path)?).clone(),
-                    ),
-                    marker,
-                };
-                site.site_id = site.derive_id();
-                Some(site)
-            })
-            .collect();
-        call_sites.sort_by(|a, b| a.site_id.cmp(&b.site_id));
-        let mut declaration_sites: Vec<_> = graph
-            .nodes
-            .iter()
-            .filter_map(|node| {
-                let marker = node.declaration.as_deref()?.clone();
-                let path = node.path.as_deref()?;
-                let mut site = entmoot_contracts::DeclarationSiteRecord {
-                    site_id: String::new(),
-                    snapshot: graph.snapshot.clone(),
-                    path: path.to_owned(),
-                    content_digest: entmoot_contracts::ContentDigest::from_trusted(
-                        (*digests.get(path)?).clone(),
-                    ),
-                    marker,
-                };
-                site.site_id = site.derive_id();
-                Some(site)
-            })
-            .collect();
-        declaration_sites.sort_by(|a, b| a.site_id.cmp(&b.site_id));
-        let mut code_contracts: Vec<_> = graph
-            .nodes
-            .iter()
-            .filter_map(|node| {
-                let path = node.path.as_deref()?;
-                let mut record = entmoot_contracts::CodeContractRecord {
-                    record_id: String::new(),
-                    snapshot: graph.snapshot.clone(),
-                    path: path.into(),
-                    content_digest: entmoot_contracts::ContentDigest::from_trusted(
-                        (*digests.get(path)?).clone(),
-                    ),
-                    contract: node.code_contract.as_deref()?.clone(),
-                };
-                record.record_id = record.derive_id();
-                Some(record)
-            })
-            .collect();
-        code_contracts.sort_by(|a, b| a.record_id.cmp(&b.record_id));
+        let Self {
+            call_sites,
+            declaration_sites,
+            code_contracts,
+            ..
+        } = Self::syntax_from_nodes(graph, &graph.nodes, &digests);
         let propositions = graph
             .relation_edges
             .iter()
@@ -211,7 +158,78 @@ impl KnowledgeStore {
             relation_claims: graph.relation_claims.clone(),
             unresolved_relations: graph.unresolved_relations.clone(),
             diagnostics: graph.diagnostics.clone(),
-            structural_edges: graph.edges.clone(),
+            structural_edges: graph.edges.to_vec(),
+        }
+    }
+
+    /// Project only the requested syntax nodes using the snapshot's complete
+    /// path/digest index. Chunking does not change occurrence or record identity.
+    pub fn syntax_from_nodes(
+        graph: &TopologyGraph,
+        nodes: &[crate::TopologyNode],
+        digests: &BTreeMap<&str, &String>,
+    ) -> Self {
+        let mut call_sites: Vec<_> = nodes
+            .iter()
+            .filter_map(|node| {
+                let path = node.path.as_deref()?;
+                let marker = node.call_site.as_deref()?.clone();
+                let mut site = entmoot_contracts::CallSiteRecord {
+                    site_id: String::new(),
+                    snapshot: graph.snapshot.clone(),
+                    path: path.to_owned(),
+                    content_digest: entmoot_contracts::ContentDigest::from_trusted(
+                        (*digests.get(path)?).clone(),
+                    ),
+                    marker,
+                };
+                site.site_id = site.derive_id();
+                Some(site)
+            })
+            .collect();
+        call_sites.sort_by(|a, b| a.site_id.cmp(&b.site_id));
+        let mut declaration_sites: Vec<_> = nodes
+            .iter()
+            .filter_map(|node| {
+                let marker = node.declaration.as_deref()?.clone();
+                let path = node.path.as_deref()?;
+                let mut site = entmoot_contracts::DeclarationSiteRecord {
+                    site_id: String::new(),
+                    snapshot: graph.snapshot.clone(),
+                    path: path.to_owned(),
+                    content_digest: entmoot_contracts::ContentDigest::from_trusted(
+                        (*digests.get(path)?).clone(),
+                    ),
+                    marker,
+                };
+                site.site_id = site.derive_id();
+                Some(site)
+            })
+            .collect();
+        declaration_sites.sort_by(|a, b| a.site_id.cmp(&b.site_id));
+        let mut code_contracts: Vec<_> = nodes
+            .iter()
+            .filter_map(|node| {
+                let path = node.path.as_deref()?;
+                let mut record = entmoot_contracts::CodeContractRecord {
+                    record_id: String::new(),
+                    snapshot: graph.snapshot.clone(),
+                    path: path.into(),
+                    content_digest: entmoot_contracts::ContentDigest::from_trusted(
+                        (*digests.get(path)?).clone(),
+                    ),
+                    contract: node.code_contract.as_deref()?.clone(),
+                };
+                record.record_id = record.derive_id();
+                Some(record)
+            })
+            .collect();
+        code_contracts.sort_by(|a, b| a.record_id.cmp(&b.record_id));
+        Self {
+            code_contracts,
+            declaration_sites,
+            call_sites,
+            ..Default::default()
         }
     }
 
@@ -219,7 +237,44 @@ impl KnowledgeStore {
     ///
     /// Replaces evidence collections and exact edges. Display-only fields on nodes are left
     /// as provided by the inventory builder.
-    pub fn apply_to_inventory(&self, mut inventory: TopologyGraph) -> TopologyGraph {
+    pub fn apply_to_inventory(&self, inventory: TopologyGraph) -> TopologyGraph {
+        let inventory = self.project_syntax(inventory);
+        Self {
+            input_roots: self.input_roots.clone(),
+            artifacts: self.artifacts.clone(),
+            capabilities: self.capabilities.clone(),
+            findings: self.findings.clone(),
+            resources: self.resources.clone(),
+            components: self.components.clone(),
+            component_dependencies: self.component_dependencies.clone(),
+            component_vulnerabilities: self.component_vulnerabilities.clone(),
+            bom_compositions: self.bom_compositions.clone(),
+            locations: self.locations.clone(),
+            traces: self.traces.clone(),
+            trace_steps: self.trace_steps.clone(),
+            attachments: self.attachments.clone(),
+            assertions: self.assertions.clone(),
+            resolutions: self.resolutions.clone(),
+            resolver_coverages: self.resolver_coverages.clone(),
+            resolved_identities: self.resolved_identities.clone(),
+            relation_edges: self.relation_edges.clone(),
+            relation_claims: self.relation_claims.clone(),
+            unresolved_relations: self.unresolved_relations.clone(),
+            diagnostics: self.diagnostics.clone(),
+            structural_edges: self.structural_edges.clone(),
+            ..Default::default()
+        }
+        .attach_collections(inventory)
+    }
+
+    /// Consume verified knowledge into a disposable inventory without cloning
+    /// the evidence collections. Snapshot-qualified syntax is reattached below.
+    pub fn into_inventory(self, inventory: TopologyGraph) -> TopologyGraph {
+        let inventory = self.project_syntax(inventory);
+        self.attach_collections(inventory)
+    }
+
+    fn project_syntax(&self, mut inventory: TopologyGraph) -> TopologyGraph {
         // A disposable projection cannot restore inactive observations. Rehydrate
         // syntax only from visible, snapshot-matched source-of-record rows below.
         for node in &mut inventory.nodes {
@@ -340,28 +395,35 @@ impl KnowledgeStore {
                 }
             }
         }
-        inventory.input_roots = self.input_roots.clone();
-        inventory.artifacts = self.artifacts.clone();
-        inventory.capabilities = self.capabilities.clone();
-        inventory.findings = self.findings.clone();
-        inventory.resources = self.resources.clone();
-        inventory.components = self.components.clone();
-        inventory.component_dependencies = self.component_dependencies.clone();
-        inventory.component_vulnerabilities = self.component_vulnerabilities.clone();
-        inventory.bom_compositions = self.bom_compositions.clone();
-        inventory.locations = self.locations.clone();
-        inventory.traces = self.traces.clone();
-        inventory.trace_steps = self.trace_steps.clone();
-        inventory.attachments = self.attachments.clone();
-        inventory.assertions = self.assertions.clone();
-        inventory.resolutions = self.resolutions.clone();
-        inventory.resolver_coverages = self.resolver_coverages.clone();
-        inventory.resolved_identities = self.resolved_identities.clone();
-        inventory.relation_edges = self.relation_edges.clone();
-        inventory.relation_claims = self.relation_claims.clone();
-        inventory.unresolved_relations = self.unresolved_relations.clone();
-        inventory.diagnostics = self.diagnostics.clone();
-        inventory.edges = self.structural_edges.clone();
+        inventory
+    }
+
+    fn attach_collections(self, mut inventory: TopologyGraph) -> TopologyGraph {
+        drop(self.code_contracts);
+        drop(self.declaration_sites);
+        drop(self.call_sites);
+        inventory.input_roots = self.input_roots;
+        inventory.artifacts = self.artifacts;
+        inventory.capabilities = self.capabilities;
+        inventory.findings = self.findings;
+        inventory.resources = self.resources;
+        inventory.components = self.components;
+        inventory.component_dependencies = self.component_dependencies;
+        inventory.component_vulnerabilities = self.component_vulnerabilities;
+        inventory.bom_compositions = self.bom_compositions;
+        inventory.locations = self.locations;
+        inventory.traces = self.traces;
+        inventory.trace_steps = self.trace_steps;
+        inventory.attachments = self.attachments;
+        inventory.assertions = self.assertions;
+        inventory.resolutions = self.resolutions;
+        inventory.resolver_coverages = self.resolver_coverages;
+        inventory.resolved_identities = self.resolved_identities;
+        inventory.relation_edges = self.relation_edges;
+        inventory.relation_claims = self.relation_claims;
+        inventory.unresolved_relations = self.unresolved_relations;
+        inventory.diagnostics = self.diagnostics;
+        inventory.edges = self.structural_edges.into();
         // SQLite reads and first ingestion can supply different row orders.
         // Canonicalize Resolver collections before publishing the projection;
         // otherwise an idempotent attach changes its byte digest on replay.
@@ -531,15 +593,16 @@ mod tests {
                 subject: None,
                 subject_aliases: Vec::new(),
             },
-            snapshot_files: vec![],
+            snapshot_files: vec![].into(),
             policy_ids: vec![],
             nodes: vec![TopologyNode::shell(
                 "n1",
                 NodeKind::File,
                 "a.py",
                 Some("root".into()),
-            )],
-            edges: vec![StructuralEdge::structural("root", "n1", EdgeKind::Contains)],
+            )]
+            .into(),
+            edges: vec![StructuralEdge::structural("root", "n1", EdgeKind::Contains)].into(),
             artifacts: vec![],
             capabilities: vec![],
             findings: vec![],

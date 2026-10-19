@@ -53,24 +53,33 @@ pub(super) fn load(
     let tx = connection.unchecked_transaction()?;
     let receipt = receipt(&tx, id)?;
     let mut statement = tx.prepare("SELECT f.digest,f.bytes FROM local_git_files c JOIN shared_source_files f ON f.file_id=c.file_id WHERE c.capture_id=?1 ORDER BY c.ordinal")?;
-    let rows = statement
-        .query_map([id], |r| {
-            Ok((r.get::<_, String>(0)?, r.get::<_, Vec<u8>>(1)?))
-        })?
-        .collect::<Result<Vec<_>, _>>()?;
-    if rows.len() != receipt.files.len() {
+    let parent = connection
+        .path()
+        .filter(|path| !path.is_empty())
+        .and_then(|path| Path::new(path).parent())
+        .filter(|path| !path.as_os_str().is_empty());
+    let mut blobs = match parent {
+        Some(parent) => crate::checkpoints::git::CapturedBlobs::new_in(parent)?,
+        None => crate::checkpoints::git::CapturedBlobs::temporary()?,
+    };
+    let mut rows = statement.query([id])?;
+    let mut count = 0;
+    while let Some(row) = rows.next()? {
+        let file = receipt.files.get(count).ok_or_else(|| {
+            OperationError::Unavailable("Git capture member count differs".into())
+        })?;
+        let digest: String = row.get(0)?;
+        let bytes: Vec<u8> = row.get(1)?;
+        if digest != file.content_digest.as_str() {
+            return Err(OperationError::Invalid("Git capture bytes mismatch".into()));
+        }
+        blobs.insert(&digest, &bytes)?;
+        count += 1;
+    }
+    if count != receipt.files.len() {
         return Err(OperationError::Unavailable(
             "Git capture member count differs".into(),
         ));
-    }
-    let mut blobs = std::collections::BTreeMap::new();
-    for (file, row) in receipt.files.iter().zip(rows) {
-        let (digest, bytes) = row;
-        if digest != file.content_digest.as_str() || entmoot_contracts::blake3_hex(&bytes) != digest
-        {
-            return Err(OperationError::Invalid("Git capture bytes mismatch".into()));
-        }
-        blobs.insert(digest, bytes);
     }
     let captured = RetainedGitCapture { receipt, blobs };
     captured.validate()?;
@@ -112,14 +121,11 @@ impl SqliteKnowledgeRepository {
             params![id, publication.view.as_str(), payload],
         )?;
         for (ordinal, file) in captured.receipt.files.iter().enumerate() {
-            let bytes = captured
-                .blobs
-                .get(file.content_digest.as_str())
-                .ok_or_else(|| OperationError::Invalid("Git file bytes missing".into()))?;
+            let bytes = captured.blobs.read(file.content_digest.as_str())?;
             let (file_id, retained) =
                 inventory::intern_source_digest(&tx, file.content_digest.as_str())?;
             if !retained {
-                inventory::retain_source_bytes(&tx, file_id, bytes)?;
+                inventory::retain_source_bytes(&tx, file_id, &bytes)?;
             }
             tx.execute(
                 "INSERT OR IGNORE INTO local_git_files VALUES(?1,?2,?3)",

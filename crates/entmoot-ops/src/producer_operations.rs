@@ -357,8 +357,11 @@ pub fn run_bounded(
                     {
                         continue;
                     }
-                    let (cursor, outcomes) = db.completed_canon(id)?;
-                    let projection = plan.finish(&cursor, outcomes).map_err(invalid)?;
+                    let mut assembly = crate::canon::CanonAssembly::default();
+                    let cursor = db.visit_completed_canon(id, |outcome| {
+                        plan.assemble_file(&mut assembly, outcome).map_err(invalid)
+                    })?;
+                    let projection = plan.finish_assembly(&cursor, assembly).map_err(invalid)?;
                     let mut graph = canon_input
                         .as_ref()
                         .ok_or_else(|| invalid("canon input unavailable"))?

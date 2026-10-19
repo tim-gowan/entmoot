@@ -3,6 +3,73 @@ use super::*;
 use std::collections::BTreeSet;
 
 impl KnowledgeStore {
+    /// Count the same artifact/support selection without cloning its payloads.
+    /// Used for admission before preparing an atomic revalidation policy.
+    pub fn artifact_evidence_record_count(graph: &TopologyGraph, artifact: &str) -> usize {
+        let independent = |references: &[entmoot_contracts::EvidenceRef]| {
+            !references.is_empty() && references.iter().all(|e| e.artifact_id == artifact)
+        };
+        let findings: BTreeSet<_> = graph
+            .findings
+            .iter()
+            .filter(|r| r.artifact_id == artifact)
+            .map(|r| r.observation_id.as_str())
+            .collect();
+        let traces: BTreeSet<_> = graph
+            .traces
+            .iter()
+            .filter(|r| findings.contains(r.finding_observation_id.as_str()))
+            .map(|r| r.trace_id.as_str())
+            .collect();
+        let claims: Vec<_> = graph
+            .relation_claims
+            .iter()
+            .filter(|r| {
+                r.evidence.iter().any(|e| e.artifact_id == artifact)
+                    && (r.derivation.is_none() || independent(&r.evidence))
+            })
+            .collect();
+        let edge_ids: BTreeSet<_> = claims
+            .iter()
+            .filter_map(|r| match &r.subject {
+                entmoot_contracts::SubjectId::RelationEdge { edge_id } => Some(edge_id.as_str()),
+                _ => None,
+            })
+            .collect();
+        let edges = graph
+            .relation_edges
+            .iter()
+            .filter(|r| edge_ids.contains(r.id.as_str()))
+            .count();
+        let propositions: BTreeSet<_> = graph
+            .relation_edges
+            .iter()
+            .filter(|r| edge_ids.contains(r.id.as_str()))
+            .map(|r| r.proposition_id.as_str())
+            .collect();
+        macro_rules! owned_count {
+            ($field:ident) => {
+                graph
+                    .$field
+                    .iter()
+                    .filter(|r| r.artifact_id == artifact)
+                    .count()
+            };
+        }
+        owned_count!(artifacts) + owned_count!(capabilities) + owned_count!(components)
+            + owned_count!(component_dependencies) + owned_count!(component_vulnerabilities)
+            + owned_count!(bom_compositions) + owned_count!(locations) + owned_count!(attachments)
+            + owned_count!(resolver_coverages) + findings.len() + traces.len()
+            + graph.trace_steps.iter().filter(|r| traces.contains(r.trace_id.as_str())).count()
+            + graph.resources.iter().filter(|r| matches!(&r.origin, entmoot_contracts::ResourceOrigin::Artifact { artifact_id, .. } if artifact_id == artifact)).count()
+            + graph.assertions.iter().filter(|r| independent(&r.evidence_refs)).count()
+            + graph.resolutions.iter().filter(|r| independent(&r.evidence_refs)).count()
+            + graph.resolved_identities.iter().filter(|r| r.binding.source().is_some_and(|source| source.artifact.artifact_id.as_str() == artifact)).count()
+            + graph.unresolved_relations.iter().filter(|r| r.evidence.iter().any(|e| e.artifact_id == artifact)).count()
+            + graph.diagnostics.iter().filter(|r| r.artifact_id.as_deref() == Some(artifact)).count()
+            + claims.len() + edges + propositions.len()
+    }
+
     /// The caller validates the graph and exact publication scope first. Retain
     /// provider meaning, using the same independent/derived support rules as removal.
     pub fn extract_artifact_evidence(graph: &TopologyGraph, artifact: &str) -> Self {

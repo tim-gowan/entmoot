@@ -32,7 +32,7 @@ fn observations(
                             || a.config_digest == claim.scope.context_id)
                 })
             }))
-        .then_some((observation, claim))
+        .then_some((observation.as_ref(), claim))
     })
 }
 
@@ -87,7 +87,7 @@ pub fn assess_test_impact(
             ));
         }
     }
-    let impact = crate::compare_revision_impact(base, head)
+    let impact = crate::compare_revision_changes(base, head)
         .map_err(|e| QueryError::InvalidInput(e.to_string()))?;
     let changed_paths: Vec<_> = impact.files.into_iter().map(|f| f.path).collect();
     let changed: HashSet<_> = changed_paths.iter().map(String::as_str).collect();
@@ -388,7 +388,7 @@ impl QueryEngine {
             Some(graph) => graph,
             None => repository
                 .load_assessment()?
-                .apply_to_inventory(crate::inventory_skeleton(&self.graph)),
+                .into_inventory(crate::inventory_skeleton(&self.graph)),
         };
         if graph.snapshot != self.graph.snapshot || graph.policy_ids != self.graph.policy_ids {
             return Err(QueryError::InvalidInput(

@@ -152,7 +152,7 @@ fn captured_add_delete_binary_unicode_crlf_and_ignored_tracked_inputs_are_exact(
         ("app.py", b"value = 2\r\n".to_vec()),
     ] {
         let file = c.receipt.files.iter().find(|v| v.path == path).unwrap();
-        assert_eq!(c.blobs[file.content_digest.as_str()], bytes);
+        assert_eq!(c.blobs.read(file.content_digest.as_str()).unwrap(), bytes);
     }
     assert!(!c
         .receipt

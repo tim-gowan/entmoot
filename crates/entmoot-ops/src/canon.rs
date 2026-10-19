@@ -76,14 +76,42 @@ pub struct CanonPlan<'a> {
     graph: &'a TopologyGraph,
     context: ContentDigest,
     source_manifest: ContentDigest,
-    files: Vec<(String, Vec<(String, CodeContract)>)>,
+    files: Vec<(String, Vec<(&'a str, &'a CodeContract)>)>,
     snapshot: BTreeMap<&'a str, &'a str>,
     nodes_by_address: BTreeMap<&'a str, &'a crate::TopologyNode>,
-    facts_by_path: BTreeMap<&'a str, Vec<CanonExpressionFact>>,
+    facts_by_path: BTreeMap<&'a str, Vec<&'a CanonExpressionFact>>,
     native_context: &'a [CanonNativeContext],
     previous: Option<&'a dyn crate::KnowledgeRepository>,
     hasher: entmoot_core::StructuralHasher,
     truncated_files: bool,
+}
+
+/// Final graph claims assembled from one verified file checkpoint at a time.
+#[derive(Default)]
+pub struct CanonAssembly {
+    completed: usize,
+    files: Vec<CanonFileRef>,
+    claims: Vec<RelationClaim>,
+    edges: Vec<RelationEdge>,
+}
+
+fn serialized_len(value: &impl serde::Serialize) -> Result<usize, serde_json::Error> {
+    struct Counter(usize);
+    impl std::io::Write for Counter {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+            self.0 = self
+                .0
+                .checked_add(bytes.len())
+                .ok_or_else(|| std::io::Error::other("canon length overflow"))?;
+            Ok(bytes.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let mut counter = Counter(0);
+    serde_json::to_writer(&mut counter, value)?;
+    Ok(counter.0)
 }
 
 pub struct CanonProjection {
@@ -125,16 +153,13 @@ impl<'a> CanonPlan<'a> {
                     files
                         .entry(path.clone())
                         .or_default()
-                        .push((node.id.clone(), contract.as_ref().clone()));
+                        .push((node.id.as_str(), contract.as_ref()));
                 }
             }
         }
         let mut facts_by_path = BTreeMap::<&str, Vec<_>>::new();
         for fact in facts {
-            facts_by_path
-                .entry(&fact.site.path)
-                .or_default()
-                .push(fact.clone());
+            facts_by_path.entry(&fact.site.path).or_default().push(fact);
         }
         let previous = if let Some(repository) = previous {
             let manifests = repository.relation_claims_for_address(
@@ -273,7 +298,7 @@ impl<'a> CanonPlan<'a> {
         let source =
             std::str::from_utf8(&bytes).map_err(|_| CanonProduceError::Encoding(path.clone()))?;
         let language = owners[0].1.language.clone();
-        let contracts: Vec<_> = owners.iter().map(|(_, c)| c.clone()).collect();
+        let contracts: Vec<_> = owners.iter().map(|(_, c)| (*c).clone()).collect();
         let by_start: BTreeMap<_, _> = owners
             .iter()
             .map(|(id, c)| (c.site.span.start_byte, id))
@@ -281,7 +306,7 @@ impl<'a> CanonPlan<'a> {
         let native: Vec<_> = self
             .facts_by_path
             .get(path.as_str())
-            .cloned()
+            .map(|facts| facts.iter().map(|fact| (*fact).clone()).collect())
             .unwrap_or_default();
         let input_digest = digest(&serde_json::to_vec(&(
             &source_digest,
@@ -340,7 +365,7 @@ impl<'a> CanonPlan<'a> {
                 for pattern in analysis.clones.patterns {
                     if let Some(id) = by_start.get(&pattern.owner_start) {
                         patterns.push(CloneOccurrence {
-                            node_id: (*id).clone(),
+                            node_id: (*id).to_string(),
                             path: path.clone(),
                             span: pattern.span,
                             extent: pattern.extent,
@@ -364,7 +389,7 @@ impl<'a> CanonPlan<'a> {
         for pattern in &mut patterns {
             if pattern.extent == CloneExtent::Callable {
                 if let Some(id) = by_start.get(&pattern.span.start_byte) {
-                    pattern.node_id = (*id).clone();
+                    pattern.node_id = (*id).to_string();
                 }
             }
         }
@@ -441,9 +466,9 @@ impl<'a> CanonPlan<'a> {
             limitations: file_limits,
         };
         let observation = CanonObservation::File { file };
-        let encoded = serde_json::to_vec(&observation)?;
-        cursor.total_bytes += encoded.len();
-        if encoded.len() > 4_000_000 || cursor.total_bytes > 64_000_000 {
+        let encoded_bytes = serialized_len(&observation)?;
+        cursor.total_bytes += encoded_bytes;
+        if encoded_bytes > 4_000_000 || cursor.total_bytes > 64_000_000 {
             cursor.limits.push(CanonLimit::BudgetExceeded);
             cursor.stopped = true;
             return Ok(outcome);
@@ -459,28 +484,54 @@ impl<'a> CanonPlan<'a> {
         cursor: &CanonCursor,
         outcomes: Vec<CanonFileOutcome>,
     ) -> Result<CanonProjection, CanonProduceError> {
-        if cursor.completed != self.files.len() || outcomes.len() != self.files.len() {
+        let mut assembly = CanonAssembly::default();
+        for outcome in outcomes {
+            self.assemble_file(&mut assembly, outcome)?;
+        }
+        self.finish_assembly(cursor, assembly)
+    }
+
+    pub fn assemble_file(
+        &self,
+        assembly: &mut CanonAssembly,
+        outcome: CanonFileOutcome,
+    ) -> Result<(), CanonProduceError> {
+        let (path, _) = self
+            .files
+            .get(assembly.completed)
+            .ok_or(CanonError::Invalid("file checkpoint exceeds manifest"))?;
+        if &outcome.input.path != path
+            || self.snapshot.get(path.as_str()).copied()
+                != Some(outcome.input.content_digest.as_str())
+        {
+            return Err(CanonError::Invalid("file checkpoint membership").into());
+        }
+        assembly.completed += 1;
+        if let Some(file_claim) = outcome.claim {
+            assembly.files.push(CanonFileRef {
+                path: path.clone(),
+                claim_id: file_claim.id.clone(),
+            });
+            assembly.claims.push(file_claim);
+            assembly.edges.extend(outcome.edges);
+        }
+        Ok(())
+    }
+
+    pub fn finish_assembly(
+        &self,
+        cursor: &CanonCursor,
+        assembly: CanonAssembly,
+    ) -> Result<CanonProjection, CanonProduceError> {
+        if cursor.completed != self.files.len() || assembly.completed != self.files.len() {
             return Err(CanonError::Invalid("incomplete file checkpoints").into());
         }
-        let mut claims = Vec::new();
-        let mut edges = Vec::new();
-        let mut file_ids = Vec::new();
-        for ((path, _), outcome) in self.files.iter().zip(outcomes) {
-            if &outcome.input.path != path
-                || self.snapshot.get(path.as_str()).copied()
-                    != Some(outcome.input.content_digest.as_str())
-            {
-                return Err(CanonError::Invalid("file checkpoint membership").into());
-            }
-            if let Some(file_claim) = outcome.claim {
-                file_ids.push(CanonFileRef {
-                    path: path.clone(),
-                    claim_id: file_claim.id.clone(),
-                });
-                claims.push(file_claim);
-                edges.extend(outcome.edges);
-            }
-        }
+        let CanonAssembly {
+            mut claims,
+            edges,
+            files: file_ids,
+            ..
+        } = assembly;
         let mut limits = cursor.limits.clone();
         limits.sort();
         limits.dedup();
@@ -510,8 +561,13 @@ pub fn produce(
 ) -> Result<CanonProduction, CanonProduceError> {
     let plan = CanonPlan::new(graph, facts, native_context, previous)?;
     let mut cursor = plan.cursor();
-    let outcomes = plan.batch(root, &mut cursor, usize::MAX)?;
-    let projection = plan.finish(&cursor, outcomes)?;
+    let mut assembly = CanonAssembly::default();
+    while cursor.completed < plan.files.len() {
+        for outcome in plan.batch(root, &mut cursor, 1)? {
+            plan.assemble_file(&mut assembly, outcome)?;
+        }
+    }
+    let projection = plan.finish_assembly(&cursor, assembly)?;
     projection.apply(graph);
     Ok(cursor.production)
 }

@@ -1,5 +1,6 @@
 //! Topology graph schema (POC JSON interchange).
 
+use crate::SharedInventory;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 
@@ -200,12 +201,12 @@ pub struct TopologyGraph {
     pub implementation: entmoot_contracts::ImplementationFingerprint,
     pub root: String,
     pub snapshot: SourceSnapshot,
-    pub snapshot_files: Vec<SnapshotFileDigest>,
+    pub snapshot_files: SharedInventory<Vec<SnapshotFileDigest>>,
     /// Structural hash policies used by file records in this projection.
     #[serde(default)]
     pub policy_ids: Vec<String>,
-    pub nodes: Vec<TopologyNode>,
-    pub edges: Vec<StructuralEdge>,
+    pub nodes: SharedInventory<Vec<TopologyNode>>,
+    pub edges: SharedInventory<Vec<StructuralEdge>>,
     pub artifacts: Vec<ArtifactManifest>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub input_roots: Vec<entmoot_contracts::AnalysisInputRoot>,
@@ -246,10 +247,10 @@ pub struct TopologyGraph {
     pub diagnostics: Vec<entmoot_contracts::ArtifactDiagnostic>,
     /// Runtime index: node id → index into `nodes`. Rebuilt after load.
     #[serde(skip)]
-    pub node_by_id: HashMap<String, usize>,
+    pub node_by_id: SharedInventory<HashMap<String, usize>>,
     /// Runtime index: (from, to, kind) → index into `edges`.
     #[serde(skip)]
-    pub edge_keys: HashMap<(String, String, EdgeKind), usize>,
+    pub edge_keys: SharedInventory<HashMap<(String, String, EdgeKind), usize>>,
     /// Runtime index: durable relation edge id → index into `relation_edges`.
     #[serde(skip)]
     pub relation_edge_by_id: HashMap<String, usize>,
@@ -375,10 +376,10 @@ impl TopologyGraph {
                 subject: None,
                 subject_aliases: Vec::new(),
             },
-            snapshot_files: Vec::new(),
+            snapshot_files: Vec::new().into(),
             policy_ids: Vec::new(),
-            nodes: Vec::new(),
-            edges: Vec::new(),
+            nodes: Vec::new().into(),
+            edges: Vec::new().into(),
             artifacts: Vec::new(),
             input_roots: Vec::new(),
             capabilities: Vec::new(),
@@ -400,8 +401,8 @@ impl TopologyGraph {
             relation_claims: Vec::new(),
             unresolved_relations: Vec::new(),
             diagnostics: Vec::new(),
-            node_by_id: HashMap::new(),
-            edge_keys: HashMap::new(),
+            node_by_id: HashMap::new().into(),
+            edge_keys: HashMap::new().into(),
             relation_edge_by_id: HashMap::new(),
             claim_by_id: HashMap::new(),
             unresolved_relation_by_id: HashMap::new(),
@@ -418,15 +419,20 @@ impl TopologyGraph {
 
     /// Rebuild runtime indexes after deserialize or bulk mutation.
     pub fn rebuild_indexes(&mut self) {
-        self.node_by_id.clear();
+        self.node_by_id = HashMap::new().into();
         for (idx, node) in self.nodes.iter().enumerate() {
             self.node_by_id.insert(node.id.clone(), idx);
         }
-        self.edge_keys.clear();
+        self.edge_keys = HashMap::new().into();
         for (index, edge) in self.edges.iter().enumerate() {
             self.edge_keys
                 .insert((edge.from.clone(), edge.to.clone(), edge.kind), index);
         }
+        self.rebuild_evidence_indexes();
+    }
+
+    /// Rebuild evidence indexes while preserving shared, unchanged syntax indexes.
+    pub fn rebuild_evidence_indexes(&mut self) {
         self.relation_edge_by_id.clear();
         for (index, edge) in self.relation_edges.iter().enumerate() {
             self.relation_edge_by_id
@@ -473,7 +479,7 @@ impl TopologyGraph {
             schema_version: "entmoot.graph.summary.v1".into(),
             graph_schema_version: self.schema_version.clone(),
             snapshot: self.snapshot.clone(),
-            snapshot_files: self.snapshot_files.clone(),
+            snapshot_files: self.snapshot_files.to_vec(),
             observed_document_set_digest: entmoot_contracts::observed_document_set_digest(
                 &observed_paths,
             ),
@@ -615,12 +621,14 @@ impl TopologyGraph {
             .retain(|record| !owns(&record.artifact_id));
         self.bom_compositions
             .retain(|record| !owns(&record.artifact_id));
-        self.nodes
-            .retain(|node| !removed_resource_nodes.contains(&node.id));
-        self.edges.retain(|edge| {
-            !removed_resource_nodes.contains(&edge.from)
-                && !removed_resource_nodes.contains(&edge.to)
-        });
+        if !removed_resource_nodes.is_empty() {
+            self.nodes
+                .retain(|node| !removed_resource_nodes.contains(&node.id));
+            self.edges.retain(|edge| {
+                !removed_resource_nodes.contains(&edge.from)
+                    && !removed_resource_nodes.contains(&edge.to)
+            });
+        }
         self.artifacts.retain(|a| !owns(&a.artifact_id));
         self.capabilities.retain(|c| !owns(&c.artifact_id));
         self.resolver_coverages
@@ -692,7 +700,11 @@ impl TopologyGraph {
         let trace_ids: HashSet<_> = self.traces.iter().map(|t| t.trace_id.as_str()).collect();
         self.trace_steps
             .retain(|s| trace_ids.contains(s.trace_id.as_str()));
-        self.rebuild_indexes();
+        if removed_resource_nodes.is_empty() {
+            self.rebuild_evidence_indexes();
+        } else {
+            self.rebuild_indexes();
+        }
     }
 
     /// Validate referential integrity and callable identity agreement.
@@ -1996,7 +2008,8 @@ mod tests {
                 path: "src/a.rs".into(),
                 content_digest: format!("blake3:{}", "a".repeat(64)),
             },
-        ];
+        ]
+        .into();
         let mut reordered = first.clone();
         reordered.snapshot_files.reverse();
 

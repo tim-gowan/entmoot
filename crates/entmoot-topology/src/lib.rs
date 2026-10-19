@@ -19,7 +19,8 @@ pub use graph::{
     TopologyNode, TopologyValidationError, TOPOLOGY_SCHEMA_VERSION,
 };
 pub use impact::{
-    compare_revision_impact, compare_revision_impact_with_correspondence, ImpactError,
+    compare_revision_changes, compare_revision_impact, compare_revision_impact_with_correspondence,
+    BindingChange, ImpactError, RevisionChangeInventory,
 };
 pub use implementation::implementation_fingerprint;
 pub use knowledge::{inventory_skeleton, KnowledgeStore};
@@ -34,3 +35,6 @@ pub use resolved_identity::{
     inventoried_calls_for_callable, InventoriedReference, RESOLUTION_POLICY_ID,
 };
 pub use span_index::{CallableMatch, SpanIndex};
+
+mod shared_inventory;
+pub use shared_inventory::SharedInventory;

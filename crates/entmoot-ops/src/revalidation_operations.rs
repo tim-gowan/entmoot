@@ -144,15 +144,15 @@ pub fn run(
                 );
             }
             // Graph projection and policy work happen before acquiring the write transaction.
-            let prepared = plan.prepare(progress.completed_units).map_err(error)?;
             let required = progress
                 .semantic_records
-                .saturating_add(prepared.record_count());
+                .saturating_add(plan.record_count(progress.completed_units).map_err(error)?);
             if required > max_records {
                 return Err(OperationError::Budget(format!(
                     "revalidation requires {required} records; allowance is {max_records}"
                 )));
             }
+            let prepared = plan.prepare(progress.completed_units).map_err(error)?;
             item = ledger.checkpoint_revalidation(
                 id,
                 generation,

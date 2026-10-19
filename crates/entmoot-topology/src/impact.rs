@@ -65,6 +65,59 @@ pub fn compare_revision_impact_with_correspondence(
     head: &TopologyGraph,
     correspondence: Option<&CorrespondencePolicy>,
 ) -> Result<RevisionImpactManifest, ImpactError> {
+    compare_selected(base, head, correspondence, true)
+}
+
+/// Change inventory for overlap, test ownership and changed-subject navigation.
+/// Cold evidence dispositions, rescan plans and contract detail are not requested
+/// by these consumers. Their absence here makes no claim about evidence absence.
+pub struct RevisionChangeInventory {
+    pub files: Vec<FileImpact>,
+    pub callables: Vec<CallableImpact>,
+    pub declarations: Vec<entmoot_contracts::query::DeclarationImpact>,
+    pub bindings: Vec<BindingChange>,
+    pub gaps: Vec<String>,
+    pub signal_limitations: Vec<String>,
+}
+
+pub struct BindingChange {
+    pub address_id: String,
+    pub kind: BindingImpactKind,
+    pub reasons: Vec<BindingImpactReason>,
+}
+
+/// Use the same validation, correspondence and uncertainty policies as full impact.
+pub fn compare_revision_changes(
+    base: &TopologyGraph,
+    head: &TopologyGraph,
+) -> Result<RevisionChangeInventory, ImpactError> {
+    let impact = compare_selected(base, head, None, false)?;
+    Ok(RevisionChangeInventory {
+        files: impact.files,
+        callables: impact.callables,
+        declarations: impact.declarations,
+        bindings: impact
+            .bindings
+            .into_iter()
+            .map(|row| BindingChange {
+                address_id: row.address_id,
+                kind: row.kind,
+                reasons: row.reasons,
+            })
+            .collect(),
+        gaps: impact.gaps,
+        signal_limitations: impact.breaking_change_signals.limitations,
+    })
+}
+
+// Partial intermediate manifests never cross the public wire boundary; the two
+// public operations above expose distinct typed results from this common owner.
+fn compare_selected(
+    base: &TopologyGraph,
+    head: &TopologyGraph,
+    correspondence: Option<&CorrespondencePolicy>,
+    details: bool,
+) -> Result<RevisionImpactManifest, ImpactError> {
     base.validate().map_err(|error| ImpactError::InvalidGraph {
         side: "base",
         message: error.to_string(),
@@ -91,9 +144,17 @@ pub fn compare_revision_impact_with_correspondence(
         .collect::<Vec<_>>();
     let callables = compare_callables(base, head, relative)?;
     let declarations = compare_declarations(base, head);
-    let (evidence, introduced_evidence) = compare_evidence(base, head);
-    let bindings = compare_bindings(base, head);
-    let rescans = compare_rescans(base, head, &changed_paths);
+    let (evidence, introduced_evidence) = if details {
+        compare_evidence(base, head)
+    } else {
+        (vec![], vec![])
+    };
+    let bindings = compare_bindings(base, head, details);
+    let rescans = if details {
+        compare_rescans(base, head, &changed_paths)
+    } else {
+        vec![]
+    };
     let mut gaps = vec![
         "materialized_snapshot_comparison_only; missing relations are unknown, not non-impacts".into(),
         "applicability_ledger_not_compared; evidence staleness is not durable invalidation".into(),
@@ -161,7 +222,11 @@ pub fn compare_revision_impact_with_correspondence(
     });
 
     Ok(RevisionImpactManifest {
-        contracts: compare_code_contracts(base, head),
+        contracts: if details {
+            compare_code_contracts(base, head)
+        } else {
+            vec![]
+        },
         schema_version: REVISION_IMPACT_SCHEMA.into(),
         implementation: base.implementation.clone(),
         base_snapshot: base.snapshot.clone(),
@@ -171,7 +236,7 @@ pub fn compare_revision_impact_with_correspondence(
         base_policy_ids: base.policy_ids.clone(),
         head_policy_ids: head.policy_ids.clone(),
         breaking_change_signals: breaking_change_signals(
-            base, head, &callables, &bindings, &evidence,
+            base, head, &callables, &bindings, &evidence, details,
         ),
         files,
         callables,
@@ -516,6 +581,7 @@ fn breaking_change_signals(
     callables: &[CallableImpact],
     bindings: &[BindingImpact],
     evidence: &[EvidenceImpact],
+    include_signals: bool,
 ) -> BreakingChangeSignals {
     let mut limitations = vec![
         "signals_are_review_hints_not_semver_compatibility_exploitability_or_vulnerability_fixed_verdicts".into(),
@@ -558,6 +624,9 @@ fn breaking_change_signals(
                 BreakingChangeSignalKind::BoundaryChanged => "Callable boundary changed",
                 BreakingChangeSignalKind::CallableRemoved => "Callable occurrence removed",
             };
+            if !include_signals {
+                continue;
+            }
             signals.push(BreakingChangeSignal {
                 kind,
                 summary: format!(
@@ -791,16 +860,13 @@ fn compare_evidence(
     (evidence, introduced)
 }
 
-fn binding_groups(graph: &TopologyGraph) -> BTreeMap<&str, Vec<ResolvedIdentityRecord>> {
-    let mut groups: BTreeMap<&str, Vec<ResolvedIdentityRecord>> = BTreeMap::new();
+fn binding_groups(graph: &TopologyGraph) -> BTreeMap<&str, Vec<&ResolvedIdentityRecord>> {
+    let mut groups: BTreeMap<&str, Vec<&ResolvedIdentityRecord>> = BTreeMap::new();
     for row in &graph.resolved_identities {
-        groups
-            .entry(row.address_id.as_str())
-            .or_default()
-            .push(row.clone());
+        groups.entry(row.address_id.as_str()).or_default().push(row);
     }
     for rows in groups.values_mut() {
-        rows.sort_by_cached_key(ResolvedIdentityRecord::record_id);
+        rows.sort_by_cached_key(|row| row.record_id());
     }
     groups
 }
@@ -811,7 +877,7 @@ fn binding_groups(graph: &TopologyGraph) -> BTreeMap<&str, Vec<ResolvedIdentityR
 type BindingValues<'a> = BTreeMap<(&'a str, &'a str, Option<&'a str>, &'a str), &'a str>;
 
 fn binding_values<'a>(
-    rows: &'a [ResolvedIdentityRecord],
+    rows: &[&'a ResolvedIdentityRecord],
     series: &HashMap<&str, &'a str>,
 ) -> Option<BindingValues<'a>> {
     let mut values = BTreeMap::new();
@@ -831,7 +897,11 @@ fn binding_values<'a>(
     Some(values)
 }
 
-fn compare_bindings(base: &TopologyGraph, head: &TopologyGraph) -> Vec<BindingImpact> {
+fn compare_bindings(
+    base: &TopologyGraph,
+    head: &TopologyGraph,
+    records: bool,
+) -> Vec<BindingImpact> {
     let mut base_groups = binding_groups(base);
     let mut head_groups = binding_groups(head);
     let addresses = base_groups
@@ -889,8 +959,8 @@ fn compare_bindings(base: &TopologyGraph, head: &TopologyGraph) -> Vec<BindingIm
             BindingImpact {
                 address_id: address.into(),
                 kind,
-                base: left,
-                head: right,
+                base: if records { left.into_iter().cloned().collect() } else { vec![] },
+                head: if records { right.into_iter().cloned().collect() } else { vec![] },
                 reasons,
             }
         })

@@ -111,7 +111,6 @@ pub fn ingest_artifact_manifest(
         return Ok(stats);
     }
     let mut candidate = graph.clone();
-    candidate.rebuild_indexes();
     if replace_series {
         let replaced: Vec<String> = candidate
             .artifacts
@@ -200,7 +199,12 @@ pub fn ingest_artifact_manifest(
     // Successful attach mutates the in-memory projection directly. PT-27
     // rematerialize (extract → skeleton → apply) remains for store reload and
     // dedicated rematerialize tests—not an identity round-trip on every attach.
-    candidate.rebuild_indexes();
+    if candidate.nodes.shares_storage(&graph.nodes) && candidate.edges.shares_storage(&graph.edges)
+    {
+        candidate.rebuild_evidence_indexes();
+    } else {
+        candidate.rebuild_indexes();
+    }
     *graph = candidate;
     Ok(stats)
 }

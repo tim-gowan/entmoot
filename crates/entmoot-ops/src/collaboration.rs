@@ -1,5 +1,5 @@
 //! Transport-independent comparisons over frozen repository states.
-use crate::{compare_revision_impact, ImpactError, TopologyGraph};
+use crate::{compare_revision_changes, ImpactError, TopologyGraph};
 use crate::{LocalOperations, OperationError, SqliteKnowledgeRepository};
 use entmoot_contracts::{BranchConflictReport, ConflictFinding, ConflictFindingKind};
 use entmoot_contracts::{
@@ -475,13 +475,16 @@ pub fn run_conflicts_with_git(
                 "checkpoint exceeds peer set".into(),
             ));
         }
+        let left_changes = compare_revision_changes(&base, &left)
+            .map_err(|e| OperationError::Invalid(e.to_string()))?;
         for peer in request.peers.iter().skip(completed).take(pairs) {
             let right = repository.retained_graph(peer.view.as_str())?;
             if right.snapshot != peer.snapshot {
                 return Err(OperationError::Conflict("peer snapshot changed".into()));
             }
-            let mut report = compare_branch_conflicts(&base, &left, &right)
-                .map_err(|e| OperationError::Invalid(e.to_string()))?;
+            let mut report =
+                compare_branch_conflicts_with_left(&base, &left, &right, &left_changes)
+                    .map_err(|e| OperationError::Invalid(e.to_string()))?;
             if request.git_merge {
                 if let Some(root) = git_root {
                     let lc = captured_input(repository, &request.left)?;
@@ -550,8 +553,17 @@ pub fn compare_branch_conflicts(
     left: &TopologyGraph,
     right: &TopologyGraph,
 ) -> Result<BranchConflictReport, ImpactError> {
-    let l = compare_revision_impact(base, left)?;
-    let r = compare_revision_impact(base, right)?;
+    let changes = compare_revision_changes(base, left)?;
+    compare_branch_conflicts_with_left(base, left, right, &changes)
+}
+
+fn compare_branch_conflicts_with_left(
+    base: &TopologyGraph,
+    left: &TopologyGraph,
+    right: &TopologyGraph,
+    l: &crate::RevisionChangeInventory,
+) -> Result<BranchConflictReport, ImpactError> {
+    let r = compare_revision_changes(base, right)?;
     let mut report = BranchConflictReport {
         schema_version: "entmoot.branch_conflicts.v1".into(), implementation: crate::implementation_fingerprint(),
         base: base.snapshot.clone(), left: left.snapshot.clone(), right: right.snapshot.clone(), findings: vec![], git: None,
@@ -636,10 +648,8 @@ pub fn compare_branch_conflicts(
     }
     report
         .limitations
-        .extend(l.breaking_change_signals.limitations);
-    report
-        .limitations
-        .extend(r.breaking_change_signals.limitations);
+        .extend(l.signal_limitations.iter().cloned());
+    report.limitations.extend(r.signal_limitations);
     report.limitations.sort();
     report.limitations.dedup();
     Ok(report)

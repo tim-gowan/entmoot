@@ -2188,7 +2188,7 @@ fn cmd_attach(
     } else {
         KnowledgeStore::extract_from_graph(&graph)
     };
-    let mut graph = knowledge.apply_to_inventory(entmoot_workspace::inventory_skeleton(&graph));
+    let mut graph = knowledge.into_inventory(entmoot_workspace::inventory_skeleton(&graph));
     graph
         .validate()
         .context("validate graph rematerialized from durable knowledge")?;

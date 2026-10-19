@@ -1,18 +1,14 @@
 //! Bounded typed batches from an already materialized knowledge projection.
 use super::{KnowledgeRepositoryError, OwnerBatch, PublicationBuffer};
 use crate::KnowledgeStore;
-use entmoot_contracts::{ArtifactManifest, ComponentOccurrence, Proposition};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 /// Pull iterator used while producers are migrated to direct batch emission.
 ///
-/// It moves records out of the projection and retains only small lookup maps for
-/// required local context. It does not make graph extraction itself streaming.
+/// It moves records out of the projection. The publisher validates references
+/// across all batches; no repeated artifact/component/proposition copies are needed.
 pub struct KnowledgeStoreBatches {
     remaining: KnowledgeStore,
-    artifacts: BTreeMap<String, ArtifactManifest>,
-    components: BTreeMap<String, ComponentOccurrence>,
-    propositions: BTreeMap<String, Proposition>,
     buffer: PublicationBuffer,
     phase: u8,
     failed: bool,
@@ -28,53 +24,34 @@ impl KnowledgeStoreBatches {
                 "positive batch record and byte limits required",
             ));
         }
-        let artifacts = remaining
-            .artifacts
-            .iter()
-            .cloned()
-            .map(|value| (value.artifact_id.clone(), value))
-            .collect();
-        let components = remaining
-            .components
-            .iter()
-            .cloned()
-            .map(|value| (value.occurrence_id.as_str().to_owned(), value))
-            .collect();
-        let propositions = remaining
-            .propositions
-            .iter()
-            .cloned()
-            .map(|value| (value.id.as_str().to_owned(), value))
-            .collect();
         Ok(Self {
             remaining,
-            artifacts,
-            components,
-            propositions,
             buffer,
             phase: 0,
             failed: false,
         })
     }
 
-    fn artifact(&self, id: &str) -> Result<ArtifactManifest, KnowledgeRepositoryError> {
-        self.artifacts
-            .get(id)
-            .cloned()
-            .ok_or_else(|| KnowledgeRepositoryError::InvalidRecord {
-                collection: "artifacts",
-                reason: format!("missing artifact {id}"),
-            })
-    }
-
-    fn component(&self, id: &str) -> Result<ComponentOccurrence, KnowledgeRepositoryError> {
-        self.components
-            .get(id)
-            .cloned()
-            .ok_or_else(|| KnowledgeRepositoryError::InvalidRecord {
-                collection: "components",
-                reason: format!("missing component {id}"),
-            })
+    /// Emit graph records without constructing a second complete knowledge view.
+    pub fn from_graph(
+        graph: &crate::TopologyGraph,
+        buffer: PublicationBuffer,
+    ) -> Result<GraphBatches<'_>, KnowledgeRepositoryError> {
+        Self::new(KnowledgeStore::default(), buffer)?;
+        Ok(GraphBatches {
+            graph,
+            buffer,
+            phase: 0,
+            cursor: 0,
+            current: None,
+            failed: false,
+            digests: graph
+                .snapshot_files
+                .iter()
+                .map(|file| (file.path.as_str(), &file.content_digest))
+                .collect(),
+            propositions: BTreeSet::new(),
+        })
     }
 }
 
@@ -105,7 +82,7 @@ macro_rules! plain_batch {
 }
 
 /// Match the repository's serialized payload budget before grouping plain rows.
-/// Context-bearing groups remain indivisible and are validated by the publisher.
+/// Schema references are validated over the complete staged publication.
 fn bounded_record_count<T: serde::Serialize>(
     values: &[T],
     buffer: PublicationBuffer,
@@ -142,122 +119,10 @@ impl Iterator for KnowledgeStoreBatches {
                 2 => plain_batch!(self, capabilities),
                 3 => plain_batch!(self, findings),
                 4 => plain_batch!(self, resources),
-                5 => {
-                    if let Some(component) = self.remaining.components.pop() {
-                        let artifact = match self.artifact(&component.artifact_id) {
-                            Ok(value) => value,
-                            Err(error) => {
-                                self.failed = true;
-                                return Some(Err(error));
-                            }
-                        };
-                        return Some(Ok(OwnerBatch {
-                            store: KnowledgeStore {
-                                artifacts: vec![artifact],
-                                components: vec![component],
-                                ..Default::default()
-                            },
-                            dependencies: vec![],
-                        }));
-                    }
-                    self.phase += 1;
-                }
-                6 => {
-                    if let Some(dependency) = self.remaining.component_dependencies.pop() {
-                        let artifact = match self.artifact(&dependency.artifact_id) {
-                            Ok(value) => value,
-                            Err(error) => {
-                                self.failed = true;
-                                return Some(Err(error));
-                            }
-                        };
-                        let mut components = BTreeMap::new();
-                        for id in [
-                            dependency.subject_occurrence_id.as_deref(),
-                            dependency.object_occurrence_id.as_deref(),
-                        ]
-                        .into_iter()
-                        .flatten()
-                        {
-                            match self.component(id) {
-                                Ok(value) => {
-                                    components.insert(id.to_owned(), value);
-                                }
-                                Err(error) => {
-                                    self.failed = true;
-                                    return Some(Err(error));
-                                }
-                            }
-                        }
-                        return Some(Ok(OwnerBatch {
-                            store: KnowledgeStore {
-                                artifacts: vec![artifact],
-                                components: components.into_values().collect(),
-                                component_dependencies: vec![dependency],
-                                ..Default::default()
-                            },
-                            dependencies: vec![],
-                        }));
-                    }
-                    self.phase += 1;
-                }
-                7 => {
-                    if let Some(vulnerability) = self.remaining.component_vulnerabilities.pop() {
-                        let artifact = match self.artifact(&vulnerability.artifact_id) {
-                            Ok(value) => value,
-                            Err(error) => {
-                                self.failed = true;
-                                return Some(Err(error));
-                            }
-                        };
-                        let mut components = BTreeMap::new();
-                        for id in vulnerability
-                            .affects
-                            .iter()
-                            .filter_map(|affect| affect.component_occurrence_id.as_deref())
-                        {
-                            match self.component(id) {
-                                Ok(value) => {
-                                    components.insert(id.to_owned(), value);
-                                }
-                                Err(error) => {
-                                    self.failed = true;
-                                    return Some(Err(error));
-                                }
-                            }
-                        }
-                        return Some(Ok(OwnerBatch {
-                            store: KnowledgeStore {
-                                artifacts: vec![artifact],
-                                components: components.into_values().collect(),
-                                component_vulnerabilities: vec![vulnerability],
-                                ..Default::default()
-                            },
-                            dependencies: vec![],
-                        }));
-                    }
-                    self.phase += 1;
-                }
-                8 => {
-                    if let Some(composition) = self.remaining.bom_compositions.pop() {
-                        let artifact = match self.artifact(&composition.artifact_id) {
-                            Ok(value) => value,
-                            Err(error) => {
-                                self.failed = true;
-                                return Some(Err(error));
-                            }
-                        };
-                        return Some(Ok(OwnerBatch {
-                            store: KnowledgeStore {
-                                artifacts: vec![artifact],
-                                bom_compositions: vec![composition],
-                                ..Default::default()
-                            },
-                            dependencies: vec![],
-                        }));
-                    }
-                    self.phase += 1;
-                }
+                5 => plain_batch!(self, components),
+                6 => plain_batch!(self, component_dependencies),
+                7 => plain_batch!(self, component_vulnerabilities),
+                8 => plain_batch!(self, bom_compositions),
                 9 => plain_batch!(self, locations),
                 10 => plain_batch!(self, traces),
                 11 => plain_batch!(self, trace_steps),
@@ -265,70 +130,134 @@ impl Iterator for KnowledgeStoreBatches {
                 13 => plain_batch!(self, assertions),
                 14 => plain_batch!(self, resolutions),
                 15 => plain_batch!(self, resolver_coverages),
-                16 => {
-                    if let Some(record) = self.remaining.resolved_identities.pop() {
-                        let artifacts = match record
-                            .binding
-                            .source()
-                            .map(|source| source.artifact.artifact_id.as_str())
-                        {
-                            Some(id) => match self.artifact(id) {
-                                Ok(value) => vec![value],
-                                Err(error) => {
-                                    self.failed = true;
-                                    return Some(Err(error));
-                                }
-                            },
-                            None => vec![],
-                        };
-                        return Some(Ok(OwnerBatch {
-                            store: KnowledgeStore {
-                                artifacts,
-                                resolved_identities: vec![record],
-                                ..Default::default()
-                            },
-                            dependencies: vec![],
-                        }));
-                    }
-                    self.phase += 1;
-                }
-                17 => {
-                    if let Some(edge) = self.remaining.relation_edges.pop() {
-                        let proposition = match self.propositions.get(edge.proposition_id.as_str())
-                        {
-                            Some(value) => value.clone(),
-                            None => {
-                                self.failed = true;
-                                return Some(Err(KnowledgeRepositoryError::InvalidRecord {
-                                    collection: "relation_edges",
-                                    reason: format!(
-                                        "edge {} is missing proposition {}",
-                                        edge.id, edge.proposition_id
-                                    ),
-                                }));
-                            }
-                        };
-                        return Some(Ok(OwnerBatch {
-                            store: KnowledgeStore {
-                                propositions: vec![proposition],
-                                relation_edges: vec![edge],
-                                ..Default::default()
-                            },
-                            dependencies: vec![],
-                        }));
-                    }
-                    self.remaining.propositions.clear();
-                    self.phase += 1;
-                }
-                18 => plain_batch!(self, relation_claims),
-                19 => plain_batch!(self, unresolved_relations),
-                20 => plain_batch!(self, diagnostics),
-                21 => plain_batch!(self, structural_edges),
-                22 => plain_batch!(self, call_sites),
-                23 => plain_batch!(self, coverages),
-                24 => plain_batch!(self, declaration_sites),
-                25 => plain_batch!(self, code_contracts),
+                16 => plain_batch!(self, resolved_identities),
+                17 => plain_batch!(self, propositions),
+                18 => plain_batch!(self, relation_edges),
+                19 => plain_batch!(self, relation_claims),
+                20 => plain_batch!(self, unresolved_relations),
+                21 => plain_batch!(self, diagnostics),
+                22 => plain_batch!(self, structural_edges),
+                23 => plain_batch!(self, call_sites),
+                24 => plain_batch!(self, coverages),
+                25 => plain_batch!(self, declaration_sites),
+                26 => plain_batch!(self, code_contracts),
                 _ => return None,
+            }
+        }
+    }
+}
+
+/// Borrowed graph source; only one admitted record chunk is owned at a time.
+pub struct GraphBatches<'a> {
+    graph: &'a crate::TopologyGraph,
+    digests: BTreeMap<&'a str, &'a String>,
+    propositions: BTreeSet<&'a str>,
+    buffer: PublicationBuffer,
+    phase: u8,
+    cursor: usize,
+    current: Option<KnowledgeStoreBatches>,
+    failed: bool,
+}
+
+macro_rules! graph_chunk {
+    ($self:ident, $field:ident, $target:ident) => {{
+        let values = &$self.graph.$field;
+        let end = $self
+            .cursor
+            .saturating_add($self.buffer.max_records.min(1024))
+            .min(values.len());
+        if $self.cursor < end {
+            let mut store = KnowledgeStore::default();
+            store.$target = values[$self.cursor..end].to_vec();
+            $self.cursor = end;
+            return Some(store);
+        }
+        $self.phase += 1;
+        $self.cursor = 0;
+    }};
+}
+
+impl GraphBatches<'_> {
+    fn projection(&mut self) -> Option<KnowledgeStore> {
+        loop {
+            match self.phase {
+                0 => {
+                    let end = self.cursor.saturating_add(32).min(self.graph.nodes.len());
+                    if self.cursor < end {
+                        let store = KnowledgeStore::syntax_from_nodes(
+                            self.graph,
+                            &self.graph.nodes[self.cursor..end],
+                            &self.digests,
+                        );
+                        self.cursor = end;
+                        return Some(store);
+                    }
+                    self.phase += 1;
+                    self.cursor = 0;
+                }
+                1 => graph_chunk!(self, input_roots, input_roots),
+                2 => graph_chunk!(self, artifacts, artifacts),
+                3 => graph_chunk!(self, capabilities, capabilities),
+                4 => graph_chunk!(self, findings, findings),
+                5 => graph_chunk!(self, resources, resources),
+                6 => graph_chunk!(self, components, components),
+                7 => graph_chunk!(self, component_dependencies, component_dependencies),
+                8 => graph_chunk!(self, component_vulnerabilities, component_vulnerabilities),
+                9 => graph_chunk!(self, bom_compositions, bom_compositions),
+                10 => graph_chunk!(self, locations, locations),
+                11 => graph_chunk!(self, traces, traces),
+                12 => graph_chunk!(self, trace_steps, trace_steps),
+                13 => graph_chunk!(self, attachments, attachments),
+                14 => graph_chunk!(self, assertions, assertions),
+                15 => graph_chunk!(self, resolutions, resolutions),
+                16 => graph_chunk!(self, resolver_coverages, resolver_coverages),
+                17 => graph_chunk!(self, resolved_identities, resolved_identities),
+                18 => graph_chunk!(self, relation_edges, relation_edges),
+                19 => graph_chunk!(self, relation_claims, relation_claims),
+                20 => graph_chunk!(self, unresolved_relations, unresolved_relations),
+                21 => graph_chunk!(self, diagnostics, diagnostics),
+                22 => graph_chunk!(self, coverages, coverages),
+                23 => graph_chunk!(self, edges, structural_edges),
+                24 => {
+                    let mut store = KnowledgeStore::default();
+                    while self.cursor < self.graph.relation_edges.len()
+                        && store.propositions.len() < self.buffer.max_records.min(1024)
+                    {
+                        let edge = &self.graph.relation_edges[self.cursor];
+                        self.cursor += 1;
+                        if self.propositions.insert(edge.proposition_id.as_str()) {
+                            store.propositions.push(edge.proposition());
+                        }
+                    }
+                    if !store.propositions.is_empty() {
+                        return Some(store);
+                    }
+                    self.phase += 1;
+                }
+                _ => return None,
+            }
+        }
+    }
+}
+
+impl Iterator for GraphBatches<'_> {
+    type Item = Result<OwnerBatch, KnowledgeRepositoryError>;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.failed {
+            return None;
+        }
+        loop {
+            if let Some(batch) = self.current.as_mut().and_then(Iterator::next) {
+                self.failed = batch.is_err();
+                return Some(batch);
+            }
+            let store = self.projection()?;
+            match KnowledgeStoreBatches::new(store, self.buffer) {
+                Ok(batches) => self.current = Some(batches),
+                Err(error) => {
+                    self.failed = true;
+                    return Some(Err(error));
+                }
             }
         }
     }
@@ -341,6 +270,69 @@ mod tests {
         EdgeKind, KnowledgeRead, KnowledgeRepository, PublicationBuffer, SqliteKnowledgeRepository,
         StructuralEdge,
     };
+
+    #[test]
+    fn graph_batches_preserve_complete_record_membership_with_single_record_admission() {
+        let source = tempfile::tempdir().unwrap();
+        std::fs::write(source.path().join("entry.py"), "def entmoot_leaf(value):\n    return value + 1\n\ndef entmoot_caller():\n    return entmoot_leaf(1)\n").unwrap();
+        let graph = crate::build_topology_from_repo_with_options(
+            source.path(),
+            crate::TopologyBuildOptions::default(),
+        )
+        .unwrap();
+        let buffer = PublicationBuffer {
+            max_records: 1,
+            max_bytes: 8 * 1024 * 1024,
+        };
+        let mut streamed = SqliteKnowledgeRepository::open_in_memory().unwrap();
+        let receipt = streamed
+            .replace_owner_buffered(
+                "fixture/graph",
+                &mut KnowledgeStoreBatches::from_graph(&graph, buffer).unwrap(),
+                buffer,
+            )
+            .unwrap();
+        assert_eq!(receipt.peak_batch_records, 1);
+        let observed = streamed.load().unwrap();
+        assert_eq!(observed.code_contracts.len(), 2);
+        assert_eq!(observed.call_sites.len(), 1);
+        // Aggregate and exact-site edges share a proposition, not an occurrence.
+        assert_eq!(observed.relation_edges.len(), 2);
+        assert_eq!(observed.propositions.len(), 1);
+        assert_eq!(
+            observed
+                .relation_edges
+                .iter()
+                .filter(|edge| edge.occurrence_id.is_some())
+                .count(),
+            1
+        );
+        assert!(observed
+            .relation_edges
+            .iter()
+            .all(|edge| edge.proposition_id == observed.propositions[0].id));
+        let mut materialized = SqliteKnowledgeRepository::open_in_memory().unwrap();
+        materialized
+            .replace_owner_buffered(
+                "fixture/graph",
+                &mut KnowledgeStoreBatches::new(KnowledgeStore::extract_from_graph(&graph), buffer)
+                    .unwrap(),
+                buffer,
+            )
+            .unwrap();
+        assert_eq!(
+            serde_json::to_value(&observed).unwrap(),
+            serde_json::to_value(materialized.load().unwrap()).unwrap()
+        );
+        let repeated = streamed
+            .replace_owner_buffered(
+                "fixture/graph",
+                &mut KnowledgeStoreBatches::from_graph(&graph, buffer).unwrap(),
+                buffer,
+            )
+            .unwrap();
+        assert!(repeated.outcome.is_unchanged());
+    }
 
     #[test]
     fn materialized_store_is_pulled_in_bounded_batches() {

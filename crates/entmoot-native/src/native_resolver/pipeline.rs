@@ -129,37 +129,62 @@ fn recheck_snapshot_digests(
     Ok(())
 }
 
-fn canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, NativeProducerError> {
-    Ok(serde_json::to_vec(value)?)
+fn write_json<T: Serialize>(
+    path: &Path,
+    value: &T,
+) -> Result<(usize, ContentDigest), NativeProducerError> {
+    use std::io::Write;
+    struct PayloadWriter {
+        output: std::io::BufWriter<fs::File>,
+        digest: blake3::Hasher,
+        bytes: usize,
+    }
+    impl Write for PayloadWriter {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+            self.output.write_all(bytes)?;
+            self.digest.update(bytes);
+            self.bytes = self
+                .bytes
+                .checked_add(bytes.len())
+                .ok_or_else(|| std::io::Error::other("native output length overflow"))?;
+            Ok(bytes.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            self.output.flush()
+        }
+    }
+    let mut writer = PayloadWriter {
+        output: std::io::BufWriter::new(fs::File::create(path)?),
+        digest: blake3::Hasher::new(),
+        bytes: 0,
+    };
+    serde_json::to_writer(&mut writer, value)?;
+    writer.flush()?;
+    Ok((
+        writer.bytes,
+        ContentDigest::from_trusted(format!("blake3:{}", writer.digest.finalize().to_hex())),
+    ))
 }
 
-fn write_atomic_dir(
+fn write_atomic_dir<T>(
     output_dir: &Path,
-    files: &[(&str, Vec<u8>)],
-) -> Result<(), NativeProducerError> {
+    write: impl FnOnce(&Path) -> Result<T, NativeProducerError>,
+) -> Result<T, NativeProducerError> {
     if output_dir.exists() {
         return Err(NativeProducerError::OutputExists(output_dir.to_path_buf()));
     }
     let parent = output_dir.parent().unwrap_or_else(|| Path::new("."));
     fs::create_dir_all(parent)?;
     let staging = tempfile::Builder::new()
-        .prefix(&format!(
-            "{}.staging-",
-            output_dir
-                .file_name()
-                .and_then(|name| name.to_str())
-                .unwrap_or("native")
-        ))
+        .prefix("native.staging-")
         .tempdir_in(parent)?;
-    for (name, bytes) in files {
-        fs::write(staging.path().join(name), bytes)?;
-    }
+    let result = write(staging.path())?;
     let staging_path = staging.keep();
     fs::rename(&staging_path, output_dir).map_err(|error| {
         let _ = fs::remove_dir_all(&staging_path);
         NativeProducerError::Io(error)
     })?;
-    Ok(())
+    Ok(result)
 }
 
 fn build_artifact(
@@ -335,61 +360,57 @@ where
         language: config.language.into(),
         execution_policy: request.execution_policy,
     };
-    let raw_bytes = serde_json::to_vec(&NativeRawEnvelope {
-        schema_version: NativeRawSeries::V1,
-        implementation: crate::implementation_fingerprint(),
-        snapshot: &graph.snapshot,
-        producer: &producer,
-        input_digests: &before,
-        limitations: config.limitations,
-        raw: &raw,
+    let (artifact, receipt) = write_atomic_dir(&request.output_dir, |staging| {
+        let (raw_bytes, build_digest) = write_json(
+            &staging.join("native.raw.json"),
+            &NativeRawEnvelope {
+                schema_version: NativeRawSeries::V1,
+                implementation: crate::implementation_fingerprint(),
+                snapshot: &graph.snapshot,
+                producer: &producer,
+                input_digests: &before,
+                limitations: config.limitations,
+                raw: &raw,
+            },
+        )?;
+        let artifact = build_artifact(
+            &graph,
+            &raw,
+            config.language,
+            config.producer,
+            &config.adapter_pin,
+            build_digest,
+        )?;
+        watch.check_targets(
+            artifact
+                .observations
+                .iter()
+                .map(|observation| observation.targets.len())
+                .sum(),
+        )?;
+
+        let (artifact_bytes, _) = write_json(&staging.join("resolver.json"), &artifact)?;
+        let receipt = NativeReceipt {
+            tool_environment: raw.tool_environment.clone(),
+            schema_version: NativeReceiptSeries::V1,
+            implementation: crate::implementation_fingerprint(),
+            producer,
+            wall_seconds: watch.elapsed_secs(),
+            artifact_bytes,
+            raw_bytes,
+            inventory_calls: artifact.observations.len(),
+            observed_calls: raw.calls.len(),
+            call_gaps: call_gaps(&raw, config.language),
+            input_files: before.len(),
+            semantic_status: semantic_status(&raw),
+            limitations: raw.diagnostics.clone(),
+        };
+        receipt
+            .validate(&crate::implementation_fingerprint())
+            .map_err(|error| NativeProducerError::Artifact(error.into()))?;
+        write_json(&staging.join("receipt.json"), &receipt)?;
+        Ok((artifact, receipt))
     })?;
-    let build_digest = ContentDigest::from_trusted(blake3_hex(&raw_bytes));
-    let artifact = build_artifact(
-        &graph,
-        &raw,
-        config.language,
-        config.producer,
-        &config.adapter_pin,
-        build_digest,
-    )?;
-    watch.check_targets(
-        artifact
-            .observations
-            .iter()
-            .map(|observation| observation.targets.len())
-            .sum(),
-    )?;
-
-    let artifact_bytes = canonical_json(&artifact)?;
-    let receipt = NativeReceipt {
-        tool_environment: raw.tool_environment.clone(),
-        schema_version: NativeReceiptSeries::V1,
-        implementation: crate::implementation_fingerprint(),
-        producer,
-        wall_seconds: watch.elapsed_secs(),
-        artifact_bytes: artifact_bytes.len(),
-        raw_bytes: raw_bytes.len(),
-        inventory_calls: artifact.observations.len(),
-        observed_calls: raw.calls.len(),
-        call_gaps: call_gaps(&raw, config.language),
-        input_files: before.len(),
-        semantic_status: semantic_status(&raw),
-        limitations: raw.diagnostics.clone(),
-    };
-    receipt
-        .validate(&crate::implementation_fingerprint())
-        .map_err(|error| NativeProducerError::Artifact(error.into()))?;
-    let receipt_bytes = canonical_json(&receipt)?;
-
-    write_atomic_dir(
-        &request.output_dir,
-        &[
-            ("native.raw.json", raw_bytes),
-            ("resolver.json", artifact_bytes),
-            ("receipt.json", receipt_bytes),
-        ],
-    )?;
 
     let artifact_path = request.output_dir.join("resolver.json");
     let producer_label = format!("native-{}", config.producer);
@@ -616,6 +637,31 @@ pub use entmoot_contracts::binding_evidence::validate_binding_evidence;
 #[cfg(test)]
 mod status_tests {
     use super::*;
+
+    #[test]
+    fn streamed_native_outputs_keep_exact_bytes_and_failed_directories_private() {
+        let directory = tempfile::tempdir().unwrap();
+        let output = directory.path().join("output");
+        let value = serde_json::json!({"message": "é\r\n", "values": [1, 2, 3]});
+        let expected = serde_json::to_vec(&value).unwrap();
+        let (length, digest) = write_atomic_dir(&output, |staging| {
+            write_json(&staging.join("payload.json"), &value)
+        })
+        .unwrap();
+        assert_eq!(fs::read(output.join("payload.json")).unwrap(), expected);
+        assert_eq!(length, expected.len());
+        assert_eq!(digest.as_str(), blake3_hex(&expected));
+        let rejected = directory.path().join("rejected");
+        let result: Result<(), _> = write_atomic_dir(&rejected, |staging| {
+            write_json(&staging.join("payload.json"), &value)?;
+            Err(NativeProducerError::Artifact(
+                "deliberate validation failure".into(),
+            ))
+        });
+        assert!(result.is_err());
+        assert!(!rejected.exists());
+        assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 1);
+    }
     #[test]
     fn malformed_lock_config_is_invalid_environment_before_any_native_tool() {
         for (language, file, text) in [
