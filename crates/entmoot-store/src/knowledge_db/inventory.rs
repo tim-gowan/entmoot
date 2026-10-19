@@ -59,6 +59,14 @@ CREATE TABLE IF NOT EXISTS structural_file_edges (
     ordinal INTEGER NOT NULL, record_id TEXT NOT NULL, payload INTEGER NOT NULL REFERENCES shared_payloads,
     PRIMARY KEY(unit_id,ordinal)
 ) WITHOUT ROWID;
+-- Revision-independent call evidence sealed with the parser unit after a
+-- CallSummary match. Views copy membership; they do not rebind snapshot IDs.
+CREATE TABLE IF NOT EXISTS structural_file_calls (
+    unit_id INTEGER NOT NULL REFERENCES file_fact_units ON DELETE CASCADE,
+    ordinal INTEGER NOT NULL, collection TEXT NOT NULL, record_id TEXT NOT NULL,
+    payload INTEGER NOT NULL REFERENCES shared_payloads,
+    PRIMARY KEY(unit_id,ordinal)
+) WITHOUT ROWID;
 "#;
 
 /// Local storage locator. Portable query payloads never contain this layout.
@@ -322,13 +330,13 @@ impl SqliteKnowledgeRepository {
         let mut statement = self.connection.prepare_cached(&format!("SELECT {NODE_COLUMNS} FROM {NODE_FROM} WHERE n.view_key=(SELECT view_key FROM inventory_headers WHERE view_id=(SELECT id FROM temp.selected_knowledge_view)) ORDER BY ordinal"))?;
         let mut rows = statement.query([])?;
         while let Some(row) = rows.next()? {
-            let mut node = hydrate_node(&self.connection, row)?;
+            let node = hydrate_node(&self.connection, row)?;
             if !graph.nodes.is_empty() {
                 commitment.update(b",");
             }
             serde_json::to_writer(&mut commitment, &node)?;
-            node.declaration = None;
-            node.code_contract = None;
+            // Shared node versions retain syntax markers. Site collections are
+            // optional KnowledgeStore projections and must not erase them.
             graph.nodes.push(node);
         }
         let mut statement = self.connection.prepare_cached("SELECT p.path,f.digest FROM inventory_files m JOIN shared_paths p USING(path_id) JOIN shared_source_files f USING(file_id) WHERE m.view_key=(SELECT view_key FROM inventory_headers WHERE view_id=(SELECT id FROM temp.selected_knowledge_view)) ORDER BY ordinal")?;
@@ -351,7 +359,16 @@ impl SqliteKnowledgeRepository {
             ));
         }
         let knowledge = self.load_mode(projection)?;
-        Ok(Some(knowledge.into_inventory(graph)))
+        // Structural pubs keep markers on shared node versions and omit site
+        // collections. Owned site rows still drive visibility via into_inventory.
+        let preserve = knowledge.declaration_sites.is_empty()
+            && knowledge.call_sites.is_empty()
+            && knowledge.code_contracts.is_empty();
+        Ok(Some(if preserve {
+            knowledge.into_inventory_preserving_syntax(graph)
+        } else {
+            knowledge.into_inventory(graph)
+        }))
     }
 
     pub fn inventory_export_digest(&self) -> Result<Option<String>, KnowledgeRepositoryError> {

@@ -1,6 +1,6 @@
 //! Verified file-local projection membership. Rows reference the ordinary node
-//! versions and edge payloads; snapshot-qualified evidence is rebound by the
-//! publisher, never copied with an earlier snapshot's attribution.
+//! versions and edge payloads. Structural call evidence is revision-independent
+//! and copied by membership when CallSummary inputs still match.
 use super::inventory::{hydrate_node, NODE_COLUMNS};
 use super::*;
 use crate::{StructuralEdge, TopologyGraph};
@@ -145,4 +145,69 @@ pub(super) fn load(
     }
     projection.graph.rebuild_indexes();
     Ok(Some(projection))
+}
+
+const CALL_COLLECTIONS: &[&str] = &[
+    "structural_edges",
+    "relation_edges",
+    "relation_claims",
+    "unresolved_relations",
+    "propositions",
+];
+
+/// Seal revision-independent call rows for a file unit after resolution.
+pub(super) fn seal_calls(
+    connection: &Connection,
+    unit: i64,
+    store: &KnowledgeStore,
+) -> Result<(), KnowledgeRepositoryError> {
+    connection
+        .prepare_cached("DELETE FROM structural_file_calls WHERE unit_id=?1")?
+        .execute([unit])?;
+    let mut statement =
+        connection.prepare_cached("INSERT INTO structural_file_calls VALUES(?1,?2,?3,?4,?5)")?;
+    let mut ordinal = 0i64;
+    for_each_store_row(store, |row| {
+        if !CALL_COLLECTIONS.contains(&row.collection) {
+            return Ok(());
+        }
+        let payload = intern_row_payload(connection, &row)?;
+        statement.execute(params![
+            unit,
+            ordinal,
+            row.collection,
+            row.record_id,
+            payload
+        ])?;
+        ordinal = ordinal
+            .checked_add(1)
+            .ok_or_else(|| invalid_record("file_calls", "ordinal overflow"))?;
+        Ok(())
+    })?;
+    Ok(())
+}
+
+/// Copy sealed call membership into the selected view. Missing seals are misses.
+pub(super) fn reuse_calls(
+    connection: &Connection,
+    unit: i64,
+) -> Result<bool, KnowledgeRepositoryError> {
+    let count: i64 = connection.query_row(
+        "SELECT COUNT(*) FROM structural_file_calls WHERE unit_id=?1",
+        [unit],
+        |row| row.get(0),
+    )?;
+    if count == 0 {
+        return Ok(false);
+    }
+    connection
+        .prepare_cached(
+            "INSERT INTO scoped_records(view_id,collection,record_id,payload) \
+         SELECT (SELECT id FROM temp.selected_knowledge_view),collection,record_id,payload \
+         FROM structural_file_calls WHERE unit_id=?1 \
+         ON CONFLICT(view_id,collection,record_id) DO UPDATE SET payload=CASE \
+         WHEN scoped_records.payload=excluded.payload THEN excluded.payload ELSE NULL END",
+        )?
+        .execute([unit])?;
+    Ok(true)
 }

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-19: Membership-only structural publication cut
+
+- Skip per-view snapshot site envelopes for unchanged sealed syntax; markers stay
+  on shared node versions and load preserves them when site collections are empty.
+- Ordinary structural seals commit inventory membership instead of streaming a
+  full graph-export digest; keep `compute_export_digest` for on-demand checks.
+- Structural call scope and provenance are revision-independent; matched
+  `CallSummary` inputs reuse sealed call membership in SQLite instead of rebinding.
+- Preserve damaged-projection abort, historical reads and cold/retained graph
+  parity controls. Subject-context/compare RSS and measured O(changed-files)
+  refresh remain open; re-run incremental probes before latency claims.
+
 ## 2026-10-19: Align Windows package-api roots with sidecar spelling
 
 - Port Pyright path containment from merged storage qualification: compare

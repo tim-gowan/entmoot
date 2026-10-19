@@ -225,11 +225,14 @@ pub fn retain_independent_evidence(
     !evidence.is_empty()
 }
 
+/// Structural call identity is revision-independent: repository domain only.
+/// View membership and inventory headers carry the publication snapshot;
+/// provenance on claims does not rewrite edge identity across edits.
 pub fn graph_relation_scope(graph: &TopologyGraph) -> Scope {
     Scope {
         domain: graph.snapshot.repository_id.clone(),
-        snapshot_revision: Some(graph.snapshot.revision.clone()),
-        snapshot_digest: graph.snapshot.snapshot_digest.clone(),
+        snapshot_revision: None,
+        snapshot_digest: None,
         occurrence_id: None,
         context_id: None,
     }
@@ -303,8 +306,10 @@ fn record_structural_call(
         scope,
         vec![],
         Some(Provenance {
-            snapshot_revision: Some(graph.snapshot.revision.clone()),
-            snapshot_digest: graph.snapshot.snapshot_digest.clone(),
+            // Structural claim identity stays revision-independent; the owning
+            // view's inventory header records the publication snapshot.
+            snapshot_revision: None,
+            snapshot_digest: None,
             artifacts: vec![],
             tool_digest: None,
             produced_at: None,
@@ -352,8 +357,8 @@ pub fn record_structural_unresolved_call(
         Some(occurrence_id.into()),
         vec![],
         Some(Provenance {
-            snapshot_revision: Some(graph.snapshot.revision.clone()),
-            snapshot_digest: graph.snapshot.snapshot_digest.clone(),
+            snapshot_revision: None,
+            snapshot_digest: None,
             artifacts: vec![],
             tool_digest: None,
             produced_at: None,

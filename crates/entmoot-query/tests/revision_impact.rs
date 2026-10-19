@@ -404,6 +404,8 @@ mod tests {
         let head = graph("def work(callback):\n    return callback()\n", 'b');
         assert!(!base.unresolved_relations.is_empty());
         let impact = compare_revision_impact(&base, &head).unwrap();
+        // Structural unresolved identities are revision-independent, so an
+        // unchanged decision is retained across publication snapshots.
         assert_eq!(
             impact
                 .evidence
@@ -416,26 +418,19 @@ mod tests {
             .evidence
             .iter()
             .filter(|r| r.record_kind == "unresolved_relation")
-            .all(|r| r.disposition == EvidenceImpactKind::Stale));
+            .all(|r| r.disposition == EvidenceImpactKind::Retained));
         assert_eq!(
             impact
                 .introduced_evidence
                 .iter()
                 .filter(|r| r.record_kind == "unresolved_relation")
                 .count(),
-            head.unresolved_relations.len()
+            0
         );
         let identical = compare_revision_impact(&base, &base).unwrap();
         assert!(identical.introduced_evidence.is_empty());
         assert!(identical.breaking_change_signals.signals.is_empty());
         assert!(impact.breaking_change_signals.signals.is_empty());
-        assert!(
-            impact
-                .breaking_change_signals
-                .non_signals
-                .stale_evidence_records
-                > 0
-        );
         assert!(identical
             .evidence
             .iter()

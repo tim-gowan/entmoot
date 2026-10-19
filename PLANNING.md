@@ -117,18 +117,21 @@ no-change stayed near 28–29s. Cold subject context still took 150.1s and about
 medians stayed 3–4ms; caller/callee warm medians about 0.51s.
 
 These are measured single-trial improvements on edit refresh and recovery, not
-repository-wide readiness. Complete callable index construction, claim rebinding
-and canonical verification still scale with the selected repository; this is not
-an O(changed-files) refresh. A further cut must share revision-independent records
-through file membership and preserve deletion/corruption detection when projecting
-snapshot-qualified records or deferring full export commitments. Import statements
-alone cannot close native dependency or dispatch frontiers. A reference is not
-necessarily a call, and provider relationships do not prove a closed dispatch set.
-Retain unmatched sites as explicit unknowns; do not invent type, dispatch or
-completeness facts a provider did not report. Claims that a call, dependency or
-dispatch frontier is open or closed must stay explicit and evidence-scoped.
-Qualify provider-specific binding, dispatch, dependency coverage and configuration
-separately from the compiler-free structural lane.
+repository-wide readiness. Structural publication now shares revision-independent
+call records through file membership, keeps syntax markers on sealed node versions
+without per-view site rebind, and seals ordinary views with membership commitments
+instead of a mandatory full graph-export stream. Complete callable index
+construction for changed resolution frontiers and cold subject/compare graph
+consumers still scale with the selected repository; this is not yet a measured
+O(changed-files) refresh. Import statements alone cannot close native dependency
+or dispatch frontiers. A reference is not necessarily a call, and provider
+relationships do not prove a closed dispatch set. Retain unmatched sites as
+explicit unknowns; do not invent type, dispatch or completeness facts a provider
+did not report. Claims that a call, dependency or dispatch frontier is open or
+closed must stay explicit and evidence-scoped. Qualify provider-specific binding,
+dispatch, dependency coverage and configuration separately from the compiler-free
+structural lane. Re-measure the 512-file and full Go incremental probes after this
+cut before claiming latency qualification.
 
 The split preserves a conservative v1 whole-engine derivation fence. Qualify
 component-specific fingerprints before narrowing its invalidation scope. Measure

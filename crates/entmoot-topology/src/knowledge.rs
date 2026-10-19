@@ -274,6 +274,18 @@ impl KnowledgeStore {
         self.attach_collections(inventory)
     }
 
+    /// Attach evidence collections without clearing syntax already sealed on
+    /// shared node versions. Used when site collections were not published.
+    pub fn into_inventory_preserving_syntax(self, mut inventory: TopologyGraph) -> TopologyGraph {
+        inventory.coverages = self
+            .coverages
+            .iter()
+            .filter(|coverage| coverage.snapshot == inventory.snapshot)
+            .cloned()
+            .collect();
+        self.attach_collections(inventory)
+    }
+
     fn project_syntax(&self, mut inventory: TopologyGraph) -> TopologyGraph {
         // A disposable projection cannot restore inactive observations. Rehydrate
         // syntax only from visible, snapshot-matched source-of-record rows below.

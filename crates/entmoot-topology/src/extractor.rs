@@ -465,22 +465,28 @@ mod tests {
         assert_eq!(graph.snapshot, snapshot);
         let unresolved = graph.unresolved_relations.first().unwrap();
         assert_eq!(unresolved.scope.domain, snapshot.repository_id);
-        assert_eq!(
-            unresolved.scope.snapshot_revision.as_deref(),
-            Some(snapshot.revision.as_str())
-        );
+        // Structural call identity is revision-independent; publication snapshot
+        // lives on the graph/view, not in edge or claim identity coordinates.
+        assert_eq!(unresolved.scope.snapshot_revision, None);
+        assert_eq!(unresolved.scope.snapshot_digest, None);
         assert_eq!(
             unresolved
                 .provenance
                 .as_ref()
-                .and_then(|value| value.snapshot_revision.as_deref()),
-            Some(snapshot.revision.as_str())
+                .and_then(|value| value.snapshot_revision.clone()),
+            None
         );
         assert!(graph.validate().is_ok());
 
-        let mut stale = graph;
-        stale.snapshot.revision = "2".repeat(40);
-        let error = stale.validate().unwrap_err().to_string();
+        let mut next_revision = graph;
+        next_revision.snapshot.revision = "2".repeat(40);
+        // Revision-independent structural scopes remain valid when only the
+        // publication snapshot advances; snapshot-qualified scopes still bind.
+        assert!(next_revision.validate().is_ok());
+        if let Some(relation) = next_revision.unresolved_relations.first_mut() {
+            relation.scope.snapshot_revision = Some("1".repeat(40));
+        }
+        let error = next_revision.validate().unwrap_err().to_string();
         assert!(error.contains("scope disagrees with graph snapshot"));
     }
 

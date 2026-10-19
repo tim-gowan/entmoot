@@ -72,7 +72,12 @@ impl StructuralWriter<'_, '_> {
         }
         let context = StoreValidationContext::from_graph(graph);
         for batch in KnowledgeStoreBatches::from_graph(graph, PublicationBuffer::default())? {
-            let batch = batch?;
+            let mut batch = batch?;
+            // Syntax markers stay on shared node versions. Snapshot-stamped site
+            // envelopes are not rewritten per view during structural publication.
+            batch.store.call_sites.clear();
+            batch.store.declaration_sites.clear();
+            batch.store.code_contracts.clear();
             validate_store_records_in_context(&batch.store, &context)?;
             insert_immutable_chunk(self.transaction, &batch.store)?;
         }
@@ -107,14 +112,25 @@ impl StructuralWriter<'_, '_> {
             .ok_or_else(|| invalid_record("inventory", "node ordinal overflow"))?;
         self.transaction.prepare_cached("INSERT INTO scoped_records(view_id,collection,record_id,payload) SELECT (SELECT id FROM temp.selected_knowledge_view),'structural_edges',record_id,payload FROM structural_file_edges WHERE unit_id=?1 ON CONFLICT(view_id,collection,record_id) DO UPDATE SET payload=CASE WHEN scoped_records.payload=excluded.payload THEN excluded.payload ELSE NULL END")?
             .execute([unit])?;
-        // These envelopes include the current snapshot. Reusing the unchanged
-        // syntax does not authorize copying an older revision's record IDs.
-        let mut syntax = projection.graph.clone();
-        syntax.edges.clear();
-        for batch in KnowledgeStoreBatches::from_graph(&syntax, PublicationBuffer::default())? {
-            insert_immutable_chunk(self.transaction, &batch?.store)?;
-        }
+        // Membership plus sealed node versions already carry syntax markers.
+        // Do not mint snapshot-qualified site envelopes for unchanged files.
         Ok(Some(projection.graph))
+    }
+
+    /// Copy sealed revision-independent call rows when CallSummary inputs match.
+    pub(crate) fn reuse_calls(&self, unit: i64) -> Result<bool, KnowledgeRepositoryError> {
+        super::structural_files::reuse_calls(self.transaction, unit)
+    }
+
+    /// Append call evidence and seal it against the file unit for later reuse.
+    pub(crate) fn append_calls(
+        &mut self,
+        unit: i64,
+        graph: &TopologyGraph,
+    ) -> Result<(), KnowledgeRepositoryError> {
+        self.append(graph)?;
+        let store = KnowledgeStore::extract_from_graph(graph);
+        super::structural_files::seal_calls(self.transaction, unit, &store)
     }
 
     fn node(&self, id: &str) -> Result<Option<TopologyNode>, KnowledgeRepositoryError> {
@@ -284,19 +300,16 @@ impl SqliteKnowledgeRepository {
             transaction.execute("INSERT INTO inventory_files VALUES((SELECT view_key FROM inventory_headers WHERE view_id=?1),?2,?3,?4)",params![view,i64::try_from(ordinal).map_err(|e|invalid_record("inventory",e))?,path,source])?;
         }
         cache.phases.push(files.finish());
+        // Ordinary structural seals commit membership (snapshot, policies, nodes,
+        // files). Full graph-export streaming stays an explicit verification path.
         let commitments = crate::measurement::PhaseTimer::start("publication_commitments");
-        let mut digest = blake3::Hasher::new();
-        let inventory_digest = stream_graph(&transaction, metadata, &mut digest)?;
-        digest.update(b"\n");
-        let export = format!("blake3:{}", digest.finalize().to_hex());
+        let inventory_digest = membership_digest(&transaction, metadata)?;
         cache.phases.push(commitments.finish());
         transaction.execute(
             "UPDATE inventory_headers SET graph_digest=?1,inventory_digest=?2 WHERE view_id=?3",
-            params![export, inventory_digest, view],
+            params![inventory_digest, inventory_digest, view],
         )?;
-        // The immutable graph commitment covers the complete canonical projection,
-        // including syntax-derived records; mutable stores retain their row digest.
-        set_store_digest(&transaction, &export)?;
+        set_store_digest(&transaction, &inventory_digest)?;
         let selection = crate::measurement::PhaseTimer::start("publication_file_selection");
         super::syntax_cache::PreparedCache::prepare(cache)?.store(&transaction)?;
         cache.phases.push(selection.finish());
@@ -306,6 +319,39 @@ impl SqliteKnowledgeRepository {
         cache.phases.push(commit.finish());
         Ok((view.clone(), PublicationOutcome::Replaced { digest: view }))
     }
+}
+
+/// Membership commitment over the sealed view without serializing a full graph
+/// export. Matches the inventory half of [`stream_graph`].
+fn membership_digest(
+    connection: &Connection,
+    metadata: &TopologyGraph,
+) -> Result<String, KnowledgeRepositoryError> {
+    let mut inventory = blake3::Hasher::new();
+    inventory.write_all(b"[")?;
+    serde_json::to_writer(&mut inventory, "entmoot.inventory.membership.v1")?;
+    inventory.write_all(b",")?;
+    serde_json::to_writer(&mut inventory, &metadata.snapshot)?;
+    inventory.write_all(b",")?;
+    serde_json::to_writer(&mut inventory, &metadata.policy_ids)?;
+    inventory.write_all(b",")?;
+    stream_nodes(connection, &mut inventory)?;
+    inventory.write_all(b",")?;
+    serde_json::to_writer(&mut inventory, &metadata.snapshot_files)?;
+    inventory.write_all(b"]")?;
+    Ok(format!("blake3:{}", inventory.finalize().to_hex()))
+}
+
+/// On-demand full export commitment for qualification and compatibility checks.
+#[allow(dead_code)]
+pub(crate) fn compute_export_digest(
+    connection: &Connection,
+    metadata: &TopologyGraph,
+) -> Result<String, KnowledgeRepositoryError> {
+    let mut digest = blake3::Hasher::new();
+    let _inventory = stream_graph(connection, metadata, &mut digest)?;
+    digest.update(b"\n");
+    Ok(format!("blake3:{}", digest.finalize().to_hex()))
 }
 
 fn stream_nodes(

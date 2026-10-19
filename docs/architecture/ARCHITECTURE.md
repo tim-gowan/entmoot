@@ -480,16 +480,21 @@ Repository identity, relative path, exact source digest and policies qualify eac
 derivation changes. Host roots do not prevent reuse across worktrees in the same
 repository. Structural decisions record the exact callable-index reads, including
 absent paths, ambiguous results and caller membership. Unchanged read digests allow
-early cutoff; newly appearing targets invalidate negative reads. Applying a decision
-creates fresh snapshot-scoped claims through the ordinary relation owners and never
-replays native evidence. This follows the tracked-input/unchanged-result discipline
-of [rustc incremental queries](https://rustc-dev-guide.rust-lang.org/queries/incremental-compilation-in-detail.html)
+early cutoff; newly appearing targets invalidate negative reads. Structural call
+identities are revision-independent; matched call summaries copy sealed membership
+instead of minting new snapshot-stamped claim IDs. Syntax markers stay on shared
+node versions, so unchanged files do not rebind site envelopes. Ordinary seals
+commit inventory membership; full graph-export streaming is on-demand. Native
+evidence is never replayed through this path. This follows the
+tracked-input/unchanged-result discipline of
+[rustc incremental queries](https://rustc-dev-guide.rust-lang.org/queries/incremental-compilation-in-detail.html)
 without introducing a general query engine. Cache membership has a content commitment
 over verified payload bytes and pinned reads, avoiding repeated tree serialization.
 An unchanged complete selection needs no refresh. Durable membership updates commit
 with the fenced graph seal and progress cleanup; a later producer cannot overwrite
 an earlier revision's file selection.
-Cache hydration and complete index construction remain whole-operation costs.
+Complete callable-index construction for invalidated frontiers and graph-hydrating
+consumers remain whole-operation costs.
 Part membership, phase cursor and worker fence commit together. Retention preserves
 parts through live checkpoints; sealing or cancellation releases their membership.
 Cooperative file/step/time budgets stop admission between steps, never kill a

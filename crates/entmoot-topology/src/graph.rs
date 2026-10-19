@@ -1727,7 +1727,15 @@ impl TopologyGraph {
 }
 
 fn scope_matches_snapshot(scope: &entmoot_contracts::Scope, snapshot: &SourceSnapshot) -> bool {
-    scope.domain == snapshot.repository_id && scope_snapshot_coordinates_match(scope, snapshot)
+    scope.domain == snapshot.repository_id
+        && (scope_is_revision_independent(scope)
+            || scope_snapshot_coordinates_match(scope, snapshot))
+}
+
+/// Absent snapshot coordinates mark content-addressed structural evidence whose
+/// publication snapshot lives on the owning view, not on the edge identity.
+fn scope_is_revision_independent(scope: &entmoot_contracts::Scope) -> bool {
+    scope.snapshot_revision.is_none() && scope.snapshot_digest.is_none()
 }
 
 fn scope_snapshot_coordinates_match(

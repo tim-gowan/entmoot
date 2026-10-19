@@ -308,27 +308,39 @@ fn build_with_file_facts(
                             reason: "IR lacks source commitment".into(),
                         }
                     })?;
-                    let calls = match prior
+                    let unit = cache.retained_unit(path).ok_or_else(|| {
+                        KnowledgeRepositoryError::InvalidRecord {
+                            collection: "file_facts",
+                            reason: "file lacks a local sealed parser unit".into(),
+                        }
+                    })?;
+                    if let Some(calls) = prior
                         .qualified_calls(path, digest)?
                         .filter(|calls| calls.matches(&index))
                     {
-                        Some(calls) => {
+                        if writer.reuse_calls(unit)? {
                             cache.reused_stitching += 1;
-                            calls
+                            cache.insert_calls(path, &calls)?;
+                            continue;
                         }
-                        None => {
-                            let record = cache.record(path)?.ok_or_else(|| {
-                                KnowledgeRepositoryError::InvalidRecord {
-                                    collection: "file_facts",
-                                    reason: "file lacks parser IR".into(),
-                                }
-                            })?;
-                            CallPart::build_record(&index, path, Some(&record))
+                        // Matched decisions without a seal: apply once and seal.
+                        let mut part = header.clone();
+                        calls.apply(&mut part);
+                        writer.append_calls(unit, &part)?;
+                        cache.reused_stitching += 1;
+                        cache.insert_calls(path, &calls)?;
+                        continue;
+                    }
+                    let record = cache.record(path)?.ok_or_else(|| {
+                        KnowledgeRepositoryError::InvalidRecord {
+                            collection: "file_facts",
+                            reason: "file lacks parser IR".into(),
                         }
-                    };
+                    })?;
+                    let calls = CallPart::build_record(&index, path, Some(&record));
                     let mut part = header.clone();
                     calls.apply(&mut part);
-                    writer.append(&part)?;
+                    writer.append_calls(unit, &part)?;
                     cache.insert_calls(path, &calls)?;
                 }
                 cache.phases.push(resolve.finish());
@@ -1304,12 +1316,26 @@ mod retained_structural_tests {
             )
             .unwrap();
             let repository = SqliteKnowledgeRepository::open_read_snapshot(&locator).unwrap();
-            let mut export = blake3::Hasher::new();
-            serde_json::to_writer(&mut export, &expected).unwrap();
-            export.update(b"\n");
+            // Ordinary structural seals commit membership, not a full graph export.
+            let mut membership = expected.clone();
+            membership
+                .nodes
+                .sort_by(|left, right| left.id.cmp(&right.id));
+            let mut digest = blake3::Hasher::new();
+            serde_json::to_writer(
+                &mut digest,
+                &(
+                    "entmoot.inventory.membership.v1",
+                    &membership.snapshot,
+                    &membership.policy_ids,
+                    &membership.nodes,
+                    &membership.snapshot_files,
+                ),
+            )
+            .unwrap();
             assert_eq!(
                 repository.inventory_export_digest().unwrap().unwrap(),
-                format!("blake3:{}", export.finalize().to_hex())
+                format!("blake3:{}", digest.finalize().to_hex())
             );
             let actual = repository.load_inventory(false).unwrap().unwrap();
             let notes = actual

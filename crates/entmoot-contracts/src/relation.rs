@@ -505,18 +505,21 @@ impl RelationEdge {
 
     /// A build-scoped claim may refer to a shared source callsite projection.
     /// This permits retention, not application outside the claim's context.
-    /// Snapshot, repository and occurrence coordinates must still agree exactly.
+    /// Revision-independent structural edges (absent snapshot coordinates) may
+    /// accept publication-scoped claims in the same domain and occurrence.
     pub fn accepts_claim_scope(&self, scope: &Scope) -> bool {
         self.scope == *scope
             || (self.schema_domain == "source"
                 && self.predicate == RelationKind::Calls
                 && self.occurrence_id.is_some()
                 && self.scope.context_id.is_none()
-                && scope.context_id.is_some()
                 && self.scope.domain == scope.domain
-                && self.scope.snapshot_revision == scope.snapshot_revision
-                && self.scope.snapshot_digest == scope.snapshot_digest
-                && self.scope.occurrence_id == scope.occurrence_id)
+                && self.scope.occurrence_id == scope.occurrence_id
+                && (scope.context_id.is_some()
+                    && self.scope.snapshot_revision == scope.snapshot_revision
+                    && self.scope.snapshot_digest == scope.snapshot_digest
+                    || self.scope.snapshot_revision.is_none()
+                        && self.scope.snapshot_digest.is_none()))
     }
 
     pub fn validate(&self) -> Result<(), RelationValidationError> {
@@ -1120,6 +1123,13 @@ mod tests {
             }
             assert!(!edge.accepts_claim_scope(&foreign), "{field}");
         }
+        let mut revision_independent = edge.clone();
+        revision_independent.scope.snapshot_revision = None;
+        revision_independent.scope.snapshot_digest = None;
+        assert!(
+            revision_independent.accepts_claim_scope(&native),
+            "revision-independent structural edges accept publication-scoped claims"
+        );
         edge.occurrence_id = None;
         assert!(
             !edge.accepts_claim_scope(&native),
