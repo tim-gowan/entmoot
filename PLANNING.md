@@ -65,7 +65,7 @@ queries took about 0.49s; their six-repetition processes took about 3s. Cold
 subject context took 153.7s and roughly 9.65GB process peak RSS; the body comparison
 took 247.9s and 11.79GB. Those full-graph consumers remain scale blockers.
 This single-trial characterization does not qualify later revisions or native
-semantics. Qualify the incremental publisher below on the same complete corpus.
+semantics. The incremental publisher on the same corpus is recorded below.
 
 Native/canon production still uses graph views; native output is one
 complete family artifact, although every family now consumes compact pinned
@@ -99,29 +99,36 @@ and 69,925 structural edges matched the baseline exactly. Initial retention grew
 from 251.9MB to 259.7MB for projection references. The edit still spent 6.3s in
 syntax projection/claim rebinding, 3.5s in structural resolution, 3.0s verifying
 publication commitments and 1.6s selecting file facts/call summaries. Parent and
-child phases overlap. Full-repository measurements of this change remain pending.
-Complete callable index construction, claim rebinding and canonical verification
-still scale with the selected repository; this is not an O(changed-files) refresh.
-A further cut must share revision-independent records through file membership
-and preserve deletion/corruption detection when projecting snapshot-qualified
-records or deferring full export commitments. Import statements alone cannot
-close native dependency or dispatch frontiers.
+child phases overlap.
 
-SCIP is a possible optional provider input, not a remedy for this structural-only
-publication cost. The [SCIP protocol](https://github.com/scip-code/scip/blob/main/scip.proto)
-carries document occurrences and package-qualified symbol descriptors, but a
-reference is not necessarily a call and its relationships do not prove a closed
-dispatch set. A future importer can join occurrences to structural call/declaration
-spans through the native normalization boundary, preserving provider symbols as
-attributes and structural IDs as identities. It must pin source/configuration,
-convert position encodings, retain unmatched sites as explicit unknowns and avoid
-inventing type/dispatch/completeness facts the indexer did not report. There is no
-SCIP importer today. Document ingestion can be file-sized; safe reindexing still
-follows the provider's project/module/configuration dependencies. For example,
-[scip-go](https://github.com/scip-code/scip-go) uses Go module/package loading.
-Replacing the compiler-free structural lane with such an indexer would lose that
-baseline; adapting a native provider preserves it. Qualify provider-specific
-binding, dispatch, dependency coverage and configuration separately before a switch.
+The [full incremental-publisher characterization](evals/experiments/performance-incremental-go-2026-10-19.json)
+at `352cf60` completed the same Go revision and sequence with pinned release
+binaries. Fresh publication took 1,297.6s (about 9% faster than the streamed
+baseline in this single trial) with 0.49GB sampled peak RSS. Comment/body/add/rename
+took 576–590s (about 23–31% faster than 750–828s streamed) while reusing 11,831
+of 11,832 sealed syntax projections on one-file edits. Recovery after an injected
+transactional abort took 567.9s versus 1,781.8s streamed; the publication pointer
+and prior views stayed put, completed parser units survived, and the retry reused
+all 11,832 sealed syntax files. Source bytes, binary hashes and historical reads
+were verified; an earlier attempt that failed comment with a store path I/O error
+is retained beside the completed run and is not this completion. Delete and
+no-change stayed near 28–29s. Cold subject context still took 150.1s and about
+9.66GB RSS; body comparison took 259.0s and 11.79GB. Exact find/source warm
+medians stayed 3–4ms; caller/callee warm medians about 0.51s.
+
+These are measured single-trial improvements on edit refresh and recovery, not
+repository-wide readiness. Complete callable index construction, claim rebinding
+and canonical verification still scale with the selected repository; this is not
+an O(changed-files) refresh. A further cut must share revision-independent records
+through file membership and preserve deletion/corruption detection when projecting
+snapshot-qualified records or deferring full export commitments. Import statements
+alone cannot close native dependency or dispatch frontiers. A reference is not
+necessarily a call, and provider relationships do not prove a closed dispatch set.
+Retain unmatched sites as explicit unknowns; do not invent type, dispatch or
+completeness facts a provider did not report. Claims that a call, dependency or
+dispatch frontier is open or closed must stay explicit and evidence-scoped.
+Qualify provider-specific binding, dispatch, dependency coverage and configuration
+separately from the compiler-free structural lane.
 
 The split preserves a conservative v1 whole-engine derivation fence. Qualify
 component-specific fingerprints before narrowing its invalidation scope. Measure

@@ -275,14 +275,15 @@ sample does not establish current release readiness; the repaired controls still
 require [release qualification](PLANNING.md#current-qualification-blockers).
 
 Large-repository performance remains partial. The
-[full Go characterization](evals/experiments/performance-streamed-go-2026-10-19.json)
-at `84bd4a7` published 11,832 parsed files in 23.8 minutes with 0.50GB sampled peak
-RSS; single-file edits still took 12.5–13.8 minutes. Exact path/ID and source
-reads took 3–5ms inside the engine, but cold subject context still loaded a graph
-and took 154s. The runner's final recovery assertion failed; independent post-hoc
-checks verified recovery and preserved that failure. The newer incremental
-publisher awaits the same full-corpus qualification. [PLANNING](PLANNING.md)
-records the remaining costs and earlier attempts.
+[incremental Go characterization](evals/experiments/performance-incremental-go-2026-10-19.json)
+at `352cf60` published 11,832 parsed files in 21.6 minutes with 0.49GB sampled peak
+RSS; one-file edits took 9.6–9.8 minutes while reusing 11,831 sealed projections,
+about 23–31% faster than the [streamed baseline](evals/experiments/performance-streamed-go-2026-10-19.json)
+in this single trial. Exact path/ID and source reads took 3–4ms inside the engine,
+but cold subject context still loaded a graph and took 150s. Historical reads,
+binary pins and transactional-error recovery completed; an earlier failed attempt
+is retained separately. [PLANNING](PLANNING.md) records remaining repository-wide
+costs and the 512-file diagnostic.
 
 | Capability | Maturity | Utility and limit / verification owner |
 |---|---|---|

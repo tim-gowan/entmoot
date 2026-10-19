@@ -10,8 +10,13 @@
 - Remove the second complete node serialization during publication commitments
   and repeated preparation/writes in shared payload/path interners. Report
   finalization phases separately. A frozen 512-file diagnostic reduced one-file
-  refresh from 23.6s to 17.5s with exact node/edge parity; full-repository refresh
-  qualification of this change is pending.
+  refresh from 23.6s to 17.5s with exact node/edge parity. The same full Go corpus
+  at `352cf60` completed with pinned binaries: one-file edits 576–590s
+  (about 23–31% faster than the streamed baseline in that single trial) while
+  reusing 11,831/11,832 sealed projections; recovery 568s after transactional
+  abort. Cold subject/compare graph consumers and non-O(changed-files) refresh
+  costs remain; see
+  [performance-incremental-go-2026-10-19](evals/experiments/performance-incremental-go-2026-10-19.json).
 
 ## 2026-10-19: Retain canonical file facts before projection
 
