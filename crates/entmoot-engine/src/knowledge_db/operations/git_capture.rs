@@ -207,10 +207,11 @@ mod tests {
         db.control_operation(job.id.as_str(), entmoot_contracts::OperationControl::Cancel)
             .unwrap();
         drop(db);
-        crate::knowledge_db::retention::Maintenance::open(&store)
-            .unwrap()
-            .collect(&remove)
-            .unwrap();
+        {
+            let mut maintenance =
+                crate::knowledge_db::retention::Maintenance::open(&store).unwrap();
+            maintenance.collect(&remove).unwrap();
+        }
         let db = SqliteKnowledgeRepository::open(&store).unwrap();
         assert!(db.git_capture(&id).is_err());
         assert_eq!(

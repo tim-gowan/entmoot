@@ -48,6 +48,21 @@ def inventory(
 
 
 class CallableInvalidationTests(unittest.TestCase):
+    def test_workflow_configuration_is_accepted_by_the_real_parser(self) -> None:
+        import re
+        from pathlib import Path
+        from unittest.mock import patch
+        from scripts import pr_structural_diff
+
+        workflow = (Path(__file__).resolve().parents[1] / ".github/workflows/pr-gate-decision.yml").read_text(encoding="utf-8")
+        config = re.search(r"--config\s+(\S+)", workflow).group(1)
+        report = DiffReport(base="base", head="head", config="v1")
+        with patch("sys.argv", ["pr_structural_diff", "--base", "base", "--head", "head", "--path-preflight", "--config", config]), \
+                patch.object(pr_structural_diff, "path_preflight_report", return_value=report) as collect, \
+                patch.object(pr_structural_diff, "write_outputs"):
+            self.assertEqual(pr_structural_diff.main(), 0)
+        collect.assert_called_once_with("base", "head", "v1")
+
     def test_structural_hash_multiset_preserves_moves_and_duplicates(self) -> None:
         invalidated, introduced, retained = callable_delta(
             inventory("blake3:a", "blake3:a", "blake3:b"),

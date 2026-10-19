@@ -2,6 +2,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 import unittest
 import os
 from unittest.mock import patch
@@ -87,6 +88,26 @@ class AccelerationSkipTests(unittest.TestCase):
     def test_hook_unit_tests_keep_the_always_run_python_lane_without_cargo(self):
         self.assertEqual(self.plan_for("scripts/test_pre_commit_check.py").mode, "skip")
 
+    def test_eval_configuration_and_python_units_need_no_cargo_build(self):
+        from scripts import pre_commit_check as hook
+        for path in ("evals/experiments/local-trials.json", "evals/harness/test_measurement.py",
+                     "evals/harness/agent_provider.py", "evals/harness/test_campaign_configuration.py"):
+            with self.subTest(path=path):
+                plan = self.plan_for(path)
+                self.assertEqual(plan.mode, "skip")
+                with patch.multiple(hook, check_banned_patterns=lambda: 0, check_test_anti_patterns=lambda: 0, check_dylint=lambda: 0,
+                                    check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
+                                    check_crate_boundaries=lambda: 0, check_local_markdown_links=lambda: 0,
+                                    check_test_ownership_registry=lambda: 0), \
+                        patch.object(hook, "_acceleration_plan", return_value=plan), \
+                        patch.object(hook, "native_lane_enabled", return_value=False), \
+                        patch.object(hook, "run", return_value=0) as run, patch("builtins.print"):
+                    self.assertEqual(hook.main(), 0)
+                commands = [call.args[0] for call in run.call_args_list]
+                self.assertTrue(any("evals/harness" in cmd and "discover" in cmd for cmd in commands))
+                self.assertFalse(any(cmd[:2] in (["cargo", "build"], ["cargo", "test"], ["cargo", "clippy"])
+                                     for cmd in commands))
+
     def test_source_uses_owners_without_building_or_trusting_stale_binary(self):
         plan = self.plan_for("crates/entmoot-cli/src/main.rs")
         self.assertEqual(plan.mode, "selected")
@@ -105,10 +126,33 @@ class AccelerationSkipTests(unittest.TestCase):
 
 
 class ValidationIsolationTests(unittest.TestCase):
+    def test_mcp_http_prepares_cli_once_before_testing_without_affecting_stdio(self):
+        from scripts import pre_commit_check as hook
+        for target, needs_cli in (("http_e2e", True), ("stdio_e2e", False)):
+            plan = hook.AccelerationPlan("selected", "fixture", clippy_packages=["entmoot-mcp"],
+                cargo_commands=[["cargo", "test", "-p", "entmoot-mcp", "--test", target]])
+            with self.subTest(target=target), \
+                    patch.multiple(hook, check_banned_patterns=lambda: 0, check_test_anti_patterns=lambda: 0, check_dylint=lambda: 0,
+                                   check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
+                                   check_crate_boundaries=lambda: 0, check_local_markdown_links=lambda: 0,
+                                   check_test_ownership_registry=lambda: 0), \
+                    patch.object(hook, "_acceleration_plan", return_value=plan), \
+                    patch.object(hook, "native_lane_enabled", return_value=False), \
+                    patch.object(hook, "sidecar_controls", return_value=[]), \
+                    patch.object(hook, "run", return_value=0) as run, patch("builtins.print"):
+                self.assertEqual(hook.main(), 0)
+            commands = [call.args[0] for call in run.call_args_list]
+            builds = [cmd for cmd in commands if cmd[:2] == ["cargo", "build"]]
+            self.assertEqual(len(builds), int(needs_cli))
+            if needs_cli:
+                build = builds[0]
+                self.assertEqual(build[build.index("--profile") + 1], "test")
+                self.assertLess(commands.index(build), next(i for i, cmd in enumerate(commands) if cmd[:2] == ["cargo", "test"]))
+
     def test_sidecar_features_survive_without_the_in_process_native_lane(self):
         from scripts import pre_commit_check as hook
         command = ["cargo", "test", "-p", "entmoot", "--features", "entmoot/native-tests", "--test", "adapter_controls", "go_control", "--", "--include-ignored", "--exact"]
-        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_dylint=lambda: 0,
+        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_test_anti_patterns=lambda: 0, check_dylint=lambda: 0,
                             check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
                             check_crate_boundaries=lambda: 0, check_local_markdown_links=lambda: 0,
                             check_test_ownership_registry=lambda: 0), \
@@ -123,7 +167,7 @@ class ValidationIsolationTests(unittest.TestCase):
 
     def test_main_runs_cheap_checks_then_one_feature_aligned_workspace_lane(self):
         from scripts import pre_commit_check as hook
-        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_dylint=lambda: 0,
+        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_test_anti_patterns=lambda: 0, check_dylint=lambda: 0,
                             check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
                             check_crate_boundaries=lambda: 0,
                             check_local_markdown_links=lambda: 0, check_test_ownership_registry=lambda: 0), \
@@ -141,8 +185,26 @@ class ValidationIsolationTests(unittest.TestCase):
         self.assertFalse(any(cmd[:2] == ["cargo", "build"] for cmd in commands),
                          "CLI integration tests already build both native executables")
 
+    def test_sidecar_controls_reuse_the_workspace_package_graph(self):
+        from scripts import pre_commit_check as hook
+        from scripts.test_ownership import WORKSPACE_PACKAGES
+        command = ["cargo", "test", "-p", "entmoot", "--test", "program_adapters", "go_control", "--", "--ignored", "--exact"]
+        with patch.multiple(hook, check_banned_patterns=lambda: 0, check_test_anti_patterns=lambda: 0, check_dylint=lambda: 0,
+                            check_cargo_deny=lambda: 0, check_cargo_machete=lambda: 0,
+                            check_crate_boundaries=lambda: 0,
+                            check_local_markdown_links=lambda: 0, check_test_ownership_registry=lambda: 0), \
+                patch.object(hook, "_acceleration_plan", return_value=hook.AccelerationPlan("workspace", "fixture")), \
+                patch.object(hook, "native_lane_enabled", return_value=True), \
+                patch.object(hook, "sidecar_controls", return_value=[("go", command)]), \
+                patch.object(hook, "run", return_value=0) as run, patch("builtins.print"):
+            self.assertEqual(hook.main(), 0)
+        actual = next(call.args[0] for call in run.call_args_list if "go_control" in call.args[0])
+        self.assertEqual({actual[i + 1] for i, value in enumerate(actual[:-1]) if value == "-p"},
+                         set(WORKSPACE_PACKAGES))
+        self.assertEqual(actual[actual.index("--") + 1:], ["--ignored", "--exact"])
+
     def test_only_actual_cli_integration_builds_can_replace_the_binary_build(self):
-        from scripts.pre_commit_check import tests_build_cli_binaries
+        from scripts.pre_commit_check import selects_integration_tests
         for command, expected in [
             (["cargo", "test", "--workspace"], True),
             (["cargo", "test", "-p", "entmoot", "--test", "help"], True),
@@ -150,10 +212,14 @@ class ValidationIsolationTests(unittest.TestCase):
             (["cargo", "test", "-p", "entmoot", "--lib"], False),
             (["cargo", "test", "-p", "entmoot", "--doc"], False),
             (["cargo", "test", "-p", "entmoot", "--bin", "entmoot"], False),
+            (["cargo", "test", "-p", "entmoot", "--bins"], False),
+            (["cargo", "test", "-p", "entmoot", "--examples"], False),
+            (["cargo", "test", "-p", "entmoot", "--tests"], True),
+            (["cargo", "test", "-p", "entmoot", "--lib", "--all-targets"], True),
             (["cargo", "test", "--workspace", "--exclude", "entmoot"], False),
         ]:
             with self.subTest(command=command):
-                self.assertEqual(tests_build_cli_binaries([command]), expected)
+                self.assertEqual(selects_integration_tests([command], "entmoot"), expected)
 
     def test_validation_and_eval_use_same_isolated_target(self) -> None:
         from scripts.pre_commit_check import validation_environment, ROOT
@@ -167,23 +233,19 @@ class ValidationIsolationTests(unittest.TestCase):
     def test_windows_validation_bounds_default_linker_concurrency_and_preserves_override(self):
         from scripts.pre_commit_check import validation_environment
 
-        # Mock shutil.which: Python 3.13's real which() consults _winapi when
-        # sys.platform is patched to win32 on a non-Windows host.
-        with patch('scripts.pre_commit_check.sys.platform', 'win32'), \
-                patch('scripts.pre_commit_check.os.cpu_count', return_value=64), \
-                patch('scripts.pre_commit_check.shutil.which', return_value=None):
+        # Replace the consumer's platform view, not Python's shared sys module:
+        # shutil.which must keep using the actual host's platform APIs.
+        with patch('scripts.pre_commit_check.sys', SimpleNamespace(platform='win32')), \
+                patch('scripts.pre_commit_check.os.cpu_count', return_value=64):
             self.assertEqual(validation_environment({}).get('CARGO_BUILD_JOBS'), '6')
             self.assertEqual(validation_environment({'CARGO_BUILD_JOBS': '12'})['CARGO_BUILD_JOBS'], '12')
-        with patch('scripts.pre_commit_check.sys.platform', 'win32'), \
-                patch('scripts.pre_commit_check.os.cpu_count', return_value=2), \
-                patch('scripts.pre_commit_check.shutil.which', return_value=None):
+        with patch('scripts.pre_commit_check.sys', SimpleNamespace(platform='win32')), \
+                patch('scripts.pre_commit_check.os.cpu_count', return_value=2):
             self.assertEqual(validation_environment({}).get('CARGO_BUILD_JOBS'), '2')
-        with patch('scripts.pre_commit_check.sys.platform', 'win32'), \
-                patch('scripts.pre_commit_check.os.cpu_count', return_value=None), \
-                patch('scripts.pre_commit_check.shutil.which', return_value=None):
+        with patch('scripts.pre_commit_check.sys', SimpleNamespace(platform='win32')), \
+                patch('scripts.pre_commit_check.os.cpu_count', return_value=None):
             self.assertEqual(validation_environment({}).get('CARGO_BUILD_JOBS'), '1')
-        with patch('scripts.pre_commit_check.sys.platform', 'linux'), \
-                patch('scripts.pre_commit_check.shutil.which', return_value=None):
+        with patch('scripts.pre_commit_check.sys', SimpleNamespace(platform='linux')):
             self.assertNotIn('CARGO_BUILD_JOBS', validation_environment({}))
 
     def test_child_git_commands_do_not_inherit_the_committing_index(self) -> None:
@@ -270,6 +332,26 @@ class ManifestScanTests(unittest.TestCase):
                 self.assertEqual(check_banned_patterns(), 0)
                 (root / "Cargo.toml").write_text('[dependencies]\nsha2 = "0.10"\n', encoding="utf-8")
                 self.assertEqual(check_banned_patterns(), 1)
+
+
+class TestAntiPatternScanTests(unittest.TestCase):
+    def test_flags_path_colliding_find_queries_and_accepts_unique_symbols(self) -> None:
+        from scripts.pre_commit_check import check_test_anti_patterns
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            scripts = root / "scripts"
+            scripts.mkdir()
+            bad = scripts / "probe_bad.py"
+            good = scripts / "probe_good.py"
+            # Build the denylisted query without embedding a find-literal pair in this file.
+            colliding = "wo" + "rk"
+            bad.write_text(f'args = ["find", "{colliding}"]\n', encoding="utf-8")
+            good.write_text('args = ["find", "entmoot_smoke_fn"]\n', encoding="utf-8")
+            with patch("scripts.pre_commit_check.ROOT", root), redirect_stdout(StringIO()), redirect_stderr(StringIO()):
+                self.assertEqual(check_test_anti_patterns(), 1)
+                bad.write_text('args = ["find", "entmoot_smoke_fn"]\n', encoding="utf-8")
+                self.assertEqual(check_test_anti_patterns(), 0)
 
 
 class CrateBoundaryCheckTests(unittest.TestCase):

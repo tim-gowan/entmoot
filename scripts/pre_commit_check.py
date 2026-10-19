@@ -34,6 +34,28 @@ if str(ROOT) not in sys.path:
 # Import/Sync AST policy lives in tools/entmoot-lints (cargo dylint).
 BANNED_DEP_NAMES = ("sha2", "sha256")
 
+# Find/query literals that collide with common absolute-path segments (GHA uses
+# /home/runner/work/...). Prefer unique fixture symbols such as entmoot_smoke_fn.
+PATH_COLLIDING_FIND_QUERIES = (
+    "work",
+    "runner",
+    "home",
+    "users",
+    "tmp",
+    "var",
+    "mnt",
+    "opt",
+    "github",
+)
+# CLI list forms: ["find", "<query>"] / 'find', "<query>"
+FIND_QUERY_LITERAL_RE = re.compile(
+    r"""(?x)
+    (?:\[\s*["']find["']\s*,\s*["'](?P<list>[^"']+)["'])
+    |
+    (?:["']find["']\s*,\s*["'](?P<pair>[^"']+)["'])
+    """
+)
+
 # Local data roots may contain installed tools and third-party adapter sources.
 SKIP_DIRS = {".git", ".tmp", ".entmoot", ".venv", "venv", "node_modules", "target", "archive"}
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]*\]\((?P<target>[^)]+)\)")
@@ -85,6 +107,57 @@ def check_banned_patterns() -> int:
             print(f"  {line}", file=sys.stderr)
         return 1
     print("pre-commit: banned dependency check passed")
+    return 0
+
+
+def _iter_test_policy_files() -> list[Path]:
+    """Return script/eval/test sources without descending into build/vendor trees."""
+    roots = (ROOT / "scripts", ROOT / "evals", ROOT / "crates")
+    files: list[Path] = []
+    for start in roots:
+        if not start.is_dir():
+            continue
+        for directory, child_dirs, filenames in os.walk(start, topdown=True):
+            child_dirs[:] = sorted(name for name in child_dirs if name not in SKIP_DIRS)
+            base = Path(directory)
+            rel_parts = base.relative_to(ROOT).parts
+            under_tests = "tests" in rel_parts
+            for filename in sorted(filenames):
+                suffix = Path(filename).suffix
+                if suffix not in {".py", ".rs"}:
+                    continue
+                if start.name == "crates" and not under_tests and not filename.endswith("_test.rs"):
+                    continue
+                files.append(base / filename)
+    return files
+
+
+def check_test_anti_patterns() -> int:
+    """Fail find/query literals that collide with common CI absolute-path segments."""
+    denylist = {name.lower() for name in PATH_COLLIDING_FIND_QUERIES}
+    failures: list[str] = []
+    for path in _iter_test_policy_files():
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError as err:
+            failures.append(f"{path.relative_to(ROOT).as_posix()}: read error: {err}")
+            continue
+        rel = path.relative_to(ROOT).as_posix()
+        for index, line in enumerate(text.splitlines(), start=1):
+            for match in FIND_QUERY_LITERAL_RE.finditer(line):
+                query = (match.group("list") or match.group("pair") or "").lower()
+                if query in denylist:
+                    failures.append(
+                        f"{rel}:{index}: find query `{query}` collides with common "
+                        "absolute-path segments (e.g. GHA /home/runner/work/); "
+                        "use a unique fixture symbol such as entmoot_smoke_fn"
+                    )
+    if failures:
+        print("pre-commit: test anti-pattern check failed:", file=sys.stderr)
+        for line in failures:
+            print(f"  {line}", file=sys.stderr)
+        return 1
+    print("pre-commit: test anti-pattern check passed")
     return 0
 
 
@@ -400,34 +473,41 @@ def _acceleration_plan() -> AccelerationPlan:
     from scripts.pr_structural_diff import cargo_commands, map_path_to_selection, path_preflight_index
     try:
         report = path_preflight_index(staged_only=True)
+        paths = list(dict.fromkeys(p for f in report.files for p in (f.path, f.previous_path or f.path)))
         changed = [f for f in report.files if f.classification != "skip"]
         if not changed:
-            return AccelerationPlan("skip", "documentation/hook-only change; Python checks still run")
+            return AccelerationPlan("skip", "no Cargo owners changed; Python checks still run", changed_paths=paths)
         for item in changed:
             for path in dict.fromkeys([item.path, item.previous_path or item.path]):
                 map_path_to_selection(path, report, force=True)
         if any(note.startswith("unmapped path:") for note in report.notes):
-            return AccelerationPlan("workspace", "unmapped change; full workspace checks")
+            return AccelerationPlan("workspace", "unmapped change; full workspace checks", changed_paths=paths)
         commands = cargo_commands(report)
         if not commands:
-            return AccelerationPlan("workspace", "unmapped change; full workspace checks")
+            return AccelerationPlan("workspace", "unmapped change; full workspace checks", changed_paths=paths)
         packages = sorted({t.package for t in report.selected_targets} | set(report.selected_packages))
         if report.selected_entmoot_core_tests:
             packages = sorted(set(packages) | {"entmoot-core"})
-        return AccelerationPlan("selected", "changed-file ownership; structural equality cannot skip tests", commands, packages, [p for f in changed for p in (f.path, f.previous_path or f.path)])
+        return AccelerationPlan("selected", "changed-file ownership; structural equality cannot skip tests", commands, packages, paths)
     except Exception as error:
         print(f"pre-commit: ownership unavailable ({error}); full workspace checks", file=sys.stderr)
         return AccelerationPlan("workspace", "ownership unavailable; full workspace checks")
 
 
-def tests_build_cli_binaries(commands: list[list[str]]) -> bool:
-    """Cargo builds executable targets for this crate's integration tests."""
+def selects_integration_tests(commands: list[list[str]], package: str, target: str | None = None) -> bool:
+    """Cargo builds package executables before running its integration tests."""
     for command in commands:
         packages = {command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "-p"}
         excluded = {command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "--exclude"}
-        if "entmoot" in excluded or not ("--workspace" in command or "entmoot" in packages):
+        if package in excluded or not ("--workspace" in command or package in packages):
             continue
-        if "--test" in command or not any(flag in command for flag in ("--lib", "--doc", "--bin", "--example", "--bench")):
+        if "--tests" in command or "--all-targets" in command:
+            return True
+        if "--test" in command:
+            targets = {command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "--test"}
+            if target is None or target in targets:
+                return True
+        elif not any(flag in command for flag in ("--lib", "--doc", "--bin", "--bins", "--example", "--examples", "--bench", "--benches")):
             return True
     return False
 
@@ -435,6 +515,7 @@ def tests_build_cli_binaries(commands: list[list[str]]) -> bool:
 def main() -> int:
     policy = (
         check_banned_patterns,
+        check_test_anti_patterns,
         check_dylint,
         check_cargo_deny,
         check_cargo_machete,
@@ -466,11 +547,21 @@ def main() -> int:
     else:
         print("pre-commit: native lane unavailable, disabled, or unrelated to changed owners")
 
-    def with_features(cmd: list[str]) -> list[str]:
+    qualified_packages: set[str] = set()
+
+    def align_cargo_command(cmd: list[str]) -> list[str]:
         cmd = list(cmd)
         from scripts.test_ownership import WORKSPACE_PACKAGES, workspace_manifests, workspace_dependencies
         selected = set(WORKSPACE_PACKAGES) if "--workspace" in cmd else {
             cmd[i + 1] for i, value in enumerate(cmd[:-1]) if value == "-p"}
+        if cmd[:2] == ["cargo", "test"] and selected and selected <= qualified_packages:
+            # Follow-up native controls retain the roots of the completed package
+            # lane, including dev-dependency feature unification. Keep test flags
+            # and libtest arguments scoped exactly as selected.
+            position = cmd.index("--") if "--" in cmd else len(cmd)
+            cmd[position:position] = [arg for package in sorted(qualified_packages - selected)
+                                      for arg in ("-p", package)]
+            selected = set(qualified_packages)
         manifests = workspace_manifests(ROOT)
         dependency_index = workspace_dependencies(ROOT, manifests)
         dependencies = set(selected)
@@ -497,10 +588,16 @@ def main() -> int:
         ("pre-commit Python tests", [sys.executable, "-m", "unittest",
             "scripts.test_pr_structural_diff", "scripts.test_test_ownership",
             "scripts.test_propose_test_ownership", "scripts.test_pre_commit_check",
-            "scripts.test_normalize_sarif_repo_paths", "scripts.test_docs_workflow"]),
+            "scripts.test_normalize_sarif_repo_paths", "scripts.test_package_smoke",
+            "scripts.test_fixture_checkout", "scripts.test_check_release", "scripts.test_build_docs"]),
         ("cargo fmt", ["cargo", "fmt", "--", "--check"]),
     ):
         code = run(cmd, label)
+        if code != 0:
+            return code
+    if plan.changed_paths is None or any(path.startswith("evals/") for path in plan.changed_paths):
+        code = run([sys.executable, "-m", "unittest", "discover", "-s", "evals/harness", "-p", "test_*.py"],
+                   "harness configuration and Python units (no AI)")
         if code != 0:
             return code
     if plan.mode == "skip":
@@ -514,9 +611,22 @@ def main() -> int:
     else:
         for package in plan.clippy_packages:
             clippy.extend(["-p", package])
-        tests = [with_features(cmd) for cmd in plan.cargo_commands]
+        tests = [align_cargo_command(cmd) for cmd in plan.cargo_commands]
+    from scripts.test_ownership import WORKSPACE_PACKAGES
+    for command in tests:
+        if not any(flag in command for flag in ("--test", "--lib", "--doc")):
+            qualified_packages.update(WORKSPACE_PACKAGES if "--workspace" in command else
+                                      (command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "-p"))
     clippy.extend(["--", "-D", "warnings"])
-    checks = [("cargo clippy", with_features(clippy))] + [(f"cargo test {i+1}/{len(tests)}", cmd) for i, cmd in enumerate(tests)]
+    checks = [("cargo clippy", align_cargo_command(clippy))]
+    cli_ready = False
+    for i, cmd in enumerate(tests):
+        cli_ready = cli_ready or selects_integration_tests([cmd], "entmoot")
+        if selects_integration_tests([cmd], "entmoot-mcp", "http_e2e") and not cli_ready:
+            checks.append(("CLI for MCP interoperability", align_cargo_command(
+                ["cargo", "build", "-p", "entmoot", "--profile", "test", "--bins"])))
+            cli_ready = True
+        checks.append((f"cargo test {i+1}/{len(tests)}", cmd))
     failures = [label for label, cmd in checks if run(cmd, label) != 0]
     if failures:
         print("pre-commit: failed steps: " + ", ".join(failures), file=sys.stderr)
@@ -528,14 +638,14 @@ def main() -> int:
             for cmd in tests)
         commands = [] if engine_tested else [
             ("native resolver controls", ["cargo", "test", "-p", "entmoot-engine", "--test", "callsites_rust", "--test", "callsites_javascript"])]
-        if not tests_build_cli_binaries(tests):
+        if not cli_ready:
             commands.append(("matched native CLI and producer", ["cargo", "build", "-p", "entmoot", "--profile", "test", "--bins"]))
         for label, cmd in commands:
-            code = run(with_features(cmd), label)
+            code = run(align_cargo_command(cmd), label)
             if code != 0:
                 return code
     for family, cmd in sidecar_controls(dict(os.environ), plan.changed_paths):
-        code = run(with_features(cmd), f"installed {family} control")
+        code = run(align_cargo_command(cmd), f"installed {family} control")
         if code != 0:
             return code
     return 0

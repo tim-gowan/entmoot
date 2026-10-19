@@ -419,13 +419,21 @@ impl QueryEngine {
                     start,
                     target,
                     predicates,
+                    evidence_filter,
+                    prune,
                     ..
                 } => {
                     let roots = self.walk_endpoint_keys(start);
                     let targets = self.walk_endpoint_keys(target);
                     if roots.is_empty() || targets.is_empty() {
-                        return self
-                            .finish_result(self.bounded_walk(start, target, predicates, budget)?);
+                        return self.finish_result(self.bounded_walk_filtered(
+                            start,
+                            target,
+                            predicates,
+                            budget,
+                            *evidence_filter,
+                            prune,
+                        )?);
                     }
                     if roots
                         .len()
@@ -436,32 +444,21 @@ impl QueryEngine {
                         return Err(unavailable("endpoint selection exceeds retained memory"));
                     }
                     Search::Path {
-                        search: Box::new(walk::PathSearch::new(
+                        search: Box::new(walk::PathSearch::with_admission(
                             self,
                             &roots,
                             &targets,
                             parse_walk_predicates(predicates)?,
                             start == target,
+                            admission::EdgeAdmission::new(self, prune, *evidence_filter)?,
                         )),
                         paths: None,
                         offset: 0,
                     }
                 }
-                TraverseQuery::Neighborhood {
-                    start,
-                    direction,
-                    predicates,
-                    evidence_filter,
-                    endpoint_role,
-                    ..
-                } => Search::Neighborhood(Box::new(neighborhood::NeighborhoodSearch::new(
-                    self,
-                    start,
-                    *direction,
-                    predicates,
-                    *evidence_filter,
-                    endpoint_role.as_ref(),
-                )?)),
+                TraverseQuery::Neighborhood { .. } => Search::Neighborhood(Box::new(
+                    neighborhood::NeighborhoodSearch::new(self, &request)?,
+                )),
             };
             let (id, entry) = registry.insert(Session {
                 semantic: semantic.clone(),
@@ -525,8 +522,11 @@ impl QueryEngine {
                     TraverseQuery::Path { start, target, .. },
                 ) => {
                     let before = search.counters.clone();
-                    if !search.advance_with_limit(self, budget, limit.saturating_sub(replay_bytes))
-                    {
+                    if !search.advance_with_limit(
+                        self,
+                        budget,
+                        limit.saturating_sub(replay_bytes),
+                    )? {
                         return Err(unavailable("per-search memory allowance exhausted"));
                     }
                     if search.done && paths.is_none() {
@@ -577,6 +577,15 @@ impl QueryEngine {
                     }
                     .into();
                     let receipt = &mut value["search_receipt"];
+                    receipt["pruned_edges"] =
+                        json!(search.counters.pruned_edges - before.pruned_edges);
+                    receipt["evidence_filtered_edges"] = json!(
+                        search.counters.evidence_filtered_edges - before.evidence_filtered_edges
+                    );
+                    receipt["admission_claims_examined"] = json!(
+                        search.counters.admission_claims_examined
+                            - before.admission_claims_examined
+                    );
                     receipt["expanded_nodes"] =
                         json!(search.counters.expanded_nodes - before.expanded_nodes);
                     receipt["examined_edges"] =

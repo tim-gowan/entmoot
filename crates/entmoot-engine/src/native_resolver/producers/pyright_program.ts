@@ -24,12 +24,36 @@ import { PyrightFileSystem } from '@pyright/pyrightFileSystem';
 declare const ENTMOOT_PYRIGHT_TYPESHED: string;
 const digest = (bytes: Uint8Array) => 'blake3:' + bytesToHex(blake3(bytes));
 const inside = (root: string, file: string) => {
+    // Resolve both sides before comparing. Windows short/long path spellings and
+    // drive-letter case otherwise make path.relative report a false escape.
+    try {
+        root = real(root);
+        file = real(file);
+    } catch {
+        return false;
+    }
+    if (process.platform === 'win32') {
+        root = root.replaceAll('/', '\\').replace(/\\+$/, '');
+        file = file.replaceAll('/', '\\').replace(/\\+$/, '');
+        if (root.toLowerCase() === file.toLowerCase()) return true;
+    } else if (root === file) {
+        return true;
+    }
     const rel = path.relative(root, file);
     return rel === '' || (!rel.startsWith('..' + path.sep) && rel !== '..' && !path.isAbsolute(rel));
 };
 const portable = (s: string) => s.replaceAll('\\', '/');
 const publicMember = (name: string) => !name.startsWith('_') || /^__.+__$/.test(name);
-const real = (s: string) => fs.realpathSync(s).replace(/^[a-z]:/, drive => drive.toUpperCase());
+const real = (s: string) => {
+    let resolved = fs.realpathSync(s);
+    // Sidecar roots are ordinary drive paths; strip verbatim forms so containment
+    // matches request.root after Rust compiler_root normalization.
+    if (resolved.startsWith('\\\\?\\')) {
+        resolved = resolved.slice(4);
+        if (resolved.startsWith('UNC\\')) resolved = '\\\\' + resolved.slice(4);
+    }
+    return resolved.replace(/^[a-z]:/, drive => drive.toUpperCase());
+};
 
 /** Match structural-scan skip dirs; keep the Python fence close to inventory. */
 const SKIP_DIR_NAMES = new Set([
@@ -176,22 +200,49 @@ function run(request: any) {
         inputs.set(file, digest(bytes));
     }
     const pathIgnored = makeIgnoreChecker(root);
+    const typeshed = real(ENTMOOT_PYRIGHT_TYPESHED);
     // Fence explicit source and import universes before any analysis, including stubs.
     // Skip inventory-equivalent dirs and paths matching the publication root's gitignore.
-    function freeze(dir: string, verify = false, observed = new Set<string>()) {
+    function freeze(
+        dir: string,
+        verify = false,
+        observed = new Set<string>(),
+        seen = new Set<string>(),
+    ) {
+        dir = real(dir);
+        if (seen.has(dir)) return observed;
+        seen.add(dir);
         for (const entry of fs.readdirSync(dir, {withFileTypes: true}).sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) {
             const file = path.join(dir, entry.name);
             if (pathIgnored(file)) continue;
-            if (entry.isSymbolicLink()) throw Error('linked Python inputs require a qualified materialization: ' + dir);
-            if (entry.isDirectory()) freeze(file, verify, observed);
+            if (entry.isSymbolicLink()) {
+                // Project-local links still require materialization. Ambient import
+                // roots (Windows site-packages junctions) resolve to their target.
+                if (inside(root, file)) {
+                    throw Error('linked Python inputs require a qualified materialization: ' + dir);
+                }
+                let target: string;
+                try { target = real(file); } catch { continue; }
+                try {
+                    const st = fs.statSync(target);
+                    if (st.isDirectory()) freeze(target, verify, observed, seen);
+                    else if (st.isFile() && (/\.(py|pyi)$/.test(target) || ['py.typed', 'VERSIONS'].includes(entry.name))) {
+                        observed.add(target);
+                        if (!verify) { remember(target); sourceFiles.add(target); }
+                    }
+                } catch { /* dangling ambient link */ }
+                continue;
+            }
+            if (entry.isDirectory()) freeze(file, verify, observed, seen);
             else if (entry.isFile() && (/\.(py|pyi)$/.test(file) || ['py.typed', 'VERSIONS'].includes(entry.name))) {
-                observed.add(file);
-                if (!verify) { remember(file); sourceFiles.add(file); }
+                const key = real(file);
+                observed.add(key);
+                if (!verify) { remember(key); sourceFiles.add(key); }
             }
         }
         return observed;
     }
-    const universes = new Set([root, ...roots, ...packages.map((p: any) => p.root), ENTMOOT_PYRIGHT_TYPESHED]);
+    const universes = new Set([root, ...roots, ...packages.map((p: any) => p.root), typeshed]);
     const tracked = [...freeze(root)].filter(p => /\.pyi?$/.test(p));
     for (const dir of universes) if (dir !== root) freeze(dir);
     remember(interpreter);
@@ -221,11 +272,11 @@ function run(request: any) {
     const host = new ExplicitHost(sp);
     const pythonVersion = host.getPythonVersion(uri(interpreter), []);
     if (!pythonVersion) throw Error('cannot identify configured Python interpreter');
-    config.initializeFromJson({pythonPath: interpreter, extraPaths: roots, typeshedPath: ENTMOOT_PYRIGHT_TYPESHED,
+    config.initializeFromJson({pythonPath: interpreter, extraPaths: roots, typeshedPath: typeshed,
         pythonVersion: settings.python_version ?? PythonVersion.toString(pythonVersion),
         useLibraryCodeForTypes: true, typeCheckingMode: 'off'}, uri(analysisRoot), sp, host);
     config.pythonPath = uri(interpreter);
-    config.typeshedPath = uri(ENTMOOT_PYRIGHT_TYPESHED);
+    config.typeshedPath = uri(typeshed);
     const program = new Program(new ImportResolver(sp, config, host), config, sp, undefined, true);
     const calls: any[] = [];
     const diagnostics: string[] = [];
@@ -403,7 +454,19 @@ function run(request: any) {
             declarationTargets.set(resolved, result);
             return importRoute(decl, result);
         }
-        for (const pkg of packages.filter((p: any) => inside(root, p.root))) {
+        for (const pkg of packages) {
+            if (!inside(root, pkg.root)) {
+                // Consumer publications may map a dependency outside the analyzed
+                // root; only same-root packages contribute export surfaces here.
+                // Keep this out of `diagnostics` so references_complete stays honest.
+                providerErrors.push({
+                    kind: 'package_root_outside_analysis_root',
+                    package: pkg.name,
+                    root: portable(pkg.root),
+                    analysis_root: portable(root),
+                });
+                continue;
+            }
             const surface = {package: {ecosystem: 'python', name: pkg.name},
                 export_universes: [boundaryPolicy, 'pyright.method_header_utf8.v1', 'pyright.class_constructor_headers.v1',
                     'pyright.stub_function_header_utf8.v1', 'pyright.stub_method_header_utf8.v1', 'pyright.stub_class_constructor_headers.v1',

@@ -1,19 +1,14 @@
 name: PR gate decision (acceleration)
 
-# Scoped skip/run for cargo build/tests. Not a merge oracle.
+# Advisory structural classification using a qualified binary. Not a merge oracle.
 # Full ci.yml remains the correctness backstop.
 
 on:
-  pull_request:
-  workflow_dispatch:
+  workflow_call:
     inputs:
-      base:
-        description: Base commit SHA (defaults to PR base or HEAD~1)
-        required: false
-        type: string
-      head:
-        description: Head commit SHA (defaults to PR head or HEAD)
-        required: false
+      binaries_artifact:
+        description: Qualified Linux test-profile binaries from this workflow run
+        required: true
         type: string
 
 permissions:
@@ -38,20 +33,11 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           PR_BASE: ${{ github.event.pull_request.base.sha }}
           PR_HEAD: ${{ github.event.pull_request.head.sha }}
-          INPUT_BASE: ${{ inputs.base }}
-          INPUT_HEAD: ${{ inputs.head }}
         shell: bash
         run: |
           set -euo pipefail
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            BASE="$PR_BASE"
-            HEAD="$PR_HEAD"
-          else
-            BASE="$INPUT_BASE"
-            HEAD="$INPUT_HEAD"
-            if [ -z "$BASE" ]; then BASE="$(git rev-parse HEAD~1)"; fi
-            if [ -z "$HEAD" ]; then HEAD="$(git rev-parse HEAD)"; fi
-          fi
+          BASE="$PR_BASE"
+          HEAD="$PR_HEAD"
           [[ "$BASE" =~ ^[0-9a-fA-F]{40}$ ]] || { echo 'base must be a full commit SHA'; exit 2; }
           [[ "$HEAD" =~ ^[0-9a-fA-F]{40}$ ]] || { echo 'head must be a full commit SHA'; exit 2; }
           git cat-file -e "$BASE^{commit}"
@@ -84,17 +70,12 @@ jobs:
             pr_gate_decision.json
             pr_gate_decision.md
 
-      - name: Install Rust toolchain
+      - name: Download qualified binaries from this run
         if: steps.preflight.outputs.skip_cli_build != 'true'
-        run: rustup show
-
-      - name: Build entmoot-cli
-        if: steps.preflight.outputs.skip_cli_build != 'true'
-        run: cargo build --release -p entmoot
-
-      - name: Validate PR gate decision selector
-        if: steps.preflight.outputs.skip_cli_build != 'true'
-        run: python3 -m unittest scripts.test_pr_structural_diff
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ inputs.binaries_artifact }}
+          path: .tmp/bin-artifact
 
       - name: Structural classification + gate decisions
         if: steps.preflight.outputs.skip_cli_build != 'true'
@@ -102,12 +83,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          CLI=./target/release/entmoot
+          CLI=./.tmp/bin-artifact/entmoot
+          chmod +x "$CLI"
           python3 scripts/pr_structural_diff.py \
             --base "${{ steps.shas.outputs.base }}" \
             --head "${{ steps.shas.outputs.head }}" \
             --cli "$CLI" \
-            --config standard \
+            --config v1 \
             --json-out pr_gate_decision.json \
             --summary-out pr_gate_decision.md
           cat pr_gate_decision.md >> "$GITHUB_STEP_SUMMARY"
@@ -120,28 +102,3 @@ jobs:
           path: |
             pr_gate_decision.json
             pr_gate_decision.md
-
-      - name: Run selected cargo tests
-        if: steps.preflight.outputs.skip_cli_build != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import json
-          import subprocess
-          import shlex
-          import sys
-          from pathlib import Path
-
-          data = json.loads(Path("pr_gate_decision.json").read_text(encoding="utf-8"))
-          cmds = data.get("cargo_commands") or []
-          if not cmds:
-              print("No cargo tests selected (structural noops / docs-only).")
-              sys.exit(0)
-          for line in cmds:
-              print("+", line, flush=True)
-              completed = subprocess.run(shlex.split(line), shell=False)
-              if completed.returncode != 0:
-                  sys.exit(completed.returncode)
-          print("Selected tests passed.")
-          PY

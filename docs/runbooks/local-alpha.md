@@ -106,17 +106,10 @@ failures and unsupported constructs remain different observations.
    on that tag's structural, native and docs jobs; inspect their actual results
    and the subsequent registry-install checks before declaring a release.
 
-New crate names require an initial API-token publication. Configure a short-lived
-`CARGO_REGISTRY_TOKEN` in `crates-io` with publish-new/publish-update access to the
-five workspace names, and set `CRATES_IO_TRUSTED_PUBLISHING=false` for bootstrap.
-Once all crates exist, configure each crate's Trusted Publishing for
-`tim-gowan/entmoot`, `release.yml`, environment `crates-io`; enable the variable
-and revoke/remove the bootstrap token. OIDC cannot create new crate names.
-
+The [publishing procedure](../publishing.md) owns first-publish token setup,
+subsequent OIDC configuration, immutable release tags and optional Pages hosting.
 Docs called by a release inherit its push event; supplied inputs select release
-output and Pages upload. Direct docs push/PR runs stage only. Pages deployment
-also requires an Actions-based Pages site and `PAGES_ENABLED=true`; a private
-repository needs a supporting GitHub plan. A successful artifact build alone
+output. Direct docs push/PR runs stage only. A successful artifact build alone
 does not mean the site was deployed.
 
 ### Local qualification and copy handoff (2026-10-16)
@@ -156,42 +149,39 @@ been published. Re-run qualification after any implementation change.
 ### GitHub Actions
 
 Lane model: local pre-commit is fast and ownership-scoped; CI is authoritative;
-tag CD creates the GitHub Release and publishes to crates.io.
+tag CD creates the GitHub Release and publishes to crates.io. Direct pushes to
+`main` are blocked (PR + required checks); release publishes only from `v*` tags
+through the `crates-io` environment.
 
 - **Pre-commit** (`scripts/pre_commit_check.py`): developer accelerator—policy,
   fmt, ownership-scoped clippy/test. Not a substitute for CI; never teach
   `ci.yml` path-based correctness skips.
-- `ci.yml`: `structural` (compiler-free tests, packaging, release CLI artifact),
-  `policy` (fmt/Clippy/deny), `repo` (scripts unit tests). Cargo/pip caches;
+- `ci.yml`: `structural` (compiler-free tests, packaging, test-profile CLI/MCP artifacts),
+  `policy` (fmt/Clippy/deny), `repo` (Python script/configuration/harness tests). Cargo/pip caches;
   ubuntu uploads `.crate` artifacts. No path-based correctness skips; no remote
-  corpus clones.
+  corpus clones. Linux jobs call `.github/actions/assemble-ci-env` before build/test.
 - `native.yml` (`resolved` job): provisioned Windows/Linux adapters, pinned
   Pyright/TypeScript, Rust/Oxc producer, dispatch/compatibility; rust-cache;
-  producer CLI artifact on success.
+  producer CLI artifact on success. Linux assembly uses the same composite action
+  (tools + adapter tree); Windows keeps inline setup.
+- Local Linux rehearsal: `python scripts/rehearse_ci_env.py` (Docker + act;
+  `ghcr.io/catthehacker/ubuntu:full-latest`). Logs under `.tmp/ci-env-rehearsal/`.
 - `demo.yml`: dispatch-only structural corpus (`evals/demo/`); reuses CI CLI
   artifact. Not a release gate.
-- `docs.yml` (shared, parameterized): CI/PR builds into `.tmp/staging` and
-  uploads a staging artifact (no Pages deploy). After successful tag publish,
-  `release.yml` calls the same workflow with `.tmp/site` + Pages upload/deploy
-  when `PAGES_ENABLED=true`. Enable Pages with GitHub Actions as its source.
+- `docs.yml` (called by CI): reuses that run's qualified Linux test-profile CLI/MCP,
+  builds rustdoc and the site into `.tmp/staging`, and uploads a staging artifact.
+  After successful tag publish, `release.yml` deploys that artifact when
+  `PAGES_ENABLED=true`. Enable Pages with GitHub Actions as its source.
   Versioned docs match the package build; a GitHub Wiki is not a second source
   of truth.
-- `release.yml` (**sole CD**): on tag `v*`, runs ci/native on that SHA, asserts
+- `release.yml` (**sole CD**): on tag `v*`, runs ci/native/docs on that SHA, asserts
   tag↔version, creates the GitHub Release with `.crate` assets, Trusted
-  Publishing to crates.io, then docs. Bounded timeouts, minimal permissions,
+  Publishing to crates.io, then optional Pages deployment. Bounded timeouts, minimal permissions,
   verified immutable action pins. Trusted Publisher binding stays on this
   workflow filename + `crates-io`.
 - `publish.yml`: manual dry-run / bootstrap gate only (`publish=false` by
   default). Tags go through `release.yml`; do not use `publish.yml` as the
   primary release path.
-
-Create/register each crate and configure its trusted publisher for this repository,
-**`release.yml`**, and `crates-io` environment; then set
-`CRATES_IO_TRUSTED_PUBLISHING=true`. For bootstrap, an owner-scoped, short-lived
-`CARGO_REGISTRY_TOKEN` secret in that protected environment is supported. Never
-place credentials in source or logs. The release cannot roll back an already
-published version; a partial release requires operator reconciliation, not blind
-retry or treating an existing version as evidence of identical bytes.
 
 Cargo publication is immutable and packages must carry versioned dependencies;
 see [Cargo publishing](https://doc.rust-lang.org/cargo/reference/publishing.html).

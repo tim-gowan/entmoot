@@ -69,6 +69,280 @@ does not automatically reactivate it. Further execution machinery must earn its
 place through measured need. Do not add scheduler capabilities or checkpoint
 granularity during this pass.
 
+## Operator showcases: scratch qualification before promotion
+
+Use the locally built, matched CLI/producer against a realistic support portal
+under `.tmp/operator-showcase/`. Promote reusable fixtures into the existing
+crate `tests/fixtures` owners only after their independent controls work. Keep
+downloads, dependency trees, publications and measurements in scratch. This work
+does not qualify the pending release candidate or expand Entmoot into a scanner.
+
+The first scenario pins Express 4.21.2 and 5.1.0, with document downloads,
+ticket/invoice/private-note handlers, audit events and a dynamic export formatter.
+The old optional-extension route fails during Express 5 registration in the
+router/path-to-regexp dependency; the corrected route and unrelated routes are
+positive controls. This is an internal routing change, not a demonstrated public
+signature break. Express 5 moved its router into a separate package; an inventory
+removal from Express alone must not imply that the functionality disappeared.
+See the upstream [migration guide](https://expressjs.com/en/guide/migrating-5/#path-route-matching-syntax).
+
+Implement and qualify in this order:
+
+1. **Fixture and expectations.** Keep locked npm installations with lifecycle
+   scripts disabled and real loopback HTTP controls. Author expected route,
+   constructor, formatter and audit relationships independently of Entmoot's
+   outputs. Record original, upgraded and repaired states. Verify the frontend
+   URI is an HTTP endpoint association, not a JavaScript call edge to the server.
+2. **Navigation and dependency evidence.** Start with URI text/location discovery,
+   exact subjects, inspected calls and open boundaries. Qualify Oxc and explicit
+   TypeScript Program separately. Join materialized dependency publications only
+   through supported source/package/build-context evidence; retain ambiguity and
+   external targets. A successful endpoint path must reach the internal changed
+   occurrence, not stop at the Express import. Constructor and dynamic targets
+   need native controls; an unresolved call cannot become a plausible invented edge.
+3. **Shared traversal pruning.** Extend the existing query contract and adjacency
+   owner, then expose a thin `path` CLI command and the same MCP request. Prefer
+   explicit edge/callsite IDs, qualified names and bounded path/callee patterns
+   over guessing the meaning of an untyped string. Apply exclusions during both
+   search frontiers and seed discovery, including contracted chain interiors,
+   neighborhood walks and retained continuations. Include selectors in cache and
+   continuation identity. Receipts must report applied exclusions and counts;
+   a pruned negative answer is scoped to the selected graph. Reject malformed
+   selectors. Test alternate routes, parallel occurrences, cycles, excluded
+   endpoints, zero matches, changed filters on resume and immutable graph reuse.
+   Test-impact ownership floors must never be weakened by navigation pruning.
+4. **Claims and clone review.** Reuse generic SARIF attachment, assertions and role
+   queries. Validate mock SARIF against the official 2.1.0 schema, label the mock
+   producer, preserve exact locations/provenance and test stale/ambiguous inputs,
+   idempotence and absent roles. Standard `threadFlowLocation.kinds` already
+   supplies provider-stated roles; ordered trace steps must not invent call edges.
+   Extend the common adapter only for a demonstrated missing claim representation.
+   Parameterized hashes should group the two logged handlers while distinguishing
+   the unlogged handler; the independently specified route family and runtime
+   audit-event control establish the omission, not hash inequality alone.
+5. **Complete operation workflows.** Enumerate public leaves from live Clap help
+   (initial inventory: 76 leaves / 83 help sections). Cover navigation; publication
+   and attachment; impact/overlay/compatibility/test selection; producer handoff;
+   collaboration/recovery; retention; and identity/evidence inspection. Give every
+   leaf an operator question, executable example, independent expected observation
+   and failure/control case. Exercise mutations only in fixture-owned stores and
+   disposable Git repositories. Keep expert lifecycle procedures in their existing
+   runbooks rather than putting them on the ordinary navigation path.
+6. **Promotion and documentation.** Promote small offline semantic controls to
+   existing test owners, with optional pinned native/runtime controls separate.
+   Update ownership, required features, CLI/MCP/schema examples and the owning
+   runbooks together. Write regressions before behavioral fixes. Require focused
+   tests, workspace/fmt/strict Clippy/doctests/schema checks and executable docs;
+   unavailable tools, ignored tests and empty result sets are not qualification.
+
+Measure each operation's wall time, CPU, peak main-process working set, sampled
+process-tree RSS, output bytes/characters/tokens and storage delta. Separate fresh
+stores, warm queries, indexing/binding costs, dependency installation and cleanup.
+Record binary fingerprints, source/configuration digests, tools, repetitions and
+sampling limits. Compare complete operator tasks against a bounded `rg` plus
+source-reading baseline using identical sources and independently scored answers.
+Count all request/output pages, failed attempts and setup amortization. Named
+tokenizer counts are output-volume measurements, not billed model usage or hidden
+reasoning tokens. Measure actual agent input/output/reasoning usage only from a
+controlled model run that exposes it; otherwise report unavailable, not estimates
+of savings. A small fixture may favor grep, and that result must remain visible.
+
+Initial scratch observations (2026-10-17 UTC; not release qualification): runtime
+controls pass for both pinned Express versions; parameterized clone candidates
+separate the logged pair from the missing-log handler; generic SARIF attaches and
+its roles query a supported Program-bound `exportTicket → createFormatter` edge.
+URI text search, full frontend-to-dependency traversal, constructor/dynamic paths,
+pruning and coverage of every operation remain unqualified. The full Express
+impact response is 806,123 bytes / 289,063 `o200k_base` tokens in this run: reduce
+delivery cost through existing output/page owners before advertising agent savings.
+
+### Response cost and agent navigation
+
+The 2026-10-17 scratch response audit is under
+`.tmp/operator-showcase/token-review/`: `REVIEW.txt` owns the detailed field
+disposition evidence; `execution-ledger.json`, `attribute-costs.csv` and
+`results.json` retain commands, measurements and projection comparisons. These
+scratch outputs are not shipped interfaces or qualification of unprobed commands.
+Thirty response samples cover 2,581 normalized attribute paths. Current controls
+already reduce the 21-site boundary response from 34,502 export tokens to 2,079
+compact tokens with all site IDs, and the same one-edge supported path from 3,252
+explain tokens to 1,188 compact tokens. Detail differs; first-page reductions must
+not be advertised as complete-task savings.
+
+The largest opportunity is impact delivery: declaration bodies occupy 53.3% of
+the measured response, contracts 18.5% and base evidence records 12.1%. A scratch
+projection retains all 38 review signals, exact occurrence references, partition
+counts, snapshots, correspondence and limitations in 5,881 tokens, deferring full
+delta bodies. A clone projection retains both groups/all members, adds names and
+lines and defers redundant member hashes: 1,394 → 659 tokens. These projections
+are proposals, not production implementations or measured reasoning savings.
+
+Implement in the existing contracts/query-service/projection owners, in this order:
+
+1. **Consistent bounded delivery.** Extend existing `OutputOptions` and
+   compact/explain/export semantics to impact, status, inventory, assessments and
+   accounting. Add explicit text/JSON rendering independent of TTY detection;
+   keep current machine exports compatible while introducing opt-in projections.
+   Lead with outcome, named locations, reason, counts, uncertainty and an exact
+   expandable reference. Default impact to a bounded review view when selected,
+   with counts for every partition and full deltas available explicitly. Preserve
+   the full executable test selection and `full_suite_required` even when its
+   explanation is paged. Move successful infrastructure path diagnostics behind
+   verbosity; keep failures and actionable warnings visible.
+2. **Retain signal while removing repetition.** Preserve status, effective scope,
+   provider/epistemic state, freshness, ambiguity, open boundaries, completeness
+   and limits. Separate search exhaustion, delivery pagination and deferred
+   detail. Retain exact snapshot/configuration/generation/visibility fences and
+   IDs; intern repeated context once. Defer request echoes, healthy unrelated
+   adapter paths, repeated identity/implementation hashes, raw syntax trees and
+   per-record evidence ledgers to inspect/export. Keep identity-focused commands
+   exact. Unknown/unexamined values must not become zero. Use typed optional detail
+   groups, not arbitrary field selection that can erase mandatory limitations.
+3. **Improve compact items.** Boundary compact rows currently lose line, owner,
+   native outcome/reason and the engine's existing callee/outcome counts through
+   generic facet projection. Add typed boundary items and expose those aggregates.
+   Finding/role rows need rule, named location/target, provider, attachment grain
+   and epistemic status. Clone/component/unused samples need readable subjects
+   and locations. Deduplicate shared receipt/context dictionaries across seeded
+   routes and impact caller pages; retain independent scope and search outcomes.
+4. **Reduce request construction and round trips.** Expose existing clone path,
+   statement, threshold and page controls, and status suggestion/sample controls,
+   as ordinary flags. Add subject-kind/exact-match filtering to find, bounded
+   literal source discovery with location joins, and inspect/read-source by exact
+   subject or callsite with selected source/call/claim details. Literal and endpoint
+   associations remain distinct from call edges. Reuse existing boundary callee,
+   path, outcome, reason and build-context selectors; add owner/site and counts
+   views. Add impact change/section/path selectors and explicit base-side callers
+   for removed occurrences. Do not overload impact's existing correspondence
+   `--subject` with a different symbol-filter meaning. Extend existing
+   `SuggestedSelector` for bounded executable follow-ups, not another planner.
+5. **Graph questions and filter placement.** Deliver the shared pruning/path work
+   above through existing adjacency/search owners. Default connectivity questions
+   to a bounded representative witness with scope/evidence classification; keep
+   explicit bounded candidate requests. Reuse the scoped weighted bidirectional
+   search; it does not enumerate every possible path. Include prunes in both
+   frontiers, seed discovery, cache identity and continuation, and retain applied
+   exclusions/counts. For the
+   logging showcase, compare scoped observed outgoing-call sets within the
+   independently specified handler family; normalized hashes supply peer groups,
+   not a missing-behavior verdict. Push filters and counts before hydration; use
+   deterministic ordering and disclose selection rules. Preserve test ownership
+   floors. Measure before adding new indexes or graph algorithms. Current impact
+   relay still computes a full manifest before paging, so a smaller response alone
+   does not establish lower computation or memory cost.
+6. **MCP schema and transport.** The built server advertises 22 tools whose compact
+   serialized definitions total 32,043 tokens; actual client injection/caching is
+   unmeasured. Offer an explicit small navigation profile while retaining a full
+   tool profile. Reduce repeated cursor/schema description overhead and avoid
+   eagerly advertising the generic query union plus every alias without need.
+   Generate bounded typed output schemas; the current tool definitions have none.
+   Preserve canonical cursor checks if its representation changes. The pinned
+   rmcp helper repeats JSON in text and `structuredContent`; this follows the
+   [MCP compatibility recommendation](https://modelcontextprotocol.io/specification/2025-11-25/server/tools#structured-content).
+   Shrink the common payload first. Qualify actual clients before any opt-in
+   alternative presentation; wire duplication is not proof of double token billing.
+
+Before fixes, add regressions for same-name sites at different locations, ambiguous
+subjects, multiple configurations, external/open dispatch, stale/conflicting/mock
+claims, removed callables, source mismatch and missing test ownership. Assert that
+compact/explain/export preserve applicable classification, count and limitation
+semantics; every returned reference must expand exactly. Reject stale or altered
+query/page cursors. Test aggregation denominators, parallel occurrences and
+unknown values independently. Generate schemas from Rust, retain owned v1 series
+with correct fingerprints, update CLI/MCP examples and run the shared checks.
+
+Validate initial delivery targets on the fixture: five ordinary navigation items
+within 1,000 tokens, one supported witness within 2,000, and a five-item impact
+overview within 2,000, including mandatory caveats. These are named-tokenizer
+benchmark targets, not model-specific engine budgets. Use existing byte ceilings;
+required context that cannot fit must produce a useful budget error or explicit
+continuation, never an overconfident answer. Compare complete operator tasks with
+equal independently scored answers against bounded grep/source reads, including
+schemas, requests, stderr, pages, retries and drill-downs. Track fresh/warm runtime,
+CPU, memory and storage separately. Reasoning/billing savings remain unavailable
+until a controlled agent run exposes actual usage; do not estimate them from bytes.
+
+## General workflow evaluation
+
+Generalize the scratch demonstrations into operator questions with pinned inputs,
+independent oracles and explicit stopping rules. The
+[workflow evaluation protocol](evals/PROTOCOL.md)
+owns case qualification, real upstream examples, sampling, measurement and grading.
+The bounded Express release profile now independently grades runtime scenarios,
+provider attachment and exact-reference retrieval, retaining historical production
+views and measured command outputs. Local history and paired agent runners now
+provide frozen selection, independent file-byte/syntactic-call oracles, bounded
+tools, provider usage and regrading without model calls. The default calibration
+is 12 attempts of at most two minutes; implementation is not evidence of benefit.
+
+The [2026-10-17 history pilot](docs/runbooks/revision-evaluation.md#history-inventory-evidence-2026-10-17)
+completed 72 selected comparisons and 139 retained revision views, with independent
+source-byte and persisted-membership checks. The six-task paired calibration is
+prepared but unrun; its results and any agent-benefit claims remain outstanding.
+
+The 2026-10-17 investigation is under `.tmp/workflow-evaluation/`: the candidate
+catalog records upstream anchors and unresolved qualification; the read-only
+legacy inventory records the earlier survey's actual schema/counts. Reuse its
+revision/path leads, not its semantic success flags or historical fingerprints.
+The large binding-row count is not a large independent sample. Repository and
+revision commands now share process-tree sampling, output measurements and
+attempt-preserving logs. The bounded release study remains one correlated family.
+
+Remaining qualification, beyond the local calibration:
+
+1. **Qualify semantic cases and truth.** Reproduce the curated mechanism and
+   configuration candidates in scratch. The local history profile targets 80
+   episodes across eight JS/TS, Python, Rust and Go repositories, preserving
+   underfilled strata. Its source-byte and lexical-call oracles do not qualify
+   semantic repairs. Separate related fixes from held-out cases. Java/C#/C need
+   their own native qualification; C++ remains experimental. Failed CI and merge
+   topology locate candidates, not causes or expected answers.
+2. **Extend observation only where measured.** Shared process measurement now
+   covers child timeout, failed attempts, unavailable counters, byte limits and
+   exact decoded token inputs. Quantify observer/coordinator overhead and add
+   OS accounting only where sampled counters leave a material research gap.
+3. **Extend qualified workflows.** Keep selection/materialization, independent
+   oracles, product operations, measurement and grading in their existing owners.
+   The provider boundary isolates invocation, decoding and usage; Codex CLI is
+   the only live adapter. Qualify another adapter before claiming provider parity.
+   Parameterize selectors, dependency/configuration scope and budgets; keep
+   expected answers out of workflow code. Extend Rust-owned portable campaign
+   contracts only when replay needs new wire data. Cover operation families with
+   representative tasks and focused lifecycle controls.
+4. **Qualify independent grading.** Reproduce buggy/fixed and unaffected controls;
+   assert source-backed occurrences, edges, claims and test obligations separately.
+   Keep authored SARIF, real provider output and runtime controls distinct. Test
+   wrong scope, ambiguous joins, partial pagination, missing tools, empty
+   denominators, stale inputs and retry identity. Preserve unknowns and compare
+   only the declared reference universe. Existing graph self-consistency checks
+   remain useful but cannot grade graph completeness.
+5. **Evaluate transfer after calibration.** Report the small local run before
+   proposing a wider agent budget. Use paired tasks and identical fallback tools
+   and limits, keeping actual usage separate from text volume. Include failed
+   attempts, repeated context and setup cost. Add held-out semantic tasks and
+   explicit compact-output/skill ablations. Repeated edges, revisions or model
+   attempts do not create independent repository samples.
+6. **Repair and promote.** Preserve failures, add independent regressions, fix
+   common owners and rerun affected cases with new implementation identities.
+   Keep before/after evidence and record oracle corrections. Move small controls
+   into owned tests only after scratch qualification; keep full upstream cases
+   opt-in. Update existing docs/tool descriptions/skills with demonstrated
+   decision procedures and honest limits. Select a wider survey from measured
+   correctness, answer coverage, agent benefit and reproduction cost together.
+
+Acceptance requires independently graded answers and reproducible cost accounting,
+not a target token reduction alone. Publish denominators, unavailable measurements,
+sampling limits and per-repository results. The current plan does not authorize
+inferring reasoning savings from output size or treating release/deployment as
+qualified by a corpus run.
+
+The release cohort measured raw impact exports near 4 million tokens each, while
+the existing bounded relay supplies a much smaller initial navigation page. Keep
+full manifests outside agent context; evaluate selector/filter improvements in
+the shared relay owner before adding another summarizer. Initial-page size is not
+whole-task savings. Exact resource peaks, coordinator overhead and per-view
+allocated storage still need separate instrumentation if required by the wider survey.
+
 ## Implementation quality
 
 - Audit shared normalization, traversal, initialization, binding, edge stitching,
@@ -195,7 +469,6 @@ this repository): competing tooling `trailmark`, `multiplier`, `mrva`,
 `codeql-queries`; solver-adapter candidates `pasta`, `blight`, `vast`, `macroni`;
 plus `fickling`. Study in place; do not copy GPL code or vendor AST types into
 contracts. These are evaluation tasks, not adoption projects until measured need.
-Public acknowledgements live in [README](README.md#acknowledgements).
 
 - Evaluate **PASTA + blight** as a Clang/libclang A/B replacement for the C/C++
   native adapter: compare bind/dispatch evidence quality, build capture

@@ -1,0 +1,2 @@
+# Optional payload-volume measurement, separate from model billing.
+tiktoken==0.12.0

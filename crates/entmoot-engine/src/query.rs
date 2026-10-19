@@ -5,6 +5,7 @@
 //! source. Provider- or task-specific views stay behind these operations.
 
 mod adjacency;
+mod admission;
 mod assessments;
 mod boundaries;
 mod call_components;
@@ -14,7 +15,10 @@ mod contraction;
 mod relationships;
 pub use assessments::{assess_test_impact, assess_unused};
 mod clones;
+mod conflicts;
 mod expert;
+#[cfg(test)]
+mod identity_regressions;
 mod impact_relay;
 mod inventory;
 mod knowledge;
@@ -25,6 +29,7 @@ mod receipt;
 mod requests;
 mod roles;
 mod seeds;
+mod selection;
 mod status;
 mod substring;
 mod unresolved;
@@ -308,8 +313,8 @@ impl QueryIndexes {
 /// the reference execution path; neither setting changes query meaning.
 #[derive(Debug, Clone, Copy)]
 pub struct QueryEngineOptions {
-    /// Maximum retained substring postings (u32 each), plus 4096 bucket headers.
-    /// Overflow falls back to scanning the unindexed suffix.
+    /// Maximum postings admitted to the bounded disposable substring candidate index.
+    /// Overflow or index unavailability falls back to scanning the unindexed suffix.
     pub substring_postings_budget: usize,
     /// Bounded graph-only discovery reuse (256 entries, 8 MiB retained payload).
     pub cache_walk_discovery: bool,
@@ -401,6 +406,10 @@ impl QueryCompatibility {
 
 #[derive(Debug, Default, Clone, serde::Serialize, serde::Deserialize)]
 struct WalkCounters {
+    prune_selection: Option<entmoot_contracts::query::SelectionReceipt>,
+    pruned_edges: usize,
+    evidence_filtered_edges: usize,
+    admission_claims_examined: usize,
     expanded_nodes: usize,
     examined_edges: usize,
     expansion_budget_exhausted: bool,
@@ -536,11 +545,18 @@ impl QueryEngine {
                 limit,
             } => self.find_initializer(&integer, path.as_deref(), limit),
             FindQuery::Subject {
+                selector,
                 query,
                 path,
                 line,
                 limit,
-            } => self.resolve_code_subject(query.as_deref(), path.as_deref(), line, limit),
+            } => self.resolve_code_subject(
+                query.as_deref(),
+                path.as_deref(),
+                line,
+                limit,
+                selector.as_ref(),
+            ),
             FindQuery::Location { path, line, column } => {
                 self.resolve_code_location(&path, line, column)
             }
@@ -591,29 +607,25 @@ impl QueryEngine {
             ));
         }
         let value = match request {
-            TraverseQuery::Neighborhood {
-                start,
-                direction,
-                predicates,
-                evidence_filter,
-                endpoint_role,
-                budget,
-                ..
-            } => self.bounded_neighborhood(
-                &start,
-                direction,
-                &predicates,
-                evidence_filter,
-                endpoint_role.as_ref(),
-                budget,
-            ),
+            request @ TraverseQuery::Neighborhood { .. } => {
+                self.bounded_neighborhood_query(&request)
+            }
             TraverseQuery::Path {
+                evidence_filter,
+                prune,
                 start,
                 target,
                 predicates,
                 budget,
                 ..
-            } => self.bounded_walk(&start, &target, &predicates, budget),
+            } => self.bounded_walk_filtered(
+                &start,
+                &target,
+                &predicates,
+                budget,
+                evidence_filter,
+                &prune,
+            ),
         }?;
         self.finish_result(value)
     }
@@ -756,17 +768,29 @@ impl QueryEngine {
             };
             items.push(json!({"relation": edge, "opposite": opposite, "claims": claims}));
         }
-        let mut unresolved = Vec::new();
-        if direction == CallDirection::Callees {
-            for address in node_addresses(&self.graph, candidates[0]) {
-                unresolved.extend(repository.unresolved_for_source(&address)?);
-            }
-            unresolved.sort_by(|left, right| left.id.as_str().cmp(right.id.as_str()));
-            unresolved.dedup_by(|left, right| left.id == right.id);
-        }
-        let unresolved_total = unresolved.len();
-        unresolved.truncate(limit);
-        let unresolved_bounds = ResultBounds::page(limit, unresolved.len(), unresolved_total);
+        let unresolved_page = if direction == CallDirection::Callees {
+            Some(self.unresolved_page_from_repository(&repository, subject, None, Some(limit))?)
+        } else {
+            None
+        };
+        let unresolved = unresolved_page
+            .as_ref()
+            .map_or_else(|| json!([]), |page| page["items"].clone());
+        let unresolved_bounds: ResultBounds = unresolved_page.as_ref().map_or_else(
+            || Ok(ResultBounds::complete(0)),
+            |page| serde_json::from_value(page["bounds"].clone()),
+        )?;
+        let unresolved_continuation = unresolved_page
+            .as_ref()
+            .and_then(|page| page.get("next_cursor").filter(|cursor| !cursor.is_null()))
+            .map(|cursor| {
+                serde_json::from_value(cursor.clone()).map(|after| InspectQuery::Unresolved {
+                    id: candidates[0].id.clone(),
+                    after: Some(after),
+                    limit: Some(limit),
+                })
+            })
+            .transpose()?;
         let returned = page.len();
         let truncated = offset.saturating_add(returned) < total;
         let next_cursor = truncated
@@ -784,9 +808,10 @@ impl QueryEngine {
             "schema_version": QUERY_RESULT_SCHEMA,
             "operation": "inspect", "view": "calls",
             "snapshot": self.graph.snapshot,
-            "status": if truncated || unresolved_bounds.truncated { "truncated" } else if returned > 0 || !unresolved.is_empty() { "known" } else { "unknown" },
+            "status": if truncated || unresolved_bounds.truncated { "truncated" } else if returned > 0 || unresolved_bounds.total_matches > 0 { "known" } else { "unknown" },
             "subject": subject, "direction": direction, "items": items,
             "unresolved_relations": unresolved, "next_cursor": next_cursor,
+            "unresolved_continuation": unresolved_continuation,
             "visibility_cursor": visibility_cursor,
             "bounds": {"offset":offset,"limit":limit,"total_matches":total,"truncated":truncated},
             "unresolved_bounds": unresolved_bounds,
@@ -797,6 +822,7 @@ impl QueryEngine {
     /// Find bounded directed paths between two exact inventory subjects using
     /// meet-in-the-middle search. Backward expansion follows incoming edges; it
     /// never reverses the stored relation semantics.
+    #[cfg(test)]
     fn bounded_walk(
         &self,
         start: &str,
@@ -804,7 +830,27 @@ impl QueryEngine {
         predicates: &[String],
         budget: BoundedWalkBudget,
     ) -> Result<Value, QueryError> {
+        self.bounded_walk_filtered(
+            start,
+            target,
+            predicates,
+            budget,
+            entmoot_contracts::query::HopEvidenceFilter::Any,
+            &Default::default(),
+        )
+    }
+
+    fn bounded_walk_filtered(
+        &self,
+        start: &str,
+        target: &str,
+        predicates: &[String],
+        budget: BoundedWalkBudget,
+        evidence: entmoot_contracts::query::HopEvidenceFilter,
+        prune: &entmoot_contracts::query::TraversalPrune,
+    ) -> Result<Value, QueryError> {
         let started = std::time::Instant::now();
+        let admission = admission::EdgeAdmission::new(self, prune, evidence)?;
         let budget = validate_walk_budget(budget)?;
         let allowed_predicates = parse_walk_predicates(predicates)?;
         let start_keys = self.walk_endpoint_keys(start);
@@ -830,28 +876,40 @@ impl QueryEngine {
             }));
         }
 
-        let key = serde_json::to_string(&(start, target, predicates, budget))?;
+        let repository = self.repository()?;
+        let visibility = if evidence == entmoot_contracts::query::HopEvidenceFilter::ResolvedOnly {
+            Some(repository.read_state_digest()?)
+        } else {
+            None
+        };
+        let key = serde_json::to_string(&(
+            start, target, predicates, budget, evidence, prune, visibility,
+        ))?;
         let cached = self.walk_cache.as_ref().and_then(|cache| cache.get(&key));
         let reused_discovery = cached.is_some();
-        let discovery = cached.unwrap_or_else(|| {
-            let value = std::sync::Arc::new(self.discover_walk(
-                start,
-                target,
+        let discovery = if let Some(cached) = cached {
+            cached
+        } else {
+            let mut search = walk::PathSearch::with_admission(
+                self,
                 &start_keys,
                 &target_keys,
-                &allowed_predicates,
-                budget,
-            ));
+                allowed_predicates,
+                start == target,
+                admission,
+            );
+            search.advance(self, budget)?;
+            let value = std::sync::Arc::new(search.discovery(self, budget));
             if let Some(cache) = &self.walk_cache {
                 cache.insert(key, value.clone());
             }
             value
-        });
+        };
         let mut result = self.walk_result(
             (start, target),
             budget,
             &discovery,
-            &self.repository()?,
+            &repository,
             reused_discovery,
         )?;
         result["search_receipt"]["elapsed_micros"] =
@@ -924,6 +982,10 @@ impl QueryEngine {
             "bounds": ResultBounds { offset: 0, limit: budget.max_results, total_matches: total_paths, truncated },
             "gaps": gaps,
             "search_receipt": {
+                "prune_selection": counters.prune_selection,
+                "pruned_edges": if reused_discovery { 0 } else { counters.pruned_edges },
+                "evidence_filtered_edges": if reused_discovery { 0 } else { counters.evidence_filtered_edges },
+                "admission_claims_examined": if reused_discovery { 0 } else { counters.admission_claims_examined },
                 "expanded_nodes": if reused_discovery { 0 } else { counters.expanded_nodes },
                 "examined_edges": if reused_discovery { 0 } else { counters.examined_edges },
                 "examined_shortcuts": if reused_discovery { 0 } else { counters.examined_shortcuts },
@@ -976,7 +1038,11 @@ impl QueryEngine {
             .map(|&index| &self.graph.relation_edges[index])
             .collect();
         let claim_batches = repository.relation_claims_for_edges(&edges)?;
+        let explicit_conflicts = conflicts::retained_conflicts(&self.graph, repository)?;
         for (edge, relation_claims) in edges.into_iter().zip(claim_batches) {
+            if explicit_conflicts.contains(edge.id.as_str()) {
+                conflicted_edges.push(edge.id.as_str());
+            }
             scope_domains.insert(edge.scope.domain.as_str());
             if let Some(context_id) = edge.scope.context_id.as_deref() {
                 context_ids.insert(context_id);
@@ -1135,13 +1201,17 @@ impl QueryEngine {
         path: Option<&str>,
         line: Option<usize>,
         requested_limit: Option<usize>,
+        selector: Option<&entmoot_contracts::query::SubjectSelector>,
     ) -> Result<Value, QueryError> {
+        let compiled = selector.map(selection::CompiledSelector::new).transpose()?;
         let query = query.map(str::trim).filter(|value| !value.is_empty());
         let path = path
             .map(|value| value.trim().replace('\\', "/"))
             .filter(|value| !value.is_empty());
-        if query.is_none() && path.is_none() {
-            return Err(QueryError::InvalidInput("query or path is required".into()));
+        if query.is_none() && path.is_none() && selector.is_none() {
+            return Err(QueryError::InvalidInput(
+                "query, path or selector is required".into(),
+            ));
         }
         let limit = bounded_limit(requested_limit);
         let path_ok = |node: &TopologyNode| {
@@ -1224,7 +1294,27 @@ impl QueryEngine {
                     }
                 }
             }
-            (None, None) => unreachable!("validated above"),
+            (None, None) => scored.extend((0..self.graph.nodes.len()).map(|i| (i, 1))),
+        }
+        let mut receipt = entmoot_contracts::query::SelectionReceipt::default();
+        let mut explanations = HashMap::new();
+        if let Some(compiled) = &compiled {
+            scored.retain(|index, _| {
+                receipt.examined += 1;
+                let (state, explanation) = compiled.matches(&self.graph.nodes[*index]);
+                match state {
+                    selection::MatchState::Yes => {
+                        receipt.matched += 1;
+                        explanations.insert(*index, explanation);
+                        true
+                    }
+                    selection::MatchState::Unknown => {
+                        receipt.unknown += 1;
+                        false
+                    }
+                    selection::MatchState::No => false,
+                }
+            });
         }
         let mut matches: Vec<(&TopologyNode, u8)> = scored
             .into_iter()
@@ -1240,7 +1330,18 @@ impl QueryEngine {
         let candidates: Vec<_> = matches
             .into_iter()
             .take(limit)
-            .map(|(node, score)| subject_candidate(node, score))
+            .map(|(node, score)| {
+                let mut candidate = subject_candidate(node, score);
+                if let Some(explanation) = self
+                    .graph
+                    .node_by_id
+                    .get(&node.id)
+                    .and_then(|i| explanations.get(i))
+                {
+                    candidate["selection_match"] = json!(explanation);
+                }
+                candidate
+            })
             .collect();
         let status = if total > limit {
             "truncated"
@@ -1255,7 +1356,7 @@ impl QueryEngine {
             "view": "subject",
             "snapshot": self.graph.snapshot,
             "status": status,
-
+            "selection": selector.map(|_| receipt),
             "items": candidates,
             "gaps": if total == 0 { vec!["no_inventory_subject_matched"] } else { Vec::<&str>::new() },
             "bounds": ResultBounds::page(limit, limit.min(total), total),
@@ -2305,17 +2406,7 @@ fn bounded_limit(limit: Option<usize>) -> usize {
 }
 
 fn validate_walk_budget(budget: BoundedWalkBudget) -> Result<BoundedWalkBudget, QueryError> {
-    if !(1..=256).contains(&budget.max_hops)
-        || !(1..=100_000).contains(&budget.max_expansions)
-        || !(1..=1_000_000).contains(&budget.max_examined_edges)
-        || budget.max_edges_per_node > 1_000_000
-        || !(1..=20).contains(&budget.max_results)
-        || budget.max_evidence_per_hop > 100
-    {
-        return Err(QueryError::InvalidInput(
-            "walk budget requires max_hops 1..=256, max_expansions 1..=100000, max_examined_edges 1..=1000000, max_edges_per_node 0..=1000000 (0 disables local cap), max_results 1..=20, and max_evidence_per_hop 0..=100".into(),
-        ));
-    }
+    budget.validate().map_err(QueryError::InvalidInput)?;
     Ok(budget)
 }
 
@@ -2538,19 +2629,7 @@ fn line_distance(node: &TopologyNode, line: Option<usize>) -> usize {
 }
 
 fn subject_candidate(node: &TopologyNode, match_score: u8) -> Value {
-    json!({
-        "node_id": node.id,
-        "kind": node.kind,
-        "label": node.label,
-        "path": node.path,
-        "start_line": node.start_line,
-        "display_ref": node.display_ref,
-        "fqn": node.fqn,
-        "address_id": node.address_id,
-        "logic_address": node.logic_address,
-        "structural_hash": node.structural_hash,
-        "match_score": match_score,
-    })
+    json!(inventory::subject_card(node, match_score))
 }
 
 fn node_addresses(graph: &TopologyGraph, node: &TopologyNode) -> Vec<Address> {
@@ -3187,6 +3266,8 @@ mod tests {
             );
             let filtered = service
                 .traverse(TraverseQuery::Neighborhood {
+                    endpoint_selector: None,
+                    prune: Default::default(),
                     resumable: false,
                     continuation: None,
                     start: "a".into(),
@@ -3205,6 +3286,8 @@ mod tests {
             );
             let envelope = service
                 .traverse(TraverseQuery::Path {
+                    evidence_filter: Default::default(),
+                    prune: Default::default(),
                     resumable: false,
                     continuation: None,
                     start: "a".into(),
@@ -3379,13 +3462,13 @@ mod tests {
             .unwrap();
         let service = QueryEngine::new(graph, store_path);
         let result = service
-            .resolve_code_subject(Some("same"), None, None, Some(10))
+            .resolve_code_subject(Some("same"), None, None, Some(10), None)
             .unwrap();
         assert_eq!(result["status"], "known");
         assert!(result["items"].as_array().unwrap().len() >= 2);
         service.finish_result(result).expect("typed subject result");
         let truncated = service
-            .resolve_code_subject(Some("same"), None, None, Some(1))
+            .resolve_code_subject(Some("same"), None, None, Some(1), None)
             .unwrap();
         assert_eq!(truncated["status"], "truncated");
         assert_eq!(truncated["bounds"]["truncated"], true);
@@ -3436,7 +3519,7 @@ mod tests {
             &bare.to_ascii_uppercase(),
         ] {
             let result = service
-                .resolve_code_subject(Some(query), None, None, Some(10))
+                .resolve_code_subject(Some(query), None, None, Some(10), None)
                 .unwrap();
             assert_eq!(result["status"], "known", "query={query}");
             let items = result["items"].as_array().expect("items");
@@ -3449,7 +3532,7 @@ mod tests {
         // Digest-shaped queries must not substring-match unrelated subjects.
         let noise = format!("prefix-{bare}-suffix");
         let missed = service
-            .resolve_code_subject(Some(&noise), None, None, Some(10))
+            .resolve_code_subject(Some(&noise), None, None, Some(10), None)
             .unwrap();
         assert_eq!(missed["status"], "unknown");
         assert!(missed["items"].as_array().unwrap().is_empty());

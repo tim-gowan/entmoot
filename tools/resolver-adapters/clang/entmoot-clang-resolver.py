@@ -35,9 +35,25 @@ def emit(result: dict[str, Any]) -> None:
     sys.stdout.write("\n")
 
 
+def retained(path: Path, *, strict: bool = False) -> Path:
+    """Real path without Windows verbatim (`\\\\?\\`) prefixes that break CompDB joins."""
+    resolved = path.resolve(strict=strict) if strict else path.resolve()
+    text = str(resolved)
+    lower = text[:8].lower()
+    if lower == "\\\\?\\unc\\":
+        return Path("\\\\" + text[8:])
+    if lower == "//?/unc/":
+        return Path("//" + text[8:])
+    if text.startswith("\\\\?\\") and len(text) >= 6 and text[5] == ":":
+        return Path(text[4:])
+    if text.startswith("//?/") and len(text) >= 6 and text[5] == ":":
+        return Path(text[4:])
+    return resolved
+
+
 def relative_posix(root: Path, absolute: Path) -> str:
     try:
-        rel = absolute.resolve().relative_to(root.resolve())
+        rel = retained(absolute).relative_to(retained(root))
     except ValueError:
         return ""
     text = rel.as_posix()
@@ -500,7 +516,7 @@ class ClosedVfs:
     def __init__(self, filename):
         from blake3 import blake3
         self.hash = lambda data: "blake3:" + blake3(data).hexdigest()
-        self.path = Path(filename).resolve(strict=True)
+        self.path = retained(Path(filename), strict=True)
         self.document_bytes = self.path.read_bytes()
         self.document = json.loads(self.document_bytes)
         if self.document.get("version") != 0 or self.document.get("fallthrough") is not False:
@@ -519,8 +535,8 @@ class ClosedVfs:
             physical = Path(entry["external-contents"])
             if not virtual.is_absolute() or not physical.is_absolute():
                 raise ValueError("VFS virtual source must name its exact retained physical file")
-            virtual_real = virtual.resolve(strict=True)
-            physical_real = physical.resolve(strict=True)
+            virtual_real = retained(virtual, strict=True)
+            physical_real = retained(physical, strict=True)
             # Windows TEMP often mixes 8.3 aliases with long paths; samefile/normcase.
             if virtual_real != physical_real and not (
                 os.path.normcase(str(virtual_real)) == os.path.normcase(str(physical_real))
@@ -533,9 +549,9 @@ class ClosedVfs:
             if len(self.contents) >= 50000 or total_bytes > 512 * 1024 * 1024:
                 raise ValueError("closed Clang VFS input budget exceeded")
             data = physical_real.read_bytes()
-            retained = str(physical_real)
-            self.contents[retained] = data
-            self.digests[retained] = self.hash(data)
+            key = str(physical_real)
+            self.contents[key] = data
+            self.digests[key] = self.hash(data)
         if len(self.contents) > 50000 or sum(map(len, self.contents.values())) > 512 * 1024 * 1024:
             raise ValueError("closed Clang VFS input budget exceeded")
 
@@ -771,7 +787,7 @@ def main() -> int:
         return 0
 
     try:
-        root = Path(root_raw).resolve()
+        root = retained(Path(root_raw))
     except Exception as exc:  # noqa: BLE001
         emit(
             {

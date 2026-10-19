@@ -332,6 +332,8 @@ fn pairwise_and_rooted_routes_reject_cross_context_domain_and_snapshot_compositi
         let result = serde_json::to_value(
             engine
                 .traverse(TraverseQuery::Path {
+                    evidence_filter: Default::default(),
+                    prune: Default::default(),
                     resumable: false,
                     continuation: None,
                     start: "origin".into(),

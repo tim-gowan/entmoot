@@ -19,7 +19,7 @@ fn write(root: &Path, name: &str, source: &str) -> PathBuf {
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
     std::fs::write(&path, source).unwrap();
     // Prefer the host's long/real path so Windows 8.3 TEMP aliases match adapters.
-    std::fs::canonicalize(&path).unwrap_or(path)
+    retained(&path)
 }
 
 fn document(root: &Path, name: &str, value: Value) -> String {
@@ -28,8 +28,17 @@ fn document(root: &Path, name: &str, value: Value) -> String {
         .into_owned()
 }
 
+/// Collapse 8.3 aliases without keeping Windows verbatim (`\\?\`) prefixes that
+/// break MSBuild imports, libclang CompDB roots, and relative-path joins.
 fn retained(path: &Path) -> PathBuf {
-    std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf())
+    let canonical = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    let spelling = canonical.to_string_lossy();
+    PathBuf::from(
+        spelling
+            .strip_prefix(r"\\?\")
+            .or_else(|| spelling.strip_prefix("//?/"))
+            .unwrap_or(&spelling),
+    )
 }
 
 fn path_key(path: &Path) -> String {
@@ -1219,11 +1228,10 @@ fn rust_feature_selection_does_not_enable_test_only_declarations() {
             ],
         ),
     ] {
-        let output = Command::new("rustup")
+        // Active workspace toolchain — historical pins live in the ignored
+        // compiler-control test that installs 1.79/1.91/1.95 after disk is free.
+        let output = Command::new("rustc")
             .args([
-                "run",
-                "1.95.0",
-                "rustc",
                 "--edition=2021",
                 "--crate-type=lib",
                 "--emit=metadata",
@@ -1242,7 +1250,11 @@ fn rust_feature_selection_does_not_enable_test_only_declarations() {
             String::from_utf8_lossy(&output.stderr)
         );
         if !accepted {
-            assert!(String::from_utf8_lossy(&output.stderr).contains("E0425"));
+            assert!(
+                String::from_utf8_lossy(&output.stderr).contains("E0425"),
+                "{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
         }
     }
 }

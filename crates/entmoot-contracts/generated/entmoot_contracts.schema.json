@@ -8006,6 +8006,18 @@
                 "string",
                 "null"
               ]
+            },
+            "path_selector": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/PathSelector"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Explicit shared path semantics. Mutually exclusive with legacy path prefix."
             }
           },
           "type": "object"
@@ -8030,6 +8042,65 @@
             "derivation"
           ],
           "type": "object"
+        },
+        "PathSelector": {
+          "description": "Repository-relative path selection, independent of host path conventions.",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "One exact file or inventory path.",
+              "properties": {
+                "mode": {
+                  "const": "exact",
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mode",
+                "value"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Exact path and descendants at slash boundaries.",
+              "properties": {
+                "mode": {
+                  "const": "subtree",
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mode",
+                "value"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Case-sensitive globset syntax: '*' stays within a segment; '**' crosses segments.",
+              "properties": {
+                "mode": {
+                  "const": "glob",
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mode",
+                "value"
+              ],
+              "type": "object"
+            }
+          ]
         },
         "ResultBounds": {
           "additionalProperties": false,
@@ -8272,6 +8343,67 @@
       "type": "object"
     },
     "CloneRequest": {
+      "$defs": {
+        "PathSelector": {
+          "description": "Repository-relative path selection, independent of host path conventions.",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "One exact file or inventory path.",
+              "properties": {
+                "mode": {
+                  "const": "exact",
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mode",
+                "value"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Exact path and descendants at slash boundaries.",
+              "properties": {
+                "mode": {
+                  "const": "subtree",
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mode",
+                "value"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Case-sensitive globset syntax: '*' stays within a segment; '**' crosses segments.",
+              "properties": {
+                "mode": {
+                  "const": "glob",
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mode",
+                "value"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      },
       "$id": "https://entmoot.dev/schemas/contracts/entmoot-contracts.v1.json?type=CloneRequest",
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
@@ -8326,6 +8458,18 @@
             "string",
             "null"
           ]
+        },
+        "path_selector": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PathSelector"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Explicit shared path semantics. Mutually exclusive with legacy path prefix."
         }
       },
       "title": "CloneRequest",
@@ -8670,6 +8814,491 @@
         "shape"
       ],
       "title": "CodeContract",
+      "type": "object"
+    },
+    "CodeContractRecord": {
+      "$defs": {
+        "AddressId": {
+          "description": "Bare BLAKE3 hex address id (no prefix).",
+          "type": "string"
+        },
+        "CodeContract": {
+          "additionalProperties": false,
+          "description": "Parser observation attached to an actual production occurrence. Snapshot,\npath and source digest are supplied by its inventory publication envelope.",
+          "properties": {
+            "language": {
+              "type": "string"
+            },
+            "limitations": {
+              "description": "Bounded extraction gaps, never evidence of member/type absence.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "method": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "shape": {
+              "$ref": "#/$defs/DeclaredContract"
+            },
+            "site": {
+              "$ref": "#/$defs/SourceOccurrenceRef"
+            }
+          },
+          "required": [
+            "method",
+            "language",
+            "name",
+            "site",
+            "shape"
+          ],
+          "type": "object"
+        },
+        "ContentDigest": {
+          "description": "Prefixed structural or content digest (`blake3:<64-hex>`).",
+          "type": "string"
+        },
+        "DeclaredContract": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "callable",
+                  "type": "string"
+                },
+                "parameters": {
+                  "items": {
+                    "$ref": "#/$defs/DeclaredParameter"
+                  },
+                  "type": "array"
+                },
+                "result": {
+                  "$ref": "#/$defs/DeclaredType"
+                }
+              },
+              "required": [
+                "kind",
+                "parameters",
+                "result"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "object",
+                  "type": "string"
+                },
+                "members": {
+                  "items": {
+                    "$ref": "#/$defs/DeclaredMember"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "kind",
+                "members"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "unsupported",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "DeclaredExpression": {
+          "additionalProperties": false,
+          "description": "An unevaluated expression with its exact UTF-8 source extent.",
+          "properties": {
+            "span": {
+              "$ref": "#/$defs/SiteSpan"
+            },
+            "syntax": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "syntax",
+            "span"
+          ],
+          "type": "object"
+        },
+        "DeclaredMember": {
+          "additionalProperties": false,
+          "description": "Directly declared member only; no inheritance or runtime shape closure.",
+          "properties": {
+            "declared_type": {
+              "$ref": "#/$defs/DeclaredType"
+            },
+            "kind": {
+              "$ref": "#/$defs/MemberKind"
+            },
+            "modifiers": {
+              "description": "Written member qualifiers such as visibility, static or optional syntax.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "span": {
+              "$ref": "#/$defs/SiteSpan"
+            }
+          },
+          "required": [
+            "kind",
+            "span",
+            "declared_type"
+          ],
+          "type": "object"
+        },
+        "DeclaredParameter": {
+          "additionalProperties": false,
+          "description": "One declaration parameter, not an argument-to-parameter binding.",
+          "properties": {
+            "declared_type": {
+              "$ref": "#/$defs/DeclaredType"
+            },
+            "default": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DeclaredExpression"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Written default expression, not an evaluated default value."
+            },
+            "kind": {
+              "$ref": "#/$defs/ParameterKind"
+            },
+            "modifiers": {
+              "description": "Written declaration qualifiers (including optional `?` syntax), without\ninterpretation across languages.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "span": {
+              "$ref": "#/$defs/SiteSpan"
+            }
+          },
+          "required": [
+            "kind",
+            "span",
+            "declared_type"
+          ],
+          "type": "object"
+        },
+        "DeclaredType": {
+          "description": "A written type expression in its language's syntax. No nominal equivalence,\ninferred type, alias resolution or runtime value is implied.",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "explicit",
+                  "type": "string"
+                },
+                "span": {
+                  "$ref": "#/$defs/SiteSpan"
+                },
+                "syntax": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "syntax",
+                "span"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "No type was written at this position; this does not mean void or any.",
+              "properties": {
+                "kind": {
+                  "const": "unspecified",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "Syntax exists but the extractor cannot isolate a type safely.",
+              "properties": {
+                "kind": {
+                  "const": "unsupported",
+                  "type": "string"
+                },
+                "span": {
+                  "$ref": "#/$defs/SiteSpan"
+                },
+                "syntax": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "syntax",
+                "span"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "MemberKind": {
+          "enum": [
+            "field",
+            "property",
+            "method",
+            "embedded",
+            "unsupported"
+          ],
+          "type": "string"
+        },
+        "OccurrenceRef": {
+          "additionalProperties": false,
+          "description": "The readable occurrence envelope and its committed compact identity.\nThis does not establish a definition hash, a provider symbol, or a snapshot.",
+          "properties": {
+            "address_id": {
+              "$ref": "#/$defs/AddressId"
+            },
+            "logic_address": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "address_id",
+            "logic_address"
+          ],
+          "type": "object"
+        },
+        "ParameterKind": {
+          "enum": [
+            "ordinary",
+            "positional_only",
+            "keyword_only",
+            "variadic",
+            "keyword_variadic",
+            "receiver",
+            "unsupported"
+          ],
+          "type": "string"
+        },
+        "SiteSpan": {
+          "additionalProperties": false,
+          "description": "Half-open UTF-8 byte range in the containing snapshot file, not a LogicId.",
+          "properties": {
+            "end_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "start_byte": {
+              "format": "uint",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "start_byte",
+            "end_byte"
+          ],
+          "type": "object"
+        },
+        "SourceOccurrenceRef": {
+          "additionalProperties": false,
+          "description": "An inventoried occurrence at a UTF-8 byte span in the containing file.\nRepository, snapshot and path come from the enclosing source record; the\nsource inventory owner verifies byte boundaries against that file.",
+          "properties": {
+            "occurrence": {
+              "$ref": "#/$defs/OccurrenceRef"
+            },
+            "span": {
+              "$ref": "#/$defs/SiteSpan"
+            }
+          },
+          "required": [
+            "occurrence",
+            "span"
+          ],
+          "type": "object"
+        },
+        "SourceSnapshot": {
+          "additionalProperties": false,
+          "description": "Immutable observation of repository contents at a point in time.",
+          "properties": {
+            "estate_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "repository_id": {
+              "description": "Materialization / estate hint (folder basename, remote URL). Prefer [`Self::subject`]\nfor cross-publication compares; `repository_id` alone is not the identity floor.",
+              "type": "string"
+            },
+            "revision": {
+              "description": "Full immutable commit hash when known.",
+              "type": "string"
+            },
+            "snapshot_digest": {
+              "description": "Required for `working_tree`. For `committed`, git tree OID or path→digest manifest.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source_state": {
+              "$ref": "#/$defs/SourceState"
+            },
+            "subject": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SourceSubject"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Declared publication subject (PURL or repository lineage). Additive on older pubs."
+            },
+            "subject_aliases": {
+              "description": "Additional subjects that identify the same publication (mirrors, aliases).",
+              "items": {
+                "$ref": "#/$defs/SourceSubject"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "repository_id",
+            "revision",
+            "source_state"
+          ],
+          "type": "object"
+        },
+        "SourceState": {
+          "enum": [
+            "committed",
+            "working_tree"
+          ],
+          "type": "string"
+        },
+        "SourceSubject": {
+          "description": "Stable subject for a source publication (package or repository lineage).",
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "description": "Ecosystem package coordinate without version (version lives on revision/lock).",
+              "properties": {
+                "coordinate_purl": {
+                  "description": "Package-URL coordinate, typically without version (`pkg:pypi/pydantic`).",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "package",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "coordinate_purl"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "description": "VCS or logical repository identity, optionally scoped to a monorepo path.",
+              "properties": {
+                "id": {
+                  "description": "Canonical repository id or URL.",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "repository",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "Optional monorepo / Bazel package path within the repository.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "id"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "$id": "https://entmoot.dev/schemas/contracts/entmoot-contracts.v1.json?type=CodeContractRecord",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "description": "Durable source-declared boundary. The envelope pins the exact publication,\nsource bytes and occurrence independently of disposable topology.",
+      "properties": {
+        "content_digest": {
+          "$ref": "#/$defs/ContentDigest"
+        },
+        "contract": {
+          "$ref": "#/$defs/CodeContract"
+        },
+        "path": {
+          "type": "string"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/SourceSnapshot"
+        }
+      },
+      "required": [
+        "record_id",
+        "snapshot",
+        "path",
+        "content_digest",
+        "contract"
+      ],
+      "title": "CodeContractRecord",
       "type": "object"
     },
     "CollaborationRead": {

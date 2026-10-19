@@ -69,6 +69,78 @@ fn json(root: &Path, args: &[&str]) -> Value {
 }
 
 #[test]
+fn typed_find_and_durable_path_use_portable_requests_after_restart() {
+    let fixture = WorkspaceFixture::new();
+    let root = fixture.path();
+    fs::write(root.join("main.rs"), "struct Request;\nfn handle_good(request: Request) { bridge(); }\nfn handle_cross(request: usize, other: Request) {}\nfn bridge() { helper(); extra(); }\nfn helper() {}\nfn extra() {}\n").unwrap();
+    let find = [
+        "find",
+        "--name-contains",
+        "handle",
+        "--parameter-name",
+        "request",
+        "--parameter-type-contains",
+        "Request",
+    ];
+    let first = json(root, &find);
+    assert_eq!(first["selection"]["matched"], 1);
+    let subject = first["items"][0]["subject"].as_str().unwrap();
+    assert_eq!(
+        first["subjects"][subject]["display_ref"],
+        "main.rs::handle_good"
+    );
+    assert_eq!(
+        first["subjects"][subject]["selection_match"]["parameter_positions"],
+        serde_json::json!([[0]])
+    );
+    let request = storage(root).join("typed-find.json");
+    fs::write(&request, serde_json::to_vec(&first["query"]).unwrap()).unwrap();
+    let shared = json(root, &["request", "--request", request.to_str().unwrap()]);
+    assert_eq!(shared["subjects"], first["subjects"]);
+    assert_eq!(shared["selection"], first["selection"]);
+    let helper = json(
+        root,
+        &["find", "--name-exact", "helper", "--kind", "callable"],
+    );
+    let target = helper["items"][0]["subject"].as_str().unwrap();
+    let rejected = run(
+        root,
+        &["--standalone", "path", subject, target, "--resumable"],
+    );
+    assert!(!rejected.status.success());
+    assert!(String::from_utf8_lossy(&rejected.stderr).contains("--durable"));
+    let base = [
+        "--standalone",
+        "path",
+        subject,
+        target,
+        "--predicate",
+        "calls",
+        "--resumable",
+        "--durable",
+        "--max-expansions",
+        "1",
+    ];
+    let mut page = json(root, &base);
+    assert!(page["search_receipt"]["continuation"].is_string());
+    for _ in 0..16 {
+        let Some(token) = page["search_receipt"]["continuation"].as_str() else {
+            assert!(page["items"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|i| i["kind"] == "path"));
+            assert_eq!(fs::read_dir(root).unwrap().count(), 1);
+            return;
+        };
+        let mut args = base.to_vec();
+        args.extend(["--continuation", token]);
+        page = json(root, &args);
+    }
+    panic!("durable fixture did not finish");
+}
+
+#[test]
 fn scheduler_configuration_survives_cli_restart_and_matches_shared_reads() {
     let temp = WorkspaceFixture::new();
     let root = temp.path();
@@ -1403,7 +1475,7 @@ fn automatic_storage_is_reused_and_can_live_outside_source() {
     fs::create_dir(&source).unwrap();
     fs::write(
         source.join("app.py"),
-        "def work(object):\n    object.toString()\n",
+        "def entmoot_smoke_fn(object):\n    object.toString()\n",
     )
     .unwrap();
     let invoke = |args: &[&str]| -> Value {
@@ -1431,7 +1503,7 @@ fn automatic_storage_is_reused_and_can_live_outside_source() {
         );
         serde_json::from_slice(&output.stdout).unwrap()
     };
-    let found = invoke(&["find", "work"]);
+    let found = invoke(&["find", "entmoot_smoke_fn"]);
     assert_eq!(found["result_bounds"]["total_matches"], 1);
     assert!(!source.join(".entmoot").exists());
     let pointer = entmoot_engine::workspace::storage_directory_in(&source, Some(&data))
@@ -1454,7 +1526,7 @@ fn automatic_storage_is_reused_and_can_live_outside_source() {
     assert_eq!(before, fs::read(&pointer).unwrap());
     // Stale source does not silently replace history during a query.
     fs::write(source.join("app.py"), "def changed(): pass\n").unwrap();
-    invoke(&["find", "work"]);
+    invoke(&["find", "entmoot_smoke_fn"]);
     assert_eq!(before, fs::read(&pointer).unwrap());
     invoke(&["init"]);
     assert_ne!(before, fs::read(&pointer).unwrap());

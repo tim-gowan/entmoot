@@ -6,6 +6,20 @@ use thiserror::Error;
 #[error("invalid scope path (absolute or traversal): {0}")]
 pub struct InvalidRepoPath(pub String);
 
+/// Shared fence validation for durable source observations.
+pub(crate) fn validate_source_observation(
+    snapshot: &crate::SourceSnapshot,
+    path: &str,
+    digest: &crate::ContentDigest,
+) -> Result<(), String> {
+    snapshot.validate().map_err(|e| e.to_string())?;
+    if normalize_repo_path(path).map_err(|e| e.to_string())? != path {
+        return Err("source observation path must be canonical".into());
+    }
+    crate::ContentDigest::parse(digest.as_str()).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 /// Normalize to repository-relative forward-slash form; reject absolute / `..`.
 pub fn normalize_repo_path(path: &str) -> Result<String, InvalidRepoPath> {
     let trimmed = path.trim().replace('\\', "/");

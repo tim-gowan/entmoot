@@ -368,6 +368,7 @@ impl SqliteKnowledgeRepository {
     ) -> Result<KnowledgeStore, KnowledgeRepositoryError> {
         let query_only = projection == ReadProjection::Query;
         let store = KnowledgeStore {
+            code_contracts: self.load_collection("code_contracts")?,
             declaration_sites: self.load_collection("declaration_sites")?,
             call_sites: self.load_collection("call_sites")?,
             coverages: self.load_collection("coverages")?,
@@ -437,15 +438,19 @@ impl SqliteKnowledgeRepository {
     /// Select an independent revision/build publication in a shared database.
     /// The key is a content digest of the publication input manifest; it never
     /// changes the meaning of occurrence-scoped addresses inside that view.
+    /// Writable startup holds a per-database initialization lock, released before
+    /// returning the repository. Contention has a five-second wait budget; ordinary
+    /// reads and transactions retain SQLite's concurrency rules.
     pub fn open_view(path: &Path, view: &str) -> Result<Self, KnowledgeRepositoryError> {
         if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
             std::fs::create_dir_all(parent)?;
         }
         let lease = crate::storage_lease::shared(path, true)?;
-        let mut repository = Self::from_connection_view(
-            Connection::open(crate::sqlite_startup::file_path(path))?,
-            view,
-        )?;
+        // Serialize before opening SQLite: overlapping first opens and closes can
+        // strand peers in a WAL protocol race even after reopening connections.
+        let sqlite_path = crate::sqlite_startup::file_path(path);
+        let _initialization = crate::storage_lease::initialization(&sqlite_path)?;
+        let mut repository = Self::from_connection_view(Connection::open(&sqlite_path)?, view)?;
         repository.lease = Some(lease);
         Ok(repository)
     }
@@ -484,12 +489,23 @@ impl SqliteKnowledgeRepository {
     }
 
     pub fn open_view_read_only(path: &Path, view: &str) -> Result<Self, KnowledgeRepositoryError> {
-        // Version preflight precedes the lease so old layouts fail with a loud
-        // schema error instead of an incidental missing sidecar error.
-        let connection = Connection::open_with_flags(
-            crate::sqlite_startup::file_path(path),
-            OpenFlags::SQLITE_OPEN_READ_ONLY,
-        )?;
+        Self::open_view_read_once(path, view, false)
+    }
+
+    fn open_view_read_once(
+        path: &Path,
+        view: &str,
+        pin_snapshot: bool,
+    ) -> Result<Self, KnowledgeRepositoryError> {
+        // Readers must join the same startup gate as writers before the first
+        // WAL read. Reopening after SQLITE_PROTOCOL is too late for peers that
+        // already raced during shared-memory initialization on Windows.
+        let sqlite_path = crate::sqlite_startup::file_path(path);
+        let _initialization = crate::storage_lease::initialization_read_only(&sqlite_path)?;
+        // Version preflight precedes the lifetime lease so old layouts fail with
+        // a schema error instead of an incidental missing sidecar error.
+        let connection =
+            Connection::open_with_flags(sqlite_path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         connection.busy_timeout(std::time::Duration::from_secs(5))?;
         let version = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
         if version != STORAGE_SCHEMA_VERSION {
@@ -505,6 +521,10 @@ impl SqliteKnowledgeRepository {
             connection,
             lease: Some(lease),
         };
+        if pin_snapshot {
+            repository.connection.execute_batch("BEGIN DEFERRED")?;
+        }
+        // BEGIN alone is lazy: this read establishes the WAL end mark.
         if !repository.is_initialized()? {
             return Err(KnowledgeRepositoryError::NotInitialized);
         }
@@ -513,13 +533,11 @@ impl SqliteKnowledgeRepository {
 
     /// Pin one short multi-statement hydration to a coherent committed state.
     pub fn open_read_snapshot(path: &Path) -> Result<Self, KnowledgeRepositoryError> {
-        let repository = Self::open_read_only(path)?;
-        repository.connection.execute_batch("BEGIN DEFERRED")?;
-        // BEGIN alone is lazy: the first read establishes the WAL end mark.
-        if !repository.is_initialized()? {
-            return Err(KnowledgeRepositoryError::NotInitialized);
-        }
-        Ok(repository)
+        let locator = KnowledgeViewLocator::read(path)?;
+        let (database, view) = locator.as_ref().map_or((path, "default"), |locator| {
+            (locator.database.as_path(), locator.view.as_str())
+        });
+        Self::open_view_read_once(database, view, true)
     }
 
     pub(crate) fn lifecycle_lease(&self) -> Option<crate::storage_lease::StorageLease> {
@@ -2192,6 +2210,14 @@ fn for_each_store_row(
         let mut row = StoredRow::new("call_sites", site)?;
         row.record_id = site.site_id.clone();
         row.subject_id = Some(site.path.clone());
+        emit!(row);
+    }
+    for record in &store.code_contracts {
+        crate::knowledge::validate_code_contract(record)
+            .map_err(|e| invalid_record("code_contracts", e))?;
+        let mut row = StoredRow::new("code_contracts", record)?;
+        row.record_id = record.record_id.clone();
+        row.subject_id = Some(record.path.clone());
         emit!(row);
     }
     for site in &store.declaration_sites {

@@ -15,17 +15,16 @@ import re
 import shutil
 import subprocess
 import sys
-import time
 import tomllib
 from urllib.parse import quote
 
-import psutil
 
 from evals.harness.contracts import ContractError
 from evals.harness.revision_campaign import (CampaignStore, OID, canonical_json, digest,
                                             evaluator_digest, material_digest, _run)
 from evals.harness.run_revision_campaign import run_lock
 from evals.harness.npm_lock_inventory import dependency_rows
+from evals.harness.measurement import command, database_bytes
 
 
 def beneath(root: Path, relative: str) -> Path:
@@ -160,46 +159,6 @@ def lock_dependencies(root: Path, lock_name: str | None, include_dev: bool = Fal
     return sorted(packages), sorted(set(gaps))
 
 
-def command(argv: list[str], cwd: Path, directory: Path, name: str, environment: dict, timeout: int) -> dict:
-    """Stream output to task files and sample process-tree RSS without pipe copies."""
-    out, err = directory / (name + '.stdout'), directory / (name + '.stderr')
-    started, peak, status = time.monotonic(), 0, 'complete'
-    try:
-        with out.open('wb') as stdout, err.open('wb') as stderr:
-            process = subprocess.Popen(argv, cwd=cwd, env=environment, stdout=stdout, stderr=stderr)
-            owner = psutil.Process(process.pid)
-            while process.poll() is None:
-                try:
-                    children = owner.children(recursive=True)
-                    rss = 0
-                    for child in [owner, *children]:
-                        try:
-                            rss += child.memory_info().rss
-                        except (psutil.NoSuchProcess, psutil.AccessDenied):
-                            pass
-                    peak = max(peak, rss)
-                    if time.monotonic() - started > timeout:
-                        status = 'timeout'
-                        for child in reversed(children):
-                            try:
-                                child.kill()
-                            except psutil.NoSuchProcess:
-                                pass
-                        process.kill()
-                        break
-                except psutil.NoSuchProcess:
-                    break
-                time.sleep(0.05)
-            code = process.wait()
-            if code and status == 'complete':
-                status = 'failed'
-    except FileNotFoundError:
-        code, status = None, 'tool_unavailable'
-    return {'status': status, 'exit_code': code, 'arguments': argv,
-            'wall_seconds': time.monotonic() - started, 'sampled_peak_tree_rss_bytes': peak,
-            'stdout': str(out), 'stderr': str(err)}
-
-
 def git(root: Path, *args: str) -> str:
     return _run(['git', '-C', str(root), *args]).decode('utf-8').strip()
 
@@ -209,16 +168,23 @@ def checkout(spec: dict, destination: Path) -> None:
     if not OID.fullmatch(revision):
         raise ContractError('repository revisions must be full commit IDs')
     if not destination.exists():
-        _run(['git', 'clone', '--no-checkout', '--no-hardlinks', '--', spec['url'], str(destination)])
+        # Host line-ending defaults are not part of the pinned source recipe.
+        # Persist the policy only in this owned clone; authored attributes still apply.
+        _run(['git', 'clone', '--no-checkout', '--no-hardlinks', '--config', 'core.autocrlf=false',
+              '--config', 'core.eol=lf', '--', spec['url'], str(destination)])
         # A pinned commit may not be on the remote default branch.
         if subprocess.run(['git', '-C', str(destination), 'cat-file', '-e', revision + '^{commit}'], capture_output=True).returncode:
             _run(['git', '-C', str(destination), 'fetch', '--depth=1', 'origin', revision])
         git(destination, 'checkout', '--detach', revision)
     else:
-        # Prior init may append /.entmoot/ to .gitignore; restore the pin before
-        # fencing so campaign reuse is not blocked by publication bookkeeping.
+        # Reuse only this executor-owned checkout, restoring the configured pin.
         if git(destination, 'remote', 'get-url', 'origin') != spec['url']:
             raise ContractError('checkout identity differs from configured source')
+        for setting, expected in (('core.autocrlf', 'false'), ('core.eol', 'lf')):
+            selected = subprocess.run(['git', '-C', str(destination), 'config', '--local', '--get', setting],
+                                      capture_output=True)
+            if selected.returncode or selected.stdout.decode().strip() != expected:
+                raise ContractError('checkout text policy differs; use a fresh campaign directory')
         if subprocess.run(['git', '-C', str(destination), 'cat-file', '-e', revision + '^{commit}'], capture_output=True).returncode:
             _run(['git', '-C', str(destination), 'fetch', '--depth=1', 'origin', revision])
         # Annotated tags are not campaign pins; configs must store peeled commits.
@@ -229,7 +195,7 @@ def checkout(spec: dict, destination: Path) -> None:
         git(destination, 'reset', '--hard', commit)
     if git(destination, 'rev-parse', 'HEAD') != revision or git(destination, 'remote', 'get-url', 'origin') != spec['url']:
         raise ContractError('checkout identity differs from configured source')
-    if Path(git(destination, 'rev-parse', '--show-toplevel')).resolve() != destination.resolve():
+    if not Path(git(destination, 'rev-parse', '--show-toplevel')).samefile(destination):
         raise ContractError('source must be the selected checkout root')
     if git(destination, 'ls-files', '--', '.entmoot'):
         raise ContractError('tracked .entmoot paths cannot be campaign publications')
@@ -317,6 +283,8 @@ def run(config_path: Path, directory: Path, cli: Path, depth: int, structural_on
                'native_inputs': None if structural_only else native_inputs(environment, Path(__file__).resolve().parents[2])}
     directory = directory.resolve()
     directory.mkdir(parents=True, exist_ok=True)
+    data_directory = directory / 'data'
+    data_directory.mkdir(exist_ok=True)
     database = directory / 'campaign.sqlite3'
     with run_lock(directory), CampaignStore(database, manifest_digest=digest(canonical_json(context)), create=not database.exists()) as store:
         store.put_receipts([('inputs', canonical_json(context))])
@@ -334,22 +302,21 @@ def run(config_path: Path, directory: Path, cli: Path, depth: int, structural_on
             row = {'id': name, 'revision': spec['revision'], 'depth': level, 'limitations': []}
             try:
                 checkout(spec, root)
-                pinned, gaps = lock_dependencies(root, spec['lock'], config.get('include_dev', False))
             except (ContractError, OSError, ValueError) as error:
                 row.update(build_status='unavailable', inventory_status='unavailable', limitations=[str(error)])
                 repositories.append(row)
                 continue
-            row['limitations'].extend(gaps)
-            for package in pinned:
-                target = config['packages'].get(package)
-                status = 'unmapped' if target is None else 'depth_limit' if level >= depth else 'already_selected' if target in selected else 'selected'
-                dependencies.append({'source': name, 'package': package, 'target': target, 'status': status})
-                if status == 'selected':
-                    selected.add(target)
-                    queue.append((target, level + 1))
             prior = store.get_receipt('repository/' + name)
             prior = json.loads(prior) if prior else {}
             row['build_reused'] = build_existed and prior.get('build_status') == 'complete'
+            lock = None
+            try:
+                lock = beneath(root, spec['lock']) if spec['lock'] else None
+            except (ContractError, OSError, ValueError) as error:
+                row['limitations'].append('lock_unavailable:' + str(error))
+            if row['build_reused'] and prior.get('dependency_lock'):
+                if lock is None or not lock.is_file() or material_digest(lock) != prior['dependency_lock']['content_digest']:
+                    raise ContractError('retained dependency lock changed; use a fresh campaign')
             builds = prior.get('builds', []) if row['build_reused'] else []
             if not row['build_reused']:
                 replacements = {'{checkout}': str(root), '{build}': str(build), '{python}': sys.executable}
@@ -372,11 +339,31 @@ def run(config_path: Path, directory: Path, cli: Path, depth: int, structural_on
             if git(root, 'status', '--porcelain', '--untracked-files=no'):
                 git(root, 'reset', '--hard', 'HEAD')
                 row['limitations'].append('build_tracked_mutations_reset_to_pin')
+            row['dependency_lock'] = None
+            if lock is not None and lock.is_file():
+                retained = build / ('resolved-' + lock.name)
+                shutil.copyfile(lock, retained)
+                row['dependency_lock'] = {'path':spec['lock'], 'retained':str(retained),
+                                          'content_digest':material_digest(lock),
+                                          'tracked':bool(git(root,'ls-files','--',spec['lock']))}
+            pinned, gaps = [], []
+            try:
+                pinned, gaps = lock_dependencies(root, spec['lock'], config.get('include_dev', False))
+            except (ContractError, OSError, ValueError) as error:
+                row['limitations'].append('lock_unavailable:' + str(error))
+            row['limitations'].extend(gaps)
+            for package in pinned:
+                target = config['packages'].get(package)
+                status = 'unmapped' if target is None else 'depth_limit' if level >= depth else 'already_selected' if target in selected else 'selected'
+                dependencies.append({'source': name, 'package': package, 'target': target, 'status': status})
+                if status == 'selected':
+                    selected.add(target)
+                    queue.append((target, level + 1))
             if git(root, 'status', '--porcelain', '--untracked-files=no'):
                 row.update(inventory_status='unavailable')
                 row['limitations'].append('build_modified_tracked_source')
             else:
-                argv = [str(cli), 'init', '--root', str(root), '--repo', name]
+                argv = [str(cli), '--data-dir', str(data_directory), 'init', '--root', str(root), '--repo', name]
                 if structural_only:
                     argv.append('--structural-only')
                 if spec.get('subject'):
@@ -387,7 +374,7 @@ def run(config_path: Path, directory: Path, cli: Path, depth: int, structural_on
                     summary = json.loads(Path(result['stdout']).read_bytes())
                     row.update(publication=summary['publication'], coverage=summary['coverage'], stages=summary.get('stages'))
                     if not structural_only:
-                        bind_argv = [str(cli), 'bind', '--root', str(root)]
+                        bind_argv = [str(cli), '--data-dir', str(data_directory), 'bind', '--root', str(root)]
                         if spec.get('subject'):
                             bind_argv.extend(['--subject', spec['subject']])
                         bind = command(bind_argv, root, logs, 'entmoot-bind', environment, config.get('timeout_seconds', 1200))
@@ -407,7 +394,7 @@ def run(config_path: Path, directory: Path, cli: Path, depth: int, structural_on
                 else:
                     row['bind_status'] = 'skipped_init_incomplete'
             row['limitations'].append('build_success_is_not_language_or_dependency_bind_qualification')
-            row['database_bytes'] = sum(path.stat().st_size for path in (root / '.entmoot').rglob('*.sqlite*') if path.is_file())
+            row['database_bytes'] = database_bytes(Path(row['publication']['store'])) if row.get('publication') else None
             repositories.append(row)
             store.put_receipts([('repository/' + name, canonical_json(row))])
         # Configured Entmoot operations can compare selected publications or run
@@ -439,7 +426,7 @@ def run(config_path: Path, directory: Path, cli: Path, depth: int, structural_on
             if missing:
                 result = {'name': check['name'], 'status': 'unavailable', 'limitations': ['publication_or_request_unavailable:' + token for token in sorted(set(missing))]}
             else:
-                result = command([str(cli), *argv], directory, logs, 'entmoot', environment, config.get('timeout_seconds', 1200))
+                result = command([str(cli), '--data-dir', str(data_directory), *argv], directory, logs, 'entmoot', environment, config.get('timeout_seconds', 1200))
                 result.update(name=check['name'], qualification='process_only; interpret the returned operation status and limitations')
                 output = Path(result['stdout'])
                 if output.is_file() and output.stat().st_size <= 65536:

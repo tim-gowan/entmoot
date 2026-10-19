@@ -184,10 +184,7 @@ impl ResolutionAttempt {
         mut candidate_addresses: Vec<Address>,
     ) -> Result<Self, ResolutionAttemptValidationError> {
         candidate_addresses.sort_by_cached_key(crate::relation::address_identity_key);
-        candidate_addresses.dedup_by(|left, right| {
-            crate::relation::address_identity_key(left)
-                == crate::relation::address_identity_key(right)
-        });
+        candidate_addresses.dedup();
         let attempt = Self {
             input,
             producer_id: producer_id.into(),

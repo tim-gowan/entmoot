@@ -91,6 +91,7 @@ pub(super) fn run(command: &Commands, url: &str, token_file: Option<&Path>) -> R
             vec![("trace_seeded_paths",value(request)?)]
         }
         Commands::Neighborhood(args) => vec![("query",json!({"request":args.backend_request()?}))],
+        Commands::Path(args) => vec![("query",json!({"request":args.backend_request()?}))],
         Commands::Find(_) | Commands::Inspect(_) | Commands::ReadSource(_) | Commands::Callers(_) | Commands::Callees(_) | Commands::Boundaries(_) => {
             let request = super::navigation::request(command)?.context("missing navigation request")?;
             vec![("query",json!({"request":request}))]

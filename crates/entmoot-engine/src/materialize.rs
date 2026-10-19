@@ -2,10 +2,49 @@
 use cap_std::{ambient_authority, fs::Dir};
 use entmoot_contracts::SourceSubject;
 use std::{
-    fs,
+    fs::{self, File},
     io::{self, Read},
     path::{Path, PathBuf},
+    time::{Duration, Instant},
 };
+
+/// Brief reclaim window when a prior holder closed its FD but the flock has not
+/// cleared yet (abrupt peer exit or a failed copy that just returned).
+const MATERIALIZE_LOCK_WAIT: Duration = Duration::from_secs(2);
+
+struct MaterializeLock(File);
+
+impl MaterializeLock {
+    fn acquire(directory: &Dir) -> Result<Self, MaterializeError> {
+        let mut lock_options = cap_std::fs::OpenOptions::new();
+        lock_options.read(true).write(true).create(true);
+        let file = directory
+            .open_with("materialize.lock", &lock_options)?
+            .into_std();
+        let started = Instant::now();
+        loop {
+            match file.try_lock() {
+                Ok(()) => return Ok(Self(file)),
+                Err(fs::TryLockError::WouldBlock) if started.elapsed() < MATERIALIZE_LOCK_WAIT => {
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+                Err(fs::TryLockError::WouldBlock) => {
+                    return Err(MaterializeError::Invalid(
+                        "another materialization is active: lock acquisition failed because the operation would block"
+                            .into(),
+                    ));
+                }
+                Err(fs::TryLockError::Error(error)) => return Err(error.into()),
+            }
+        }
+    }
+}
+
+impl Drop for MaterializeLock {
+    fn drop(&mut self) {
+        let _ = self.0.unlock();
+    }
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum MaterializeError {
@@ -95,14 +134,7 @@ pub fn materialize(
         ));
     }
     let directory = Dir::open_ambient_dir(&dependencies, ambient_authority())?;
-    let mut lock_options = cap_std::fs::OpenOptions::new();
-    lock_options.read(true).write(true).create(true);
-    let lock = directory
-        .open_with("materialize.lock", &lock_options)?
-        .into_std();
-    lock.try_lock().map_err(|e| {
-        MaterializeError::Invalid(format!("another materialization is active: {e}"))
-    })?;
+    let _lock = MaterializeLock::acquire(&directory)?;
     // Opaque labels never become paths; the metadata preserves their exact meaning.
     let key = entmoot_contracts::blake3_hex(
         &serde_json::to_vec(&(subject, version)).map_err(io::Error::other)?,
@@ -237,7 +269,12 @@ mod tests {
             bytes: 2,
             ..Default::default()
         };
-        assert!(materialize(&deps, &subject, "1", &source, b"{}", None, small).is_err());
+        let exhausted = materialize(&deps, &subject, "1", &source, b"{}", None, small)
+            .expect_err("exhausted copy budget must fail");
+        assert!(
+            exhausted.to_string().contains("budget"),
+            "failed copy must not leave the coordination lock held: {exhausted}"
+        );
         assert_eq!(fs::read_dir(&deps).unwrap().count(), 1); // only the coordination lock
         assert!(materialize(
             &source.join("nested"),
@@ -259,7 +296,7 @@ mod tests {
             None,
             CopyBudget::default(),
         )
-        .unwrap();
+        .expect("coordination lock must clear after a failed copy");
         assert_eq!(
             fs::read(result.join("app.py")).unwrap(),
             b"def leaf(): pass\n"

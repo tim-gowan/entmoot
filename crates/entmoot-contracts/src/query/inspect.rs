@@ -172,6 +172,10 @@ pub struct CallNeighborhoodResult {
     pub bounds: ResultBounds,
     /// Independently bounded unresolved-attempt collection.
     pub unresolved_bounds: ResultBounds,
+    /// Continue the undisplayed attempts through `inspect unresolved`, separately
+    /// from the concrete-edge cursor. Exhaustion does not establish closure.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unresolved_continuation: Option<Box<super::InspectQuery>>,
     /// Explicit incompleteness and resolution limitations.
     pub gaps: Vec<QueryGapCode>,
 }

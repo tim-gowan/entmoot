@@ -10,9 +10,13 @@
     "AGENTS.md",
     ".pre-commit-config.yaml",
     "scripts/install_git_hooks.py",
+    "scripts/build_docs.py",
+    "scripts/test_build_docs.py",
     "scripts/pre_commit_check.py",
     "scripts/test_pre_commit_check.py",
-    "scripts/test_docs_workflow.py",
+    "scripts/test_package_smoke.py",
+    "scripts/test_check_release.py",
+    "scripts/test_fixture_checkout.py",
     "scripts/test_ownership.json",
     "scripts/test_ownership.py",
     "scripts/pr_structural_diff.py",
@@ -687,10 +691,6 @@
         },
         {
           "kind": "file_prefix",
-          "path": "evals/harness/report_revision_pair.py"
-        },
-        {
-          "kind": "file_prefix",
           "path": "evals/harness/knowledge_sql.py"
         },
         {
@@ -700,6 +700,10 @@
         {
           "kind": "file_prefix",
           "path": "evals/harness/npm_lock_inventory.py"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "evals/harness/measurement.py"
         }
       ],
       "extensions": []
@@ -1653,6 +1657,52 @@
         {
           "kind": "file_prefix",
           "path": "crates/entmoot-contracts/src/query/boundaries.rs"
+        }
+      ],
+      "extensions": [],
+      "also_select": [
+        {
+          "package": "entmoot-mcp"
+        },
+        {
+          "package": "entmoot",
+          "test": "workspace_defaults"
+        }
+      ]
+    },
+    {
+      "cargo": {
+        "package": "entmoot-engine",
+        "test": "subject_selection"
+      },
+      "owners": [
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/tests/subject_selection.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/query/selectors.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-contracts/src/code_contract.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/query/selection.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/query/admission.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-engine/src/knowledge.rs"
+        },
+        {
+          "kind": "file_prefix",
+          "path": "crates/entmoot-cli/src/navigation_walk.rs"
         }
       ],
       "extensions": [],

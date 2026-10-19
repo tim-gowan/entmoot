@@ -5,9 +5,13 @@ needed for the task; Rust contracts and generated schemas own fields.
 
 - [entmoot-operate](skills/entmoot-operate/SKILL.md): source navigation, native
   readiness, open boundaries and local recovery.
+- [entmoot-evaluate](skills/entmoot-evaluate/SKILL.md): pinned history pilots,
+  paired agent calibration and honest evidence reports.
 - [entmoot-release](skills/entmoot-release/SKILL.md): package/docs verification,
   qualification and an authorized release handoff.
 - [Test lanes](rules/entmoot-test-lanes.mdc): existing focused test ownership.
+- [Data and command abstractions](rules/data-command-abstractions.mdc): shared
+  records, selectors, ETL, execution and CLI/MCP behavior.
 - [Format series](rules/entmoot-format-series.mdc), [unsigned commits](rules/commit-unsigned-end-of-turn.mdc).
 
 These instructions introduce no new scheduler or approval layer. Preserve user

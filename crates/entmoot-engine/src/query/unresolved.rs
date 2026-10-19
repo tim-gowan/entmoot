@@ -13,13 +13,22 @@ impl QueryEngine {
         after: Option<&UnresolvedPageCursor>,
         requested_limit: Option<usize>,
     ) -> Result<Value, QueryError> {
+        self.unresolved_page_from_repository(&self.repository()?, subject, after, requested_limit)
+    }
+
+    pub(super) fn unresolved_page_from_repository(
+        &self,
+        repository: &impl KnowledgeRepository,
+        subject: &str,
+        after: Option<&UnresolvedPageCursor>,
+        requested_limit: Option<usize>,
+    ) -> Result<Value, QueryError> {
         let limit = requested_limit.unwrap_or(50);
         if !(1..=1_000).contains(&limit) {
             return Err(QueryError::InvalidInput(
                 "unresolved-attempt limit must be in 1..=1000".into(),
             ));
         }
-        let repository = self.repository()?;
         let visibility_cursor = repository.current_visibility_cursor()?;
         // Facets return attempt identities. Permit that exact durable record as
         // well as paging all attempts for a source subject.

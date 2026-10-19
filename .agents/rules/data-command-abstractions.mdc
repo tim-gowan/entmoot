@@ -1,0 +1,42 @@
+---
+description: Shared data, selection, execution and delivery contracts across Entmoot operations
+alwaysApply: true
+---
+
+# Data and operation design
+
+- Rust contracts own domain records, selectors, defaults, validation and receipts.
+  ETL normalizes provider vocabulary once, preserves attributed observations and
+  publishes through KnowledgeRepository. Disposable query projections consume
+  those records; they never invent a second signature, identity or type system.
+- Separate exact references from discovery selectors. Reuse entity kinds,
+  explicit text match modes and exact/subtree/glob path selectors. A signature
+  requirement binds its fields to one parameter; multiple requirements disclose
+  whether they require distinct parameters. Written syntax is not resolved type
+  identity, assignability, argument binding or runtime behavior.
+- Share matching and edge admission implementations across operations. Endpoint
+  selection, returned-endpoint filtering and traversal pruning have different
+  meanings. Apply pruning during both frontiers, seed discovery and shortcut
+  interiors; include every semantic filter in cache and continuation identity.
+- Preserve snapshot, build context, source commitment, provenance and ambiguity
+  through extraction, storage/reload, queries and both frontends. Unsupported or
+  missing observations remain explicit; counts describe their examined universe.
+- Separate graph work, result selection, evidence detail and response delivery.
+  State deterministic ordering and witness selection. Output pagination never
+  advances discovery. Return usable typed follow-ups for ambiguity and limits.
+- CLI and MCP lower into the same typed requests and validation. Expose ordinary
+  flags for common choices and typed request input for composition. Keep narrow
+  task tools; reject irrelevant fields instead of silently ignoring them.
+  Preserve existing spellings or document an intentional compatibility change.
+- Prefer Rust standard collections/algorithms, established permissively licensed
+  crates and database indexes to custom commodity implementations. Check current
+  maintenance, license, platform/MSRV support, Unicode and bounded-work behavior.
+  Measure representative cost and compare results independently before replacing
+  an optimization. Keep Entmoot-specific scope/evidence semantics at their owner.
+- Extend existing owners before introducing wrappers, query languages, schedulers
+  or retained state. Adopt shared primitives only where semantics agree; domain
+  operations retain their distinct invariants (including test ownership floors).
+- Validate required distinctions through production fixtures, persistence/reload
+  and CLI/MCP parity. Cover malformed selectors, missing facts, alternate routes,
+  parallel occurrences, changed filters on resume and stale publication fences.
+  Regenerate schema/examples; update owning documentation and test ownership.

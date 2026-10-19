@@ -108,10 +108,22 @@ pub(crate) fn normalize_source_path(path: &str) -> Result<String, SourceStoreErr
 }
 
 pub(crate) fn local_repository_id(toplevel_or_root: &std::path::Path) -> String {
+    // Parse Windows drive/UNC spellings even on Unix hosts, where `\` is an
+    // ordinary filename character and verbatim prefixes never split.
+    let raw = toplevel_or_root.to_string_lossy();
+    let stripped = raw
+        .strip_prefix(r"\\?\")
+        .or_else(|| raw.strip_prefix("//?/"))
+        .unwrap_or(&raw);
     let name = toplevel_or_root
         .file_name()
         .and_then(|s| s.to_str())
-        .filter(|s| !s.is_empty())
+        .filter(|s| !s.is_empty() && !s.contains('\\') && !s.contains(':'))
+        .or_else(|| {
+            stripped
+                .rsplit(['/', '\\'])
+                .find(|part| !part.is_empty() && !part.contains(':'))
+        })
         .unwrap_or("repo");
     format!("local/{name}")
 }

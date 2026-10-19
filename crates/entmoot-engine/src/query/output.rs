@@ -226,6 +226,13 @@ impl QueryEngine {
         let mut builder = Projection::new(self);
         builder.collect(&result.payload)?;
         let prototype = CompactQueryResponse {
+            selection: match &result.payload {
+                QueryPayload::Find(FindPayload::Subject(subject)) => subject.selection.clone(),
+                QueryPayload::Traverse(TraversePayload::Neighborhood(neighborhood)) => {
+                    neighborhood.endpoint_selection.clone()
+                }
+                _ => None,
+            },
             limitations: match &result.payload {
                 QueryPayload::Find(FindPayload::Facet(f)) => f.limitations.clone(),
                 _ => Vec::new(),
@@ -258,6 +265,29 @@ impl QueryEngine {
                 },
                 _ => None,
             },
+            unresolved_continuation: (match &result.payload {
+                QueryPayload::Inspect(payload) => match payload.as_ref() {
+                    // Compact calls display concrete edges only, so start with
+                    // the first attempt rather than skipping the deferred page.
+                    InspectPayload::Calls(c) if c.unresolved_bounds.total_matches > 0 => {
+                        Some(InspectQuery::Unresolved {
+                            id: c.subject.clone(),
+                            after: None,
+                            limit: Some(c.unresolved_bounds.limit),
+                        })
+                    }
+                    InspectPayload::Unresolved(u) => {
+                        u.next_cursor.clone().map(|after| InspectQuery::Unresolved {
+                            id: u.subject.clone(),
+                            after: Some(after),
+                            limit: Some(u.bounds.limit),
+                        })
+                    }
+                    _ => None,
+                },
+                _ => None,
+            })
+            .map(Box::new),
             role_selection: match &result.payload {
                 QueryPayload::Traverse(TraversePayload::Neighborhood(n)) => {
                     n.role_selection.as_ref().map(|r| CompactRoleSelection {
@@ -362,6 +392,9 @@ impl QueryEngine {
             ));
         }
         let mut compact = CompactSeededResponse {
+            prune_selection: report.prune_selection,
+            pruned_edges: report.pruned_edges,
+            evidence_filtered_edges: report.evidence_filtered_edges,
             snapshot: self.graph.snapshot.clone(),
             request,
             matching_assertions: report.matching_assertions,
@@ -390,6 +423,8 @@ impl QueryEngine {
         {
             let query = QueryRequest::Traverse {
                 request: TraverseQuery::Path {
+                    evidence_filter: compact.request.evidence_filter,
+                    prune: compact.request.prune.clone(),
                     resumable: false,
                     continuation: None,
                     start: route.from_callable.clone(),
@@ -611,6 +646,7 @@ impl<'a> Projection<'a> {
         self.subjects
             .entry(n.node_id.clone())
             .or_insert_with(|| CompactSubject {
+                selection_match: n.selection_match.clone(),
                 display_ref: n.display_ref.clone(),
                 kind: n.kind.clone(),
                 path: n.path.clone(),
@@ -631,6 +667,7 @@ impl<'a> Projection<'a> {
         self.subjects
             .entry(key.clone())
             .or_insert_with(|| CompactSubject {
+                selection_match: None,
                 display_ref: key.clone(),
                 kind: "external_address".into(),
                 path: None,

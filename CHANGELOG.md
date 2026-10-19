@@ -1,7 +1,174 @@
 # Changelog
 
+## 2026-10-18: Stabilize Windows package-api and analysis-work controls
+
+- Pyright path containment compares realpaths (case-insensitive on Windows, strip
+  verbatim prefixes). Native Python package-api controls hand environment roots
+  in the same ordinary drive spelling the sidecar uses for `request.root`.
+- Retry transient SQLite `FileLockingProtocolFailed` when many threads open the
+  analysis-work queue together on Windows.
+
+## 2026-10-18: Keep call-site fixture bytes LF on Windows
+
+- Normalize CRLF when copying callsites fixtures into qualification temps and
+  pin those fixtures to LF in `.gitattributes`, so multi-line Python selectors
+  match inventory offsets on Windows checkouts.
+
+## 2026-10-18: Harden Windows path checks for campaigns and Pyright fencing
+
+- Campaign publication prefix checks canonicalize before `starts_with` so
+  Windows 8.3 tempfile paths match long-path receipts.
+- Pyright program fencing resolves ambient import-root junctions (common in
+  Windows site-packages) instead of treating them like project-local symlinks,
+  and call-site qualification clears inherited Python environment selectors.
+
+## 2026-10-18: Reclaim dependency materialize locks after failed copies
+
+- Acquire `materialize.lock` with a short `WouldBlock` retry and unlock
+  explicitly on drop so a failed budget-limited copy cannot leave the next
+  materialization blocked on the same dependencies directory.
+
+## 2026-10-18: Reclaim storage lifecycle leases after abrupt peer exit
+
+- Retry lifecycle `.lease` `WouldBlock` briefly (same budget as startup
+  initialization) so collection and re-open recover after a crashed holder
+  whose process exit has not yet released the flock. Stitch/git-capture
+  recovery fixtures release or scope leases before the next open.
+
+## 2026-10-18: Refresh package derivation inputs after query-selector merge
+
+- Regenerate `derivation-inputs.json` for contracts, core and engine so the
+  policy release-input fence matches the merged selector/admission sources.
+
+## 2026-10-18: Align operator docs with verified find and profile paths
+
+- README quickstart uses `find entmoot_smoke_fn` instead of path-colliding
+  `find work` (substring search matches absolute repo labels under
+  `/home/runner/work/…`). Investigate row names `assess overlay`.
+- `StatusReport::adapter_profile` rustdoc points at `adapter-profile.json` in the
+  selected storage volume, not a source-tree `.entmoot` path.
+
+## 2026-10-18: Gate path-colliding find queries in pre-commit
+
+- Pre-commit rejects `find` query literals that collide with common absolute-path
+  segments (for example GHA `/home/runner/work/`). Package smoke and docs examples
+  use the unique fixture symbol `entmoot_smoke_fn`.
+
+## 2026-10-17: Shared selection, durable signatures and traversal admission
+
+- Add a concise data/command abstraction rule referenced from AGENTS. Rust
+  contracts own selectors, validation, defaults and receipt shape; CLI/MCP
+  compose shared read operations.
+- Share entity kinds, explicit exact/substring/edit-distance matches,
+  exact/subtree/glob paths and correlated written-parameter predicates across
+  find, inventory, neighborhood endpoints, boundary and clone path filters.
+  Counts preserve missing/unsupported facts; match positions survive compact output.
+- Persist complete source-declared contracts as source-fenced knowledge records
+  and rehydrate them independently of topology. Identity retains source detail;
+  competing observations never silently select one signature.
+- Share evidence admission and discovery pruning across path frontiers,
+  neighborhoods, seeded discovery and impact relay; bind filters into caches and
+  continuations. Filtered traversal preserves original edges and scopes.
+- Add CLI path and typed find flags, shared traversal budgets/checkpoints,
+  portable examples and typed MCP find/inspect decoding. Irrelevant tool fields
+  now fail validation. Missing required find/inspect fields use MCP argument
+  errors naming the field; valid requests retain structured service errors.
+  Standalone resumable walks require durable checkpoints;
+  MCP traverse evidence-detail defaults now follow the shared budget.
+- Use globset and cutoff-aware RapidFuzz for matching. Retain the existing bounded
+  substring candidate index after a slower SQLite FTS5 comparison. Storage and
+  implementation fingerprints change through their normal derivation; incompatible
+  publications require explicit rebuilding, never silent reset.
+
+## 2026-10-17: Solo-developer GitHub ruleset and public-repo bleed hardening
+
+- Retarget the `main` ruleset to the default branch only: PR required (0 reviews),
+  required Linux CI/native checks, Admin bypass via pull request only. `crates-io`
+  and Pages deploy policies accept `v*` tags; Pages uses Actions builds.
+- Enable secret scanning, push protection, vulnerability alerts, and Actions SHA
+  pinning on this repository and other public `tim-gowan` repos; remove Endor API
+  secrets that had been stored on the public `juice-shop` fork.
+
+## 2026-10-17: Assemble CI host environments as a discrete step
+
+- Add `.github/actions/assemble-ci-env` to restore, probe and install lane-scoped
+  tools before build/test. Linux `structural`, `policy`, `repo`, `docs` and
+  `native` jobs call it; cache hits never skip qualification. `scripts/rehearse_ci_env.py`
+  rehearses the Linux path under `ghcr.io/catthehacker/ubuntu:full-latest` via act.
+
+## 2026-10-17: Install actionlint from its release archive
+
+- CI workflow lint installs the pinned `actionlint` 1.7.7 Linux amd64 release
+  with a checksum check. `taiki-e/install-action` has no actionlint manifest, and
+  the cargo-binstall fallback cannot resolve the Go binary.
+
+## 2026-10-17: Explain the product and its evidence
+
+- Add README architecture and sequence diagrams, operation entry points, hash
+  meanings and prior-art references. Keep historical inventory, output-volume
+  measurements and unrun AI trials distinct; link the reproducible evidence.
+- Render the same Mermaid diagrams in the generated documentation site.
+- Keep executable documentation examples in their own Git repositories and
+  disposable data roots, with exact fixture-result assertions.
+- Reuse a prepared, fingerprint-matched CLI in MCP interoperability tests;
+  prepare it before isolated tests instead of building inside a live session.
+
+## 2026-10-17: Reuse qualified CI builds
+
+- Move Python configuration, lockfile and receipt controls out of Cargo integration
+  wrappers; keep real CLI/storage controls in the binary lane. AI trials stay paused.
+- Keep workspace features and Cargo profiles consistent within each OS lane. Reuse
+  qualified CLI/MCP artifacts for docs and PR classification, and qualified crates
+  and docs for release handoff. Extracted archives still build independently.
+- Isolate package-smoke fixtures from their enclosing Git checkout and correct
+  the PR classifier's configuration selector. Validate workflow wiring separately.
+- Make read-only SQLite startup participate in the existing bounded startup lock;
+  preserve concurrent transactions and atomic snapshots without creating sidecars.
+
+## 2026-10-17: Identity and navigable uncertainty
+
+- Preserve scope field identity and composite address boundaries before hashing;
+  retain distinct opaque candidates in both canonicalization paths. Required-
+  distinction and SQLite reload/query controls cover GitHub issue #3. Historical
+  stores require their matching reader or an explicit rebuild; wire series stay v1.
+- Surface explicit disagreement between active claims on separate edges in
+  conflict facets, traversal and evidence receipts without rewriting endpoints.
+- Return an unresolved-attempt continuation from bounded call results and compact
+  delivery; reuse the pinned unresolved query and retain open-world limitations.
+- Clarify command naming, parameter/configuration ownership, typed input/output,
+  continuation and identity design rules in AGENTS.
+
+## 2026-10-17: Local history and agent evaluation harness
+
+- Record the frozen eight-repository history pilot: 72 selected comparisons,
+  139 retained views and 19,188 selected-source memberships passed independent
+  checks. Preserve replay pins, costs, failed controls and limitations. Prepare
+  six paired agent tasks without starting AI execution; agent benefit remains unmeasured.
+- Separate model-free trial preparation from explicit execution; fence paused
+  source/store/tool/oracle inputs and refuse duplicate starts. Continue an
+  interrupted history retention phase without repeating initialization, retaining
+  prior grades, coordinator provenance, replay costs and missing process receipts.
+- Add bounded history/CI sampling with frozen first-parent pins, explicit missing
+  strata, independent Git source-byte grading and shared production view retention.
+- Add paired local agent configuration with a twelve-attempt calibration default,
+  independent Python call-syntax oracles, cited-answer grading and actual model
+  usage. Preserve incomplete answers and unknown costs; no inferred billing.
+- Add read-only reports and portable replay bundles with case-level grades,
+  process measurements and reporter identity, focused regression controls,
+  verified Requests navigation examples and concise evaluation skill/rules.
+- Separate AI provider invocation/decoding from the trial loop. Keep Codex as the
+  implemented live adapter and test substitution without model calls; preserve
+  reported usage even when a provider process fails.
+- Preserve per-call usage and known subtotals when counters are incomplete;
+  enforce the token allowance from known costs without inventing missing totals.
+- Pin text-checkout defaults in owned campaign clones and reject stale policy.
+  The independent Git-byte oracle exposed host CRLF conversion; preserve that
+  failed run and requalify fresh source rather than normalizing the mismatch away.
+
 ## 2026-10-17: Release CI gate repairs
 
+- Serialize concurrent SQLite initialization with a bounded OS-owned lock;
+  retain schema/fingerprint fences and verify recovery after the owner exits.
 - Disambiguate native `cargo run` with `--bin entmoot` / `default-run` when the
   producer helper binary is also present.
 - Install `cargo-deny` / `cargo-machete` from current install-action binaries and
@@ -12,8 +179,44 @@
   host `shutil.which` behavior.
 - Collapse Windows 8.3 TEMP aliases for Java package-root matching, Clang closed
   VFS retention, Roslyn digest keys and adapter-control path lookups.
+- Strip Windows verbatim (`\\?\`) prefixes after canonicalize/real-path so MSBuild,
+  libclang CompDB roots and relative joins stay ordinary drive paths.
+- Keep topology unit-test checkout roots absolute on Unix (`/checkout`); parse
+  Windows path basenames for `local/` repository ids on non-Windows hosts.
+- Use the active rustc for feature/test cfg controls (historical pins stay deferred);
+  build the CLI before resumable MCP replay so Windows link time cannot idle-expire
+  continuation tokens.
 - Shrink GHA link/debug working sets and defer historical Rust toolchain installs
   until the historical control step to avoid ENOSPC on native runners.
+
+## 2026-10-17: Bounded workflow evaluation
+
+- Add pinned Express release workflows with independently authored runtime
+  controls, reusable source-verified SARIF observations, exact-reference checks
+  and production historical views. Keep evaluator grades separate from facts.
+- Share command/resource measurement across campaign runners, preserving failed
+  attempts, unavailable counters and exact newline/token accounting. Add paired
+  compact/export query measurements without inferring model or reasoning costs.
+- Isolate repository campaign data roots, retain resolved dependency locks and
+  reject stale source, changed tools and incomplete continuation. Preserve prior
+  native facts when attaching observations; require qualified inventory on retain.
+
+## 2026-10-16: Alpha.1 release candidate
+
+- Select the CLI by default for `cargo run`, including producer-enabled builds.
+- Preserve digest-bearing SARIF/JSONL fixture bytes in Windows checkouts, with a
+  real Git checkout regression in local hooks and repository CI.
+- Reduce CI debug-data volume while preserving file/line backtraces, and report
+  build storage to diagnose hosted-runner linker failures.
+- Advance all five crates and exact internal dependencies to `0.0.1-alpha.1`;
+  the failed `v0.0.1-alpha` tag remains unchanged.
+
+## 2026-10-16: Cross-platform release qualification
+
+- Isolate the Windows concurrency test's platform view from Python's shared
+  runtime, keeping real executable discovery valid on Linux.
+- Update the pinned CI installer to support the policy tools' Rust 2024 manifests.
+- Consolidate bootstrap/OIDC, tag and Pages procedures in the publishing guide.
 
 ## 2026-10-16: Release documentation workflow
 

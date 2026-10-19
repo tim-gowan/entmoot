@@ -4,6 +4,49 @@ use serde::{Deserialize, Serialize};
 
 use crate::{SiteSpan, SourceOccurrenceRef};
 
+/// Durable source-declared boundary. The envelope pins the exact publication,
+/// source bytes and occurrence independently of disposable topology.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct CodeContractRecord {
+    pub record_id: String,
+    pub snapshot: crate::SourceSnapshot,
+    pub path: String,
+    pub content_digest: crate::ContentDigest,
+    pub contract: CodeContract,
+}
+
+impl CodeContractRecord {
+    pub fn derive_id(&self) -> String {
+        crate::hash_parts(&[
+            "entmoot.code_contract_record.v1",
+            &format!("{:?}", self.snapshot),
+            &self.path,
+            self.content_digest.as_str(),
+            self.contract.site.occurrence.address_id.as_str(),
+            &self.contract.site.span.start_byte.to_string(),
+            &self.contract.site.span.end_byte.to_string(),
+            // Full attributed observation, including optional presence, variants,
+            // method and every source extent. boundary_key intentionally omits
+            // relocation detail and is unsuitable for durable record identity.
+            &format!("{:?}", self.contract),
+        ])
+    }
+
+    pub fn validate(&self) -> Result<(), String> {
+        crate::paths::validate_source_observation(
+            &self.snapshot,
+            &self.path,
+            &self.content_digest,
+        )?;
+        self.contract.validate()?;
+        if self.record_id != self.derive_id() {
+            return Err("code contract record identity mismatch".into());
+        }
+        Ok(())
+    }
+}
+
 /// A written type expression in its language's syntax. No nominal equivalence,
 /// inferred type, alias resolution or runtime value is implied.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]

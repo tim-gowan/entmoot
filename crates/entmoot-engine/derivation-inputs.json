@@ -4415,6 +4415,12 @@
       "version": "0.4.0"
     },
     {
+      "checksum": "270e04e5ea61d40841942bb15e451c29ee1618637bcf97fc7ede5dd4a9b1601b",
+      "name": "rapidfuzz",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.5.0"
+    },
+    {
       "checksum": "fb39b166781f92d482534ef4b4b1b2568f42613b53e5b6c160e24cfbfa30926d",
       "dependencies": [
         "either",
@@ -6331,13 +6337,14 @@
       "cap-std": "4.0.3",
       "entmoot-contracts": {
         "path": "../entmoot-contracts",
-        "version": "=0.0.1-alpha"
+        "version": "=0.0.1-alpha.1"
       },
       "entmoot-core": {
         "path": "../entmoot-core",
-        "version": "=0.0.1-alpha"
+        "version": "=0.0.1-alpha.1"
       },
       "gix": "0.87.1",
+      "globset": "0.4.20",
       "oxc": {
         "features": [
           "semantic",
@@ -6394,6 +6401,7 @@
         "optional": true,
         "version": "=0.0.358"
       },
+      "rapidfuzz": "0.5.0",
       "rayon": "1.11.0",
       "rusqlite": {
         "features": [
@@ -6439,7 +6447,7 @@
       "edition": "2021",
       "name": "entmoot-engine",
       "rust-version": "1.98",
-      "version": "0.0.1-alpha"
+      "version": "0.0.1-alpha.1"
     },
     "target": {
       "cfg(unix)": {

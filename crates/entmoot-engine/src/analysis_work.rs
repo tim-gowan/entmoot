@@ -15,6 +15,8 @@ pub enum AnalysisWorkError {
     Invalid(String),
     #[error("analysis work transition conflict: {0}")]
     Conflict(String),
+    #[error("analysis work I/O error: {0}")]
+    Io(#[from] std::io::Error),
     #[error(transparent)]
     Sqlite(#[from] rusqlite::Error),
     #[error(transparent)]
@@ -27,7 +29,7 @@ impl AnalysisWorkError {
         match self {
             Self::Invalid(_) => "invalid_input",
             Self::Conflict(_) => "conflict",
-            Self::Sqlite(_) | Self::Json(_) => "storage_error",
+            Self::Io(_) | Self::Sqlite(_) | Self::Json(_) => "storage_error",
         }
     }
 }
@@ -282,15 +284,19 @@ pub struct SqliteAnalysisWorkQueue {
 
 impl SqliteAnalysisWorkQueue {
     pub fn open(path: &Path) -> Result<Self, AnalysisWorkError> {
-        Self::from_connection(Connection::open(crate::sqlite_startup::file_path(path))?)
+        // Serialize before opening SQLite: overlapping first opens can strand
+        // peers in a WAL protocol race on Windows even after reopening.
+        let sqlite_path = crate::sqlite_startup::file_path(path);
+        let _initialization = crate::storage_lease::initialization(&sqlite_path)?;
+        Self::from_connection(Connection::open(&sqlite_path)?)
     }
 
     /// Read existing work without initializing or modifying a queue.
     pub fn open_read_only(path: &Path) -> Result<Self, AnalysisWorkError> {
-        let connection = Connection::open_with_flags(
-            crate::sqlite_startup::file_path(path),
-            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
-        )?;
+        let sqlite_path = crate::sqlite_startup::file_path(path);
+        let _initialization = crate::storage_lease::initialization_read_only(&sqlite_path)?;
+        let connection =
+            Connection::open_with_flags(sqlite_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         connection.busy_timeout(std::time::Duration::from_secs(5))?;
         connection.prepare("SELECT work_id FROM analysis_work_items LIMIT 0")?;
         Ok(Self { connection })
@@ -523,8 +529,8 @@ mod tests {
                 let barrier = barrier.clone();
                 std::thread::spawn(move || {
                     barrier.wait();
-                    let mut queue = SqliteAnalysisWorkQueue::open(&path).unwrap();
-                    queue.enqueue(decision())
+                    SqliteAnalysisWorkQueue::open(&path)
+                        .and_then(|mut queue| queue.enqueue(decision()))
                 })
             })
             .collect();

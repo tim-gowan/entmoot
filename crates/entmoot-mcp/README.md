@@ -5,6 +5,15 @@ Operator entry: [README](https://github.com/tim-gowan/entmoot#readme). Meaning:
 Tool input schemas: `entmoot-mcp --tools-schema` (and generated docs)—do not
 hand-copy them here. Procedures below.
 
+Call results have independent concrete-edge and unresolved-attempt bounds.
+Follow `unresolved_continuation` through `inspect` (or as the request member of
+`query` with operation `inspect`). Expanded results continue after the displayed
+attempts; compact call results defer all attempts and therefore start at the
+first one. Finish each compact output page before advancing the semantic query.
+An exhausted edge cursor does not exhaust unresolved attempts or prove closure.
+CLI users can submit the same envelope with `entmoot request --request query.json`;
+`entmoot request --example unresolved` prints a complete starting request.
+
 Build `cargo build -p entmoot --features producer -p entmoot-mcp`.
 Cursor local wiring: [`.agents/mcp.json`](https://github.com/tim-gowan/entmoot/blob/main/.agents/mcp.json) (symlink `.cursor` → `.agents`) via
 [`scripts/run_entmoot_mcp.py`](https://github.com/tim-gowan/entmoot/blob/main/scripts/run_entmoot_mcp.py); usage guidance lives in the [agent runtime runbook](https://github.com/tim-gowan/entmoot/blob/main/docs/runbooks/agent-runtimes.md).

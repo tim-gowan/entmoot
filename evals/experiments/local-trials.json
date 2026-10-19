@@ -1,0 +1,16 @@
+{
+  "id": "history-source-review-trials",
+  "seed": 20261017,
+  "provider": {"kind": "codex_cli", "model": "gpt-6-astra", "reasoning_effort": "xhigh"},
+  "task_limit": 6,
+  "repetitions": 1,
+  "max_attempts": 12,
+  "max_turns": 8,
+  "attempt_seconds": 120,
+  "max_reported_tokens": 120000,
+  "max_context_characters": 80000,
+  "tool_output_characters": 16000,
+  "tokenizer": "o200k_base",
+  "python_call_selectors": {"requests": "get_connection", "docker-py": "get_connection"},
+  "repository_order": ["requests", "chi", "express", "axum", "docker-py", "gin", "fastify", "getrandom"]
+}

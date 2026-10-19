@@ -38,7 +38,19 @@ fn copy_tree(src: &Path, dst: &Path) {
         if entry.file_type().unwrap().is_dir() {
             copy_tree(&entry.path(), &to);
         } else {
-            std::fs::copy(entry.path(), &to).unwrap();
+            // Authored selectors and inventory byte offsets assume LF. Windows
+            // checkouts may materialize CRLF for text fixtures under autocrlf.
+            let bytes = std::fs::read(entry.path()).unwrap();
+            let normalized = if bytes.contains(&b'\r') {
+                String::from_utf8(bytes)
+                    .expect("callsites fixture must be UTF-8")
+                    .replace("\r\n", "\n")
+                    .replace('\r', "\n")
+                    .into_bytes()
+            } else {
+                bytes
+            };
+            std::fs::write(&to, normalized).unwrap();
         }
     }
 }
@@ -73,7 +85,12 @@ fn selected<'a>(
         .filter(|(_, window)| *window == fragment)
         .map(|(index, _)| index)
         .collect();
-    assert_eq!(positions.len(), 1, "ambiguous fixture selector {selector}");
+    assert_eq!(
+        positions.len(),
+        1,
+        "fixture selector matched {} times (want 1): {selector}",
+        positions.len()
+    );
     let mut start = positions[0];
     if let Some(within) = selector["within"].as_str() {
         let inner = within.as_bytes();
@@ -83,7 +100,12 @@ fn selected<'a>(
             .filter(|(_, window)| *window == inner)
             .map(|(index, _)| index)
             .collect();
-        assert_eq!(positions.len(), 1, "ambiguous within selector {selector}");
+        assert_eq!(
+            positions.len(),
+            1,
+            "within selector matched {} times (want 1): {selector}",
+            positions.len()
+        );
         start += positions[0];
         fragment = inner;
     }
@@ -232,6 +254,13 @@ pub fn apply_sidecar_env() {
         "CARGO_ENCODED_RUSTFLAGS",
         "RUSTC_WRAPPER",
         "RUSTC_WORKSPACE_WRAPPER",
+        // Python discovery must not inherit a host/CI venv or conda prefix that
+        // is unrelated to the fixture under test (program_adapters clears these
+        // the same way before invoking the Pyright program).
+        "ENTMOOT_PYTHON_ENVIRONMENT",
+        "ENTMOOT_PYTHON_EXECUTABLE",
+        "VIRTUAL_ENV",
+        "CONDA_PREFIX",
     ] {
         std::env::remove_var(key);
     }
@@ -332,7 +361,11 @@ pub fn qualify_pipeline(opts: QualifyOpts<'_>) {
 
     assert_eq!(produced.artifact.implementation, graph.implementation);
     assert_eq!(produced.receipt.implementation, graph.implementation);
-    assert!(!produced.raw.invalid_environment);
+    assert!(
+        !produced.raw.invalid_environment,
+        "invalid_environment diagnostics={:?}",
+        produced.raw.diagnostics
+    );
     assert!(!produced.raw.budget_exceeded);
     assert!(
         matches!(produced.receipt.semantic_status.as_str(), "ok" | "partial"),

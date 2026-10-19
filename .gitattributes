@@ -1,7 +1,11 @@
 # Rust sources must stay LF so rustfmt (newline_style=Unix) matches on Windows.
 *.rs text eol=lf
 
+# Call-site fixtures are matched by LF selectors against inventory byte offsets.
+crates/entmoot-engine/tests/fixtures/callsites/** text eol=lf
+
 # Versioned campaign receipts have byte digests; preserve bytes on every OS.
+evals/experiments/history-pilot-2026-10-17/** -text
 evals/real_world/breadth_2026-09-21.json text eol=lf
 evals/topology/horizon_cases/*.json text eol=lf
 evals/topology/horizon_cases/golden/*.json text eol=lf

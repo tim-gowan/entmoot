@@ -13,18 +13,58 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import tomllib
 from urllib.parse import urlsplit
-import markdown
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from scripts.package_smoke import fixture_repository
 STYLE = "body{font:17px/1.6 system-ui,sans-serif;max-width:1080px;margin:3rem auto;padding:0 1.5rem;color:#172334}a{color:#1457a4}pre{overflow:auto;padding:1rem;background:#eff3f8}code{font-size:.9em}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccd5e0;padding:.6rem;text-align:left}nav{border-bottom:1px solid #ccd5e0;padding-bottom:1rem}img{max-width:100%}"
 
 def page(title, body, home="index.html"):
-    return f'<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>{html.escape(title)} — Entmoot</title><style>{STYLE}</style><nav><a href="{home}">Entmoot documentation</a></nav><main>{body}</main></html>'
+    body, diagrams = re.subn(r'<pre><code class="language-mermaid">(.*?)</code></pre>',
+                            r'<pre class="mermaid">\1</pre>', body, flags=re.S)
+    # GitHub renders Mermaid in README; the static site uses the same authored
+    # diagrams. Escaped diagram text remains readable when JavaScript is disabled.
+    renderer = ('<script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.esm.min.mjs";'
+                'mermaid.initialize({startOnLoad:true,securityLevel:"strict"});</script>') if diagrams else ''
+    return f'<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>{html.escape(title)} — Entmoot</title><style>{STYLE}</style><nav><a href="{home}">Entmoot documentation</a></nav><main>{body}</main>{renderer}</html>'
+
+def qualify_examples(cli):
+    # Executable operator examples on a fresh, explicit source root.
+    with tempfile.TemporaryDirectory(prefix="docs-example-", dir=ROOT / ".tmp") as directory:
+        source = Path(directory) / "source"
+        data = Path(directory) / "data"
+        env = fixture_repository(source)
+        (source / "app.py").write_text(
+            "def entmoot_smoke_fn(object):\n    object.toString()\n", encoding="utf-8"
+        )
+        for command in (
+            ["find", "entmoot_smoke_fn"],
+            ["boundaries", "--callee", "*.toString()"],
+            ["status"],
+            ["inventory"],
+        ):
+            result = json.loads(subprocess.check_output(
+                [str(cli), "--data-dir", str(data), "-C", str(source), "--json", *command], env=env))
+            if command[0] == "find":
+                subjects = result.get("subjects") or {}
+                callables = [
+                    entry
+                    for entry in subjects.values()
+                    if entry.get("kind") == "callable"
+                    and entry.get("display_ref") == "app.py::entmoot_smoke_fn"
+                ]
+                assert len(callables) == 1, result
+                assert result["result_bounds"]["total_matches"] == 1, result
+            elif command[0] == "boundaries":
+                assert result["result_bounds"]["total_matches"] == 1, result
 
 def main():
+    import markdown
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cli", type=Path, required=True)
     parser.add_argument("--mcp", type=Path, required=True)
@@ -100,24 +140,7 @@ def main():
         index += f'<li><a href="{url}">{label}</a></li>'
     (destination / "index.html").write_text(page("Documentation", index + "</ul>"), encoding="utf-8")
     (destination.parent / "index.html").write_text(page("Versions", f'<h1>Entmoot documentation</h1><a href="v{version}/index.html">{version}</a>'), encoding="utf-8")
-    # Executable operator examples on a fresh, explicit source root.
-    with tempfile.TemporaryDirectory(prefix="docs-example-", dir=ROOT / ".tmp") as directory:
-        source = Path(directory)
-        (source / "app.py").write_text("def work(object):\n    object.toString()\n", encoding="utf-8")
-        for command in (["find", "work"], ["boundaries", "--callee", "*.toString()"], ["status"], ["inventory"]):
-            result = json.loads(subprocess.check_output([str(cli), "-C", str(source), "--json", *command]))
-            if command[0] == "find":
-                # Subject find may include the repo subject alongside the callable.
-                subjects = result.get("subjects") or {}
-                callables = [
-                    entry
-                    for entry in subjects.values()
-                    if entry.get("kind") == "callable" and entry.get("display_ref") == "app.py::work"
-                ]
-                assert len(callables) == 1, result
-                assert result["result_bounds"]["total_matches"] >= 1, result
-            elif command[0] == "boundaries":
-                assert result["result_bounds"]["total_matches"] == 1, result
+    qualify_examples(cli)
     print(f"Generated {len(pages)} owner pages, {len(commands)} CLI help sections and {len(tools)} MCP schemas at {destination}")
 
 if __name__ == "__main__":

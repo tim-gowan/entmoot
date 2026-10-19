@@ -29,8 +29,8 @@ resolved-rust-analyzer = [
 resolved-oxc = ["dep:oxc"]
 
 [dependencies]
-entmoot-core = { version = "=0.0.1-alpha", path = "../entmoot-core" }
-entmoot-contracts = { version = "=0.0.1-alpha", path = "../entmoot-contracts" }
+entmoot-core = { version = "=0.0.1-alpha.1", path = "../entmoot-core" }
+entmoot-contracts = { version = "=0.0.1-alpha.1", path = "../entmoot-contracts" }
 serde = { version = "1.0.228", features = ["derive", "rc"] }
 serde_json = "1.0.148"
 thiserror = "2.0.17"
@@ -47,6 +47,8 @@ process-wrap = { version = "=10.0.0", default-features = false, features = ["std
 blake3 = "1.8.2"
 packageurl = "=0.7.0"
 tracing = "0.1.41"
+globset = "0.4.20"
+rapidfuzz = "0.5.0"
 oxc = { version = "=0.153.0", optional = true, features = ["semantic", "ast_visit"] }
 
 # Pinned, aligned rust-analyzer application crates (bind solver substrate).
@@ -69,6 +71,10 @@ libc = "0.2"
 
 [lints]
 workspace = true
+
+[[example]]
+name = "retain_campaign_publication"
+test = true
 
 [build-dependencies]
 blake3 = "1.8.2"

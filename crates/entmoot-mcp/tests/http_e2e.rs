@@ -54,6 +54,26 @@ async fn loopback_auth_shared_queries_and_resumable_paging() {
     repository.store_inventory(&graph, None).unwrap();
     drop(repository);
     let token = "fixture-local-backend-credential-123456789";
+    // Workspace integration runs already build the CLI. Isolated MCP runs must
+    // prepare it explicitly; tests never switch feature/profile graphs or
+    // replace a binary that another test may currently be using.
+    let executable = std::path::Path::new(env!("CARGO_BIN_EXE_entmoot-mcp"));
+    let profile = executable.parent().unwrap();
+    let cli = profile.join(format!("entmoot{}", std::env::consts::EXE_SUFFIX));
+    let fingerprint = std::process::Command::new(&cli)
+        .arg("fingerprint")
+        .output()
+        .expect("prepare the matching CLI first: cargo build --locked --profile test -p entmoot");
+    assert!(
+        fingerprint.status.success(),
+        "{}",
+        String::from_utf8_lossy(&fingerprint.stderr)
+    );
+    assert_eq!(
+        serde_json::from_slice::<Value>(&fingerprint.stdout).unwrap(),
+        serde_json::to_value(entmoot_engine::storage_fingerprint()).unwrap(),
+        "CLI/library fingerprints differ; rebuild both with the same source inputs"
+    );
     let mut child = tokio::process::Command::new(env!("CARGO_BIN_EXE_entmoot-mcp"))
         .args(["--listen", "127.0.0.1:0", "--graph"])
         .arg(&graph_path)
@@ -145,31 +165,15 @@ async fn loopback_auth_shared_queries_and_resumable_paging() {
     assert_eq!(retry, second);
 
     // Exercise the actual CLI frontend through a new stateless MCP connection,
-    // including a replay token created by a different client. Build the matching
-    // binary explicitly so this test cannot accidentally use a stale executable.
-    let executable = std::path::Path::new(env!("CARGO_BIN_EXE_entmoot-mcp"));
-    let profile = executable.parent().unwrap();
-    let build = std::process::Command::new(env!("CARGO"))
-        .current_dir(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."))
-        .args(["build", "-p", "entmoot", "--bin", "entmoot", "--target-dir"])
-        .arg(profile.parent().unwrap())
-        .output()
-        .unwrap();
-    assert!(
-        build.status.success(),
-        "{}",
-        String::from_utf8_lossy(&build.stderr)
-    );
+    // including a replay token created by a different client.
     let request_path = dir.path().join("replay.json");
     std::fs::write(&request_path, serde_json::to_vec(&request).unwrap()).unwrap();
-    let output = std::process::Command::new(
-        profile.join(format!("entmoot{}", std::env::consts::EXE_SUFFIX)),
-    )
-    .args(["--backend", &url, "request", "--request"])
-    .arg(&request_path)
-    .env("ENTMOOT_QUERY_TOKEN", token)
-    .output()
-    .unwrap();
+    let output = std::process::Command::new(cli)
+        .args(["--backend", &url, "request", "--request"])
+        .arg(&request_path)
+        .env("ENTMOOT_QUERY_TOKEN", token)
+        .output()
+        .unwrap();
     assert!(
         output.status.success(),
         "{}",

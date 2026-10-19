@@ -1,0 +1,169 @@
+{
+  "timeout_seconds": 180,
+  "roots": [
+    "express-4.18.2",
+    "express-4.19.2",
+    "express-4.20.0",
+    "express-4.21.0",
+    "express-4.21.2",
+    "express-5.0.0",
+    "express-5.0.1",
+    "express-5.1.0"
+  ],
+  "repositories": {
+    "express-4.18.2": {
+      "url": "https://github.com/expressjs/express.git",
+      "revision": "8368dc178af16b91b576c4c1d135f701a0007e5d",
+      "build": [
+        [
+          "npm",
+          "install",
+          "--omit=dev",
+          "--ignore-scripts",
+          "--no-audit",
+          "--no-fund",
+          "--fetch-retries=0",
+          "--fetch-timeout=15000",
+          "--package-lock=true"
+        ]
+      ],
+      "lock": "package-lock.json",
+      "subject": "pkg:npm/express"
+    },
+    "express-4.19.2": {
+      "url": "https://github.com/expressjs/express.git",
+      "revision": "04bc62787be974874bc1467b23606c36bc9779ba",
+      "build": [
+        [
+          "npm",
+          "install",
+          "--omit=dev",
+          "--ignore-scripts",
+          "--no-audit",
+          "--no-fund",
+          "--fetch-retries=0",
+          "--fetch-timeout=15000",
+          "--package-lock=true"
+        ]
+      ],
+      "lock": "package-lock.json",
+      "subject": "pkg:npm/express"
+    },
+    "express-4.20.0": {
+      "url": "https://github.com/expressjs/express.git",
+      "revision": "21df421ebc7a5249bb31101da666bbf22adc3f18",
+      "build": [
+        [
+          "npm",
+          "install",
+          "--omit=dev",
+          "--ignore-scripts",
+          "--no-audit",
+          "--no-fund",
+          "--fetch-retries=0",
+          "--fetch-timeout=15000",
+          "--package-lock=true"
+        ]
+      ],
+      "lock": "package-lock.json",
+      "subject": "pkg:npm/express"
+    },
+    "express-4.21.0": {
+      "url": "https://github.com/expressjs/express.git",
+      "revision": "7e562c6d8daddff4604f8efaaf9db2cf98c6dcff",
+      "build": [
+        [
+          "npm",
+          "install",
+          "--omit=dev",
+          "--ignore-scripts",
+          "--no-audit",
+          "--no-fund",
+          "--fetch-retries=0",
+          "--fetch-timeout=15000",
+          "--package-lock=true"
+        ]
+      ],
+      "lock": "package-lock.json",
+      "subject": "pkg:npm/express"
+    },
+    "express-4.21.2": {
+      "url": "https://github.com/expressjs/express.git",
+      "revision": "1faf228935aa0a13111f92c28ee795be64ce3f0f",
+      "build": [
+        [
+          "npm",
+          "install",
+          "--omit=dev",
+          "--ignore-scripts",
+          "--no-audit",
+          "--no-fund",
+          "--fetch-retries=0",
+          "--fetch-timeout=15000",
+          "--package-lock=true"
+        ]
+      ],
+      "lock": "package-lock.json",
+      "subject": "pkg:npm/express"
+    },
+    "express-5.0.0": {
+      "url": "https://github.com/expressjs/express.git",
+      "revision": "344b022fc7ed95cf07b46e097935e61151fd585f",
+      "build": [
+        [
+          "npm",
+          "install",
+          "--omit=dev",
+          "--ignore-scripts",
+          "--no-audit",
+          "--no-fund",
+          "--fetch-retries=0",
+          "--fetch-timeout=15000",
+          "--package-lock=true"
+        ]
+      ],
+      "lock": "package-lock.json",
+      "subject": "pkg:npm/express"
+    },
+    "express-5.0.1": {
+      "url": "https://github.com/expressjs/express.git",
+      "revision": "d14b2de782c16fbef39541c9009b01bd6ae90b92",
+      "build": [
+        [
+          "npm",
+          "install",
+          "--omit=dev",
+          "--ignore-scripts",
+          "--no-audit",
+          "--no-fund",
+          "--fetch-retries=0",
+          "--fetch-timeout=15000",
+          "--package-lock=true"
+        ]
+      ],
+      "lock": "package-lock.json",
+      "subject": "pkg:npm/express"
+    },
+    "express-5.1.0": {
+      "url": "https://github.com/expressjs/express.git",
+      "revision": "cd7d4397c398a3f3ecadeaf9ef6ac1377bd414c4",
+      "build": [
+        [
+          "npm",
+          "install",
+          "--omit=dev",
+          "--ignore-scripts",
+          "--no-audit",
+          "--no-fund",
+          "--fetch-retries=0",
+          "--fetch-timeout=15000",
+          "--package-lock=true"
+        ]
+      ],
+      "lock": "package-lock.json",
+      "subject": "pkg:npm/express"
+    }
+  },
+  "packages": {},
+  "checks": []
+}

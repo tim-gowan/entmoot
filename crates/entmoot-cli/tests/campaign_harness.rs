@@ -1,4 +1,5 @@
-//! Process-level controls for the optional Python/SQLite campaign harness.
+//! Binary-backed controls for the optional Python/SQLite campaign harness.
+//! Configuration and receipt controls live in evals/harness/test_campaign_configuration.py.
 //! Run with `cargo test -p entmoot --test campaign_harness -- --ignored`.
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
@@ -186,119 +187,6 @@ fn knowledge_reader_is_scoped_lazy_read_only_and_fingerprint_qualified() {
     }
 }
 
-#[test]
-#[ignore = "requires the Python campaign dependencies"]
-fn sqlite_reopen_retry_context_fence_and_atomic_batch() {
-    let tmp = tempfile::tempdir().unwrap();
-    let db = tmp.path().join("campaign.sqlite3");
-    let context = tmp.path().join("context.json");
-    let rows = tmp.path().join("rows.json");
-    write(
-        &context,
-        &json!({"repository":"authored/repo", "revision":"a", "tool":"one"}),
-    );
-    let invoke = |operation: &str, extra: &[&str]| {
-        let mut args = vec![
-            operation,
-            "--db",
-            db.to_str().unwrap(),
-            "--context",
-            context.to_str().unwrap(),
-        ];
-        args.extend_from_slice(extra);
-        python("evals.harness.revision_campaign", &args)
-    };
-    successful(invoke("create", &[]));
-    write(
-        &rows,
-        &json!({"build":{"status":"failed", "reason":"missing tool"}}),
-    );
-    successful(invoke("put", &["--rows", rows.to_str().unwrap()]));
-    // A retried operation replaces its result in the same, still-qualified run.
-    write(&rows, &json!({"build":{"status":"complete"}}));
-    successful(invoke("put", &["--rows", rows.to_str().unwrap()]));
-    std::fs::write(
-        &context,
-        "{\n \"tool\":\"one\", \"revision\":\"a\", \"repository\":\"authored/repo\"\n}",
-    )
-    .unwrap();
-    assert_eq!(
-        successful(invoke("get", &["--key", "build"])),
-        json!({"status":"complete"})
-    );
-
-    let connection = rusqlite::Connection::open(&db).unwrap();
-    connection.execute_batch("CREATE TRIGGER refuse_bad BEFORE INSERT ON receipts WHEN NEW.receipt_key = 'bad' BEGIN SELECT RAISE(ABORT, 'authored failure'); END;").unwrap();
-    write(&rows, &json!({"a-first":{"value":1}, "bad":{"value":2}}));
-    assert!(!invoke("put", &["--rows", rows.to_str().unwrap()])
-        .status
-        .success());
-    assert_eq!(
-        successful(invoke("get", &["--key", "a-first"])),
-        Value::Null
-    );
-    assert_eq!(
-        connection
-            .query_row("SELECT count(*) FROM receipts", [], |row| row
-                .get::<_, i64>(0))
-            .unwrap(),
-        1
-    );
-    drop(connection);
-
-    write(
-        &context,
-        &json!({"repository":"authored/repo", "revision":"b", "tool":"one"}),
-    );
-    assert!(!invoke("get", &["--key", "build"]).status.success());
-    assert!(!invoke("put", &["--rows", rows.to_str().unwrap()])
-        .status
-        .success());
-}
-
-#[test]
-#[ignore = "requires the Python campaign dependencies"]
-fn foreign_sqlite_database_is_not_adopted_or_migrated() {
-    let tmp = tempfile::tempdir().unwrap();
-    let db = tmp.path().join("foreign.sqlite3");
-    let context = tmp.path().join("context.json");
-    write(&context, &json!({"run":"foreign control"}));
-    rusqlite::Connection::open(&db).unwrap().execute_batch("CREATE TABLE owned_elsewhere(value TEXT); INSERT INTO owned_elsewhere VALUES ('keep');").unwrap();
-    for operation in ["create", "get"] {
-        let result = python(
-            "evals.harness.revision_campaign",
-            &[
-                operation,
-                "--db",
-                db.to_str().unwrap(),
-                "--context",
-                context.to_str().unwrap(),
-                "--key",
-                "missing",
-            ],
-        );
-        assert!(!result.status.success());
-    }
-    let connection = rusqlite::Connection::open(&db).unwrap();
-    assert_eq!(
-        connection
-            .query_row("SELECT value FROM owned_elsewhere", [], |row| row
-                .get::<_, String>(0))
-            .unwrap(),
-        "keep"
-    );
-    assert_eq!(
-        connection
-            .query_row(
-                "SELECT count(*) FROM sqlite_master WHERE name = 'campaign_context'",
-                [],
-                |row| row.get::<_, i64>(0)
-            )
-            .unwrap(),
-        0
-    );
-}
-
 fn git(root: &Path, args: &[&str]) -> String {
     let output = Command::new("git")
         .arg("-C")
@@ -377,6 +265,7 @@ fn pinned_repositories_build_and_publish_at_bounded_dependency_depth() {
             "root":{"url":root,"revision":root_sha,"build":build,"lock":"package-lock.json"},
             "library":{"url":dep,"revision":dep_sha,"build":build,"lock":"package-lock.json"}
         },"packages":{"pkg:npm/library@1.0.0":"library", "pkg:npm/root@1.0.0":"root"},
+        "environment":{"ENTMOOT_DATA_DIR":tmp.path().join("caller-volume")},
         "checks":[
             {"name":"find-caller","arguments":["request","--graph","{graph:root}","--store","{store:root}","--request","{request}"],"request":{"operation":"find","request":{"kind":"subject","query":"caller","limit":2}}},
             {"name":"direct-boundary","arguments":["assess","compatibility","--consumer","{root:root}","--provider","{root:library}"]}
@@ -400,11 +289,14 @@ fn pinned_repositories_build_and_publish_at_bounded_dependency_depth() {
         )
     };
     let summary = successful(invoke("1", &run));
-    assert!(summary["checks"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .all(|row| row["status"] == "complete"));
+    assert!(
+        summary["checks"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| row["status"] == "complete"),
+        "{summary}"
+    );
     assert!(summary["checks"][0]["response"].is_object());
     assert_eq!(summary["repositories"].as_array().unwrap().len(), 2);
     assert!(summary["repositories"]
@@ -424,6 +316,30 @@ fn pinned_repositories_build_and_publish_at_bounded_dependency_depth() {
         .any(|row| row["package"] == "pkg:npm/transitive@2.0.0"));
     assert!(run.join("build/root/built.txt").is_file());
     assert!(summary["repositories"][0]["publication"].is_object());
+    assert!(
+        !tmp.path().join("caller-volume").exists(),
+        "campaign leaked into caller-selected storage"
+    );
+    // Canonicalize before prefix checks: Windows tempfile paths may use 8.3
+    // short names while publication receipts record the long path.
+    let owned_data = run.join("data").canonicalize().unwrap();
+    for row in summary["repositories"].as_array().unwrap() {
+        let graph = Path::new(row["publication"]["graph"].as_str().unwrap())
+            .canonicalize()
+            .unwrap();
+        assert!(
+            graph.starts_with(&owned_data),
+            "{} not under {}",
+            graph.display(),
+            owned_data.display()
+        );
+        assert!(row["database_bytes"].as_u64().unwrap() > 0);
+        assert!(Path::new(row["dependency_lock"]["retained"].as_str().unwrap()).is_file());
+        assert!(row["dependency_lock"]["content_digest"]
+            .as_str()
+            .unwrap()
+            .starts_with("blake3:"));
+    }
     assert!(!run.join("sources/root/.entmoot").exists());
     let repeated = successful(invoke("1", &run));
     assert!(repeated["repositories"]
@@ -448,140 +364,6 @@ fn pinned_repositories_build_and_publish_at_bounded_dependency_depth() {
         .unwrap()
         .iter()
         .any(|row| row["status"] == "depth_limit"));
-}
-
-#[test]
-#[ignore = "requires Python campaign dependencies and Git"]
-fn direct_parent_selection_never_substitutes_the_previous_selected_revision() {
-    let tmp = tempfile::tempdir().unwrap();
-    let root = tmp.path().join("source");
-    let a = repository(&root, json!({"lockfileVersion":3,"packages":{"":{}}}));
-    let mut revisions = vec![a];
-    for value in [2, 3] {
-        std::fs::write(
-            root.join("source.py"),
-            format!("def value():\n    return {value}\n"),
-        )
-        .unwrap();
-        git(&root, &["add", "."]);
-        git(
-            &root,
-            &[
-                "commit",
-                "--no-gpg-sign",
-                "--quiet",
-                "-m",
-                "authored change",
-            ],
-        );
-        revisions.push(git(&root, &["rev-parse", "HEAD"]));
-    }
-    let call = |args: &[&str]| {
-        let mut command = vec!["comparisons", "--repository", root.to_str().unwrap()];
-        command.extend_from_slice(args);
-        python("evals.harness.revision_campaign", &command)
-    };
-    let parent = successful(call(&["--head", &revisions[2]]));
-    assert_eq!(parent["comparisons"][0]["base_revision"], revisions[1]);
-    assert_eq!(
-        parent["comparisons"][0]["relation"]["kind"],
-        "direct_parent"
-    );
-    let window = successful(call(&[
-        "--window",
-        &revisions[0],
-        &revisions[2],
-        "skip middle intentionally",
-    ]));
-    assert_eq!(window["comparisons"][0]["base_revision"], revisions[0]);
-    assert_eq!(
-        window["comparisons"][0]["relation"]["kind"],
-        "selected_window"
-    );
-    assert!(!call(&["--head", &revisions[0]]).status.success());
-    assert!(!call(&["--head", "HEAD"]).status.success());
-    assert!(!call(&["--head", &revisions[2], "--head", &revisions[2]])
-        .status
-        .success());
-}
-
-#[test]
-#[ignore = "requires the Python campaign dependencies"]
-fn lock_inventory_preserves_multiple_versions_and_ambiguous_or_unsupported_scope() {
-    let tmp = tempfile::tempdir().unwrap();
-    let root = tmp.path();
-    let invoke = |name| {
-        python(
-            "evals.harness.repository_campaign",
-            &["locks", "--root", root.to_str().unwrap(), "--lock", name],
-        )
-    };
-    write(
-        &root.join("package-lock.json"),
-        &json!({"lockfileVersion":3,"packages":{
-            "":{"dependencies":{"lib":"1","alias":"npm:lib@2"},"devDependencies":{"tool":"3"}},
-            "node_modules/lib":{"version":"1.0.0"},
-            "node_modules/alias":{"name":"lib","version":"2.0.0"},
-            "node_modules/tool":{"version":"3.0.0"}
-        }}),
-    );
-    assert_eq!(
-        successful(invoke("package-lock.json"))["packages"],
-        json!(["pkg:npm/lib@1.0.0", "pkg:npm/lib@2.0.0"])
-    );
-    std::fs::write(
-        root.join("Cargo.toml"),
-        "[package]\nname='authored'\nversion='1.0.0'\n",
-    )
-    .unwrap();
-    std::fs::write(root.join("Cargo.lock"), "version=4\n[[package]]\nname='authored'\nversion='1.0.0'\ndependencies=['lib']\n[[package]]\nname='lib'\nversion='1.0.0'\nsource='registry+https://github.com/rust-lang/crates.io-index'\n[[package]]\nname='lib'\nversion='2.0.0'\nsource='registry+https://github.com/rust-lang/crates.io-index'\n").unwrap();
-    let ambiguous = successful(invoke("Cargo.lock"));
-    assert_eq!(ambiguous["packages"], json!([]));
-    assert!(ambiguous["limitations"]
-        .as_array()
-        .unwrap()
-        .contains(&json!("lib:ambiguous_or_missing_lock_entry")));
-    std::fs::write(root.join("uv.lock"), "version=1\n[[package]]\nname='authored'\nversion='1.0.0'\nsource={editable='.'}\ndependencies=[{name='lib',version='1.0.0'},{name='lib',version='2.0.0'}]\n[[package]]\nname='lib'\nversion='1.0.0'\nsource={registry='https://pypi.org/simple'}\n[[package]]\nname='lib'\nversion='2.0.0'\nsource={registry='https://pypi.org/simple'}\n").unwrap();
-    assert_eq!(
-        successful(invoke("uv.lock"))["packages"],
-        json!(["pkg:pypi/lib@1.0.0", "pkg:pypi/lib@2.0.0"])
-    );
-    assert_eq!(
-        successful(invoke("unavailable.lock"))["limitations"],
-        json!(["lock_unavailable:unavailable.lock"])
-    );
-    std::fs::write(root.join("unknown.lock"), "").unwrap();
-    assert_eq!(
-        successful(invoke("unknown.lock"))["limitations"],
-        json!(["unsupported_lock_format:unknown.lock"])
-    );
-    assert!(!invoke("../outside.lock").status.success());
-    write(
-        &root.join("package-lock.json"),
-        &json!({"lockfileVersion":3,"packages":{"node_modules/lib":{"version":"1.0.0"}}}),
-    );
-    assert_eq!(
-        successful(invoke("package-lock.json"))["limitations"],
-        json!(["lock_root_unavailable"])
-    );
-    std::fs::write(root.join("go.mod"),"module authored.test/root\ngo 1.24\nrequire (\n example.org/lib v1.2.3\n example.org/indirect v2.0.0 // indirect\n example.org/replaced v1.0.0\n)\nreplace example.org/replaced => ../local\n").unwrap();
-    let go = successful(invoke("go.mod"));
-    assert_eq!(go["packages"], json!(["pkg:golang/example.org/lib@v1.2.3"]));
-    assert!(go["limitations"]
-        .as_array()
-        .unwrap()
-        .contains(&json!("example.org/replaced:replacement_not_qualified")));
-    write(
-        &root.join("packages.lock.json"),
-        &json!({"version":1,"dependencies":{
-            "net8.0":{"Example":{"type":"Direct","resolved":"1.0.0"},"Hidden":{"type":"Transitive","resolved":"2.0.0"}},
-            "net9.0":{"Example":{"type":"Direct","resolved":"2.0.0"}}
-        }}),
-    );
-    assert_eq!(
-        successful(invoke("packages.lock.json"))["packages"],
-        json!(["pkg:nuget/example@1.0.0", "pkg:nuget/example@2.0.0"])
-    );
 }
 
 #[test]
@@ -735,105 +517,4 @@ fn revision_campaign_joins_actual_occurrences_and_preserves_unconsumed_frontiers
     let source = Path::new(worktrees[&revisions[0]].as_str().unwrap()).join("source.js");
     std::fs::write(source, "function changed() {}\n").unwrap();
     assert!(!invoke("run").status.success());
-}
-
-#[test]
-#[ignore = "requires the Python campaign dependencies"]
-fn npm_locations_keep_nested_instances_aliases_optional_precedence_and_links_explicit() {
-    let query = |lock: Value| {
-        Command::new(std::env::var("ENTMOOT_CAMPAIGN_PYTHON").unwrap_or_else(|_| "python".into()))
-            .args(["-X","utf8","-c","import json,sys; from evals.harness.npm_lock_inventory import dependency_rows; print(json.dumps(dependency_rows(json.loads(sys.argv[1]))))"])
-            .arg(lock.to_string()).current_dir(workspace()).output().unwrap()
-    };
-    let rows = successful(query(json!({"lockfileVersion":3,"packages":{
-        "":{"dependencies":{"a":"^1"}},
-        "node_modules/a":{"version":"1.2.0","dependencies":{"b":"^2","@x/c":"3"}},
-        "node_modules/b":{"version":"1.0.0"},
-        "node_modules/a/node_modules/b":{"version":"2.4.0"},
-        "node_modules/@x/c":{"version":"3.0.0"}
-    }})));
-    let actual: Vec<_> = rows
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|r| json!([r["name"], r["target_path"], r["version"]]))
-        .collect();
-    assert_eq!(
-        actual,
-        vec![
-            json!(["a", "node_modules/a", "1.2.0"]),
-            json!(["@x/c", "node_modules/@x/c", "3.0.0"]),
-            json!(["b", "node_modules/a/node_modules/b", "2.4.0"])
-        ]
-    );
-    let rows = successful(query(json!({"lockfileVersion":3,"packages":{"":{
-        "dependencies":{"a":"1"},"optionalDependencies":{"a":"2"},
-        "peerDependencies":{"b":"^1"},"peerDependenciesMeta":{"b":{"optional":true}}
-    }}})));
-    let actual: Vec<_> = rows
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|r| json!([r["kind"], r["requested"], r["status"]]))
-        .collect();
-    assert_eq!(
-        actual,
-        vec![
-            json!(["optional", "2", "missing"]),
-            json!(["optional_peer", "^1", "missing"])
-        ]
-    );
-    let rows = successful(query(json!({"lockfileVersion":3,"packages":{
-        "":{"dependencies":{"a":"*"}}, "node_modules/a":{"link":true,"resolved":"packages/a"},"packages/a":{"version":"1.0.0"}
-    }})));
-    assert_eq!(rows[0]["status"], "unsupported_link");
-    let rows = successful(query(json!({"lockfileVersion":3,"packages":{
-        "":{"dependencies":{"alias":"npm:real@1"}},"node_modules/alias":{"name":"real","version":"1.0.0"}
-    }})));
-    assert_eq!(rows[0]["name"], "alias");
-    assert_eq!(rows[0]["package_name"], "real");
-    for lock in [
-        json!({"lockfileVersion":1,"dependencies":{}}),
-        json!({"lockfileVersion":3,"packages":{"../escape":{}}}),
-    ] {
-        assert!(!query(lock).status.success());
-    }
-}
-
-#[test]
-#[ignore = "requires the Python campaign dependencies"]
-fn native_input_identity_fences_selected_adapter_and_environment_contents() {
-    let temp = tempfile::tempdir().unwrap();
-    let root = temp.path();
-    std::fs::create_dir_all(root.join("tools/resolver-adapters")).unwrap();
-    std::fs::write(root.join("tools/resolver-adapters/catalog.toml"),"[[family]]\nid='fixture'\nenv='ENTMOOT_FIXTURE_ADAPTER'\nrelative_artifacts=['fixture/adapter.dll']\n").unwrap();
-    let adapter = root.join(".tmp/adapter-build/resolver-adapters/fixture/adapter.dll");
-    std::fs::create_dir_all(adapter.parent().unwrap()).unwrap();
-    std::fs::write(&adapter, b"version one").unwrap();
-    let profile = root.join("profile.json");
-    std::fs::write(&profile, b"{\"python_version\":\"3.13\"}").unwrap();
-    let query = |environment: Value| {
-        successful(Command::new(std::env::var("ENTMOOT_CAMPAIGN_PYTHON").unwrap_or_else(|_| "python".into()))
-        .args(["-X","utf8","-c","import json,sys; from pathlib import Path; from evals.harness.repository_campaign import native_inputs; print(json.dumps(native_inputs(json.loads(sys.argv[1]),Path(sys.argv[2]))))"])
-        .arg(environment.to_string()).arg(root).current_dir(workspace()).output().unwrap())
-    };
-    let env = json!({"ENTMOOT_PYTHON_ENVIRONMENT":profile});
-    let original = query(env.clone());
-    assert_ne!(original, query(json!({})));
-    std::fs::write(&profile, b"{\"python_version\":\"3.14\"}").unwrap();
-    assert_ne!(original, query(env.clone()));
-    let before = query(env.clone());
-    std::fs::write(&adapter, b"version two").unwrap();
-    assert_ne!(before, query(env.clone()));
-    let before = query(env.clone());
-    std::fs::write(
-        adapter.with_file_name("dependency.dll"),
-        b"new runtime dependency",
-    )
-    .unwrap();
-    assert_ne!(before, query(env));
-    let exclusive = json!({"ENTMOOT_FIXTURE_ADAPTER":root.join("missing")});
-    let before = query(exclusive.clone());
-    std::fs::write(&adapter, b"unused fallback change").unwrap();
-    assert_eq!(before, query(exclusive));
 }

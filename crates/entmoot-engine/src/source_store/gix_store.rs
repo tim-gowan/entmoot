@@ -215,6 +215,16 @@ mod tests {
     }
 
     #[test]
+    fn local_repository_id_rejects_drive_root_fallback() {
+        assert_eq!(local_repository_id(Path::new(r"C:\")), "local/repo");
+        assert_eq!(local_repository_id(Path::new(r"\\?\C:\")), "local/repo");
+        assert_eq!(
+            local_repository_id(Path::new(r"\\?\UNC\server\share")),
+            "local/share"
+        );
+    }
+
+    #[test]
     fn gix_source_store_observes_configured_root() {
         let store = GixSourceStore::open(".").unwrap();
         let facts = store.observe().unwrap();

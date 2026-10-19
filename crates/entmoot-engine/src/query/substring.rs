@@ -1,4 +1,8 @@
-//! Disposable candidate postings; every candidate is verified against source fields.
+//! Disposable bounded candidate postings; every candidate is verified against source fields.
+//!
+//! SQLite FTS5 was evaluated against repository declaration text before replacement:
+//! its build and warm-query overhead did not justify replacing this bounded projection.
+//! This is candidate pruning only; std::str::contains owns substring semantics.
 #[derive(Debug, Default)]
 pub(super) struct SubstringIndex {
     postings: Vec<Vec<u32>>,
@@ -81,6 +85,9 @@ mod tests {
             .chain([
                 "src/rare.rs needle_callable".into(),
                 "ångström needle_callable".into(),
+                "préfixe😀🚀🎯界面".into(),
+                "a\"b [*?]".into(),
+                "embedded\0needle_after_nul".into(),
             ])
             .collect();
         let index = SubstringIndex::new(texts.iter().cloned(), 1_000_000);
@@ -96,6 +103,12 @@ mod tests {
             "",
             "missing",
             "rs needle",
+            "a\"b",
+            "[*?]",
+            "😀🚀🎯",
+            "界面",
+            "e\0n",
+            "after_nul",
         ] {
             let actual: Vec<_> = index
                 .candidates(query)

@@ -31,6 +31,14 @@ no correspondence policy is supplied.
 
 A proposition describes a relationship; a relation edge places it in scope; a
 claim records a producer's assertion about it. Status and confidence are distinct.
+Scope keys retain field names and optional presence; composite addresses frame
+their components before hashing. Identity is not correspondence: delimiters in
+producer strings cannot merge targets or remove distinct candidates. These
+derivation changes remain in the v1 series and invalidate older fingerprints;
+use a matching historical reader or explicitly rebuild, never relabel a store.
+Explicit `contradicts` links between active claims surface both applicable edges
+as conflicted without choosing a target, rewriting endpoints or claiming closure.
+Absent or inactive linked claims do not establish active disagreement.
 No missing edge establishes falsehood without relevant completeness evidence.
 Finding locations and ordered provider traces keep their supplied meanings;
 neither becomes a source/sink or exploit claim by position alone.
@@ -94,9 +102,33 @@ unspecified and unsupported forms are distinct. Defaults are unevaluated syntax.
 Modifiers, source spans and extraction limits remain visible. No argument-to-
 parameter mapping, inherited shape closure or compiler type equivalence is implied.
 
-These objects persist with inventory nodes in SQLite. CLI/MCP `inspect` exposes
-contracts in explain/export detail; impact reports declared changes separately
-from body and binding dimensions. Missing observations remain not-comparable.
+`CodeContractRecord` stores these observations independently of disposable
+topology, fenced by the complete snapshot, canonical source path, digest and
+occurrence. Its record identity retains source extents and attributed shape;
+the relocation-insensitive boundary comparison key is a separate policy.
+Reload attaches only matching visible records; conflicting shapes remain
+unselected instead of choosing one. CLI/MCP `inspect` exposes contracts in
+explain/export detail. Impact keeps declared, body and binding changes separate.
+
+`SubjectSelector` composes inventory kind, language, name, qualified name,
+path and callable shape in find, inventory and neighborhood endpoints.
+Parameter constraints within one requirement bind to the same written
+parameter; requirements may reuse a parameter unless explicit positions
+distinguish them. Matching runs before result limits and returns parameter
+positions plus examined/matched/unknown counts. Missing type observations
+remain unknown; syntax matching does not resolve aliases or assignability.
+The contracts module owns validation and the engine compiles predicates once.
+
+Text equality and substring matching use Rust's standard library. Explicit
+whole-name Unicode scalar edit distance uses [RapidFuzz](https://github.com/rapidfuzz/rapidfuzz-rs)
+with a bounded cutoff; path and legacy callee wildcard compilation use
+[globset](https://docs.rs/globset/latest/globset/). Pinned releases have permissive licenses checked by cargo-deny.
+Ordering uses standard collection/sort primitives. SQLite owns durable indexes.
+The disposable bounded substring candidate postings remain specialized:
+a local 6,428-row repository declaration probe (1,100 queries, three repeats)
+measured 7.4–8.7 ms builds and 4.5–5.3 ms queries for existing postings, versus
+23–25 ms and 74–88 ms for SQLite FTS5 variants. This is a local comparison,
+not large-repository qualification; FTS5 was not adopted.
 
 ## Canon and clone operations
 
@@ -198,6 +230,15 @@ endpoints. Failed or oversized index construction falls back to original adjacen
 Neighborhoods, direct callers/callees, components and unused assessments use original
 edges. Witnesses reconstruct those edges before current claim classification.
 Shortcuts are never published relations, inherited claims or direct calls.
+
+One edge-admission implementation applies exact subject/edge/occurrence
+pruning and evidence qualification to both path frontiers, neighborhoods
+and seeded discovery; impact relay composes the same neighborhood operation.
+Filtered paths use original adjacency so shortcut interiors cannot bypass
+admission. Endpoint selectors restrict returned results while traversal can
+cross nonmatching intermediates. Filter changes invalidate cached searches
+and continuation tokens. Legacy path-prefix fields retain their meaning;
+new path selectors distinguish exact paths, slash-boundary subtrees and globs.
 
 Resumable traversal retains exact frontier positions, scope states and witness
 references in bounded memory. Execution slices and output pages have separate

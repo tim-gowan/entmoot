@@ -327,6 +327,7 @@ impl Iterator for KnowledgeStoreBatches {
                 22 => plain_batch!(self, call_sites),
                 23 => plain_batch!(self, coverages),
                 24 => plain_batch!(self, declaration_sites),
+                25 => plain_batch!(self, code_contracts),
                 _ => return None,
             }
         }

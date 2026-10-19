@@ -56,14 +56,14 @@ def evaluator_digest() -> str:
     field(sys.version.encode())
     field(sqlite3.sqlite_version.encode())
     for name in ('revision_campaign.py', 'run_revision_campaign.py', 'revision_accounting.py', 'report_revision_pair.py',
-                 'impact.py', 'wire_schema.py', 'contracts.py', 'npm_lock_inventory.py'):
+                 'impact.py', 'wire_schema.py', 'contracts.py', 'npm_lock_inventory.py', 'measurement.py'):
         path = Path(__file__).with_name(name)
         for value in (name.encode(), path.read_bytes().replace(b'\r\n', b'\n')):
             field(value)
     for path in (CATALOG, QUERY_CATALOG):
         field(path.name.encode())
         field(path.read_bytes().replace(b'\r\n', b'\n'))
-    for name in ('blake3', 'jsonschema', 'attrs', 'referencing', 'rpds-py', 'jsonschema-specifications'):
+    for name in ('blake3', 'jsonschema', 'attrs', 'referencing', 'rpds-py', 'jsonschema-specifications', 'psutil'):
         package = distribution(name)
         field(name.encode())
         field(package.version.encode())

@@ -239,6 +239,7 @@ mod tests {
         let service: Arc<dyn QueryService> = Arc::new(UnavailableService);
         let error = service
             .find(FindQuery::Subject {
+                selector: None,
                 query: Some("main".into()),
                 path: None,
                 line: None,

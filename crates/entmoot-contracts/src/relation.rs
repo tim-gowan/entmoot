@@ -11,6 +11,10 @@ use crate::assertion::{DerivationRecord, EvidenceRef};
 use crate::identity::{hash_parts, DIGEST_PREFIX};
 use crate::ids::{ContentDigest, IdParseError};
 
+#[cfg(test)]
+#[path = "relation/identity_tests.rs"]
+mod identity_tests;
+
 /// Snapshot-independent digest of one positive relational proposition.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
 #[serde(transparent)]
@@ -195,8 +199,7 @@ impl TargetConstraint {
     fn canonicalized(mut self) -> Self {
         if let Self::Candidates { addresses } = &mut self {
             addresses.sort_by_cached_key(address_identity_key);
-            addresses
-                .dedup_by(|left, right| address_identity_key(left) == address_identity_key(right));
+            addresses.dedup();
         }
         self
     }
@@ -231,19 +234,21 @@ pub struct Scope {
 }
 
 impl Scope {
+    /// Tagged optional fields preserve both field identity and presence before
+    /// length framing. An absent context cannot stand in for a present revision.
     pub fn canonical_parts(&self) -> Vec<&str> {
-        let mut parts = vec![self.domain.as_str()];
-        if let Some(r) = &self.snapshot_revision {
-            parts.push(r.as_str());
-        }
-        if let Some(d) = &self.snapshot_digest {
-            parts.push(d.as_str());
-        }
-        if let Some(o) = &self.occurrence_id {
-            parts.push(o.as_str());
-        }
-        if let Some(c) = &self.context_id {
-            parts.push(c.as_str());
+        let mut parts = vec!["domain", self.domain.as_str()];
+        for (field, value) in [
+            ("snapshot_revision", &self.snapshot_revision),
+            ("snapshot_digest", &self.snapshot_digest),
+            ("occurrence_id", &self.occurrence_id),
+            ("context_id", &self.context_id),
+        ] {
+            parts.extend([
+                field,
+                if value.is_some() { "some" } else { "none" },
+                value.as_deref().unwrap_or(""),
+            ]);
         }
         parts
     }
@@ -740,7 +745,8 @@ impl UnresolvedRelation {
     }
 }
 
-/// Canonical Address string for identity hashing (stable, scheme-explicit).
+/// Scheme-explicit identity key with length-framed components. This preserves
+/// address identity, not cross-scheme correspondence or display equivalence.
 pub fn address_identity_key(address: &Address) -> String {
     match address {
         Address::CanonicalForm { digest } => format!("canonical_form:{digest}"),
@@ -763,11 +769,20 @@ pub fn address_identity_key(address: &Address) -> String {
             start_byte,
             end_byte,
         } => format!(
-            "repo_path:{}:{}:{}:{}",
-            repository_id.as_deref().unwrap_or(""),
-            path,
-            start_byte.map(|b| b.to_string()).unwrap_or_default(),
-            end_byte.map(|b| b.to_string()).unwrap_or_default()
+            "repo_path:{}",
+            hash_parts(&[
+                if repository_id.is_some() {
+                    "some"
+                } else {
+                    "none"
+                },
+                repository_id.as_deref().unwrap_or(""),
+                path,
+                if start_byte.is_some() { "some" } else { "none" },
+                &start_byte.map(|b| b.to_string()).unwrap_or_default(),
+                if end_byte.is_some() { "some" } else { "none" },
+                &end_byte.map(|b| b.to_string()).unwrap_or_default(),
+            ])
         ),
         Address::GitOid { oid } => format!("git_oid:{oid}"),
         Address::Purl { purl } => format!("purl:{purl}"),
@@ -785,7 +800,7 @@ pub fn address_identity_key(address: &Address) -> String {
                 logical_name,
             ])
         ),
-        Address::Opaque { system, value } => format!("opaque:{system}:{value}"),
+        Address::Opaque { system, value } => format!("opaque:{}", hash_parts(&[system, value])),
     }
 }
 

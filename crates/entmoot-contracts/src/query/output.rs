@@ -129,6 +129,9 @@ pub enum QueryResponseSchema {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct CompactSubject {
+    /// Explicit selector evidence; parameter positions are zero-based.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selection_match: Option<super::SelectionMatch>,
     /// Human-readable reference; not an alternative identity.
     pub display_ref: String,
     /// Inventory kind, or `external_address` when no node is represented.
@@ -307,6 +310,9 @@ pub struct CompactRoleSelection {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct CompactQueryResponse {
+    /// Inventory selector accounting, independent of output pagination.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selection: Option<super::SelectionReceipt>,
     /// Evidence that could not be inspected, including unretained native detail.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub limitations: Vec<String>,
@@ -335,6 +341,10 @@ pub struct CompactQueryResponse {
     /// Open-attempt collection bounds when available; zero displayed is not zero known.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unresolved_bounds: Option<ResultBounds>,
+    /// Retrieve open attempts through the shared inspect operation, independently
+    /// of concrete-edge or presentation paging.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unresolved_continuation: Option<Box<super::InspectQuery>>,
     /// Role admission, unmapped and co-location counts when requested.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub role_selection: Option<CompactRoleSelection>,
@@ -424,6 +434,18 @@ pub struct CompactSeededRoute {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct CompactSeededResponse {
+    /// Pruning selector accounting over the full materialized inventory.
+    /// Unknown candidates remain traversable; they are not proven nonmatches.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prune_selection: Option<super::SelectionReceipt>,
+
+    /// Discovery edge visits rejected by explicit pruning.
+    #[serde(default)]
+    pub pruned_edges: usize,
+    /// Discovery edge visits rejected by per-hop evidence admission.
+    #[serde(default)]
+    pub evidence_filtered_edges: usize,
+
     /// Exact source identity.
     pub snapshot: SourceSnapshot,
     /// Original request, with default output controls, for expansion.

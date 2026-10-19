@@ -133,6 +133,18 @@ class OwnershipRegistryTests(unittest.TestCase):
         commands = cargo_commands_for_targets([CargoTarget("entmoot"), CargoTarget("entmoot", "campaign_harness")])
         self.assertTrue(any("campaign_harness" in cmd and "--include-ignored" in cmd for cmd in commands))
 
+    def test_ignored_campaign_reuses_the_selected_package_graph(self):
+        commands = cargo_commands_for_targets([
+            CargoTarget("entmoot"), CargoTarget("entmoot-mcp"),
+            CargoTarget("entmoot-engine"), CargoTarget("entmoot", "campaign_harness"),
+        ])
+        expected = {"entmoot", "entmoot-mcp", "entmoot-engine"}
+        self.assertEqual(len(commands), 2)
+        for command in commands:
+            packages = {command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "-p"}
+            self.assertEqual(packages, expected,
+                             "dropping package roots changes Cargo feature unification and rebuilds libraries")
+
     def test_selected_native_targets_enable_their_semantic_producers(self):
         cases = [
             ("entmoot-engine", "callsites_rust", {"entmoot-engine/native-tests", "entmoot-engine/resolved-rust-analyzer"}),

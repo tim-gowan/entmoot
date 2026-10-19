@@ -1,0 +1,16 @@
+{
+  "cases": [
+    {"id":"literal", "pattern":"/health", "requests":[{"method":"GET","path":"/health"}]},
+    {"id":"named_parameter", "pattern":"/items/:id", "requests":[{"method":"GET","path":"/items/A42"}]},
+    {"id":"optional_parameter", "pattern":"/items/:id?", "requests":[{"method":"GET","path":"/items"}]},
+    {"id":"optional_extension", "pattern":"/docs/:file.:ext?", "requests":[{"method":"GET","path":"/docs/guide.html"}]},
+    {"id":"unnamed_wildcard", "pattern":"/*", "requests":[{"method":"GET","path":"/a/b"}]},
+    {"id":"named_wildcard", "pattern":"/*splat", "requests":[{"method":"GET","path":"/a/b"}]},
+    {"id":"braced_optional", "pattern":"/docs/:file{.:ext}", "requests":[{"method":"GET","path":"/docs/guide"}]},
+    {"id":"parameter_regexp", "pattern":"/items/:id(\\d+)", "requests":[{"method":"GET","path":"/items/42"}]},
+    {"id":"route_array", "pattern":["/a","/b"], "requests":[{"method":"GET","path":"/a"},{"method":"GET","path":"/b"}]},
+    {"id":"regexp_object", "pattern_regex":"^/items/(\\d+)$", "requests":[{"method":"GET","path":"/items/42"}]},
+    {"id":"head_control", "pattern":"/health", "requests":[{"method":"HEAD","path":"/health"}]},
+    {"id":"method_control", "pattern":"/health", "requests":[{"method":"POST","path":"/health"}]}
+  ]
+}

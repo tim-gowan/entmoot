@@ -10,6 +10,7 @@ static SOURCE_DIRECTORY: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new
 mod backend;
 mod collaborate;
 mod navigation;
+mod navigation_walk;
 mod neighborhood;
 mod operator_summary;
 mod output;
@@ -75,6 +76,8 @@ struct Cli {
 enum Commands {
     /// Find source symbols in the current workspace; prepares inventory automatically.
     Find(navigation::FindArgs),
+    /// Find bounded directed witnesses between two exact subjects.
+    Path(navigation_walk::PathArgs),
     /// Inspect one exact symbol and its evidence.
     Inspect(navigation::SubjectArgs),
     /// Read verified snapshot source lines.
@@ -194,7 +197,7 @@ enum Commands {
         #[arg(long)]
         request: Option<PathBuf>,
         /// Print a complete portable request and exit without opening a publication.
-        #[arg(long, conflicts_with = "request", value_parser = ["find-subject", "unresolved", "read-source"])]
+        #[arg(long, conflicts_with = "request", value_parser = ["find-subject", "find-parameter", "path", "neighborhood", "unresolved", "read-source"])]
         example: Option<String>,
         /// Interpret the request file as 1..=1000 QueryRequests and return results in order.
         /// Shares one immutable inventory/index load; no producers run.
@@ -937,6 +940,7 @@ fn run() -> Result<()> {
             crate::output::emit(&summary)?;
         }
         Commands::Neighborhood(args) => neighborhood::run(args)?,
+        Commands::Path(args) => args.run()?,
         Commands::Request {
             output,
             graph,
@@ -949,6 +953,19 @@ fn run() -> Result<()> {
         } => {
             if let Some(example) = example {
                 let value = match example.as_str() {
+                    "find-parameter" => serde_json::json!({"operation":"find","request":{
+                        "kind":"subject","selector":{"kinds":["callable"],
+                        "name":{"mode":"contains","value":"handle"},
+                        "callable":{"parameters":[{"declared_type_syntax":{"mode":"contains","value":"Request"}}]}}
+                    }}),
+                    "path" => serde_json::json!({"operation":"traverse","request":{
+                        "kind":"path","start":"<origin-id>","target":"<destination-id>","predicates":["calls"],
+                        "evidence_filter":"resolved_only","prune":{"subjects":[]},"budget":{}
+                    }}),
+                    "neighborhood" => serde_json::json!({"operation":"traverse","request":{
+                        "kind":"neighborhood","start":"<subject-id>","direction":"callers","predicates":["calls"],
+                        "evidence_filter":"resolved_only","endpoint_selector":{"name":{"mode":"contains","value":"handle"}},"budget":{}
+                    }}),
                     "unresolved" => {
                         serde_json::json!({"operation":"inspect","request":{"kind":"unresolved","id":"<subject-id>","limit":50}})
                     }

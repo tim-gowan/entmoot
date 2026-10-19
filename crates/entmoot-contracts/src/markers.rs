@@ -252,11 +252,11 @@ impl DeclarationSiteRecord {
     }
 
     pub fn validate(&self) -> Result<(), String> {
-        self.snapshot.validate().map_err(|e| e.to_string())?;
-        if crate::normalize_repo_path(&self.path).map_err(|e| e.to_string())? != self.path {
-            return Err("declaration path must be canonical".into());
-        }
-        crate::ContentDigest::parse(self.content_digest.as_str()).map_err(|e| e.to_string())?;
+        crate::paths::validate_source_observation(
+            &self.snapshot,
+            &self.path,
+            &self.content_digest,
+        )?;
         self.marker.validate()?;
         if self.marker.name.is_empty()
             || self.marker.name.len() > 1024
@@ -470,11 +470,11 @@ impl CallSiteRecord {
     }
 
     pub fn validate(&self) -> Result<(), String> {
-        self.snapshot.validate().map_err(|e| e.to_string())?;
-        if crate::normalize_repo_path(&self.path).map_err(|e| e.to_string())? != self.path {
-            return Err("callsite path must be canonical".into());
-        }
-        crate::ContentDigest::parse(self.content_digest.as_str()).map_err(|e| e.to_string())?;
+        crate::paths::validate_source_observation(
+            &self.snapshot,
+            &self.path,
+            &self.content_digest,
+        )?;
         self.marker.validate().map_err(str::to_owned)?;
         if self.site_id != self.derive_id() {
             return Err("callsite identity mismatch".into());

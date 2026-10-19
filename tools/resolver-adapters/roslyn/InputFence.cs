@@ -26,20 +26,30 @@ internal sealed class InputFence
     [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
     private static extern int GetLongPathNameW(string shortPath, System.Text.StringBuilder longPath, int buffer);
 
-    private static string RetainedPath(string path)
+    internal static string RetainedPath(string path)
     {
         var full = Path.GetFullPath(path);
-        if (!OperatingSystem.IsWindows()) return full;
-        var buffer = new System.Text.StringBuilder(Math.Max(full.Length, 260) * 2);
-        var written = GetLongPathNameW(full, buffer, buffer.Capacity);
-        if (written <= 0) return full;
-        if (written >= buffer.Capacity)
+        if (OperatingSystem.IsWindows())
         {
-            buffer.EnsureCapacity(written + 1);
-            written = GetLongPathNameW(full, buffer, buffer.Capacity);
-            if (written <= 0) return full;
+            var buffer = new System.Text.StringBuilder(Math.Max(full.Length, 260) * 2);
+            var written = GetLongPathNameW(full, buffer, buffer.Capacity);
+            if (written > 0)
+            {
+                if (written >= buffer.Capacity)
+                {
+                    buffer.EnsureCapacity(written + 1);
+                    written = GetLongPathNameW(full, buffer, buffer.Capacity);
+                }
+                if (written > 0) full = buffer.ToString(0, written);
+            }
         }
-        return buffer.ToString(0, written);
+        // MSBuild encodes `?` in verbatim roots (`\\?\` → `\\%3f\`) and then fails Imports.
+        // Verbatim UNC must become `\\server\...`, not a relative `UNC\server\...`.
+        if (full.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase)) return @"\\" + full[8..];
+        if (full.StartsWith("//?/UNC/", StringComparison.OrdinalIgnoreCase)) return "//" + full[8..];
+        if (full.StartsWith(@"\\?\", StringComparison.Ordinal) && full.Length >= 6 && full[5] == ':') return full[4..];
+        if (full.StartsWith("//?/", StringComparison.Ordinal) && full.Length >= 6 && full[5] == ':') return full[4..];
+        return full;
     }
 
     public InputFence(IEnumerable<string> inputs)

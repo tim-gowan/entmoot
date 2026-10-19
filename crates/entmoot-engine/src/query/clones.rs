@@ -13,6 +13,10 @@ use super::{QueryEngine, QueryError};
 impl QueryEngine {
     /// Find bounded repeated syntax patterns in the indexed source snapshot.
     pub fn clones(&self, mut request: CloneRequest) -> Result<CloneReport, QueryError> {
+        let path = super::selection::CompiledPath::from_request(
+            request.path_selector.as_ref(),
+            request.path.as_deref(),
+        )?;
         request.min_tokens = request.min_tokens.clamp(5, 10_000);
         request.min_occurrences = request.min_occurrences.clamp(2, 100);
         request.max_files = request.max_files.clamp(1, 10_000);
@@ -37,7 +41,6 @@ impl QueryEngine {
         };
         let mut groups = BTreeMap::<(String, CloneLevel, String), Vec<usize>>::new();
         let mut occurrences: Vec<CloneOccurrence> = Vec::new();
-        let path = request.path.as_ref().map(|p| p.replace('\\', "/"));
         let mut exhausted = false;
         let unavailable = |mut report: CloneReport, reason| {
             report.canon = reason;
@@ -100,10 +103,7 @@ impl QueryEngine {
             .limitations
             .contains(&entmoot_contracts::CanonLimit::BudgetExceeded);
         for reference in &graph.files {
-            if path
-                .as_ref()
-                .is_some_and(|p| !reference.path.starts_with(p))
-            {
+            if path.as_ref().is_some_and(|p| !p.matches(&reference.path)) {
                 continue;
             }
             if report.scanned_files >= request.max_files || report.patterns >= request.max_patterns
@@ -126,7 +126,7 @@ impl QueryEngine {
             let CanonObservation::File { file } = observation.as_ref() else {
                 return Ok(unavailable(report, CanonAvailability::Incompatible));
             };
-            if path.as_ref().is_some_and(|p| !file.path.starts_with(p)) {
+            if path.as_ref().is_some_and(|p| !p.matches(&file.path)) {
                 continue;
             }
             if file.path != reference.path {

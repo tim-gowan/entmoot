@@ -19,7 +19,11 @@ pub const MAX_INVENTORY_LIMIT: usize = 500;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct InventoryRequest {
-    /// Wire subject kinds to include (default: `callable` only).
+    /// Shared inventory predicates, intersected with kinds and legacy path prefix.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selector: Option<super::SubjectSelector>,
+    /// Legacy kind allowlist, intersected with selector. Empty uses selector kinds
+    /// when supplied, otherwise callable only.
     #[serde(default = "default_inventory_kinds")]
     pub kinds: Vec<String>,
     /// Optional repository-relative POSIX path prefix filter.
@@ -34,7 +38,7 @@ pub struct InventoryRequest {
 }
 
 fn default_inventory_kinds() -> Vec<String> {
-    vec!["callable".into()]
+    Vec::new()
 }
 
 fn default_inventory_limit() -> usize {
@@ -44,6 +48,7 @@ fn default_inventory_limit() -> usize {
 impl Default for InventoryRequest {
     fn default() -> Self {
         Self {
+            selector: None,
             kinds: default_inventory_kinds(),
             path: None,
             offset: 0,
@@ -58,6 +63,9 @@ impl Default for InventoryRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct InventoryReport {
+    /// Counts over the selected inventory universe before paging.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub selection: Option<super::SelectionReceipt>,
     /// Version of this report envelope.
     pub schema_version: String,
     /// Exact inventory snapshot.
@@ -79,6 +87,7 @@ impl InventoryReport {
     #[must_use]
     pub fn new(snapshot: SourceSnapshot, request: InventoryRequest) -> Self {
         Self {
+            selection: None,
             schema_version: INVENTORY_REPORT_SCHEMA.into(),
             snapshot: SchemaJson::new(snapshot),
             request,

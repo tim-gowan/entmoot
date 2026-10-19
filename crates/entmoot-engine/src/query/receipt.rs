@@ -50,6 +50,7 @@ struct ReceiptBuilder<'a> {
     unresolved: BTreeMap<String, UnresolvedRelation>,
     providers: BTreeMap<(String, Option<String>), ProviderAccumulator>,
     source_verification: SourceVerificationReceipt,
+    explicit_conflicts: BTreeSet<String>,
 }
 
 #[derive(Default)]
@@ -79,6 +80,7 @@ impl<'a> ReceiptBuilder<'a> {
                 path: None,
                 content_digest: None,
             },
+            explicit_conflicts: BTreeSet::new(),
         }
     }
 
@@ -382,6 +384,7 @@ impl<'a> ReceiptBuilder<'a> {
         &mut self,
         repository: &impl KnowledgeRepository,
     ) -> Result<(), QueryError> {
+        self.explicit_conflicts = super::conflicts::retained_conflicts(self.graph, repository)?;
         let edges: Vec<_> = self.edges.values().cloned().collect();
         let references: Vec<_> = edges.iter().collect();
         for claim in repository
@@ -440,7 +443,12 @@ impl<'a> ReceiptBuilder<'a> {
         coverage.sort_by(|left, right| left.get().coverage_id.cmp(&right.get().coverage_id));
         let (resolver_coverage, resolver_coverage_truncated) = bounded(coverage);
         let attachments = attachment_summary(self.attachments.values());
-        let relations = relation_summary(&self.edges, &self.claims, &self.relation_edge_ids);
+        let relations = relation_summary(
+            &self.edges,
+            &self.claims,
+            &self.relation_edge_ids,
+            &self.explicit_conflicts,
+        );
         let unresolved = unresolved_summary(&self.unresolved);
         let (finding_ids, finding_truncated) = bounded(self.finding_ids.into_iter().collect());
         let (assertion_ids, assertion_truncated) =
@@ -545,6 +553,7 @@ fn relation_summary(
     edges: &BTreeMap<String, RelationEdge>,
     claims: &BTreeMap<String, RelationClaim>,
     referenced_edge_ids: &BTreeSet<String>,
+    explicit_conflicts: &BTreeSet<String>,
 ) -> RelationEvidenceSummary {
     let active_claims: Vec<_> = claims
         .values()
@@ -576,7 +585,10 @@ fn relation_summary(
         if edge_states.contains(&ResolutionState::Stale) {
             stale.push(edge_id.clone());
         }
-        if edge_states.len() > 1 || edge_states.contains(&ResolutionState::Refuted) {
+        if edge_states.len() > 1
+            || edge_states.contains(&ResolutionState::Refuted)
+            || explicit_conflicts.contains(edge_id)
+        {
             conflicted.push(edge_id.clone());
         }
     }

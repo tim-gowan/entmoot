@@ -249,8 +249,13 @@ mod tests {
             subject: None,
             subject_aliases: Vec::new(),
         };
-        let mut extractor = MarkerTopologyExtractor::with_snapshot("C:/checkout", snapshot);
-        extractor.on_repo_begin("C:/checkout");
+        let checkout = if cfg!(windows) {
+            "C:/checkout"
+        } else {
+            "/checkout"
+        };
+        let mut extractor = MarkerTopologyExtractor::with_snapshot(checkout, snapshot);
+        extractor.on_repo_begin(checkout);
         extractor.on_file("app.py", &build_file_index(&result), Some(source));
         extractor.on_file_end(&file_node_id("app.py"));
         let mut graph = extractor.finish();

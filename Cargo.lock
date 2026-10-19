@@ -927,7 +927,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -948,7 +948,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-contracts"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha.1"
 dependencies = [
  "blake3",
  "packageurl",
@@ -960,7 +960,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-core"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha.1"
 dependencies = [
  "assert_matches",
  "blake3",
@@ -989,13 +989,14 @@ dependencies = [
 
 [[package]]
 name = "entmoot-engine"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha.1"
 dependencies = [
  "blake3",
  "cap-std",
  "entmoot-contracts",
  "entmoot-core",
  "gix",
+ "globset",
  "libc",
  "oxc",
  "packageurl",
@@ -1009,6 +1010,7 @@ dependencies = [
  "ra_ap_project_model",
  "ra_ap_syntax",
  "ra_ap_vfs",
+ "rapidfuzz",
  "rayon",
  "rusqlite",
  "serde",
@@ -1025,7 +1027,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-mcp"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha.1"
 dependencies = [
  "anyhow",
  "axum",
@@ -4533,6 +4535,12 @@ checksum = "513962919efc330f829edb2535844d1b912b0fbe2ca165d613e4e8788bb05a5a"
 dependencies = [
  "rand_core 0.9.5",
 ]
+
+[[package]]
+name = "rapidfuzz"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "270e04e5ea61d40841942bb15e451c29ee1618637bcf97fc7ede5dd4a9b1601b"
 
 [[package]]
 name = "rayon"

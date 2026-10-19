@@ -30,6 +30,8 @@ mod inventory;
 mod overlay;
 mod read;
 mod request;
+mod selectors;
+pub use selectors::*;
 mod result;
 mod seeds;
 mod service;
@@ -409,8 +411,10 @@ mod tests {
             QueryStatus::Known,
             QueryEvidenceReceipt::inventory_only(sample_snapshot()),
             QueryPayload::Find(FindPayload::Subject(SubjectFindResult {
+                selection: None,
                 snapshot: SchemaJson::new(sample_snapshot()),
                 items: vec![SubjectCandidate {
+                    selection_match: None,
                     node_id: "n1".into(),
                     kind: "callable".into(),
                     label: "main".into(),

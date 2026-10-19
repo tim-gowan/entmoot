@@ -21,6 +21,7 @@ import sys
 import time
 
 from evals.harness.contracts import ContractError
+from evals.harness.measurement import command as measured_command
 from evals.harness.revision_campaign import (CampaignStore, _run, digest, evaluator_digest,
                                             git_revision, material_digest, select_comparisons, verify_inputs)
 from evals.harness.revision_accounting import occurrence_accounting, summarize_occurrences, summarize_relay
@@ -92,19 +93,36 @@ def _git(root: Path, *args: str) -> bytes:
     return _run(['git', '-c', 'core.fsmonitor=false', *args], cwd=root)
 
 
-def verify_checkout(repository: Path, root: Path, revision: str) -> None:
-    """Require actual common Git storage and a clean source view; never relabel bytes."""
-    _require(root.resolve(strict=True) == Path(_git(root, 'rev-parse', '--show-toplevel').decode().strip()).resolve(),
+def verify_checkout(repository: Path, root: Path, revision: str, *, generated_paths: dict[str, str] | None = None) -> Path:
+    """Fence source bytes and return Git's path spelling for external tools.
+
+    Node's module loader rejects Windows verbatim paths accepted by Rust. Check
+    filesystem identity before using Git's spelling; never change source bytes.
+    Optional generated inputs require separately pinned digests.
+    """
+    selected = Path(_git(root, 'rev-parse', '--show-toplevel').decode().strip())
+    _require(root.samefile(selected),
              'source root must be the Git worktree top level')
     common = lambda path: Path(_git(path, 'rev-parse', '--path-format=absolute', '--git-common-dir').decode().strip()).resolve()
-    _require(common(root) == common(repository), 'source worktree belongs to a different repository')
+    _require(common(root).samefile(common(repository)), 'source worktree belongs to a different repository')
     _require(_git(root, 'rev-parse', 'HEAD').decode().strip() == revision, 'source worktree HEAD differs from requested revision')
     _require(not _git(root, 'ls-files', '-z', '--', '.entmoot'), 'tracked .entmoot paths cannot be qualified source')
-    _require(not _git(root, 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--', '.', ':(exclude).entmoot'),
-             'source worktree contains modified or untracked source')
+    permitted = set()
+    for relative, expected in (generated_paths or {}).items():
+        _require(relative and '\\' not in relative and not Path(relative).is_absolute()
+                 and not any(part in ('', '.', '..', '.git', '.entmoot') for part in relative.split('/')),
+                 'invalid generated source path')
+        path = root / relative
+        _require(inside(path, root) and path.is_file() and digest(path.read_bytes()) == expected,
+                 'generated source input is missing or differs from its pinned digest')
+        permitted.add(b'?? ' + relative.encode('utf-8'))
+    changes = _git(root, 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--', '.', ':(exclude).entmoot')
+    _require(all(entry in permitted for entry in changes.split(b'\0') if entry),
+             'source worktree contains modified or unqualified untracked source')
     entries = _git(root, 'ls-files', '--stage')
     _require(not entries.startswith(b'160000 ') and b'\n160000 ' not in entries,
              'submodule source qualification is not implemented for this campaign lane')
+    return selected
 
 
 def prepare(config_path: Path, destination: Path) -> Path:
@@ -204,16 +222,15 @@ class Executor:
         # Explicit CLI selection wins over the pinned environment and workspace
         # config, so publication and scratch writes stay within the run lifetime.
         args = ['--data-dir', str(self.data_directory), *args]
-        started = time.monotonic()
-        result = subprocess.run([str(self.cli), *args], cwd=cwd, env=self.config['environment'],
-                                capture_output=True, check=False)
-        self.store.put_receipts([(key + '/stdout', result.stdout), (key + '/stderr', result.stderr),
-                                 (key + '/process', encoded({'exit_code': result.returncode,
-                                                           'wall_seconds': time.monotonic() - started,
-                                                           'arguments': args}))])
-        _require(result.returncode == 0, f'campaign command failed; retained process receipt: {key}')
+        result = measured_command([str(self.cli), *args], cwd,
+                                  self.directory / 'commands', 'entmoot',
+                                  self.config['environment'], None)
+        stdout, stderr = Path(result['stdout']).read_bytes(), Path(result['stderr']).read_bytes()
+        self.store.put_receipts([(key + '/stdout', stdout), (key + '/stderr', stderr),
+                                 (key + '/process', encoded(result))])
+        _require(result['status'] == 'complete', f'campaign command failed; retained process receipt: {key}')
         self.verify()
-        return result.stdout
+        return stdout
 
     def source_graph(self, graph: dict, root: Path, revision: str) -> None:
         _require(graph['implementation'] == self.inputs['implementation'], 'graph implementation mismatch')

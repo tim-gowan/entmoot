@@ -1,0 +1,235 @@
+{
+  "origin": "Independently authored from documented route semantics; freeze before observing Entmoot or runtime output.",
+  "by_major": {
+    "4": {
+      "literal": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {}
+          }
+        ]
+      },
+      "named_parameter": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {
+              "id": "A42"
+            }
+          }
+        ]
+      },
+      "route_array": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {}
+          },
+          {
+            "status": 200,
+            "params": {}
+          }
+        ]
+      },
+      "regexp_object": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {
+              "0": "42"
+            }
+          }
+        ]
+      },
+      "head_control": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": null
+          }
+        ]
+      },
+      "method_control": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 404,
+            "params": null
+          }
+        ]
+      },
+      "optional_parameter": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {}
+          }
+        ]
+      },
+      "optional_extension": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {
+              "file": "guide",
+              "ext": "html"
+            }
+          }
+        ]
+      },
+      "unnamed_wildcard": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {
+              "0": "a/b"
+            }
+          }
+        ]
+      },
+      "named_wildcard": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 404,
+            "params": null
+          }
+        ]
+      },
+      "braced_optional": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 404,
+            "params": null
+          }
+        ]
+      },
+      "parameter_regexp": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {
+              "id": "42"
+            }
+          }
+        ]
+      }
+    },
+    "5": {
+      "literal": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {}
+          }
+        ]
+      },
+      "named_parameter": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {
+              "id": "A42"
+            }
+          }
+        ]
+      },
+      "route_array": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {}
+          },
+          {
+            "status": 200,
+            "params": {}
+          }
+        ]
+      },
+      "regexp_object": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {
+              "0": "42"
+            }
+          }
+        ]
+      },
+      "head_control": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": null
+          }
+        ]
+      },
+      "method_control": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 404,
+            "params": null
+          }
+        ]
+      },
+      "optional_parameter": {
+        "registration": "throws",
+        "responses": []
+      },
+      "optional_extension": {
+        "registration": "throws",
+        "responses": []
+      },
+      "unnamed_wildcard": {
+        "registration": "throws",
+        "responses": []
+      },
+      "named_wildcard": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {
+              "splat": [
+                "a",
+                "b"
+              ]
+            }
+          }
+        ]
+      },
+      "braced_optional": {
+        "registration": "accepted",
+        "responses": [
+          {
+            "status": 200,
+            "params": {
+              "file": "guide"
+            }
+          }
+        ]
+      },
+      "parameter_regexp": {
+        "registration": "throws",
+        "responses": []
+      }
+    }
+  }
+}

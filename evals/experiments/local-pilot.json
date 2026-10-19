@@ -1,0 +1,22 @@
+{
+  "id": "history-pilot-2026",
+  "seed": 20261017,
+  "since": "2025-10-01T00:00:00Z",
+  "until": "2026-09-30T23:59:59Z",
+  "max_commits_per_repository": 500,
+  "max_ci_pages": 2,
+  "max_source_files": 4000,
+  "max_source_bytes": 67108864,
+  "command_timeout_seconds": 180,
+  "quotas": {"failed_ci_candidate": 4, "ordinary": 4, "source_neutral": 2},
+  "repositories": [
+    {"id": "express", "github": "expressjs/express", "extensions": [".js", ".ts", ".tsx"]},
+    {"id": "fastify", "github": "fastify/fastify", "extensions": [".js", ".ts", ".tsx"]},
+    {"id": "requests", "github": "psf/requests", "extensions": [".py"]},
+    {"id": "docker-py", "github": "docker/docker-py", "extensions": [".py"]},
+    {"id": "axum", "github": "tokio-rs/axum", "extensions": [".rs"]},
+    {"id": "getrandom", "github": "rust-random/getrandom", "extensions": [".rs"]},
+    {"id": "chi", "github": "go-chi/chi", "extensions": [".go"]},
+    {"id": "gin", "github": "gin-gonic/gin", "extensions": [".go"]}
+  ]
+}
