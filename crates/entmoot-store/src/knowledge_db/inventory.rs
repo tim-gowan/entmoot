@@ -43,6 +43,22 @@ CREATE TABLE IF NOT EXISTS inventory_files (
     PRIMARY KEY(view_key,ordinal), UNIQUE(view_key,path_id)
 ) WITHOUT ROWID;
 CREATE INDEX IF NOT EXISTS inventory_by_content ON inventory_files(file_id,view_key,path_id);
+-- Projection membership references the existing immutable nodes/payloads. It
+-- retains no second graph or syntax body, and is sealed with its parser unit.
+CREATE TABLE IF NOT EXISTS structural_file_projections (
+    unit_id INTEGER PRIMARY KEY REFERENCES file_fact_units ON DELETE CASCADE,
+    commitment BLOB NOT NULL
+);
+CREATE TABLE IF NOT EXISTS structural_file_nodes (
+    unit_id INTEGER NOT NULL REFERENCES structural_file_projections ON DELETE CASCADE,
+    ordinal INTEGER NOT NULL, node_key INTEGER NOT NULL REFERENCES inventory_node_versions,
+    PRIMARY KEY(unit_id,ordinal)
+) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS structural_file_edges (
+    unit_id INTEGER NOT NULL REFERENCES structural_file_projections ON DELETE CASCADE,
+    ordinal INTEGER NOT NULL, record_id TEXT NOT NULL, payload INTEGER NOT NULL REFERENCES shared_payloads,
+    PRIMARY KEY(unit_id,ordinal)
+) WITHOUT ROWID;
 "#;
 
 /// Local storage locator. Portable query payloads never contain this layout.
@@ -458,15 +474,17 @@ pub(super) fn intern_path(
     connection: &Connection,
     path: &str,
 ) -> Result<i64, KnowledgeRepositoryError> {
-    connection.execute(
-        "INSERT OR IGNORE INTO shared_paths(path) VALUES(?1)",
-        [path],
-    )?;
-    Ok(connection.query_row(
-        "SELECT path_id FROM shared_paths WHERE path=?1",
-        [path],
-        |r| r.get(0),
-    )?)
+    if let Some(id) = connection
+        .prepare_cached("SELECT path_id FROM shared_paths WHERE path=?1")?
+        .query_row([path], |row| row.get(0))
+        .optional()?
+    {
+        return Ok(id);
+    }
+    connection
+        .prepare_cached("INSERT INTO shared_paths(path) VALUES(?1)")?
+        .execute([path])?;
+    Ok(connection.last_insert_rowid())
 }
 
 pub(super) fn files_digest(
@@ -590,11 +608,9 @@ pub(super) fn store_node(
         .then_some(node.structural_hash.as_deref())
         .flatten();
     transaction.prepare_cached("INSERT OR IGNORE INTO inventory_node_versions VALUES(NULL,?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)")?.execute(params![node.id,payload,definition,path,node_digest.as_bytes().as_slice(),node.kind.as_str(),node.label,node.display_ref,node.fqn,node.address_id,node.logic_address,unshared_hash])?;
-    let key: i64 = transaction.query_row(
-        "SELECT node_key FROM inventory_node_versions WHERE node_digest=?1",
-        [node_digest.as_bytes().as_slice()],
-        |row| row.get(0),
-    )?;
+    let key: i64 = transaction
+        .prepare_cached("SELECT node_key FROM inventory_node_versions WHERE node_digest=?1")?
+        .query_row([node_digest.as_bytes().as_slice()], |row| row.get(0))?;
     // Sharing a version never bypasses its hot-field/payload commitment.
     let mut statement = transaction.prepare_cached(&format!("SELECT {} FROM inventory_node_versions v LEFT JOIN shared_definitions d USING(definition_id) LEFT JOIN shared_paths p USING(path_id) WHERE v.node_key=?1", NODE_COLUMNS.replace("n.ordinal", "0")))?;
     let mut rows = statement.query([key])?;

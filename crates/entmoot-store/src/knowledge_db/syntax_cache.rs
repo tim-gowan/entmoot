@@ -171,6 +171,16 @@ impl SyntaxCache {
     pub fn paths(&self) -> impl Iterator<Item = &str> {
         self.files.keys().map(String::as_str)
     }
+    /// Only return a unit owned by this publication's database. SQLite keys from
+    /// a different cache backing must never select a local projection.
+    pub(crate) fn retained_unit(&self, path: &str) -> Option<i64> {
+        let store = self.unit_store.as_ref()?;
+        match self.files.get(path)?.record.retained.as_ref()? {
+            (backing, RetainedKind::Facts(unit)) if Rc::ptr_eq(store, backing) => Some(*unit),
+            _ => None,
+        }
+    }
+
     pub fn source_digest(&self, path: &str) -> Option<&str> {
         self.files.get(path).map(|file| file.digest.as_str())
     }

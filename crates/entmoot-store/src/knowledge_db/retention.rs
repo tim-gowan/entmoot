@@ -132,10 +132,11 @@ impl Maintenance {
         // Mark every retained membership, including inactive records. Metadata
         // references are codec-owned; malformed envelopes abort the transaction.
         transaction.execute_batch("DELETE FROM file_fact_units WHERE unit_id NOT IN (SELECT unit_id FROM file_fact_membership);
-            DELETE FROM inventory_node_versions WHERE node_key NOT IN (SELECT node_key FROM inventory_nodes);
+            DELETE FROM inventory_node_versions WHERE node_key NOT IN (SELECT node_key FROM inventory_nodes UNION SELECT node_key FROM structural_file_nodes);
             CREATE TEMP TABLE retained_payloads(id INTEGER PRIMARY KEY);
             INSERT OR IGNORE INTO retained_payloads SELECT payload FROM scoped_records;
             INSERT OR IGNORE INTO retained_payloads SELECT payload FROM inventory_node_versions;
+            INSERT OR IGNORE INTO retained_payloads SELECT payload FROM structural_file_edges;
             INSERT OR IGNORE INTO retained_payloads SELECT payload FROM inventory_headers;
             INSERT OR IGNORE INTO retained_payloads SELECT parts FROM file_fact_membership WHERE parts IS NOT NULL;
             INSERT OR IGNORE INTO retained_payloads SELECT payload FROM local_file_progress;
@@ -224,4 +225,7 @@ const TABLES: &[&str] = &[
     "file_fact_sites",
     "file_fact_manifests",
     "file_fact_membership",
+    "structural_file_projections",
+    "structural_file_nodes",
+    "structural_file_edges",
 ];

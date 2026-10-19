@@ -40,6 +40,7 @@ mod inventory;
 mod layout;
 pub mod retention;
 mod structural;
+mod structural_files;
 pub mod syntax_cache;
 pub use inventory::KnowledgeViewLocator;
 use layout::{hydrate_payload, hydrate_record, intern_payload, payload_matches};

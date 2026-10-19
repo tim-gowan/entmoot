@@ -49,9 +49,25 @@ retained indexes. Node versions and syntax bodies share storage across revisions
 and referring records; the earlier layout sample does not measure this newer
 schema. Incompatible stores require an explicit rebuild and are preserved.
 
-Remaining qualification/implementation: measure the final streamed publisher on
-the pinned full Go workflow, including current/base comparisons and interrupted
-recovery. Native/canon production still uses graph views; native output is one
+The [full streamed-publisher characterization](evals/experiments/performance-streamed-go-2026-10-19.json)
+at `84bd4a7` completed all planned product commands on the same Go revision.
+Fresh publication took 1,430.7s, with 0.50GB sampled peak RSS and 7.25GB retained.
+That is slower than the intermediate checkpoint's 1,136s despite its much lower
+RSS. No-change refresh took 27.8s; comment/body/add/rename took 750–828s and each
+new view added about 3.25GB. Recovery took 1,781.8s; host build/validation jobs
+overlapped this later trial. The harness then failed a wrong counter assertion
+(11,832 reused versus 0 newly parsed). Independent post-hoc checks verified all
+source bytes, unchanged binaries, historical reads, rollback and reused parser
+units; the failed runner and missing completion marker remain preserved.
+
+Exact path/ID find and source reads took 3–5ms inside the engine. Caller/callee
+queries took about 0.49s; their six-repetition processes took about 3s. Cold
+subject context took 153.7s and roughly 9.65GB process peak RSS; the body comparison
+took 247.9s and 11.79GB. Those full-graph consumers remain scale blockers.
+This single-trial characterization does not qualify later revisions or native
+semantics. Qualify the incremental publisher below on the same complete corpus.
+
+Native/canon production still uses graph views; native output is one
 complete family artifact, although every family now consumes compact pinned
 structural input. Subject-context, traversal, impact and advanced reads still
 hydrate a deferred graph. Replace those only with scoped reads that preserve
@@ -65,6 +81,47 @@ processes still took 124/142s and about 9.65GB RSS. That frozen build predates t
 streamed publisher, shared node versions and indexed calls. It motivates those
 changes but does not qualify them. Comment/body/add/rename/delete trials completed;
 current/base comparisons and interrupted recovery were not measured there.
+
+The same full Go run at `84bd4a7` attributes the one-file body refresh to publication:
+749.7s total, including 23.5s parser-fact reuse and a 723.5s publication interval.
+Within that interval, syntax projection took 345.0s and structural resolution
+114.4s. Comment refresh took 828.0s. These are observed single trials, not a
+latency distribution. Parser reuse alone still rebuilt every file projection,
+rebound snapshot-qualified records and serialized nodes twice for commitments.
+The incremental publisher now reuses verified file-local node/edge references,
+rebinds current-snapshot claims, copies unchanged memberships in SQL and shares
+one node serialization across both commitments. Separate finalization timings
+attribute ordering, source membership, commitments, file selection and commit.
+The [512-file development comparison](evals/experiments/performance-incremental-512-2026-10-19.json)
+reused 509 of 510 parsed file projections and reduced a comment-edit refresh from
+23.6s to 17.5s (26% in this single fixed-order trial). All 68,835 node versions
+and 69,925 structural edges matched the baseline exactly. Initial retention grew
+from 251.9MB to 259.7MB for projection references. The edit still spent 6.3s in
+syntax projection/claim rebinding, 3.5s in structural resolution, 3.0s verifying
+publication commitments and 1.6s selecting file facts/call summaries. Parent and
+child phases overlap. Full-repository measurements of this change remain pending.
+Complete callable index construction, claim rebinding and canonical verification
+still scale with the selected repository; this is not an O(changed-files) refresh.
+A further cut must share revision-independent records through file membership
+and preserve deletion/corruption detection when projecting snapshot-qualified
+records or deferring full export commitments. Import statements alone cannot
+close native dependency or dispatch frontiers.
+
+SCIP is a possible optional provider input, not a remedy for this structural-only
+publication cost. The [SCIP protocol](https://github.com/scip-code/scip/blob/main/scip.proto)
+carries document occurrences and package-qualified symbol descriptors, but a
+reference is not necessarily a call and its relationships do not prove a closed
+dispatch set. A future importer can join occurrences to structural call/declaration
+spans through the native normalization boundary, preserving provider symbols as
+attributes and structural IDs as identities. It must pin source/configuration,
+convert position encodings, retain unmatched sites as explicit unknowns and avoid
+inventing type/dispatch/completeness facts the indexer did not report. There is no
+SCIP importer today. Document ingestion can be file-sized; safe reindexing still
+follows the provider's project/module/configuration dependencies. For example,
+[scip-go](https://github.com/scip-code/scip-go) uses Go module/package loading.
+Replacing the compiler-free structural lane with such an indexer would lose that
+baseline; adapting a native provider preserves it. Qualify provider-specific
+binding, dispatch, dependency coverage and configuration separately before a switch.
 
 The split preserves a conservative v1 whole-engine derivation fence. Qualify
 component-specific fingerprints before narrowing its invalidation scope. Measure

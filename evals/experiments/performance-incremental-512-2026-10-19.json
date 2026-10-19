@@ -1,0 +1,3680 @@
+{
+  "kind": "incremental_publication_development_comparison",
+  "date": "2026-10-19",
+  "evidence_root": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement",
+  "plan": {
+    "source_frame": {
+      "files": 512,
+      "source_bytes": 4266424,
+      "source": "G:\\GitHub\\entmoot\\.tmp\\memory-profile-20261018\\sources\\512",
+      "members": [
+        {
+          "path": "src/index/suffixarray/suffixarray_test.go",
+          "git_blob": "ce1fab22e71ab1b900d46ecbda41e3bb0d07143e",
+          "bytes": 16851,
+          "blake3": "f603a7e6d91fbe79c5456977aa36b81b0c11a5821a0eb9af7807bc877424f5ad"
+        },
+        {
+          "path": "test/typeparam/issue49893.dir/main.go",
+          "git_blob": "447212d027648f1fee31e1fe35c823f16f04a6ae",
+          "bytes": 266,
+          "blake3": "236dfe63c5420de3ec4134a39e47baa6136a2623360be6e8452779c09a6539f7"
+        },
+        {
+          "path": "src/io/fs/stat.go",
+          "git_blob": "2c22f477bc77eaf4cbda954f243673a9a86c6c45",
+          "bytes": 807,
+          "blake3": "ed7531d7ddf1eef3feccc0350a2c6ce972e02230389879c13470c3b309ffca85"
+        },
+        {
+          "path": "src/cmd/compile/internal/rangefunc/rewrite.go",
+          "git_blob": "e797f39ca43e6a5dd234aa9d75aa640a5333ff5b",
+          "bytes": 48267,
+          "blake3": "3df6cd762566666ad994c805011b71545d6c3e0979496669bb49341a4a314d46"
+        },
+        {
+          "path": "src/index/suffixarray/example_test.go",
+          "git_blob": "ea10bfd06a158f069c9fc29667ad4ac4a42a60dc",
+          "bytes": 433,
+          "blake3": "b6b56d0b0280c714ce834a546102fc201d779540fedb3daffef33ff2993b6634"
+        },
+        {
+          "path": "src/vendor/golang.org/x/tools/internal/pkgbits/codes.go",
+          "git_blob": "21f44d96568206016de89e03151e62d18ca5c1f1",
+          "bytes": 1807,
+          "blake3": "42b7e7a6f98068743e1899ea5119525aa84a397e276420b0535a4804a716dd12"
+        },
+        {
+          "path": "src/syscall/zsysnum_dragonfly_amd64.go",
+          "git_blob": "b9fb1c0807ab36aa0a36df2a7060cf19b61ec957",
+          "bytes": 23463,
+          "blake3": "a38398d8c74b31f842b8ca9278970b6ccefbd102a44bab92e7f06fd574340b86"
+        },
+        {
+          "path": "test/makemap.go",
+          "git_blob": "f63e5b4b6ace97dc2f21c600188bb8fde78d36bd",
+          "bytes": 1328,
+          "blake3": "7a1ef377e0bac2ef77b97cc181e2d3de317ac69caadf90d9b211699f5caba924"
+        },
+        {
+          "path": "test/fixedbugs/issue55122.go",
+          "git_blob": "24da89dcb6d31fb692df9967058d6b15b9219d70",
+          "bytes": 627,
+          "blake3": "750fbd0e9426657e60e33bacf3f8b417f541297a8ee051be925513a72d28e0b6"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue46275.go",
+          "git_blob": "0862d5bb5a0ef6dac4311b39757ef8b952d8d5fe",
+          "bytes": 387,
+          "blake3": "f36bf251cb4d544475de2146c36839e989930f6ede7ec437d52e76b64e540f90"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/text/unicode/norm/tables15.0.0.go",
+          "git_blob": "c30c6f7bf5b9babfaa6f6ef2854b9068fc286060",
+          "bytes": 395051,
+          "blake3": "3417bce712d218143709160c899da49d9cd5e2e08ad25194c1ed497b42c97673"
+        },
+        {
+          "path": "src/runtime/defs_linux_amd64.go",
+          "git_blob": "9a908c94000a588ede10f11037be57b008fca7e9",
+          "bytes": 4832,
+          "blake3": "8198df663e614a885db01acc874a55f2303d190834237d670d7ea7112e5c80fc"
+        },
+        {
+          "path": "src/crypto/internal/fips140/mldsa/mldsa_test.go",
+          "git_blob": "a2d2279a8e584183300401554852f255a77a0a94",
+          "bytes": 16734,
+          "blake3": "88a8182aad81ba90007e28f9bd8b0b785f54ca503a13dbe8dbf88fc291eef6c6"
+        },
+        {
+          "path": "src/os/getwd_unix_test.go",
+          "git_blob": "de33f156185ed45c39fa06d59e0e491f1a9e22d6",
+          "bytes": 3086,
+          "blake3": "3b6041741c20fe8d85f5b752b7e6422cb61653a3e4506b4fbd9224543c69060e"
+        },
+        {
+          "path": "src/runtime/debug/example_monitor_test.go",
+          "git_blob": "ed6757df855d08eab60c336e3d577ae664169868",
+          "bytes": 2971,
+          "blake3": "2830353641abc93e12c8dad34bc21da97e48452e056b2861c3b2ad505c7ce179"
+        },
+        {
+          "path": "src/net/http/internal/http3/transport.go",
+          "git_blob": "fa4e259ad2d5dfbeea49f67b7623ec4123055ecb",
+          "bytes": 12643,
+          "blake3": "a75dffa99bb113493bbf90ccdab8a4c73a0f766eab370e3d5b85bd5004c160df"
+        },
+        {
+          "path": "src/go/types/typestring_test.go",
+          "git_blob": "660d5434ae4aa1f10a606423cfe12a5309306c64",
+          "bytes": 4153,
+          "blake3": "8542b7b39b85772a4cf1d483b5c41fed2643571b5fa13a4e582df5f65d561ebf"
+        },
+        {
+          "path": "src/cmd/compile/internal/syntax/testdata/issue70974.go",
+          "git_blob": "ebc69eda950254bbabca0c12d90930c027d5f631",
+          "bytes": 324,
+          "blake3": "b58008f9a54b3e2a49ad17e6b7b14851e76123973aab6dc9c81881d9d2e2284f"
+        },
+        {
+          "path": "test/typeparam/dedup.dir/main.go",
+          "git_blob": "920591b04fb3a8d981fa0ae767643fc359a8bb16",
+          "bytes": 230,
+          "blake3": "6eea1046306024460044f330ac4e6fd6f2d67e64986f43f17344eb3586f907cb"
+        },
+        {
+          "path": "test/fixedbugs/issue29220.go",
+          "git_blob": "bbfe930786e09a2009a853b1576fd08c1e25689c",
+          "bytes": 556,
+          "blake3": "95fe77e01ab25d84a0b2da70ed7b15509c8584bd6479443fb363b22d31b923a2"
+        },
+        {
+          "path": "src/cmd/compile/internal/inline/inlheur/resultpropbits_string.go",
+          "git_blob": "888af98fc3a9c1a1d1ac9d34ae5367026bc295b1",
+          "bytes": 1834,
+          "blake3": "412cfcb50813dd903eef3de6b259f19b1bdc81a91bdfef9d530c05b1d253c26d"
+        },
+        {
+          "path": "test/alias.go",
+          "git_blob": "aabaef8f20e27e3216348e38ac7074bb7f07227f",
+          "bytes": 588,
+          "blake3": "d2e7f115b1a1afea748e5c36a5fdf18c122ef8e47677cbf5c26f372cff49958b"
+        },
+        {
+          "path": "src/os/pipe_test.go",
+          "git_blob": "ccae6f61bf4c93893832d28637f5d588a6a2a62d",
+          "bytes": 12738,
+          "blake3": "3682d68c981e221b5fd7229821207fc8d5cc11c3e9a1626eddea42a9a3ba253d"
+        },
+        {
+          "path": "test/fixedbugs/issue9355.dir/a.go",
+          "git_blob": "84500c8c01117593617d9599b0d7c46d94d4ee1b",
+          "bytes": 210,
+          "blake3": "a968e0be88a3f5b2a843b0233e713cebe04086d1c75d5f1d9714707b36958460"
+        },
+        {
+          "path": "test/interface/private.dir/private1.go",
+          "git_blob": "75eee51f5a0509c287cc0a7f8682f09c777a0589",
+          "bytes": 389,
+          "blake3": "659f09f9d6b7882eb28d7d771a75ba7f5baaf5d48849b4e51128ed6bfa6cc598"
+        },
+        {
+          "path": "src/crypto/internal/fips140/nistec/p256.go",
+          "git_blob": "25ecdad2a0051f4f04097b8cd44ccdd238349102",
+          "bytes": 25628,
+          "blake3": "a41ad59ddfdd661512b0fc8b72bc2288d496bbce1c9a8c6acef3589379dd7cca"
+        },
+        {
+          "path": "src/internal/syscall/unix/user_darwin.go",
+          "git_blob": "d05acdaa490514f22b12870f0a24cf18b80e0b50",
+          "bytes": 3432,
+          "blake3": "6fb0bd8300343c7d10804474385ae305cfce2ecc094773e11c174ffbee9aaffb"
+        },
+        {
+          "path": "src/simd/archsimd/_gen/specdoc/fill.go",
+          "git_blob": "740b9f6358d81c0020c9df4e2c425d49dadc6afe",
+          "bytes": 13713,
+          "blake3": "dabfa3c95bccbe241b9e48538586acfc9732a83da2d432e301637c0373338aa9"
+        },
+        {
+          "path": "src/net/dial_test.go",
+          "git_blob": "8f0ce7755f0c01b3c93b248c2b32dda23101bf13",
+          "bytes": 34575,
+          "blake3": "80f07b4dc2f479d0a9901ef2db8933eaf9e182c110dd0a22fd568685753ff788"
+        },
+        {
+          "path": "test/fixedbugs/issue41239.go",
+          "git_blob": "3e9ef5eb66f4f26b660d860d9a1dc8e3e4fc927e",
+          "bytes": 393,
+          "blake3": "82855fc2989fabb62d7d9a4cf6bdf8babc2090ecbc212937e604a213441f94c3"
+        },
+        {
+          "path": "src/log/slog/internal/buffer/buffer_test.go",
+          "git_blob": "06f8284651151c9e27c8042cded46f471fcb1e6c",
+          "bytes": 776,
+          "blake3": "f51b4d1691abe3e5f76e8dbd3f7d8b246cb822ccca8aa7ab3a16199390416e18"
+        },
+        {
+          "path": "src/math/rand/normal.go",
+          "git_blob": "4d441d4505dbbb062d86125de1e8aa7506e85f44",
+          "bytes": 6459,
+          "blake3": "6267b007d4034fb391c43500804001f25cef71f197b1de07f8c45494ac42b8ee"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testsanitizers/testdata/msan2_cmsan.go",
+          "git_blob": "8fdaea90c979245db3eb6221be76d77ac9fdf499",
+          "bytes": 710,
+          "blake3": "a4f6eaaa896e4656cdbe1c805f7849fa0562d5743ebeb265a87a7a2cc204ad27"
+        },
+        {
+          "path": "src/cmd/link/internal/ld/outbuf_linux.go",
+          "git_blob": "bd9a0c6761c563ed520dd7f9835d5b06ca629ae6",
+          "bytes": 304,
+          "blake3": "12d212fa568d83e152460dcde499b59b6fafe8a38bf57710045ea00533543303"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testcshared/testdata/libgo2/dup3.go",
+          "git_blob": "ec4b5a73ec28b24999b3d89f7eac46e9956517db",
+          "bytes": 341,
+          "blake3": "d2a90112abbc177519f4dd6ee4c1e78c4210510b736d6a35d44881240f8c40fb"
+        },
+        {
+          "path": "src/strconv/number_test.go",
+          "git_blob": "4408bc05564c55f04539e37d24692dfa03366af0",
+          "bytes": 24893,
+          "blake3": "f3ad1adc5acd0c60088489dac8900270722a85a952f4ec5c655cc4e04e618dba"
+        },
+        {
+          "path": "src/cmd/link/internal/sym/symkind.go",
+          "git_blob": "e61c9650fe02e95f083996b6f2bc55325ccdb241",
+          "bytes": 8534,
+          "blake3": "b8f3c83c39a950fd317dc71dcf979fb93f84d19dbe0092c1a230899c04773445"
+        },
+        {
+          "path": "src/simd/testdata_test.go",
+          "git_blob": "c485aae5dda422cd5e4b0d8b40c49c6a416176a9",
+          "bytes": 2280,
+          "blake3": "976c0795564de2bd1faad566b4e55aca6799caefb54896c2678a243231203aa2"
+        },
+        {
+          "path": "src/cmd/compile/internal/ssacompile/opGen.go",
+          "git_blob": "57720a7f0229870b5ece414e699ba3a191ac9fa5",
+          "bytes": 32379,
+          "blake3": "52e5ba6b2cbdb64425aae329a1ec2b250db2ff5d87aeed4736f91be759b956a1"
+        },
+        {
+          "path": "src/net/http/cookie.go",
+          "git_blob": "37cda60845051814a4f3b2ed5f382a598b20d536",
+          "bytes": 15733,
+          "blake3": "2e57f68fb8f8047d326f2a2b297fc1e6c5c6cf984e6cc7b5ffed3972c98d7e17"
+        },
+        {
+          "path": "test/fixedbugs/issue29013b.go",
+          "git_blob": "b8502dad9b5a164c993678cbdd7f68ebf45694a8",
+          "bytes": 616,
+          "blake3": "166975bd1b6746d0e925db5e24c9b404259802e87d9317ed9ee7abe9cd12231a"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/syscall_darwin.go",
+          "git_blob": "38590ca81dd1ae017b43e2e9c79cfa9c08afb9e7",
+          "bytes": 23373,
+          "blake3": "037b7c6bd158e61c001deb1dda3146655fb1f0d4731154622a2da0a9093d128c"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testplugin/testdata/issue53989/p/p.go",
+          "git_blob": "02567c1cee07bb7ef57e4630c39f7af399f1349a",
+          "bytes": 826,
+          "blake3": "5dda28e9db61f022752c68405223ef4fd0c0906cdb269d666f72c5ab30afe8d0"
+        },
+        {
+          "path": "test/fixedbugs/bug171.go",
+          "git_blob": "49bbb3b892d8288320b0647926dff59537ee6c26",
+          "bytes": 281,
+          "blake3": "ccc34d75cac19f20603672920a5d2eb6fa5717c068ad437c9344ab7f30d2355a"
+        },
+        {
+          "path": "src/crypto/internal/fips140test/fips140v1.26_test.go",
+          "git_blob": "6cd9f4fe40b0ce296102b1c121875aa5c86b619e",
+          "bytes": 801,
+          "blake3": "43f449758ba960c69259fc6a8590518c9369be83351ba02f472f131d946732b6"
+        },
+        {
+          "path": "test/fixedbugs/issue77613.go",
+          "git_blob": "df71ed48e90c612dd49bb388bcfe8f98c2b7775a",
+          "bytes": 465,
+          "blake3": "5dfd0c8cad776599926723364c904556f51b52ffcc99ee7d82838ebf2ab55492"
+        },
+        {
+          "path": "src/cmd/vet/testdata/stringintconv/stringintconv.go",
+          "git_blob": "4c91ce994bba5a6bebd6461699bd631ece8c6d0d",
+          "bytes": 285,
+          "blake3": "f43a03b02becf80f525fa94ca04c982bbcf70fbe7da871088ee4542cb1ca4b58"
+        },
+        {
+          "path": "src/runtime/trace/annotation_test.go",
+          "git_blob": "63e01fab9cad95c4e06144debf7afb1d0b5d3bb4",
+          "bytes": 1310,
+          "blake3": "c4e3740caffa5add34f0b54f0529d9bfc6042bff6ee8f624a815d8c0023def95"
+        },
+        {
+          "path": "src/runtime/netpoll_stub.go",
+          "git_blob": "dc5d708b4c5bce2d3fb6f39ea28c2c9854e1ab5d",
+          "bytes": 1617,
+          "blake3": "9557fe3df168ab366ff82371e109396599b40c2383bb0ebd68637ab69d294523"
+        },
+        {
+          "path": "src/internal/coverage/cfile/testdata/issue59563/repro.go",
+          "git_blob": "d054567dc54219d4e6e93ba36f1f2777cbb1f795",
+          "bytes": 13349,
+          "blake3": "a3dc3bf54f0e8f071f486bd47794f208cee284cfc10eb2b5be6407316e5b18b4"
+        },
+        {
+          "path": "test/interface/convert.go",
+          "git_blob": "eb6fd1d5542f206225202a35eedbb6b6a70c9613",
+          "bytes": 1922,
+          "blake3": "2072d296dad7ebe8ae1d2d437c5a889938b9bd7e4d0a1693b2d3f5ac177e81e3"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/syscall_linux_sparc64.go",
+          "git_blob": "4964119af8fa43a4759b8f5d2c439e6a6333abfc",
+          "bytes": 4396,
+          "blake3": "033c431fb4678b8f9adefe89448d5c97cfc0b98456ff14e34aa019dfc56c50f2"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testplugin/testdata/issue67976/plugin.go",
+          "git_blob": "502ecc5c4750f4920759768a408eb197f3afc022",
+          "bytes": 277,
+          "blake3": "04b046a9aaec151bf1c67b97ef49d184ce7df52df6b50f9a996a8748cefdd794"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testerrors/testdata/err5.go",
+          "git_blob": "c12a290d3890fde4d035d59eab24f1f63a410493",
+          "bytes": 304,
+          "blake3": "9393cc98961400ed1ac74c4287c3ed1b6c7b389ef3f6b7d5cbc37a6118cf1f3a"
+        },
+        {
+          "path": "src/simd/archsimd/_gen/specdoc/report.go",
+          "git_blob": "e678c3eda01ce0e269997f18622d25e67ebdd5ea",
+          "bytes": 5325,
+          "blake3": "afbb061e17cde93410ee2266361f5eab221f42fa4c9d26a6ab1dbbe03e182d26"
+        },
+        {
+          "path": "src/internal/syscall/windows/syscall_windows_test.go",
+          "git_blob": "c20466d4a14b9ace62dd5d31789b1d4f283ee1f5",
+          "bytes": 858,
+          "blake3": "da212a01f36b0d9cb8307f6cc488a51ee54e70f566a711a06b570e473ffb160e"
+        },
+        {
+          "path": "src/internal/runtime/maps/export_test.go",
+          "git_blob": "43d870b7f7faa45b21533a2e09e2eee56818ca65",
+          "bytes": 3032,
+          "blake3": "d928d2f0e3e028327d1b6da28938d0383ea5838b2ea7511e3362d8851fdb4204"
+        },
+        {
+          "path": "src/encoding/json/v2/fuzz_test.go",
+          "git_blob": "491a08311eb0a341127856c28bc2a310e9977d58",
+          "bytes": 895,
+          "blake3": "fabe46c03b46be273fb61901123cc69643531d9ca991acbdc9aaebca04246273"
+        },
+        {
+          "path": "src/syscall/pwd_plan9.go",
+          "git_blob": "b81018873f9c8f3fc625043d730bc0845e306daf",
+          "bytes": 2325,
+          "blake3": "0f7e0d7f0b30f4c14438a1bd32cead27c416b491e013bd90c53adc082b255955"
+        },
+        {
+          "path": "test/fixedbugs/issue7995b.go",
+          "git_blob": "2f57371e379d3c77a246d8bbf477616b5666e743",
+          "bytes": 239,
+          "blake3": "dfd32457e133f9f08bd625395edc9c4dd990b5d2031029063827a6ee53150c72"
+        },
+        {
+          "path": "src/internal/routebsd/message_freebsd_test.go",
+          "git_blob": "f0065198c8f2ef392cebb345881a651b21bc161c",
+          "bytes": 544,
+          "blake3": "933d898b5ee4e23d79105dce0e61d4afb39b55906a3d2a40dd039918c0bfe968"
+        },
+        {
+          "path": "src/cmd/go/internal/verylongtest/go_test.go",
+          "git_blob": "8a2acf36900d768b3dfe29cb057f9c3573093354",
+          "bytes": 1609,
+          "blake3": "3102574a2820e32da5a19d8361d2f923d1d1abccec55f2decbe5fe19ddd71d05"
+        },
+        {
+          "path": "src/vendor/golang.org/x/text/unicode/norm/forminfo.go",
+          "git_blob": "956708eec0d8aaaf7aa81f9954fcf50155262392",
+          "bytes": 9350,
+          "blake3": "63c85112fbcf95befe5ebf9115581732e7fe1f44c12626a439b409eb1eadd1d8"
+        },
+        {
+          "path": "test/fixedbugs/issue15609.dir/call_decl.go",
+          "git_blob": "cdca44a6542f80cb5fc591c63e85f5da704941a4",
+          "bytes": 51,
+          "blake3": "6e12d3205cfaff160f6c0f13313d5408942c0195b275dc04e85dc57324aed4a7"
+        },
+        {
+          "path": "src/fmt/errors_test.go",
+          "git_blob": "47a71cdd2824957869e78ed835138324d0edcd33",
+          "bytes": 4983,
+          "blake3": "2cab6e7225cf4833b773b948c7294b87ae3c47df5d3f89a58da91f55fdc57cd5"
+        },
+        {
+          "path": "test/goprint.go",
+          "git_blob": "d44b259081e6801fe4d40b88697e5e5b94d6aa15",
+          "bytes": 722,
+          "blake3": "8874e8c664c6dcacad53417a21bf788e4d603c2210323c5322a74d294021fa88"
+        },
+        {
+          "path": "src/internal/runtime/atomic/types_64bit.go",
+          "git_blob": "006e83ba8788ec5d4e86baba8c160cf00875695b",
+          "bytes": 1123,
+          "blake3": "6aadac9917ddb7a9bfba33aa667d8480310af179093f6d8fbe293d3170188da0"
+        },
+        {
+          "path": "test/fixedbugs/issue47185.go",
+          "git_blob": "91c7e0ad3a5d990922d964b103b638f02c93ec66",
+          "bytes": 315,
+          "blake3": "79008f0e708839f9f57b663fdb6486039d90f9244331d027552c0de2d4bb7ff0"
+        },
+        {
+          "path": "src/simd/doc.go",
+          "git_blob": "92c3b897210428fcea9d0f9b2802519e7a607a74",
+          "bytes": 3631,
+          "blake3": "8aa8aa661dacfff610816e60126e8fc049b1c67895d6b238bc017a1bbc4f195b"
+        },
+        {
+          "path": "src/net/rpc/server_test.go",
+          "git_blob": "6a94d6ebe82da6d0c0c4efcdc593a44966ebd4f8",
+          "bytes": 19453,
+          "blake3": "53a40d66468874614f17d6cba33210b64bc6063ae5759e2cd4b4b2989ac67028"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/windows/race0.go",
+          "git_blob": "0c78da78b13f51f4b9c39a8c261cd7eaff6e0f2a",
+          "bytes": 454,
+          "blake3": "4bb4a57ac77c35863885b494365614728b43c2d3cd1b859440fefaf6000eb82b"
+        },
+        {
+          "path": "test/fixedbugs/issue81571.go",
+          "git_blob": "b47fb5124183822663431d0759a91ab6d5d65994",
+          "bytes": 509,
+          "blake3": "798ba7069fe7d06dd5752e0592479ec0acaed237964877e574953d4860e69425"
+        },
+        {
+          "path": "src/go/types/gcsizes.go",
+          "git_blob": "d181e41707133f9ed61f37a942199c262f73113b",
+          "bytes": 4812,
+          "blake3": "5a0950c7e07697b7dba587667110de70c0649d4e969d7ebd973cf9a6211c6cfa"
+        },
+        {
+          "path": "src/os/exec_nohandle_test.go",
+          "git_blob": "73a8ada7eb6bde8647b72c62e044451d8fa8a8db",
+          "bytes": 949,
+          "blake3": "3c1dccd765979c33dc63024618cf8ba2f1b197df05a6eeb94435bd290a87d2c5"
+        },
+        {
+          "path": "src/cmd/go/internal/auth/httputils.go",
+          "git_blob": "7f7bf03669ecadb628d8ded761fdd6193ee68a1a",
+          "bytes": 4305,
+          "blake3": "e09b99cdc8def9aa3b6e8e5ba4d9f07946ecf37db4e49a2b4e03c605c641247b"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/build/relnote/relnote.go",
+          "git_blob": "8e87f82d32b3b5295e9f31403eb5cf3a133423bc",
+          "bytes": 13441,
+          "blake3": "646f61d5bf4bb81971e260d48bea316514404e1383f4f49d9738d71c65e0942f"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/arch/x86/x86asm/plan9x.go",
+          "git_blob": "194960587a37e2bcc0c0bbe40b6b185bedbcdcc7",
+          "bytes": 11269,
+          "blake3": "30c4e0ac17b7801dc55de46093bd190b95bc8d46005bc6d08a46de39b0873f38"
+        },
+        {
+          "path": "test/fixedbugs/issue52697.go",
+          "git_blob": "da08a4f1f4267bbb63325138a4b0731216aa9eda",
+          "bytes": 459,
+          "blake3": "55093b78a4e67017b1150b04033d45b42da655232ab22c01f8164c0159054acd"
+        },
+        {
+          "path": "src/runtime/vdso_linux_amd64.go",
+          "git_blob": "8a89771ca4b473f800e211b3342b88488bc25b27",
+          "bytes": 909,
+          "blake3": "566dfd6763babcfab99cde65ddc8fd5b281e9ab52897cfac5b2891b3fa2c3dc4"
+        },
+        {
+          "path": "test/int_lit.go",
+          "git_blob": "78deaea13020557993bbec27e6547c67428bb418",
+          "bytes": 387,
+          "blake3": "c227f216d839d225df49a3e5cf62c0a3ae74ac7f8ee109685f0fb5dd56952cf6"
+        },
+        {
+          "path": "test/typeparam/issue49497.dir/a.go",
+          "git_blob": "86062d446ffff60a62f53625b1b287919a2638bb",
+          "bytes": 365,
+          "blake3": "e4dd69d17191f9f3fd7b8eb87ef9cf766b571ac38273dbd351e017f75c3740a3"
+        },
+        {
+          "path": "test/fixedbugs/issue66873.go",
+          "git_blob": "2f49cc933d717164c03e1209398595d8d5ee5170",
+          "bytes": 237,
+          "blake3": "8aefd0badf0ab94d65480f4e18474aaed0290b4a299a6ea52c176a01e58670c5"
+        },
+        {
+          "path": "test/fixedbugs/issue74379.go",
+          "git_blob": "e516505fbe54078a5330e369f1607e27a8ae4e33",
+          "bytes": 479,
+          "blake3": "37d224fbdc457c153b23cbee662753a0f91b81b971f07cfcfdf1a3e91375884b"
+        },
+        {
+          "path": "src/internal/syscall/unix/constants.go",
+          "git_blob": "6a78dda79565867c01bcc3ccb4696273e3683822",
+          "bytes": 444,
+          "blake3": "bed3da33f80e46badd779b9ac83b0579becfb6355d74f56255959b41835e0e87"
+        },
+        {
+          "path": "test/fixedbugs/issue81000.go",
+          "git_blob": "35fdf89c2570ec064ce7396163f41fbe40938991",
+          "bytes": 1235,
+          "blake3": "1761ab94bb863fb8cc484d2da400c8d1ac6508eb116906e38090fa0e60ae8355"
+        },
+        {
+          "path": "src/cmd/vendor/github.com/ianlancetaylor/demangle/ast.go",
+          "git_blob": "9e1fb0661d179470d9595eab95463ed4f2a30122",
+          "bytes": 108364,
+          "blake3": "5d1a6bfab8f3d7140adc4c87cd4cd38654b5df1e65dbbd349fe7ec485fdfe60c"
+        },
+        {
+          "path": "src/crypto/internal/fips140/drbg/ctrdrbg.go",
+          "git_blob": "3c90054dfd2e1d0bcf975af8ae6c09c1c919147e",
+          "bytes": 3824,
+          "blake3": "033d074e8913b0041818e4294789b457d63f6148e8a567812d1157d2c2721df0"
+        },
+        {
+          "path": "test/fixedbugs/issue24937.go",
+          "git_blob": "7d8460f61ece2f094414a49b9184238e3edc370f",
+          "bytes": 305,
+          "blake3": "688b42084bf97d102adce90834f7ba683026e886b8330ab60ee38476878b0bc3"
+        },
+        {
+          "path": "src/cmd/gofmt/gofmt_test.go",
+          "git_blob": "2aba0f03ff09e9faa6b3ab0e897281d7ced43b95",
+          "bytes": 5471,
+          "blake3": "a34e3a0c569fb75f6c1e75b974f4faf749230e9174fb9e99123c12c055737cf1"
+        },
+        {
+          "path": "src/cmd/compile/internal/loopvar/testdata/inlines/c/c.go",
+          "git_blob": "0405ace9feca3873c520e9ab4a737b7e67fb16d4",
+          "bytes": 279,
+          "blake3": "03f23758fba9010536d45d26fa84d81aecf141f58e07d1e5edae688a0c6a0cf3"
+        },
+        {
+          "path": "test/fixedbugs/issue19261.dir/p.go",
+          "git_blob": "1c44d8a33a3236f834dafa3c296f1a26e1898fc3",
+          "bytes": 713,
+          "blake3": "db8dc6f1148dc742a8aaf7b984cf76d43456bb83318498150a7edaf61d86657c"
+        },
+        {
+          "path": "test/typeparam/issue51909.go",
+          "git_blob": "5fe39ca2b3b349bb8f5defa01dbd899cbd0c3a20",
+          "bytes": 591,
+          "blake3": "7014c8898e998d8fd86eb6429b2dbcc782ddefea2d94299819af346d44d3d2b3"
+        },
+        {
+          "path": "src/internal/fmtsort/sort.go",
+          "git_blob": "f51cdc7083a4b106bf6b9a16741c0a482e45b02e",
+          "bytes": 5019,
+          "blake3": "61a4f916cc5ab971ee9d53f7e6e60e59b978242c2508f105eb37931e091b7580"
+        },
+        {
+          "path": "src/internal/runtime/cgroup/cgroup_linux.go",
+          "git_blob": "d9add2188ceebf181a887d1702915d14d031dafd",
+          "bytes": 7929,
+          "blake3": "3e788a0b7b9596276530f044c0a1786144625cf1a2c59707739100225f9a78b6"
+        },
+        {
+          "path": "test/fixedbugs/issue49240.go",
+          "git_blob": "26929fe1a2a0a2b454e63ffec8b68f6e32040e8e",
+          "bytes": 227,
+          "blake3": "c7118a1bcbd5d60b40944416258e97b84feeda128f9fcfcd28c64041d0c8af6c"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testsanitizers/testdata/msan7.go",
+          "git_blob": "2f29fd21b2ee329f87a48a9dfe5b5a26b5b97623",
+          "bytes": 834,
+          "blake3": "6ae3f735588c755da90483ff772555b0b83e222c3e0699d1ecb0a01ff5e393ba"
+        },
+        {
+          "path": "test/typeparam/issue49893.go",
+          "git_blob": "b83fbd7af16a576c16e0fc73b84f1ca0f618b756",
+          "bytes": 191,
+          "blake3": "c03617bb582ffd9c7c2e3bb9b18e6b113d6f401c65c99dcad6f7a26582f790d4"
+        },
+        {
+          "path": "src/runtime/testdata/testprogcgo/numgoroutine.go",
+          "git_blob": "9cbb4e4b0d98bbeb8819792f2901e95b425277c5",
+          "bytes": 1955,
+          "blake3": "81f19908616806d4598eec1e527964446571bd7abb8f50d8864f50b91f8452df"
+        },
+        {
+          "path": "test/fixedbugs/bug344.go",
+          "git_blob": "b53abd26e3f114f8c33eb9b545f12de22b7cef1a",
+          "bytes": 466,
+          "blake3": "7c2c53364899d4bc6dea3a942916a61e535c71eb69b6c3983643817de9604bbe"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testshared/testdata/issue47837/a/a.go",
+          "git_blob": "68588eda2fa0a90019274e3b448e354c39ceaf6f",
+          "bytes": 308,
+          "blake3": "55ae611c8b40d82b59ddd37846f802f83ba22c32079768994fcad30302ba6b5e"
+        },
+        {
+          "path": "src/crypto/internal/fips140/sha256/sha256block_ppc64x.go",
+          "git_blob": "735b4fcab0b1ca15edc8bb2561e06323f3f99402",
+          "bytes": 854,
+          "blake3": "9db917a26c6b754fa6dd5cda35f26a96b5d6ab99a7bd79a4974bdefcea0df4ee"
+        },
+        {
+          "path": "test/inline_literal.go",
+          "git_blob": "53c6c05b180145d5876da043576a0b738635a278",
+          "bytes": 1040,
+          "blake3": "d50ec2f1b161943799f948b9b2f98bcf2926f694cb625940f772e6be961c5767"
+        },
+        {
+          "path": "src/net/http/responsewrite_test.go",
+          "git_blob": "84e0f3b43ae1ffe7cd254f621aa7a0dfafc6a600",
+          "bytes": 8268,
+          "blake3": "2d00198acdc29d9851b386b9ef75e2119bf4e47af6eecce3fe46ed042d6eecdb"
+        },
+        {
+          "path": "src/internal/trace/traceviewer/pprof.go",
+          "git_blob": "bff45cf707eaef44423cfc028d215e73aad09e69",
+          "bytes": 4140,
+          "blake3": "827d52801f68c03e5e5f7316a6e7fb5630075c660660410ece7f084504915d52"
+        },
+        {
+          "path": "src/cmd/compile/internal/loopvar/testdata/for_nested.go",
+          "git_blob": "4888fabc4570c086c989e61c8f71e9a7c2dee496",
+          "bytes": 606,
+          "blake3": "2e8891226883f86926a39d64e771d7099c93668c0212dcfa83d0b54403b87e83"
+        },
+        {
+          "path": "src/net/http/internal/http3/conn.go",
+          "git_blob": "02776d6121b4f23d8ffa2a95e4252891e8d39470",
+          "bytes": 3346,
+          "blake3": "e41bc40d35ab58e5657c304e6162dd9b4fa46d16b5d4caf34dd99626d3bcda73"
+        },
+        {
+          "path": "src/net/http/internal/http2/writesched_test.go",
+          "git_blob": "0eb156a3e7823a8dcf9c665d5290f735a4da66ce",
+          "bytes": 5423,
+          "blake3": "9e27bb88c48b13f0e9ecafd8f9e7c1e698603404e7cb9e1f06359b618e665e46"
+        },
+        {
+          "path": "src/cmd/link/internal/ld/asmb.go",
+          "git_blob": "f39daab3c22b75f085365c44ca7ca961c04e2d3a",
+          "bytes": 5702,
+          "blake3": "c61d228ce7d3c5b83a879ff4f80fad48370ce45fcbc0afb72e9e0b90dedc5fb7"
+        },
+        {
+          "path": "test/abi/convF_criteria.go",
+          "git_blob": "77ed56d4a40039727a2591425895c1898bb4ee48",
+          "bytes": 424,
+          "blake3": "812a045dd80219edda854fbce8de7fac2b4a50152cda4442734b1bb48a84eb78"
+        },
+        {
+          "path": "test/fixedbugs/issue31053.go",
+          "git_blob": "a33d3ff3474725a328007c38643d2f9b0e3a68f0",
+          "bytes": 194,
+          "blake3": "992e8077d4924af0c73184c885f3e2d1e8e3c8db5e7c2e4ae298a30c64de2895"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/ztypes_linux_mipsle.go",
+          "git_blob": "a976f62676b05124a3a44a27188342ad0854a72e",
+          "bytes": 14359,
+          "blake3": "3cf91dda60d25de725890b5486df837247576ac68ac0f28574223a05a7d4bc71"
+        },
+        {
+          "path": "src/crypto/cipher/modes_test.go",
+          "git_blob": "3f431b9b1341f441c1c1376c2cc6b9ab9e10f292",
+          "bytes": 3078,
+          "blake3": "6a4d0433e41e78c807dc6aeebac5d9ffc018577d0423f51867fdf3dac0cf7131"
+        },
+        {
+          "path": "src/math/rand/default_test.go",
+          "git_blob": "25c24244c46a7bd50b6a80683cf1b89c2894c5a3",
+          "bytes": 3414,
+          "blake3": "4380f6446980a9b4c295e72518c14d001b81fed9dc8a7570be082ba22ecccd33"
+        },
+        {
+          "path": "test/fixedbugs/issue33062.go",
+          "git_blob": "5e6a3581a17c1e3f93de1238da9910c6c6ff4303",
+          "bytes": 568,
+          "blake3": "51cd257967e5640e8cf7d1aa9dc58f0639ab37cff794ec3eabec2bab3eabea3a"
+        },
+        {
+          "path": "src/crypto/aes/aes_test.go",
+          "git_blob": "cfe75f4057a96bf49f7748d556b99c6bdad116c6",
+          "bytes": 5426,
+          "blake3": "05b7a029143ddd8d84ffd439ea3049575226c90c238c001b4f6575c4d3b3d8d4"
+        },
+        {
+          "path": "test/fixedbugs/issue65957.go",
+          "git_blob": "48e4d34c9321298ea5007559d7008a0ec1071adf",
+          "bytes": 187,
+          "blake3": "9568d1ff925be30083a2ef0c7fb2ac60c2d356bebb887243ab281f1076e05aff"
+        },
+        {
+          "path": "src/encoding/xml/read.go",
+          "git_blob": "bb2302d4610a68f5edd4eb9e6d11af05fe480fc1",
+          "bytes": 22620,
+          "blake3": "e25e9af6805384b5ccaec8ddb7ba425b82e425259597eb8652f768d923de2b75"
+        },
+        {
+          "path": "src/crypto/rsa/rsa.go",
+          "git_blob": "93e08ed6cd8f7183b77c5e06c42cce57e89b5020",
+          "bytes": 23250,
+          "blake3": "3b969d13ec508e0670ae0ee9d58e25ca8ae494325f0bdb878b72ba2a34894798"
+        },
+        {
+          "path": "src/net/unixsock_readmsg_cloexec.go",
+          "git_blob": "fa4fd7d9331f422bdad34e3efbb24786df5739f3",
+          "bytes": 654,
+          "blake3": "1ce23142de90bc506f993062b2bded8fa027d949d7a07189ddb6965bd70f3b27"
+        },
+        {
+          "path": "src/os/exec_unix.go",
+          "git_blob": "d2ceb0ceb5aeebf1cd943461d879e5d8d98e1406",
+          "bytes": 3355,
+          "blake3": "2315536ca23d4e50f4736f57fd0edfb6e5e9d2f2edbaec3ae3c37fd9bca9c25b"
+        },
+        {
+          "path": "test/fixedbugs/bug437.dir/x.go",
+          "git_blob": "585b480c0a918f4cdba9475c0b2e418a25ecac8b",
+          "bytes": 499,
+          "blake3": "c2f938df976055d4a3dacdb1492b04541b125acb81b7ce3351d59757b250a370"
+        },
+        {
+          "path": "src/cmd/compile/internal/test/testdata/regalloc_test.go",
+          "git_blob": "577f8e76842e6cd5b431af46a73dd82a6ca1969c",
+          "bytes": 1228,
+          "blake3": "de06658d7b8751a82d77bd55193ffcbd0d82e8bf6506cd448107b68f3ece5cfb"
+        },
+        {
+          "path": "test/fixedbugs/issue32922.dir/a.go",
+          "git_blob": "b13c4b404d13bb2fa3eae332000f9d963ee5f524",
+          "bytes": 332,
+          "blake3": "5ddbdb84e8afa516d86731f514b942b0dbd6b6bd8c572587be7ec80fe6b68bba"
+        },
+        {
+          "path": "src/internal/goexperiment/exp_heapminimum512kib_on.go",
+          "git_blob": "2d29c98e1b110394957ad21e7538c36e6c749673",
+          "bytes": 175,
+          "blake3": "cd8be4676afd8716824d6450d96005f0b52750b86887a2be06a4fbb62301ab6e"
+        },
+        {
+          "path": "src/os/file_windows.go",
+          "git_blob": "5c3f5629cc39660e5639309cf672bd9993c295b1",
+          "bytes": 15247,
+          "blake3": "3c54307626c9095c9e2ceb8ff93eb356d7566f8271f0123e70dd22e8501c15ee"
+        },
+        {
+          "path": "src/runtime/mgcwork.go",
+          "git_blob": "48ac94eecd06badbbfcc56d2e6077116f354af14",
+          "bytes": 15821,
+          "blake3": "0dd606c3844a2ae3069c06c08d0c2527a0b0a96a80f23b42ccf6708b0f68eaa6"
+        },
+        {
+          "path": "src/cmd/compile/internal/ssa/_gen/MIPS64Ops.go",
+          "git_blob": "4d1f6ee8dff521552f2ea757f67b7d6c4c49b069",
+          "bytes": 27661,
+          "blake3": "9422baca546bc374673e98906d8f65b0cfdfb185821d7df30ffa70b3cc13151b"
+        },
+        {
+          "path": "src/crypto/fips140/enforcement.go",
+          "git_blob": "5dae32a3a79e9a5e603d38ea3a4ea35523ae21ed",
+          "bytes": 1269,
+          "blake3": "f039ec4c13e273e53340cc9003896900cf41f8ebd70da243251cb09ec6214891"
+        },
+        {
+          "path": "test/typeparam/issue48462.go",
+          "git_blob": "40df49f83bef07a3f4c5d8fd4000d97484c3f224",
+          "bytes": 187,
+          "blake3": "41a22d98878feeba0c9fbc814f7d1b20f4b6d76985f1d3ed4c8278622a5259e6"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/tools/internal/typesinternal/errorcode.go",
+          "git_blob": "235a6defc4c73364ad59ba7d4f135e6b4031bdbc",
+          "bytes": 34767,
+          "blake3": "1d911c1b1da749f7ea4977feb9d288c4319139dddb58369fa87781b8b5726305"
+        },
+        {
+          "path": "test/ken/simpswitch.go",
+          "git_blob": "e200c5137f407e596e54d8f9f73da87ae03e235b",
+          "bytes": 499,
+          "blake3": "27ace15497ae7e64af04ee99f8e32c6e3a4f80e8ebd8a3a1751ae09ef4f5fe7a"
+        },
+        {
+          "path": "test/fixedbugs/bug342.go",
+          "git_blob": "ccf93a6d956c7216be9179b9760c3aacf184a9fc",
+          "bytes": 389,
+          "blake3": "35be9e52328389b5114c2a9a010e93ac8988c43618b9c3baec2a87b15f89ee8c"
+        },
+        {
+          "path": "test/fixedbugs/issue12006.go",
+          "git_blob": "94ff52442cdfdffffdc6586bac008cb18987a2b1",
+          "bytes": 4030,
+          "blake3": "60a6d167f3d52f04a51f1cf0e2a2eeea7586e142a98be6a2cfebfd434317e5fb"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testplugin/testdata/issue22295.pkg/plugin.go",
+          "git_blob": "46b08a405bce9ce98c54f1920c731aa11c90822f",
+          "bytes": 271,
+          "blake3": "16d8ffb4af188c310b1050c27fd764ff2e7395a76f113e3c8dddd4290080c6dc"
+        },
+        {
+          "path": "src/simd/archsimd/_gen/cmd/specls/main.go",
+          "git_blob": "13296b4a83c1ae3a197a45559ba3f5f528ad380c",
+          "bytes": 1318,
+          "blake3": "3e1c03c19668df6dd8a69eea56b452f1d9a4f89f43e2bf1b540f739601c5574c"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testcarchive/testdata/libgo6/sigprof.go",
+          "git_blob": "31527c59af1213aeee245b5daa545ee7194fa93d",
+          "bytes": 404,
+          "blake3": "e79e9f76656aa86cac678cbf917f4c07d76001bf4309c9388889eb09e82ef115"
+        },
+        {
+          "path": "src/internal/syscall/windows/nonblocking_windows.go",
+          "git_blob": "1565e87e2658f75b6dec0a209a26bfbecb973f1e",
+          "bytes": 756,
+          "blake3": "41c3bf297faa654052712127e7b946c8f8529e778d6d5690c55b19901b0817d1"
+        },
+        {
+          "path": "src/go/types/scope2_test.go",
+          "git_blob": "df016984b32aa5a2dc051600819d7be20aa54a1d",
+          "bytes": 4787,
+          "blake3": "64ea4d6170b976075de8d6030b11f55513b97b731bb97f4af6c5449ae6d8f836"
+        },
+        {
+          "path": "src/internal/testpty/pty.go",
+          "git_blob": "f0b2a331b8d801516306c4fc499237dfd1fd2a4f",
+          "bytes": 970,
+          "blake3": "1cac662bdce49a24b68a209a922477e34a68ddfea71ddab0cf90cdb70e0aca82"
+        },
+        {
+          "path": "src/internal/types/testdata/check/unions.go",
+          "git_blob": "5a3a9edd356ab64e33b14e05f8bc004c12177f9d",
+          "bytes": 2209,
+          "blake3": "9b35643f2c9456fd9f598028354848e38c8f431b87427f4494075b418d5a4f4f"
+        },
+        {
+          "path": "src/crypto/internal/fips140/ecdh/order_test.go",
+          "git_blob": "83453c5ac39b3a77d4c29b96587ddd46eb1a95cb",
+          "bytes": 671,
+          "blake3": "9b2a39ba74706c4bd3d6ac7c679db08cc3ddc5eb1ee17a1b7580b975e540c149"
+        },
+        {
+          "path": "src/crypto/ecdsa/equal_test.go",
+          "git_blob": "53ac8504c2f692b887da053acfe890e3c33b12b1",
+          "bytes": 2136,
+          "blake3": "145fc1c67174633aa9291e992457649bc41cfbad46daeada2fbc23ec6fdd2473"
+        },
+        {
+          "path": "src/runtime/sys_wasm.go",
+          "git_blob": "6b40a8d3e94c96acc27cc65b43c263e285e9afd8",
+          "bytes": 1154,
+          "blake3": "b310ffbe06cbc8cb3f1a85c487b55e5cf2183991b01565e74f2b4918e0837eac"
+        },
+        {
+          "path": "test/codegen/issue56440.go",
+          "git_blob": "3d09688811f35132f9e664ece4f40c71ba4f9d15",
+          "bytes": 693,
+          "blake3": "5f92a6cec0541503c1e8157efe5d0a717faf7ad8cc0a1522321db48d3db9abec"
+        },
+        {
+          "path": "test/fixedbugs/issue30908.dir/b.go",
+          "git_blob": "2f543985b4fc39ccd24eba19ffd7ea0a1252496f",
+          "bytes": 876,
+          "blake3": "2091b0da01a9b2b83fef824e679b00dae3760ae7474937c1df5b69f7cf22774d"
+        },
+        {
+          "path": "src/math/big/ratconv_test.go",
+          "git_blob": "25be0456db553dc922aabee214860cf3b833b55b",
+          "bytes": 19780,
+          "blake3": "01033d3ef5133522c873f232d42092887a8da794814269ca06fcafb1ff0ab206"
+        },
+        {
+          "path": "src/crypto/tls/handshake_messages_test.go",
+          "git_blob": "d025ce85ca4a9df7793eb475c10500adbe6f9bf0",
+          "bytes": 18958,
+          "blake3": "0a916a80f28189372d42bfb1f2d2185bbd836a61af15e1dc3bdea8dbe6453c8f"
+        },
+        {
+          "path": "test/fixedbugs/bug191.dir/b.go",
+          "git_blob": "36770f6fc99e3f814ec16dd13d4d2f305a81dc98",
+          "bytes": 218,
+          "blake3": "2583e6610bb9fb9da82881e192662b7effb383418e1f9312627fae3d6a97de98"
+        },
+        {
+          "path": "src/cmd/internal/objabi/symkind.go",
+          "git_blob": "155bdb95f4db45215136beff8fc519cb3aec6f10",
+          "bytes": 3424,
+          "blake3": "2302150c4d7961772b5ec883c100ac83e4014bb328b98b3c181593937fd2f1c6"
+        },
+        {
+          "path": "src/time/format.go",
+          "git_blob": "cf5d6c712dba0628d88887c2882c3c15776ddf11",
+          "bytes": 50854,
+          "blake3": "78331c8957107cdd5d7fc2ceceee7678e752c7ce4c1b417afde4e4ec3fe1fd91"
+        },
+        {
+          "path": "src/bufio/bufio_test.go",
+          "git_blob": "7e11fb3b81b31cc3ca588d96bfabe3d4c0fb651d",
+          "bytes": 53150,
+          "blake3": "b6aaa1c4323da714e7436d13d9529a1fa772dee43899dc01b1dd5827aacdef7b"
+        },
+        {
+          "path": "src/internal/coverage/calloc/batchcounteralloc.go",
+          "git_blob": "2b6495d7a2653fceb2a5e332145a58c15dc4684a",
+          "bytes": 754,
+          "blake3": "9bacd497c75b5d1b2f3b1c207d9069cbf198735f6bcdb5c552f3bac2835b5e5d"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue48974.go",
+          "git_blob": "08d8656a061c036000bdaa802f54292eb28e68e4",
+          "bytes": 457,
+          "blake3": "ee8ca2a74bbb70bc11ee3390a19de4c7c0442e66aa36d7fe1940cf05ff1da539"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/arch/arm64/arm64asm/tables.go",
+          "git_blob": "ef5237dd4824f62484e9a9ed4bb8e5098dc2f5b0",
+          "bytes": 216857,
+          "blake3": "12ab1c19aacba7e8e5e2805d4600823107a5a84d44b81ada15418d82ce99ede7"
+        },
+        {
+          "path": "src/math/big/internal/asmgen/main_test.go",
+          "git_blob": "adb0e0d4e84b6904d2add89a52b397a2b6089c63",
+          "bytes": 823,
+          "blake3": "62120884e73a61df6458136eda0dec0af68775e3bba5853d4e5430f3e8abfc06"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/ztypes_linux_ppc64le.go",
+          "git_blob": "b47f7b49844b7ea8810a7107eca0b13414506975",
+          "bytes": 14368,
+          "blake3": "69eeabad37919d63c4d607245d58d3819533e42009a69ac0628369729695947c"
+        },
+        {
+          "path": "test/fixedbugs/issue21120.dir/main.go",
+          "git_blob": "1f1ec30e567200df91c8cd5339feb2aa03f22721",
+          "bytes": 432,
+          "blake3": "62a2ddce86a3faa41d467d251e59c6bb51800b6b0db2725f216c0941b87601a2"
+        },
+        {
+          "path": "src/archive/tar/reader.go",
+          "git_blob": "e3083b2b0d9c25434ef900a7d9d3a9e2647777d5",
+          "bytes": 28145,
+          "blake3": "8307538fa7e4da2581172a6310e42400ff7e3c0dd35bf285418cf523732ab95c"
+        },
+        {
+          "path": "src/internal/coverage/cformat/format.go",
+          "git_blob": "01d3109e31fd9d1b737bd5ce0fd6bed28548ac73",
+          "bytes": 10161,
+          "blake3": "37b371867a0dc01697f23fbed7cc3a833d4bdea18532d1dcbd753862e2628f33"
+        },
+        {
+          "path": "src/net/http/routing_index.go",
+          "git_blob": "9ac42c997d4f206a4886a4a83cbec3f41252ad83",
+          "bytes": 4048,
+          "blake3": "4b191c1ec7097213be8cbf1ec2e6e71abf71ba63d465d7be67af42dad458f46d"
+        },
+        {
+          "path": "src/cmd/compile/internal/ssa/location.go",
+          "git_blob": "9639575f6dfafdb18d3a5bea34829c50e1a3263b",
+          "bytes": 2425,
+          "blake3": "675bc6047e5fa6fa44ba9cab1200005d3290a94ed3f4f7a0d499edcd027cae45"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue48619.go",
+          "git_blob": "fc5dce0ad5620f3856e19d46b77df23fa6d43645",
+          "bytes": 575,
+          "blake3": "1bb23b6300db95f68bbf5656a02c256bdbc4e2028968651c11c0fd508d66e2a9"
+        },
+        {
+          "path": "src/compress/lzw/reader_test.go",
+          "git_blob": "0b1182dbf772235ac30ec576671e4bbafd8e692f",
+          "bytes": 7820,
+          "blake3": "092194203ff37cab26bb10b3f646da5bda791e9bf86654c509f44db291ee2783"
+        },
+        {
+          "path": "src/encoding/pem/example_test.go",
+          "git_blob": "806e7bbbf72e881461b4a9a14d3307106947847e",
+          "bytes": 1815,
+          "blake3": "66da53b4a26ba54f49f1c34a731ded477bbd96d326bfc2f6203795d32435972a"
+        },
+        {
+          "path": "src/cmd/go/internal/modcmd/why.go",
+          "git_blob": "8ffdcd0d3c4f430a93a5f7f3c813bb743d944569",
+          "bytes": 5255,
+          "blake3": "6d595b926c770ad06a9251b34c476caf7fa2937e352f85e7869addb74472b116"
+        },
+        {
+          "path": "src/mime/encodedword.go",
+          "git_blob": "d3c0329750cc66f18076738889c499f5ef3a258b",
+          "bytes": 10229,
+          "blake3": "8d695006ef0d99f5645e91b8b5afd1a7c1998325dbf2b40c15403fe7acd1f51d"
+        },
+        {
+          "path": "test/fixedbugs/issue4326.go",
+          "git_blob": "6a510f990d4ba8da16eb005e4880f7e6a77c6057",
+          "bytes": 253,
+          "blake3": "624620dd97e8879b6fcec33cc116281fe6ac4fd87573a06baa49d164a2e654a4"
+        },
+        {
+          "path": "test/fixedbugs/bug383.go",
+          "git_blob": "543ee10ac6065710977688fee44e06d1304f005e",
+          "bytes": 395,
+          "blake3": "712b0837e0ac65b0469572c01f526cbbabc3deef57a93aa5cbf9aff9fbb3f15f"
+        },
+        {
+          "path": "src/cmd/fix/main.go",
+          "git_blob": "32a4ce0d1e7415720ee5085ed0f8f9b22eb9b5ed",
+          "bytes": 1074,
+          "blake3": "aad934bcd43e96cb5716d2dd858ebbd26438e75e41006c1d90c2949baf7e46ea"
+        },
+        {
+          "path": "test/intrinsic_atomic.go",
+          "git_blob": "72038e676a7951cfcf4a3bdd363c512d984172ff",
+          "bytes": 839,
+          "blake3": "4230b51fb55f9df1fd29ff8f6b4bfeaf1aa5f75a275358a747decae8974da1c3"
+        },
+        {
+          "path": "src/internal/pkgbits/sync.go",
+          "git_blob": "1520b73afb9e960c166c587981bc934017ecbb74",
+          "bytes": 2475,
+          "blake3": "db5cc51ae0643fa7a80a608a7bd4afed45dc5e8697721d529ede79b667a617e0"
+        },
+        {
+          "path": "src/internal/exportdata/support.go",
+          "git_blob": "a06401db391e0190e5006c9fef32f433e67db8e1",
+          "bytes": 742,
+          "blake3": "455027d1aa834414346abe7a87bdf37ee10c7cb77b5d71843f0e977406fc37c9"
+        },
+        {
+          "path": "src/math/big/int_test.go",
+          "git_blob": "6339336371f444657a3dd4c2776ee6c7f87e28b6",
+          "bytes": 63152,
+          "blake3": "5703ce0627cda60bcdd0fb2d45ffbb9f0fef42ee92c4137201fa4947b98437c9"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/mod/sumdb/cache.go",
+          "git_blob": "749a80dfa446ce4b215357a66d727331d8eda1e8",
+          "bytes": 1443,
+          "blake3": "c589889ff5bfffbc7d4ce6da2d2305c33065a965123797dac1a414573aac31b1"
+        },
+        {
+          "path": "test/nil.go",
+          "git_blob": "f8300bf56afb4f9135ef490f4a36ce0e35fb186e",
+          "bytes": 2280,
+          "blake3": "66d72a132a0a988071b7c212280f9c8126a284c20fe7f46e275ebe859cd26a72"
+        },
+        {
+          "path": "test/typeparam/issue49536.dir/b.go",
+          "git_blob": "b08a77b9de1c2d64d6ac1958ecc588e2f6237716",
+          "bytes": 199,
+          "blake3": "b23c89bf621fe74b676de7c65af7ff65e087582ac901b31e35c8fff9feba2f57"
+        },
+        {
+          "path": "src/cmd/go/internal/doc/doc.go",
+          "git_blob": "5f1cfc0b6559ac2816b52b6e59622bc9d4b299e7",
+          "bytes": 22535,
+          "blake3": "6519c474f89148e298b52d5e0f404bb9e8ee627eaa2568f9bd44ea37199f7207"
+        },
+        {
+          "path": "test/cannotassign.go",
+          "git_blob": "27e62890c5249f6edd2d7e691af3d92f38daac40",
+          "bytes": 1062,
+          "blake3": "720ac26f0ad822f80406a8efe50e0e1e99966a347481fb33ab61e427639f5f26"
+        },
+        {
+          "path": "src/archive/tar/fuzz_test.go",
+          "git_blob": "e73e0d2609e50adcef465d9874980815200d5a27",
+          "bytes": 2281,
+          "blake3": "2052a0f97b20df6b9e884c1990a9ad6fd01611d26a4e40661a1fee5b6791b001"
+        },
+        {
+          "path": "src/runtime/os_js.go",
+          "git_blob": "ca310bd56ca6bf94d9961764c12bce2863a3246e",
+          "bytes": 945,
+          "blake3": "7778fe48cf19ba8649acf38f1ce18d6de1190ddc455c8082646838a5318f9833"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue51437.go",
+          "git_blob": "376261516eec92a8fb40d1f7d0ffbc552df55ef8",
+          "bytes": 373,
+          "blake3": "0f80e26c90a981bc7c09cb4d7b4954beabb708b7f51676d0005d493299b51a22"
+        },
+        {
+          "path": "src/syscall/export_wasip1_test.go",
+          "git_blob": "aa53d26ef11732accaa5d145d1fc0637a41ddc90",
+          "bytes": 267,
+          "blake3": "e4bd804a856e9cf4e5e1ab2650f7b103393f38c249def2b22ed012efa79e9320"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/gccgo.go",
+          "git_blob": "aca5721ddccd0d6ac0ee9e8aea366dbf08c63f6b",
+          "bytes": 1952,
+          "blake3": "b3f4e8589df1da7d9aedb7448e75d6a26afbaff58aee889e0bde7a81fab7e924"
+        },
+        {
+          "path": "test/fixedbugs/issue43444.go",
+          "git_blob": "c430e1baf796bb1f4be213ddb84c831e218ebce3",
+          "bytes": 343,
+          "blake3": "d37b4d2163f27123064d64befdaa7c7a0d5575bb4b874fb45ccebef114739d23"
+        },
+        {
+          "path": "src/cmd/link/internal/ld/elf.go",
+          "git_blob": "aea8d2b2e745390872600e0cb2efe9a68d9dc713",
+          "bytes": 64074,
+          "blake3": "5ea3f7432628a90e4539d65e47eaef95a2b43fdb836b1f91b719f613c4fee046"
+        },
+        {
+          "path": "src/runtime/mwbbuf.go",
+          "git_blob": "e8c6064905afe6c7f4725ab541d3ed08a879d51c",
+          "bytes": 8380,
+          "blake3": "64ea00c57b1fe07670c3143239c2d74588be8782877535d46117c911bd0767e8"
+        },
+        {
+          "path": "src/slices/iter_test.go",
+          "git_blob": "07d73e90e2bc561287f5181a88d4d71618a1d31c",
+          "bytes": 5796,
+          "blake3": "b7b3deea0b30994ad17e7c02a3a2bc1165f1b9a43e7330d05e9404f5a3ec3d8d"
+        },
+        {
+          "path": "src/vendor/golang.org/x/crypto/internal/poly1305/mac_noasm.go",
+          "git_blob": "b1da45687cc51d45968faf84535eebb2ee00c3bc",
+          "bytes": 302,
+          "blake3": "ea240d09c326c146d7c07a91f44c3e8f37faf550f41a3fa92f3b1a7b2c4e62eb"
+        },
+        {
+          "path": "src/internal/cpu/cpu_test.go",
+          "git_blob": "62e250d1e820061359f9de1821182e74fffec1c2",
+          "bytes": 1543,
+          "blake3": "87233e3c4c8d648516182b6fec32b1f95087116ce78fa29900da9f7e899ec8fb"
+        },
+        {
+          "path": "src/net/http/clone.go",
+          "git_blob": "7ea353a42fd9e2e53a79c86ce5970dbe0b0ce0e8",
+          "bytes": 3002,
+          "blake3": "20a11b41b0d05b59829adfb96f8952c4edf918051e36bcd5fb28d51331b039b3"
+        },
+        {
+          "path": "src/syscall/zsyscall_freebsd_amd64.go",
+          "git_blob": "f5b73717ad869519b701f0e5e4b39f9b5a8992ec",
+          "bytes": 31812,
+          "blake3": "f59da1964762a7861107e578a77568585221696e7b76bb151c9887e61391618f"
+        },
+        {
+          "path": "src/crypto/internal/fips140/nistec/p256_asm_test.go",
+          "git_blob": "92ecd0f92d4aecd30bce5ce9f448067635e227ed",
+          "bytes": 1927,
+          "blake3": "4461f7597196283d81d2a234324b1c1b0464ec8f3eaff4de95d554e5045e0ab4"
+        },
+        {
+          "path": "src/net/http/internal/httpcommon/ascii.go",
+          "git_blob": "ed14da5afccc5cd8a1a333df79cac38e124b7146",
+          "bytes": 1383,
+          "blake3": "f417771ecfb89b69a1a43079c2bee8a00c5adddaa53b1d267469177c505c8286"
+        },
+        {
+          "path": "test/codegen/issue48054.go",
+          "git_blob": "1f3a041044274fa320f5f66880b04a11ad9e21a8",
+          "bytes": 464,
+          "blake3": "426513cd230f4cad4c3bd7803ecfc14db79e731b789c8e45eae5ff128f2e61ab"
+        },
+        {
+          "path": "test/fixedbugs/issue49110.go",
+          "git_blob": "5e1bde9f0060b7ed1ed177e53c7afe77a4a24b1e",
+          "bytes": 389,
+          "blake3": "c073de79fcbbc38c110dc7e5c4b7c1cab1c78a8c5b8b304777069017abbeac05"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/zsyscall_linux_mipsle.go",
+          "git_blob": "33aa5418a4fca5cc8befff0713b85cc9495e0b9b",
+          "bytes": 16726,
+          "blake3": "6e985fc0971e2be2a516d11dd7aff53f7c5cd10d6b99b54a9567146cf9b3a0ca"
+        },
+        {
+          "path": "src/go/build/read.go",
+          "git_blob": "d99e40ab47b20e7b9007785e0f9ef920f6e589d6",
+          "bytes": 10920,
+          "blake3": "f2ebc476c992ffdaa4c2b95e45b6e4df04a98f65f9165edf0aef452231103f80"
+        },
+        {
+          "path": "src/simd/archsimd/_gen/sgutil/sort_test.go",
+          "git_blob": "c86baf25ffa27439265c9ace08fdd1b6f184fe7a",
+          "bytes": 976,
+          "blake3": "08be0a53f64024f16286a0a32870943bf869d669d7a320ab9cf4d60948fcba4a"
+        },
+        {
+          "path": "test/fixedbugs/issue7150.go",
+          "git_blob": "52eed93756f7c36c37004e7931842bb61bde213e",
+          "bytes": 754,
+          "blake3": "8d17c10d2a6d9b61771d99f71b4e68ee7989b18ace02c46cb002d3f2f242816a"
+        },
+        {
+          "path": "src/go/doc/testdata/examples/iota.go",
+          "git_blob": "c878b7708ea64a6a22b8590afe5218caf57b28a9",
+          "bytes": 596,
+          "blake3": "1daa918a6cbceaca353dd45a3182cc193526ec4e150e3f6eeeec070a9aaa5148"
+        },
+        {
+          "path": "test/typeparam/issue46591.go",
+          "git_blob": "9e2c31de5d0d0ab6a54ac286dc40365f1cee8e6a",
+          "bytes": 347,
+          "blake3": "656a98bb8bf1ee38730e00d202fbfaf176edfde971ca4cde3d4235b61564163c"
+        },
+        {
+          "path": "src/syscall/ztypes_netbsd_amd64.go",
+          "git_blob": "6825623374f4c070737ecdfa3fb13fc6e7c76718",
+          "bytes": 6320,
+          "blake3": "aaa6e26673edbf26f462b8dafb975c53942c36beaf08d7755693fb05da51bd15"
+        },
+        {
+          "path": "src/internal/nettest/listener_test.go",
+          "git_blob": "950f7edebffafab322a635a5f5eeb01296d34098",
+          "bytes": 5502,
+          "blake3": "5d8d63af361791c9934b71fe35117fcabad53e5e3e02a1d8e695d82cf9b7fb1f"
+        },
+        {
+          "path": "src/os/file.go",
+          "git_blob": "764ce12c0e53681399976118f3cfbb98d3c4b7cd",
+          "bytes": 30343,
+          "blake3": "120847ec9d0c8734968bc33830f35af1f87d370e961887559dd08970199a76ae"
+        },
+        {
+          "path": "test/fixedbugs/issue8047b.go",
+          "git_blob": "5eaf9c5bacc8b1f8675080d64a6d1706a2830fd4",
+          "bytes": 575,
+          "blake3": "54ade5b41e81533cc0ec46f02ccf72d8008b4dba7bb669cfddffbe87e3003497"
+        },
+        {
+          "path": "test/fixedbugs/issue77635.go",
+          "git_blob": "7c9ec1e20947846204cb2bb58c7e888efb885061",
+          "bytes": 441,
+          "blake3": "14fd30741bdc8b067fd4e19cbd77e20582d04bee7693a09d098ee79dbd912eed"
+        },
+        {
+          "path": "src/net/cgo_linux.go",
+          "git_blob": "de6e87f17622df6a46a73c1b99ae2e21be6672c4",
+          "bytes": 642,
+          "blake3": "3fc5441c432281e5825c0dd7c41766857ea9d319d1d6f169d084100c890c8ef0"
+        },
+        {
+          "path": "src/cmd/trace/regions.go",
+          "git_blob": "4073b6b07d472153a2d191cec1b0cf2a28f173a5",
+          "bytes": 14572,
+          "blake3": "bc878db49ac8a3101991db860ca6e03083f2da6501f3e16ffa6b09d9a21e2da0"
+        },
+        {
+          "path": "test/fixedbugs/issue9537.dir/a.go",
+          "git_blob": "818c9eb4ab81a45677d50f1d5924df915746ca89",
+          "bytes": 386,
+          "blake3": "c44fddfc8d0bd26c8dc819b99f6762796465e31632b39559e96f3db948dd173c"
+        },
+        {
+          "path": "test/cmplxdivide.go",
+          "git_blob": "4b8d549fc4d93c95cbda0a8d7d1bea62dffe6638",
+          "bytes": 858,
+          "blake3": "42d5df29ded101feb8658cac9a21203925b8ea3aec69c4e769092318dac9bddc"
+        },
+        {
+          "path": "src/internal/syscall/unix/at_openbsd.go",
+          "git_blob": "14e2a306d854472952777d87506cd5f91320c55d",
+          "bytes": 3865,
+          "blake3": "db1471326a68bdb0fa05f469f07f672f7ad799e28549aaaa552e37558d61e32f"
+        },
+        {
+          "path": "src/internal/runtime/atomic/xchg8_test.go",
+          "git_blob": "1214c9cedcefbb34323db8d8e8bdfccb0bd775bb",
+          "bytes": 1180,
+          "blake3": "6af592fe16e4114a2154af4bc4e13ab49a7f645d83ee3f841fc565eb478ba143"
+        },
+        {
+          "path": "test/fixedbugs/bug416.go",
+          "git_blob": "74b55cce18ae02b8f5ae6e28fb1c24cf7b21a106",
+          "bytes": 348,
+          "blake3": "ba4e56cd2ed4178b0d873b9c58db92a1e5aa099648cc7ae59ec34929fe22e3b4"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue50816.go",
+          "git_blob": "b7c28cdffd824104e103899898ba8dbc01fe7e86",
+          "bytes": 607,
+          "blake3": "498f3d21f30cc777f31b835ae1ba62428b457fc1df875ac0ca47d8cc3dd6fa6f"
+        },
+        {
+          "path": "test/fixedbugs/bug085.go",
+          "git_blob": "dae83f8a498bd9635993b19a4509f5e51935d9a5",
+          "bytes": 633,
+          "blake3": "b249fe35d1fddeb6cab87d566a67c3f1501a574212d76cc429b763429214c0d8"
+        },
+        {
+          "path": "src/sync/atomic/doc_64.go",
+          "git_blob": "5fec3f4e8f1d55b9fd78542e6f027dd9ba560317",
+          "bytes": 4368,
+          "blake3": "38f9ada8e788f3d41264499e374b7d9fb6963b30a1edce1894c8f63edc41d027"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testgodefs/testdata/issue38649.go",
+          "git_blob": "78b5f78eddd86b0e5d4be1fd29ce4687de066083",
+          "bytes": 307,
+          "blake3": "d726a61038eede504cc8bb42a8aad52e9a61095ce6ddaecab89583616701d395"
+        },
+        {
+          "path": "src/image/gif/writer.go",
+          "git_blob": "2a3e33c145f7843dd9b3ce37137dc56e98c0cef0",
+          "bytes": 12131,
+          "blake3": "430c9b86d4f961580f760b6b0495e5b3e3f3e7e822a2856e5e5a6b38f6977f04"
+        },
+        {
+          "path": "src/math/signbit.go",
+          "git_blob": "fe6b5a22af69ee026c96ef7ef9b2efba61d79572",
+          "bytes": 300,
+          "blake3": "55c3ce29820f286bdc2e773955e43d2728c2b4943dcd2080abe31cfdd4324be8"
+        },
+        {
+          "path": "src/internal/syscall/windows/at_windows.go",
+          "git_blob": "f768715977679583cae8b0abe4e5a57a4cb7d29b",
+          "bytes": 22032,
+          "blake3": "b5b47091ecf16b672521d497f4aea3434c55afb87303cd13140548b1d29d3e8e"
+        },
+        {
+          "path": "test/fixedbugs/issue57846.go",
+          "git_blob": "1aea97564e1a4f772a8db36d21720d0b450f3412",
+          "bytes": 705,
+          "blake3": "e608c65f03190a5c6d1235378c7281c38201e1374e534776be9480dac09507cd"
+        },
+        {
+          "path": "src/net/internal/socktest/main_test.go",
+          "git_blob": "967ce6795aedb764f4830341dd8ed59a3c4a6265",
+          "bytes": 1121,
+          "blake3": "c85328a98bb3e35d06ad4caf3540ab7a43600965aded9405fee672f88e3b95f7"
+        },
+        {
+          "path": "test/fixedbugs/bug339.go",
+          "git_blob": "36be76170fa243f7c4b6cbedf9dcded5296c9712",
+          "bytes": 390,
+          "blake3": "a670d4fd245a597c959acdeaf917903bba6d29dac4b5eab5f3e681230b630744"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/zsysnum_netbsd_amd64.go",
+          "git_blob": "524a1b1c9a7b59999181dc6cd8f0778d0b4c717a",
+          "bytes": 26344,
+          "blake3": "3b4679d16031bafc5b926c77231a954a09a471e2a75c8c12ac024d3ef29af84b"
+        },
+        {
+          "path": "src/encoding/asn1/asn1.go",
+          "git_blob": "4e65924c0f1d6f62cc2668b6db74784e82b93a53",
+          "bytes": 35230,
+          "blake3": "6c3057bcad80011a1c892c0ff75642a8a806661293d667d5833e6558b89db745"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/tools/go/analysis/passes/inspect/inspect.go",
+          "git_blob": "aae5d255f99d4b4ad4759e3317e65e683d2b5b44",
+          "bytes": 1416,
+          "blake3": "2469931f4192c36b0aa5a922ddbd94472c5b479c4ebff59792396bb4d899ba45"
+        },
+        {
+          "path": "src/cmd/internal/obj/arm64/a.out.go",
+          "git_blob": "27146f6aa13f6df32a258dbd3f69ba03acc8a872",
+          "bytes": 23914,
+          "blake3": "e647002c044729d23cd251639f3b7abcbdd0bb10c26b3f109d033051817f9648"
+        },
+        {
+          "path": "src/net/netgo_on.go",
+          "git_blob": "4f088de6e3f80bf83c289d3dcaba19fe5ec83538",
+          "bytes": 218,
+          "blake3": "c133d83f1dcb4bb91a838377538cd2663d18ebf5e3775d85daa019e3f6eb7d27"
+        },
+        {
+          "path": "src/os/file_test.go",
+          "git_blob": "fec90074a52a630435854e2177a93188607fa0e5",
+          "bytes": 4859,
+          "blake3": "c959243d4e2727c15fa3c6601d9fdf53263a416d3a7906ce12d1cc1cc149405a"
+        },
+        {
+          "path": "src/runtime/testdata/testprogcgo/racesig.go",
+          "git_blob": "06670205ff93bf5e2a4e590b01dd1fd6dd9e1766",
+          "bytes": 1713,
+          "blake3": "f2a02d798e84553379532d3c1aaaadc3a563cbf0016e6c0fb6f9688c9080a4e5"
+        },
+        {
+          "path": "test/fixedbugs/issue39292.go",
+          "git_blob": "9a4840d0284f3cbc670345bbd06312dfe69b273f",
+          "bytes": 768,
+          "blake3": "3ca53303176fc036e7904a44cdb5b36b0d3c7f7cbe8fba301d98eb2fad8e847c"
+        },
+        {
+          "path": "test/fixedbugs/issue10066.dir/a.go",
+          "git_blob": "8bb3b303ea603f4f82b9bf763fb0d0d04d6d9698",
+          "bytes": 111,
+          "blake3": "2c7424888e7b5d46dac7f5e3be6df5d26f613ea3a326a3e5e94ff730db2f8826"
+        },
+        {
+          "path": "src/vendor/golang.org/x/crypto/internal/alias/alias_purego.go",
+          "git_blob": "6fe61b5c6ec0cba569930d00a2d20a88a2a71d23",
+          "bytes": 1260,
+          "blake3": "08c59c28fb00d21dc6b5ca0f94b0d8c15876331f45d1956e514d3d3b16fbfe74"
+        },
+        {
+          "path": "src/internal/types/testdata/check/init2.go",
+          "git_blob": "24e9277122cb922ab76c6d01b904f5336c67d542",
+          "bytes": 3651,
+          "blake3": "4b3b6dffeb77131d6f8db30c5f29cd2fb5b90b30bd9c35fd216eb31e6f2ec21f"
+        },
+        {
+          "path": "test/fixedbugs/issue4510.dir/f1.go",
+          "git_blob": "1217106fca4db57046225ec3b0e982a74460c656",
+          "bytes": 245,
+          "blake3": "ac6142e4783dccf1754cdc8cf222adb19a85feeaac5144b74b82f35e8d5f4099"
+        },
+        {
+          "path": "src/runtime/debug.go",
+          "git_blob": "56b766f11fa37dc906b6e2e5d44dbe4f59d6d913",
+          "bytes": 8438,
+          "blake3": "48d21592c4ae1bb6967f5a88da5d9ff2215c15a44b38149903c8ad95836143b6"
+        },
+        {
+          "path": "src/go/types/methodset_test.go",
+          "git_blob": "9ef6b001c8098462550e7a01351f35b47b483cd9",
+          "bytes": 10017,
+          "blake3": "146b9ddba4408a177327d61665de11cd98dce6cab34a9fc87236032a76de148c"
+        },
+        {
+          "path": "src/cmd/link/internal/mips/obj.go",
+          "git_blob": "c76e267cc232843ef623075fbb54c9d0735f0c47",
+          "bytes": 3388,
+          "blake3": "299992d6cf586e382e99c3a1836217736e391cbce58a1e21abe497836a64c6de"
+        },
+        {
+          "path": "src/math/j0.go",
+          "git_blob": "a311e18d62d4d3c60127159719bb0df1187745a6",
+          "bytes": 13931,
+          "blake3": "eda0f6c8d92b8500ccdf196cffbc467b5fbb7e4d789ba96d4683ca777d5f4a21"
+        },
+        {
+          "path": "test/typeparam/issue48454.dir/b.go",
+          "git_blob": "deb59d2ec84444b82389e4329e67e6038b2ab5bd",
+          "bytes": 237,
+          "blake3": "5f01cb251e115274d32ffd10646f5e78373fb2ee2aa8b0a9ca14e9066dd89a62"
+        },
+        {
+          "path": "src/math/big/rat.go",
+          "git_blob": "c7f79a56661b126f37c2f170b713aca4cf28f754",
+          "bytes": 14281,
+          "blake3": "28749b2390fcde7a689abdcc93588926eb2c27862e99beda49694f06220c928a"
+        },
+        {
+          "path": "src/net/sockoptip6_posix.go",
+          "git_blob": "5bbc609f7b1a4b33c8f5e103995ff506d91ec7ca",
+          "bytes": 1050,
+          "blake3": "31fe43835080c9ebcb36d551bdbbe23fc726b5f9b6404ab9cea830ee10aab25c"
+        },
+        {
+          "path": "src/io/fs/format_test.go",
+          "git_blob": "a5f5066f36d0c30a6bf84a5cf960d0510c998890",
+          "bytes": 2567,
+          "blake3": "0ff1b4b8034ed79d8280b9728f0319bfa9d290cab5c17c957326b02416a075dc"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/text/internal/language/coverage.go",
+          "git_blob": "9b20b88feb876da5f431824cf64ea05b4432d947",
+          "bytes": 730,
+          "blake3": "28bd2684b81e9d9467e9666ef82133789ae985082213013ce3cd18b7cd3639f3"
+        },
+        {
+          "path": "src/encoding/xml/marshal.go",
+          "git_blob": "f737d3bad82ac7acbce91ae6142fcc415036c851",
+          "bytes": 32308,
+          "blake3": "d869a27058e2094570016f3e9c7abafc7bd6f053732785d7768b76a7cb0e3434"
+        },
+        {
+          "path": "test/fixedbugs/issue7867.go",
+          "git_blob": "166506e721cc7bfff5f15fc9f493e311a24e834d",
+          "bytes": 825,
+          "blake3": "ce50e6f47de1258a372ffebdddfaab424786b1dce0b7c14eb4b106b2b35d2574"
+        },
+        {
+          "path": "src/math/rand/v2/chacha8.go",
+          "git_blob": "eb43e65915fe4c880ced1c563d2405c1eb33034a",
+          "bytes": 3053,
+          "blake3": "11e8ebd59d435b71616144c8fcb95179753c475741b1969266b5d442c5db44a3"
+        },
+        {
+          "path": "src/internal/runtime/atomic/atomic_wasm.go",
+          "git_blob": "bc9dd1ace37ac5ec7a289c2fae580ce38758c93c",
+          "bytes": 4869,
+          "blake3": "898bf66f2278dba1964f0d6b91f429963020bdff6d9049cabbf318afb6e64d17"
+        },
+        {
+          "path": "src/internal/poll/fd_posix_test.go",
+          "git_blob": "b97e46595a5cc125ab95eed6398f554a2aa49ea1",
+          "bytes": 1247,
+          "blake3": "23e46433ce51dde593c595f11f382dd6974a45565f3b4a18ca456a9463903054"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue66878.go",
+          "git_blob": "bd6315f9c38255512e5de98feee5164064779395",
+          "bytes": 399,
+          "blake3": "3b31b4da6dcd7e0a90c13747853a6c1b0bc07d1bd289570c28e0cec400ee0530"
+        },
+        {
+          "path": "src/net/unixsock_plan9.go",
+          "git_blob": "6ebd4d7d3b46ca3d74bbd619375e54286b7ad1a6",
+          "bytes": 1273,
+          "blake3": "95c357163bedf7e4a4629b68f6ac5aec67015e2741e72edf083150afdae9dd97"
+        },
+        {
+          "path": "src/vendor/golang.org/x/net/quic/math.go",
+          "git_blob": "d1e8a800250181a7430f4dc49fc28f2c173ea4b5",
+          "bytes": 248,
+          "blake3": "cd082fd1259c98b3c955c3ef84b2a1dffa4b23a515b58ece72ec93038a0ea455"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/text/internal/tag/tag.go",
+          "git_blob": "b5d348891d8c1544e434824196ef28a1143287c6",
+          "bytes": 2415,
+          "blake3": "55a1deb914837e092f2cf9beceacf1da56366a36d4814f45f14f04b69d6546bc"
+        },
+        {
+          "path": "src/internal/syscall/unix/arc4random_openbsd.go",
+          "git_blob": "652e0cb19d600f1109d6db92dd3614672e2aa32d",
+          "bytes": 623,
+          "blake3": "8e03ae7148083fd34c170952f735df01cc25912a9ad24fdd32c5b95a07dbe3ba"
+        },
+        {
+          "path": "src/runtime/signal_windows_arm64.go",
+          "git_blob": "78bddb9fb3ca0334b502bf8fb2f9e385257f4617",
+          "bytes": 1554,
+          "blake3": "7cb411919c613256322357a84852400423497c997790b16f151dafa18738b163"
+        },
+        {
+          "path": "test/stackobj3.go",
+          "git_blob": "8bb8fb3270581438908873f5e35e6b84ae0f4d5d",
+          "bytes": 1449,
+          "blake3": "a95dabdf6361b62e65ad3a3b3f922b0eefca266a6ba5d1918de674669d386488"
+        },
+        {
+          "path": "src/os/wait_wait6.go",
+          "git_blob": "113535e5bdeb38babc255911a7ca5bcdfe28cbf1",
+          "bytes": 792,
+          "blake3": "8866de63765b8657ba3f1be794aac48d80158432f272e392a985f9e0c4ab4aa7"
+        },
+        {
+          "path": "test/codegen/moveload.go",
+          "git_blob": "3697c06befccdc57cee09cd014e9ff62b43ffd48",
+          "bytes": 1282,
+          "blake3": "a0eea312c80881d4c0d3f1087d35c6239136885c276baa5d1710f49b8bcdcca2"
+        },
+        {
+          "path": "test/fixedbugs/issue11590.go",
+          "git_blob": "9f8978334314c28afbcdd263521d22421926d8d1",
+          "bytes": 419,
+          "blake3": "a3d6833a19088b5ddd338471e8a8c2323c4e5cfa483a737748e7ac60bef787da"
+        },
+        {
+          "path": "test/fixedbugs/issue44378.go",
+          "git_blob": "58c88d573f20c3a6ca7c4f7df02dc0e165fda334",
+          "bytes": 1319,
+          "blake3": "e7caa2dacebd4f6845b598a43974b5ede1a50babfac67b1e888efdc7885720df"
+        },
+        {
+          "path": "src/cmd/go/internal/mmap/mmap_windows.go",
+          "git_blob": "4163484b1a351026231cb378ef0c83b2b3a5133d",
+          "bytes": 1391,
+          "blake3": "9724bc763acc936e4ec4c337f812bf661c33d91cf09112d06f26dbb75ac2756b"
+        },
+        {
+          "path": "test/fixedbugs/issue8440.go",
+          "git_blob": "1d9fa936c4c096c51cb9b03f2191f34bcb227760",
+          "bytes": 281,
+          "blake3": "d581d3547a53d2971fc5d3cdddfd4eddd97306b110f1fca6cc88df4a0f6b71e1"
+        },
+        {
+          "path": "src/sort/sort_test.go",
+          "git_blob": "12903ab6ba0ee20e3d06b41f1326fa713a98a53c",
+          "bytes": 17332,
+          "blake3": "2988037cd54fddaf21e981c93989d35c15f64597f50f0af61e54c716ae97000c"
+        },
+        {
+          "path": "src/runtime/pprof/pprof_windows.go",
+          "git_blob": "23ef2f80fe8b8b49869f06eb32fea9ca04aa6a75",
+          "bytes": 505,
+          "blake3": "d7759f4f41523ea59f7bcc8e0601c9d65208b1ec7d50aca60ca9c55f70cab044"
+        },
+        {
+          "path": "src/bufio/export_test.go",
+          "git_blob": "1667f01a841e07cba04c62e8cf7da7ab3593ca2b",
+          "bytes": 597,
+          "blake3": "c8982e0a8f39b4587f3d963b4752141a54840c2973691cfbb1ab6836c38b7377"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/tools/go/analysis/passes/modernize/bloop.go",
+          "git_blob": "96541c21b1562c033eefb714451dc46ca806c8ac",
+          "bytes": 8035,
+          "blake3": "ab99cf2fc3e462fa7371ff0994a68a886ac822146e45d8a041cca90871b95260"
+        },
+        {
+          "path": "src/crypto/internal/fips140test/acvp_fips140v1.0_test.go",
+          "git_blob": "4beff3094dad6a512fd3279b2ad2d2ee99a2ee28",
+          "bytes": 352,
+          "blake3": "617e52e13806462a372078266fdfdeff590a8d02d8f6d4c39b155a4b59cfccb0"
+        },
+        {
+          "path": "test/fixedbugs/bug396.dir/one.go",
+          "git_blob": "66eba63f5c1dfd3614f10cc1370409f3dd017533",
+          "bytes": 244,
+          "blake3": "066861515b0b743bed27fb3cc1e310ec3a6d57a67a2fdfc48d28e3fda4e3565f"
+        },
+        {
+          "path": "src/runtime/os_netbsd_arm.go",
+          "git_blob": "884b18bdd400ce53803970c9ec40c2243c444770",
+          "bytes": 1120,
+          "blake3": "1c8e8a5fdde7473f94974c66e90de4095e8d41ad612b53cb4778008c536306e4"
+        },
+        {
+          "path": "test/fixedbugs/issue7884.go",
+          "git_blob": "ab7a858e54658bce323a1a712b6e9f11b886f004",
+          "bytes": 291,
+          "blake3": "31934b5ed0bae4394ae76441805a74ff3046a823f7b3fd90fb71d624c706fdec"
+        },
+        {
+          "path": "src/runtime/map.go",
+          "git_blob": "bd91ec93933f11f68655d454898716a0eea0ee04",
+          "bytes": 9744,
+          "blake3": "91743adbebc9ef8986575c0564662945607c6b1cf0b9fdf96c7c5bd1064befdb"
+        },
+        {
+          "path": "test/fixedbugs/issue15470.dir/a.go",
+          "git_blob": "1fcf3ea6e010ca91edcf5c290f4e260753e277f4",
+          "bytes": 429,
+          "blake3": "636b8195fb78268d2d46efd3340f3a2a943a44e67a811e40a300e0b76408ccd1"
+        },
+        {
+          "path": "src/simd/sum_amd64_test.go",
+          "git_blob": "bed03e7bacfc6d91b170bb370f973ee8c40aa102",
+          "bytes": 770,
+          "blake3": "6b75a563efeb7b45d18211f69776969c1f6876329f142b09d70bed973b2e21e7"
+        },
+        {
+          "path": "test/fixedbugs/issue47771.go",
+          "git_blob": "a434bffe4b1ad101bef7b6695872614371f35863",
+          "bytes": 433,
+          "blake3": "2bc17d24ef90cee1a1e7dbab6f3f795f71febe10defa5b353c7744472094b947"
+        },
+        {
+          "path": "test/fixedbugs/issue31636.dir/b.go",
+          "git_blob": "990e68209b9903522f324bad2cdde5c270e3c5ce",
+          "bytes": 201,
+          "blake3": "8d2eab5b84a896de670fbe9b6c577aca717040212a1015caca81c33eb5042589"
+        },
+        {
+          "path": "src/vendor/golang.org/x/net/quic/queue.go",
+          "git_blob": "f2712f4012de2015707bd1e47d28e4d35648ca01",
+          "bytes": 1439,
+          "blake3": "f942b3ee917f00057311936f3a254dff2f7086fd59e5e5065853a86fb0a81de2"
+        },
+        {
+          "path": "src/runtime/lock_wasip1.go",
+          "git_blob": "9bf5a4bcd0fee18bdbbd8cfa407d300c60a8ceea",
+          "bytes": 2172,
+          "blake3": "e2adc65def5d7e8aa1d2be33e3ba0614bddde6c05e589ad5ba9d7bf4505d4b42"
+        },
+        {
+          "path": "src/net/ipsock_posix.go",
+          "git_blob": "17bf49e2e6ec98a50be1bcad183582d563238bad",
+          "bytes": 9147,
+          "blake3": "f933513fa09ab97df0610e577d0394b39bfa6e0ed7267692ca36f192a4034343"
+        },
+        {
+          "path": "src/unicode/utf8/example_test.go",
+          "git_blob": "fe434c94767c08d560e224fcdf0fec80f95f39e0",
+          "bytes": 3709,
+          "blake3": "a7ef16a28b84cddb748f7e99376936e5c09da67f4a079f5a6108fc21710a9c1b"
+        },
+        {
+          "path": "src/internal/goos/zgoos_illumos.go",
+          "git_blob": "4f0254081c31f1ccd572d99b760813b86c4b51e6",
+          "bytes": 457,
+          "blake3": "ae8da4e1f21fe2931c700b98b8182a0e4242d26dbc18053f161ef42e29d08949"
+        },
+        {
+          "path": "test/fixedbugs/issue17710.go",
+          "git_blob": "2843458c6118480168a5eb14cd6eef3112fb2043",
+          "bytes": 252,
+          "blake3": "19efe3413e03a5e81d13cf1ad3eab2f61bc40446fd90735bfe3156e4e0d2f107"
+        },
+        {
+          "path": "src/internal/types/testdata/check/stmt1.go",
+          "git_blob": "f79f92058bb6725befc51bd0854ad3b03f3b9c20",
+          "bytes": 3392,
+          "blake3": "7193360255b6aaa1dbcc3c358adf326e86349bc817ba32bf6e88a438435b7bcf"
+        },
+        {
+          "path": "test/dwarf/dwarf.go",
+          "git_blob": "32dd7d3d5769e722af9e890819039fd4aadc7482",
+          "bytes": 268,
+          "blake3": "9099b8beeef7742c7a028f579e4311cd3a74fc015ad86fe2de0adb2887440432"
+        },
+        {
+          "path": "src/cmd/compile/script_test.go",
+          "git_blob": "0e32e0769ee2e2ca8b38ff978bb7547caebf7954",
+          "bytes": 1791,
+          "blake3": "e11da1a8962329a0fde522e48dc780e73b1850080fdbc9bc64fd5558b5ac963e"
+        },
+        {
+          "path": "test/fixedbugs/issue35518.go",
+          "git_blob": "52a0ae7e62f1335cb44e4e5f294ff3071dd57237",
+          "bytes": 847,
+          "blake3": "24e8ada3bfd4a414a2e2a84e50bb525a501686ff9decb4fc80b7dcb439c748c1"
+        },
+        {
+          "path": "src/runtime/_mkmalloc/constants.go",
+          "git_blob": "57fa8a7b46bb4e686ec2776656493aef1d3cc6a0",
+          "bytes": 816,
+          "blake3": "9181945717d8554ce7bf845dca4696fd2587b8958bf636caf3494b5bac1e7e09"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue52915.go",
+          "git_blob": "4c7adff5c508ce68c056e394546ef3db96749e39",
+          "bytes": 512,
+          "blake3": "ec7b4eb7f8e5c1c78ff6be2a4418421982628a2e4716bc2399a5a61350c3342a"
+        },
+        {
+          "path": "src/go/types/typeset.go",
+          "git_blob": "3a61c307561963af40c803d1b7bcc2beb38170d2",
+          "bytes": 13657,
+          "blake3": "26222df8f0d6a2641289a376abf62afb6a23a56c4bd5a74ebedaa35c867a85e0"
+        },
+        {
+          "path": "src/cmd/go/internal/doc/testdata/merge/bb.go",
+          "git_blob": "fd8cf3c446a4dd5b071a264b151799d1b4ddd185",
+          "bytes": 75,
+          "blake3": "b14a2928773d20951eb6c04dffeaa8ad024b6bc0954cacb3c95ca6fbe9739f90"
+        },
+        {
+          "path": "test/fixedbugs/issue31252.dir/a.go",
+          "git_blob": "fa431502c087b88f118646f84cf5904fa8edeeaf",
+          "bytes": 282,
+          "blake3": "30425f4810375ad22ca896cc81c235a580733b968d80376332af4c130f0608e1"
+        },
+        {
+          "path": "src/os/stat_openbsd.go",
+          "git_blob": "01f2a14e276849d963bbe69ca40d8ce5e16f4fb1",
+          "bytes": 1122,
+          "blake3": "8b5d8289241cb6cb8affcb6d35fbaf3d433aba5040c566cc20503e554142c39b"
+        },
+        {
+          "path": "test/fixedbugs/bug165.go",
+          "git_blob": "f8d50af13fdf7cba799169c684bda747b2c49650",
+          "bytes": 292,
+          "blake3": "22199db98d1f0b608b4a47752b18cb21687101b1510a1134c1088be13ea1036a"
+        },
+        {
+          "path": "src/vendor/golang.org/x/net/idna/tables17.0.0.go",
+          "git_blob": "677a328a4976a0d57649dc2520f36bd590a1be40",
+          "bytes": 312250,
+          "blake3": "1f031b4032cc6d994617bb4e17113de7e70ba2ef1c0e2841ce1e1df4c898cf65"
+        },
+        {
+          "path": "src/syscall/ztypes_freebsd_arm64.go",
+          "git_blob": "3f97d1e4fe70168c34a3a3296f038439f4259bbf",
+          "bytes": 8189,
+          "blake3": "dbd31fef26c26685785d816a0d5fb9c690643609a50cc6af82519146346b44f7"
+        },
+        {
+          "path": "src/internal/fuzz/worker_test.go",
+          "git_blob": "9420248d2c0d60902d0a3ac08374907278410d8a",
+          "bytes": 4941,
+          "blake3": "22f1ff67eb0a654824717294befb8fe5a63e03766fb755b2263db88835b2e115"
+        },
+        {
+          "path": "test/typeparam/orderedmap.go",
+          "git_blob": "12456699a5a1eff962a72130257bbd465ff60ac3",
+          "bytes": 7260,
+          "blake3": "5f1444cf2d6a6c83e3d2d214df5d5e1b0df8d2ce4ea878da97cef4996788e964"
+        },
+        {
+          "path": "src/net/http/response.go",
+          "git_blob": "12dfb65196a4afd25805a6fdbd08f2da77b167fa",
+          "bytes": 11596,
+          "blake3": "1a5cd8b51f9a86e1be9d8191a6c065d3872ad1e5fd1c05e90209cdcb053ffa5f"
+        },
+        {
+          "path": "src/math/big/floatconv.go",
+          "git_blob": "d8c69b8b283e0baa876ad17a6fe2a4f9642074e5",
+          "bytes": 8549,
+          "blake3": "567b50cd3d7d4baa0b09951fda6abd3e887f9b5089b088a1020f360c89a1d73e"
+        },
+        {
+          "path": "src/runtime/netpoll_kqueue_event.go",
+          "git_blob": "852a00a5d86fa49440973123efeb58e2505028fa",
+          "bytes": 1821,
+          "blake3": "2bc63eb029dfc63c8cea242b6d5a2db1222221ae86f8a7fb35c68523f5da4d34"
+        },
+        {
+          "path": "src/net/sockopt_bsd.go",
+          "git_blob": "ff998119808e48d67a2bfbdd8116f65768133d9f",
+          "bytes": 2263,
+          "blake3": "4cff47561614520d04032f787a2e5b9ce569a351d1a3289780521e9d8687419c"
+        },
+        {
+          "path": "test/typeparam/issue48711.go",
+          "git_blob": "477a5d597897f0eca278b5575074571b18c124bf",
+          "bytes": 342,
+          "blake3": "80048c46adb02c9d3158a1366faaf139ef9a66401fbb9c3ac3353abd48d0b00e"
+        },
+        {
+          "path": "test/codegen/issue42610.go",
+          "git_blob": "41d0e90dbc26f5e0401dd4665525dd40f11ccd79",
+          "bytes": 623,
+          "blake3": "b640b171122ff94c6b850d317b18ef12f6df29d8a27e5ce6574bef54cf2f6858"
+        },
+        {
+          "path": "test/fixedbugs/issue4396a.go",
+          "git_blob": "38dd4b8cfb37a5fe20be04389ebc6e0b5315e4b7",
+          "bytes": 627,
+          "blake3": "da7718084915c6420e0f723510c5f69f1de1497105b2285bc0a97923c5b0f90c"
+        },
+        {
+          "path": "src/cmd/compile/internal/types2/union.go",
+          "git_blob": "ea60a51855e7370f69236b55e74c243b2e49ee92",
+          "bytes": 6279,
+          "blake3": "a0634e0f0c55deeaba723f13471972c0eec11b60462372ff927f8dccb6835df5"
+        },
+        {
+          "path": "test/fixedbugs/issue80096.go",
+          "git_blob": "308a2e60f0ceef4b0377c5b11693aff184776a4a",
+          "bytes": 297,
+          "blake3": "2f2b431a1be317117b87793d94df9bf04657023eb79add1a9894044f0fd9b0d7"
+        },
+        {
+          "path": "test/fixedbugs/issue9110.go",
+          "git_blob": "086be772be6cd6f1b074433e4fe9f84dfd1a8502",
+          "bytes": 1782,
+          "blake3": "0a7dcbdedead5145ba8e06f45730d56506dc424057f427e1bf946f4e8b38595b"
+        },
+        {
+          "path": "src/runtime/defs_openbsd_arm.go",
+          "git_blob": "5393ea4eebaf30bc325aa21b7bb81b863315dd33",
+          "bytes": 3108,
+          "blake3": "0b14a172a01ce3367872da6252d9acb0847e89732bfa4b5a7330a45036cbfab3"
+        },
+        {
+          "path": "test/ken/cplx4.go",
+          "git_blob": "97d5d16f4aae56470336b0e29624f48191e74cbe",
+          "bytes": 1073,
+          "blake3": "727f6d0f0bde3f123b0f6f4f4e66bf47a509b65b7df92d30dd7513a823c56393"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue60346.go",
+          "git_blob": "6dc057b178454b2529997908135002aca9f55e0d",
+          "bytes": 284,
+          "blake3": "de122993c81b0477ce3a8e637af25a02c3bfbe1ad67d3c724792a6f25290ca41"
+        },
+        {
+          "path": "src/sort/example_wrapper_test.go",
+          "git_blob": "cf6d74cf75469aa0fcc9df8fa2c8b1490ecc3188",
+          "bytes": 1672,
+          "blake3": "fd3d36696da8466677608fe31caf70c0900e32c7c2b799edd4e0bcdb8813e423"
+        },
+        {
+          "path": "src/simd/archsimd/_gen/specgen/specexpr/parse_test.go",
+          "git_blob": "1810df186d83fc1920d1ba7876041e4484961ad4",
+          "bytes": 3020,
+          "blake3": "ffb8a831a3b2098d5eb93b961eb9901fdd7057481a1ece427a42d34984f798bb"
+        },
+        {
+          "path": "test/typeparam/factimp.dir/a.go",
+          "git_blob": "0bd73a88e7daef699992f7ce8756334f69f5e42a",
+          "bytes": 279,
+          "blake3": "1ffd622d4c47b9489f666ddf5abe7754e755fbf3d0e21ca55637095d03d3ddab"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue66285.go",
+          "git_blob": "4af76f05da8e41a53fed50217f4af57eb83c447f",
+          "bytes": 636,
+          "blake3": "fd4f68d07f9968e42477d6977ee0903e09798dd14f2d2fefb90bf979591c455d"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue51145.go",
+          "git_blob": "1f970d9bb07476c3bccd86ee759c54d24b9fe85a",
+          "bytes": 447,
+          "blake3": "cc33441bc66f45cf2bd39bb61119b2f2413990116f05d08f8a23ab7f37f66f11"
+        },
+        {
+          "path": "src/os/user/user_windows_test.go",
+          "git_blob": "d6f25ed8a11e0d204f05b453cb2ada3a3f26b63a",
+          "bytes": 10308,
+          "blake3": "105eb399524f6ddd0ffd41890e8f553f7c5d032f90f7c7ca702e65d4529e0748"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/mod/module/pseudo.go",
+          "git_blob": "9cf19d3254eb3e9c1f5328d18edbef170f918aef",
+          "bytes": 8630,
+          "blake3": "e14c0aee4b02b6124e3b1ed400b5a8acc45e3c174ddef7ab95e0fa1ce9df249d"
+        },
+        {
+          "path": "src/simd/archsimd/internal/simd_test/binary_wasm_test.go",
+          "git_blob": "cbae26a154745d4042dc7d27d0d3f453b593b85a",
+          "bytes": 739,
+          "blake3": "77437a429bbfede4942905c0f8bda8ac79ae8fe4058b9dbf6c0c7dcd097c9778"
+        },
+        {
+          "path": "test/rotate2.go",
+          "git_blob": "a55305af3455793bc3866fc82dea4e79549a9f02",
+          "bytes": 286,
+          "blake3": "98ad7a7a00f2d81e7f3544051ae75d65508516af16468f5c0c33545905ee169e"
+        },
+        {
+          "path": "src/cmd/link/internal/ld/outbuf_bsd.go",
+          "git_blob": "ede704b0ecc2684ce0bfffd2966968bc535a54d2",
+          "bytes": 515,
+          "blake3": "f9c329fecb07dccd26b1f8d9b549116e645bc60f24c7c2aa64227b3fab10a0b7"
+        },
+        {
+          "path": "src/runtime/cgo/openbsd.go",
+          "git_blob": "26b62fbdaf75968d0be2f41b6c1bf1bbc160c711",
+          "bytes": 566,
+          "blake3": "c8fa99792e7c7ccd179b146105c0b0d295e08cbee35c0ba90755858e5639c805"
+        },
+        {
+          "path": "src/cmd/cgo/internal/test/issue26430.go",
+          "git_blob": "837a745cb42d0fc45b585dd974436b1b0fddd0cd",
+          "bytes": 359,
+          "blake3": "13b6a74ca116b23551ed8b0ebe02ad1b585fdda7d58b5292020645baefa21545"
+        },
+        {
+          "path": "src/cmd/go/testdata/addmod.go",
+          "git_blob": "7ef68b3edcc9d5537dc3f6be97878d2dcf498398",
+          "bytes": 3581,
+          "blake3": "29a8a4cfe63b16d90656d4945ead52119c379baf3a76f3319950d8886a407255"
+        },
+        {
+          "path": "src/cmd/compile/internal/test/testdata/compound_test.go",
+          "git_blob": "4ae464dbe3843244817a42e04675cf1219c855c4",
+          "bytes": 2768,
+          "blake3": "93ccdc7a53ba1ddb2cc61273ca06d13b4a5dd518339b801300dea53066a7184c"
+        },
+        {
+          "path": "src/go/doc/exports.go",
+          "git_blob": "655e889293ea4d5d0f64dc64fbfc9bdd6d34b2f1",
+          "bytes": 8705,
+          "blake3": "f76ff61c4eadb57f8fe4e4eec29478a00e86b61f9520bb1cec95e4dde48741af"
+        },
+        {
+          "path": "src/internal/types/testdata/check/go1_19.go",
+          "git_blob": "b6cff4f4653071aff0f031a52c64297591862387",
+          "bytes": 343,
+          "blake3": "b1c8829b39fc89410e319d2bd5fb3dd366b59d69db258387789db12cab6eb674"
+        },
+        {
+          "path": "src/cmd/vendor/github.com/google/pprof/internal/driver/cli.go",
+          "git_blob": "7b8c3fc60781fda4c1cdd96d9773e4710eaecdd8",
+          "bytes": 12700,
+          "blake3": "365bbd9c26dcc8d79db9b3e98a26d1305b223da4fd67911f1512fdb24cd4e0ec"
+        },
+        {
+          "path": "src/syscall/rlimit_darwin.go",
+          "git_blob": "73e49646b30896d4d92eaf0e8fdc4f3f4a631494",
+          "bytes": 593,
+          "blake3": "421ecda02d6c331aa98d91fc71e1c0a5bdfa1351f073bff4b0617983487ce1db"
+        },
+        {
+          "path": "src/net/internal/socktest/main_unix_test.go",
+          "git_blob": "19ffb28bb9c7d35b214926e24485389e756356f9",
+          "bytes": 493,
+          "blake3": "92193a38e4913cd2ac4f34080503cc9fb37c8f0795f27755dfa24572cc888d1f"
+        },
+        {
+          "path": "test/inline.go",
+          "git_blob": "6726130564736af2910b598cc09645fed4d3e941",
+          "bytes": 12441,
+          "blake3": "33ae2fa1fd38ca307b593f58d38cb0ed7fb27b291ebd6692b1d83cfc8996ec15"
+        },
+        {
+          "path": "test/fixedbugs/gcc61246.go",
+          "git_blob": "797d6c7ffca829178c0bb6d0ed6c11d2e113a7a8",
+          "bytes": 407,
+          "blake3": "17683e1340bbc756c887ba59141e70f27b7fafeb82ea3380ee16cf550495ea39"
+        },
+        {
+          "path": "src/net/http/httptrace/example_test.go",
+          "git_blob": "07fdc0a4726fc35e9f1b776171eb10e404e0e096",
+          "bytes": 712,
+          "blake3": "c99eb8cc970494f641f3e9c587db773f0ea7b6d4c55842231e06c6e93e056195"
+        },
+        {
+          "path": "src/os/fifo_test.go",
+          "git_blob": "111dd2aaeb616f205f40f7030e5bba83d4e86452",
+          "bytes": 6213,
+          "blake3": "8560a33606c1d295a84c57baf1b97bba11eca0d9b9c36d1cec2eb810964dfb41"
+        },
+        {
+          "path": "src/crypto/internal/cryptotest/hash.go",
+          "git_blob": "3e2efa84db720c12ba798e03e79a2fb2fbc33649",
+          "bytes": 1192,
+          "blake3": "13ff4ad7a5062009c7b596b208085b37c2026eccdbb537add87431c77e275e61"
+        },
+        {
+          "path": "src/debug/elf/elf_test.go",
+          "git_blob": "256f850f967860b7a2834e9fac4e094edcd5066e",
+          "bytes": 1270,
+          "blake3": "bdaa9cb1126ff85b27ba961c28f7c0fddff072286b6312a7275e50f1b00c2d63"
+        },
+        {
+          "path": "src/debug/elf/file_test.go",
+          "git_blob": "e976f744c0165a234612fc3ac2b110c36f8cbebd",
+          "bytes": 70975,
+          "blake3": "befabb9c087802293ae13e629c745c8fc63792b46a8752b89d4eea0199e4ff20"
+        },
+        {
+          "path": "src/io/multi.go",
+          "git_blob": "0f57849b15493251a774ac2759a18524a4081f1d",
+          "bytes": 3525,
+          "blake3": "f3af3d019a45fa67dab1ba062f1245d9eccd03394e64930c218215867152c452"
+        },
+        {
+          "path": "src/syscall/types_windows_386.go",
+          "git_blob": "4f40a096ce77a2e734bdbb1f3f635c1cb137a704",
+          "bytes": 477,
+          "blake3": "6d6625b8dcb11607181d7fb4b3ca6842d9aaff9003612dfb1dd6830bd7310e02"
+        },
+        {
+          "path": "test/typeparam/issue48645b.go",
+          "git_blob": "619e7ee8b5b209f7c4907fef5a36b08841c159bb",
+          "bytes": 1481,
+          "blake3": "9ee828c2b04eb3809d24eb3907f3f0dc28b9902e60982a1174761a0626c410fe"
+        },
+        {
+          "path": "src/cmd/compile/internal/noder/dump.go",
+          "git_blob": "629848fff576c5e7259d4c855a384b51ab4e2eaf",
+          "bytes": 1934,
+          "blake3": "7c71480629855b247710d39db1a8d836f861b0c21e69a3154ae6c5142475714e"
+        },
+        {
+          "path": "src/reflect/abi.go",
+          "git_blob": "bcd0a95f1b6c62f8cea4d855844121d8a5a334b7",
+          "bytes": 15385,
+          "blake3": "2938d110fba4b15c2d6e6a7f3eb26217becc304dc099ec50a4eda88a0890e74a"
+        },
+        {
+          "path": "src/syscall/syscall_linux_test.go",
+          "git_blob": "df096a0b47b81fcf5ce1db7858caad67b68e3d8e",
+          "bytes": 27545,
+          "blake3": "7cc6816851150fcfdf2eb874437659d36e50de595d1c1b674c6e46843109675f"
+        },
+        {
+          "path": "src/runtime/malloc_stubs.go",
+          "git_blob": "337055c25d166fc29f56a7abd645d0a079001645",
+          "bytes": 21422,
+          "blake3": "3dbb604ca02f3044af5dbd6a6328e718088b8c41cf3e39c565e91246848be595"
+        },
+        {
+          "path": "src/cmd/cgo/internal/test/issue76861.go",
+          "git_blob": "225e2acc3f64be4f2bd4a7cebce3986968cea0b4",
+          "bytes": 356,
+          "blake3": "38e75e696d63136209337489f2def6fa111a567cf6d91cf524ec20d1938a1b6e"
+        },
+        {
+          "path": "src/cmd/compile/internal/types2/stmt.go",
+          "git_blob": "c18a57966b04e6725d5fe2e7fac73b2c1a2166a0",
+          "bytes": 23844,
+          "blake3": "7f00c5739632ad5a309f0bba495fe05abc55d5683d7cf458199c66c738a271fd"
+        },
+        {
+          "path": "src/crypto/internal/fips140/aes/gcm/gcm.go",
+          "git_blob": "20da20c524570ce90fd07df8d4892a09f254544d",
+          "bytes": 4284,
+          "blake3": "53db4cfec2ea01c0a4f461cee2b6f3300f075f34fc6edb00445d59f04c6245df"
+        },
+        {
+          "path": "src/cmd/cgo/internal/test/issue4029.go",
+          "git_blob": "702af3f531ec2591f50c6a8b53e8c06aea924a16",
+          "bytes": 1635,
+          "blake3": "5f8ce90ca94d1cca20bff068868be58caa61702a576359f3b63bfbf953bc7018"
+        },
+        {
+          "path": "test/fixedbugs/issue34520.go",
+          "git_blob": "d92d4ccbc52613697bcf63b5c635e3d7d415cfe3",
+          "bytes": 211,
+          "blake3": "547c9c766db8707241300a4426c9e8b60553ada9aae2e42b26bcfbe98b7d2b4a"
+        },
+        {
+          "path": "test/fixedbugs/bug506.go",
+          "git_blob": "7c8ccc6ec7ed7a2b36e3916f5927a6b3bc98f005",
+          "bytes": 308,
+          "blake3": "a7c3c470c62575e531ad6ba04b4643259131f4fac7b5eab9788e418a5d676f2f"
+        },
+        {
+          "path": "src/cmd/compile/internal/test/ssa_test.go",
+          "git_blob": "c0a8b6c1c0817cfe6cef6ac4bff94593af1224e5",
+          "bytes": 4983,
+          "blake3": "79311cd3534fec65239c9d0bd312ea08e3dad96a20123a9733040e3088ea3997"
+        },
+        {
+          "path": "src/go/build/testdata/doc/a_test.go",
+          "git_blob": "1c07b56360d967bc482b32718e100d2f3d68343f",
+          "bytes": 36,
+          "blake3": "61b5ac0850bc16dee23e808476b25289c2e7db525e4c23de004c3e11fd2c4249"
+        },
+        {
+          "path": "src/os/user/lookup_stubs.go",
+          "git_blob": "89dfe455b546e8d1df48e526637d022ebfcee1b5",
+          "bytes": 1823,
+          "blake3": "8b3e2d70ea6f04b238bc72c034ebf27431a2f1fbabe3f86308cbf167277ad421"
+        },
+        {
+          "path": "src/runtime/mranges_test.go",
+          "git_blob": "ed439c56c256af7700c0eeeeed1b2362df0d021f",
+          "bytes": 5817,
+          "blake3": "d9fd06b53129f0cb7be189f9d16390031ff3ed8f92b0649264d95e6758a28315"
+        },
+        {
+          "path": "src/cmd/internal/archive/testdata/go1.go",
+          "git_blob": "37d1ec19bbc0730f013f026479654be29eb98857",
+          "bytes": 224,
+          "blake3": "54f77b36f581fcfe9be2c432eb5d90b9e5d4142e279669bc1dda9aa41c16afc3"
+        },
+        {
+          "path": "src/hash/adler32/adler32_simd_amd64.go",
+          "git_blob": "0326c37b89f5aea672da1c47e821e1823e16462c",
+          "bytes": 3012,
+          "blake3": "5f4684f0771f98b0ccea3061e0c97dae5d5908bf2debe6d2c25359697eb2988a"
+        },
+        {
+          "path": "test/typeparam/issue51836.dir/a.go",
+          "git_blob": "e9223c9aa8270f1b9b82a23e4fe3340c5882f2e6",
+          "bytes": 196,
+          "blake3": "e9f4e9232061db8b74eb0deb0aa61f05ad15c40ea2fb3cff453fabdcf5d7f723"
+        },
+        {
+          "path": "src/crypto/internal/fips140/edwards25519/scalarmult_test.go",
+          "git_blob": "4a00c79ace52bfc930a7f50699b69e9c50764e5e",
+          "bytes": 5048,
+          "blake3": "7b4f3200b558227e039bcad6274683ae66bc58fd75d133c8a5eb87d9ed763c88"
+        },
+        {
+          "path": "src/cmd/compile/internal/loopvar/testdata/range_esc_closure.go",
+          "git_blob": "9bcb5efb09ad272cbb094ab2f54f868e5b9b3dfe",
+          "bytes": 829,
+          "blake3": "a829a0eeb4107cd61acf76ebb6c6a4370bc63c9fa372b1a61993c1442ae0a15d"
+        },
+        {
+          "path": "src/cmd/link/internal/ld/deadcode_test.go",
+          "git_blob": "b248bb1c05e16bcec6ba2f855bd1d5447a3a6875",
+          "bytes": 1961,
+          "blake3": "81c7415ef68b32504866dfd66157447c285d41bff7fcb986bca6c16d2b18febd"
+        },
+        {
+          "path": "test/simd/bug1.go",
+          "git_blob": "0f34ba6a8051e67b4aff1a67995f446bdee3f483",
+          "bytes": 2488,
+          "blake3": "4388f725dbeb9095d06976b85365411bcf32abc77368ea1ac5bace97d1d31819"
+        },
+        {
+          "path": "src/cmd/test2json/main.go",
+          "git_blob": "ff8cc9c8d5b123fd96cf0667e01280734bf2d3c4",
+          "bytes": 5993,
+          "blake3": "472202e6142d07519fdd173db3b86fcac0ce6f3871579e7561b94521a0fd2871"
+        },
+        {
+          "path": "src/cmd/go/internal/base/goflags.go",
+          "git_blob": "eced2c5d5822682792727bb6335589ea14f88707",
+          "bytes": 4580,
+          "blake3": "7a59f885b7a4f09bd0c4fa0d2a6f8ef823c7fd3fc3a797a48b4c42dddfb5b3f9"
+        },
+        {
+          "path": "src/vendor/golang.org/x/net/quic/retry.go",
+          "git_blob": "0392ca9159451a5c09c7856487d1b9cb755b1ef8",
+          "bytes": 7775,
+          "blake3": "ce58c1c86e9024fae25fb707a4e2cd0d9c9f59a7c3f147ce9497c9384a52cfd0"
+        },
+        {
+          "path": "src/cmd/compile/internal/compare/compare_test.go",
+          "git_blob": "4271effbdbb3d930a9df4e406c8b029fc9dddf13",
+          "bytes": 2894,
+          "blake3": "8c0c6c957100c9ad40b3e2b8828f6eb20ed4ecb81ef2a92e9ec2cffb8ecae0cb"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testsanitizers/testdata/tsan5.go",
+          "git_blob": "1214a7743b67ba6f2543f39eecf4b2347b5b3fde",
+          "bytes": 927,
+          "blake3": "c81a850754b83cd30aa04091827bd7226fbc322fc8d3ed6dee188334a8e5de04"
+        },
+        {
+          "path": "src/simd/internal/bridge/simd_types_emulated.go",
+          "git_blob": "d7aa0bee03daa5b580a813a34ea4bcd48ff544a1",
+          "bytes": 1887,
+          "blake3": "b68c8edb5e3820a67995ae7806a5233629dccaa2d514e4cdecee3c7bd72585f4"
+        },
+        {
+          "path": "src/cmd/vet/testdata/framepointer/framepointer.go",
+          "git_blob": "e444ca9f29179e692d79425bcb1690e99ca4598b",
+          "bytes": 191,
+          "blake3": "ee3ffacf63de74e57a16ec3356b0bae152146f749fb2c6b1ac6f1a23e44f8bc2"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue78163.go",
+          "git_blob": "a697181f809c4b4cfbd7e0f1196b7366eec821f2",
+          "bytes": 448,
+          "blake3": "164e50b364f20e3f7a5d6ace2b555c7a98a80fd54c73a80ded4a399b32945296"
+        },
+        {
+          "path": "src/runtime/map_fast32.go",
+          "git_blob": "17b4c31d02bdd2321178ed1ee62d40d9d776eee8",
+          "bytes": 1694,
+          "blake3": "f71759fb6c9d91cac6e62f586212f863778f1f2879fbed74656fde17dd7cb751"
+        },
+        {
+          "path": "test/fixedbugs/issue22662.go",
+          "git_blob": "d732485424f79cb2826d20d389285e5f45dfe5e5",
+          "bytes": 1769,
+          "blake3": "71bf4dd971ede9dbd26366e55ab67705995b9b7458710bb55151e0dc03cc0816"
+        },
+        {
+          "path": "src/cmd/link/internal/loong64/asm.go",
+          "git_blob": "000c681c6a5c9a0b18511158d3d01867fcffb4c9",
+          "bytes": 29167,
+          "blake3": "cfc77eef11715dbb7905e377a092ec52567e37f444e249ab4b92a615b2e2c1ca"
+        },
+        {
+          "path": "test/fixedbugs/bug424.dir/main.go",
+          "git_blob": "28b41e68a737dfe9e3e43f0b2c99238c673ddc54",
+          "bytes": 1677,
+          "blake3": "1b3be9d586f7487be597a91775203bfa323ecab63e58012611b2d6aec123ac17"
+        },
+        {
+          "path": "src/go/types/map.go",
+          "git_blob": "3ed3188a3bc72c4b0c21fb08530b0f3f31ab74fd",
+          "bytes": 781,
+          "blake3": "c895090107d58048620c58d8ac806de9e99c00b1c39aa34223fadca9a37f2d02"
+        },
+        {
+          "path": "src/sync/pool_test.go",
+          "git_blob": "a388f53d4fde622940b9a1d2be11bac09fdafadc",
+          "bytes": 9037,
+          "blake3": "64bc6f885b3988e4a0cd8218297cfc5fb9f753974b99fcf4a7788f49bd7646f7"
+        },
+        {
+          "path": "test/fixedbugs/bug392.dir/one.go",
+          "git_blob": "aba8649b5b1d387a32fc96c85048a4c85356bce9",
+          "bytes": 851,
+          "blake3": "3e011290d0f730e27adb8ad8f2b974b55cff494bab512a2132522933c9353c92"
+        },
+        {
+          "path": "src/go/internal/gcimporter/testdata/g.go",
+          "git_blob": "301c1429e6c45dea8a09ad4566cd03e5b61aed65",
+          "bytes": 498,
+          "blake3": "d3f9bfad535895b6af7b123c1cccdbf9b61adf02d94bbfd3e9caa2e5752790ed"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/tools/go/analysis/suite/fix/fix.go",
+          "git_blob": "aa63b457aead2aa9033d56000e743060a82fc766",
+          "bytes": 1670,
+          "blake3": "b1282fcb238daaec3109e084bf255d4845a2ce0d50774d511edd9537df1f1a51"
+        },
+        {
+          "path": "test/typeparam/issue47710.go",
+          "git_blob": "2263c8b88fd81769f9001290d0777f2668f2a0c7",
+          "bytes": 398,
+          "blake3": "e51771a3981281d528ccb067e8ccf9e696da2159ab81da4363b6e7b30aff1763"
+        },
+        {
+          "path": "src/cmd/compile/internal/ssa/rewrite/ppc64latelower/ppc64latelower_helpers.go",
+          "git_blob": "3375504015f2fe6ff1f7d1251111e4e4218d5bb0",
+          "bytes": 2842,
+          "blake3": "ee63ef08599c9cbf16144eda7f1f3eecb81e795ee8d8af07d114b941efee6800"
+        },
+        {
+          "path": "test/fixedbugs/issue14164.dir/a.go",
+          "git_blob": "bf03051619817a7f5f421d99d467a9eea6f95b64",
+          "bytes": 1127,
+          "blake3": "d634c3b7ddad2051a8e2b8711bc2504463566f7912605435b98a1233f9392b63"
+        },
+        {
+          "path": "src/syscall/zerrors_freebsd_386.go",
+          "git_blob": "c59b7dae6c5e42be90415f03d0a4fd6550c97474",
+          "bytes": 68955,
+          "blake3": "620532173d723df9da6b0636e17e02bbc08f33c527ade28f65d0c9b6d93907da"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/zsyscall_linux_amd64.go",
+          "git_blob": "27c05db1acb29693fc9b9a470963928667efdaee",
+          "bytes": 16454,
+          "blake3": "99cfe789f9858b655a5bfce4ffbe4a88f8b9768f2f5dab4ee50fc4a9446b972a"
+        },
+        {
+          "path": "src/internal/runtime/gc/internal/gen/gp.go",
+          "git_blob": "390d6e50eda178bf430450a26c9ad431a946e49a",
+          "bytes": 513,
+          "blake3": "f4a97e890d501b8a08c9cc4f71861d5d691bcf47f31369aba2e3b3039f261f2c"
+        },
+        {
+          "path": "src/internal/trace/base.go",
+          "git_blob": "a452622973eedfa910466396bca7b7dcb0f5a1d4",
+          "bytes": 6810,
+          "blake3": "193df4163581364202429cf0db09cb583bb86dfaa982a5805c33022e8208c2a7"
+        },
+        {
+          "path": "test/fixedbugs/bug050.go",
+          "git_blob": "1e299ed99a8a94d1cb03a7ff07c1fdad1072351f",
+          "bytes": 219,
+          "blake3": "270255120e807c8a02f26721e50a139ccdbb8ea2f9bc458ce764d54183f397d3"
+        },
+        {
+          "path": "src/cmd/compile/internal/ssa/_gen/vendor/golang.org/x/tools/go/ast/astutil/imports.go",
+          "git_blob": "a6b5ed0a8933eb4a40712311cb6622f08ac21dd6",
+          "bytes": 13895,
+          "blake3": "5dcf3aff71a9acd9816b96d78fa356dfbfe52f787bf0d056129de16150c28219"
+        },
+        {
+          "path": "test/dwarf/dwarf.dir/z4.go",
+          "git_blob": "1f28465c57714f35f4dbac9b173f32a5b424fa26",
+          "bytes": 42,
+          "blake3": "a2801da1dd5318779ed767976fd8f818a031a410b7a4c4c3dfb1a9fa230e3017"
+        },
+        {
+          "path": "test/fixedbugs/bug280.go",
+          "git_blob": "9a9d4c902d2f6e281cffb74434c8457a6eb24b01",
+          "bytes": 302,
+          "blake3": "a73a95a2edd59a34431d6e275c8309679121f90c5c24bfca981ba0d5d9af3b80"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/syscall_linux_loong64.go",
+          "git_blob": "6f09ca200ad92dbcaf35c41779719db9b72a5ffa",
+          "bytes": 6810,
+          "blake3": "f767365d0fdd45c1150aa3ca212775db795ad6cf01c6e2bac0488caef17d7d4d"
+        },
+        {
+          "path": "test/syntax/typesw.go",
+          "git_blob": "378193397897e5755d78d8f3cac2426fba8aa02d",
+          "bytes": 318,
+          "blake3": "d69f8788274d8d33818286446478c7b5aafa21329f9ddb3006d316fb7cf0a55d"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/mod/sumdb/test.go",
+          "git_blob": "0868bef5fc06ca24ae1ae428d06f9a2eb506c6d4",
+          "bytes": 2878,
+          "blake3": "304940b35fb7d326b1ab5ac2e5e42b8116ab01cdf03b0db4614dffbd5e99b7dc"
+        },
+        {
+          "path": "test/fixedbugs/issue54991.go",
+          "git_blob": "9ab0f5d06cf653408384592d29f5bf867d0dc043",
+          "bytes": 348,
+          "blake3": "486718382fb0a2410a779e92adc41abb459b3ddf3c70add13043fd5e98739ebc"
+        },
+        {
+          "path": "src/internal/goexperiment/exp_jsonv2_on.go",
+          "git_blob": "119d086874f834b85c6ea4a8773078b23f38b933",
+          "bytes": 142,
+          "blake3": "9a2d8b258bfd1e7fd52ac4acf92da20642a44900771c304be3e04013b12aa08f"
+        },
+        {
+          "path": "test/typeparam/issue51219b.dir/b.go",
+          "git_blob": "8413d666b7e2cd9fce155d9aeedc8897a5443dc2",
+          "bytes": 331,
+          "blake3": "3129ea6f3d162316934c3aae41ee064534d7796fab4a0054e8e2cd6ee8bf3adb"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/mod/sumdb/tlog/tile.go",
+          "git_blob": "fb0c8d1767cf53fde8a7543f03fd9d424e22ceaf",
+          "bytes": 14295,
+          "blake3": "e774efbdb9b98b42819dc44b1e52694b976be9837c3aecf374878a83ed8cd252"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue68935.go",
+          "git_blob": "2e72468f05eb0cbb5aa8e047e6ee5d8c89e3e27f",
+          "bytes": 336,
+          "blake3": "7e89af0cb1bd2aac56379d27661ba43c9f7cf2ca723d3b16d2ea90554ded888b"
+        },
+        {
+          "path": "test/fixedbugs/issue27143.go",
+          "git_blob": "009ec9f6c255efd23cb5b9ff6f18a6f454e71cba",
+          "bytes": 553,
+          "blake3": "35e7866670ea5d67c5f4a41ca437d94dfb14133ed9f6619303550dc1aee08589"
+        },
+        {
+          "path": "src/math/hypot_asm.go",
+          "git_blob": "df37e11a241b66157ffaa1de18c7cc5596d67464",
+          "bytes": 275,
+          "blake3": "efd4bd05c715fb8f58d80a6f5369c2b3f2ddfe20ceadd5f31d2cc52de2df01de"
+        },
+        {
+          "path": "src/cmd/compile/internal/ir/name.go",
+          "git_blob": "cf5ec8ec487c5adc122d6c0c6550f7c8ed088259",
+          "bytes": 14687,
+          "blake3": "22308b72eaddb8acbebc2e0169f572b73e52bc2c979d0b10cd56734770edae01"
+        },
+        {
+          "path": "src/crypto/cipher/cbc_aes_test.go",
+          "git_blob": "20355e9ec2eb8f1e85b1d563369db63749cd170a",
+          "bytes": 3248,
+          "blake3": "23e31b84677bc95f68554313761fb00bd3bff3e5d0ad20a1006c14d35ece2b88"
+        },
+        {
+          "path": "src/cmd/compile/internal/ssa/_gen/divisibleOps.go",
+          "git_blob": "9fcd03aadb8f1b04ebc92f680e2c18496843a9b0",
+          "bytes": 385,
+          "blake3": "863931057f4d61be0e8e97c9ca3ff137564902a080e1a198042f539b9cad482d"
+        },
+        {
+          "path": "test/fixedbugs/issue30898.go",
+          "git_blob": "38358949e23799bb11ce0081fb6349dc6729ef5e",
+          "bytes": 673,
+          "blake3": "9e9594247bc3effba0fee9d26e4a1cbf44032c8d3a2c3f796255855cddbcf6a3"
+        },
+        {
+          "path": "test/fixedbugs/issue3783.go",
+          "git_blob": "7db06d1881dcd44869073277ac74ddf604a2f961",
+          "bytes": 252,
+          "blake3": "270d54b92efb3787543428274e37c28826028458537dcb2f779197067a596a37"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/arch/riscv64/riscv64asm/arg.go",
+          "git_blob": "2b96b416f60fbf9b402c00d4ce9ab052a4c905e0",
+          "bytes": 3469,
+          "blake3": "0de735ac273b2f85d7c6be2f2fdf1c57e3b105ada1cf9a95d7375c9a84bd5055"
+        },
+        {
+          "path": "src/syscall/zsysnum_freebsd_arm.go",
+          "git_blob": "348bcd014d2fe6870711d7e506f75bc941de3e26",
+          "bytes": 26043,
+          "blake3": "b5ac220994c159a6456aa83affd2a364a664517165b32c01795ca68134c504e8"
+        },
+        {
+          "path": "src/runtime/mfinal_test.go",
+          "git_blob": "5c93c74cfb2f08c5b778b83d07a6c14e4c2ce21a",
+          "bytes": 5995,
+          "blake3": "23642d87acdfebe8c227db75cd82a423a90188da621144aad4a23cdcd5bdc7f1"
+        },
+        {
+          "path": "src/cmd/cgo/internal/testerrors/testdata/issue18452.go",
+          "git_blob": "0386d768927a1c6d027ffb3a288facd90787944b",
+          "bytes": 390,
+          "blake3": "34d6bb8f49ee4e7598996fc7a5f0a8e4271d1858cf83f0e16fc04be7f6c432fa"
+        },
+        {
+          "path": "src/cmd/compile/internal/typecheck/bexport.go",
+          "git_blob": "ed9a0114aff4e902d0e82c4059b3b7f9b3299f33",
+          "bytes": 293,
+          "blake3": "43042ad7c4d2b83a30d6d6a0b4454ab898e1d10da854854a0bd2520db4636952"
+        },
+        {
+          "path": "test/fixedbugs/issue49016.dir/a.go",
+          "git_blob": "36639b73d424bfe1e34978a03963043efee0a8b9",
+          "bytes": 543,
+          "blake3": "2dae117ead99ac945314f2e7fd7685bc5580286f077b2d6a8d20ab0ea064551f"
+        },
+        {
+          "path": "test/typeparam/issue47966.go",
+          "git_blob": "ec664783b099c02a96d1a959713706b10fbfe4b3",
+          "bytes": 201,
+          "blake3": "4cf40b5e64d1366f940975772f9e9f17c77a9e9bc2b11f312ca98115ebec2f96"
+        },
+        {
+          "path": "src/net/http/mapping.go",
+          "git_blob": "87e6d5ae5d3f2e676139b6714151f0d8726513c4",
+          "bytes": 1719,
+          "blake3": "9a71eb72b66498206325703bcb5e5f0d837d6084d2dfe5d3d67ef9e95e634128"
+        },
+        {
+          "path": "src/go/build/syslist_test.go",
+          "git_blob": "2b7b4c71aaabfb8d376b0faafa131a2159e02a8f",
+          "bytes": 1412,
+          "blake3": "d97d8ce0eb32d614f222be3e329d7b6e8887087ae14f4889a4aa1991de14145f"
+        },
+        {
+          "path": "src/simd/archsimd/_gen/specgen/specexpr/num_test.go",
+          "git_blob": "f28a8df652f388ae9e505a2db2b03a74051f9820",
+          "bytes": 785,
+          "blake3": "5ba6b40d508cd9a93caf073635682191d4257a9eff1412d7e34f8de124c04f2b"
+        },
+        {
+          "path": "src/reflect/internal/example2/example.go",
+          "git_blob": "8a55826a1c50ef7be9fb90a50a6c28adcbfe7819",
+          "bytes": 246,
+          "blake3": "1053e252c12733cf27ad65a17139cfda54a69533317623899a64a8c721a22ba5"
+        },
+        {
+          "path": "src/internal/fuzz/mutator.go",
+          "git_blob": "98ac975598f4e08d4ba6c31f8ceffc26483d4ace",
+          "bytes": 6804,
+          "blake3": "be04cdbef0e1b47cb40a967d6e01c27311d83ef6972ba8461d141fd83f5f5ee9"
+        },
+        {
+          "path": "src/math/export_s390x_test.go",
+          "git_blob": "827bf1c8f60f3846d72836782a6a1d968e076252",
+          "bytes": 732,
+          "blake3": "403cd5b8406a7eb3715bcc5318c453d8aec036381e1de30df1970a35f8264998"
+        },
+        {
+          "path": "test/fixedbugs/issue54912.dir/main.go",
+          "git_blob": "67b9012b36b5b79095e9d09a75097b22119da5c9",
+          "bytes": 227,
+          "blake3": "73af117a7123b109d3932f4fc8c6a6f04bc5a08a2cb3ba4f0020ca54f3e48051"
+        },
+        {
+          "path": "src/os/executable_darwin.go",
+          "git_blob": "2bb50ab3fef4bb1939e8e86b78f623647480ca31",
+          "bytes": 675,
+          "blake3": "8002398627e8c1da89b086c11ef3556f64feb1a3cd52fedf3775014b8f6d0e4c"
+        },
+        {
+          "path": "test/fixedbugs/issue80543.go",
+          "git_blob": "f34dbfd484a77d2891339c36b4f12698ea078e57",
+          "bytes": 319,
+          "blake3": "3b344d8fa76a8c7aaba0c880e3490376915d1f5da2cb992d1cb0b6fb631c18ec"
+        },
+        {
+          "path": "src/image/color/ycbcr_test.go",
+          "git_blob": "85c1b984a65ea4156f3a7b4dea4bc38d3cf35272",
+          "bytes": 7451,
+          "blake3": "616eb82a74fe9a03e5f416b54ff2f9ab10e552a07554e72bddf27b67b8031add"
+        },
+        {
+          "path": "src/internal/poll/error_test.go",
+          "git_blob": "abc8b1684f5aaa233117bf4eff6b75c380f2b70d",
+          "bytes": 1071,
+          "blake3": "77e65fd3713f9bd7bf4a4022318a535bb7589f0bf8036c46bfecd80403541307"
+        },
+        {
+          "path": "src/crypto/mlkem/mlkemtest/mlkemtest.go",
+          "git_blob": "40f64862bd49eb1fa6760f6e14e630fd5d97aea5",
+          "bytes": 2172,
+          "blake3": "8ca6c81b70872a2b5d3d5932ea76f9275631c6414ace2aa42a84c32e099e0d48"
+        },
+        {
+          "path": "src/os/file_mutex_plan9.go",
+          "git_blob": "26bf5a7d1e5fcda2ba9384d3e453402a6edf0a41",
+          "bytes": 1852,
+          "blake3": "6ca0bbe3b2d95c9b820ea5c5bb5e65014390f4a86c836aac16b8bea5f57a8abf"
+        },
+        {
+          "path": "src/testing/allocs_test.go",
+          "git_blob": "bbd3ae79c85311a6de9f28d857fc1fdae9cf5442",
+          "bytes": 817,
+          "blake3": "28b28540e42eb9915a29f98af1ef8c801eeb9e9ab56640714ad3c61d1293a426"
+        },
+        {
+          "path": "src/go/internal/gccgoimporter/testdata/notinheap.go",
+          "git_blob": "b1ac967227b1bc36396e474536f6c63cddbfc764",
+          "bytes": 50,
+          "blake3": "09968adcc894c23f2db5f2ddb6b682d4b7a89497606a349cbb9908690f6d82d2"
+        },
+        {
+          "path": "src/encoding/json/internal/jsonopts/options_format.go",
+          "git_blob": "4a5b759daad32ce3b24577572677f8a5bc2319d7",
+          "bytes": 6196,
+          "blake3": "4334e78cf150215d085aa6fb7a52709475540262c9ffefff6f8e6cba88c543b5"
+        },
+        {
+          "path": "test/fixedbugs/issue15329.go",
+          "git_blob": "30fbf1379706515361b68919068c6d3b7a86e739",
+          "bytes": 2154,
+          "blake3": "cd4be706f1d9bb58976a9066492891fa04852479f8ad8e249e28523b7ea67da6"
+        },
+        {
+          "path": "test/fixedbugs/bug463.go",
+          "git_blob": "36515f8961c747cf933398684d58f2b1122db138",
+          "bytes": 497,
+          "blake3": "b644bb8de4ae07cac3bd3087db7e7139839ffbf55e1ca3017bb93ba512b04391"
+        },
+        {
+          "path": "test/fixedbugs/issue52193.go",
+          "git_blob": "c7afc9312f55760e16943cc886eb11f3a93fa769",
+          "bytes": 708,
+          "blake3": "10b88e947362f044f4764b1838483ef639d5b3be84e8de93739df73d33ce7c55"
+        },
+        {
+          "path": "test/fixedbugs/issue37753.go",
+          "git_blob": "ac311e371531d6e03524f67c2a7101a2ecb23e07",
+          "bytes": 301,
+          "blake3": "59e710348f05f1d7aa7a455d01c31328c94df03e84505d4ca8091b76836bfa75"
+        },
+        {
+          "path": "test/typeparam/issue49893.dir/b.go",
+          "git_blob": "b86b53666489149a7c31a1e60adc0d96e96644cd",
+          "bytes": 280,
+          "blake3": "bd9a3a9e24c30b6ed9c4283256298b8d053e666c16649a4c2f1412ec45a369f1"
+        },
+        {
+          "path": "src/compress/flate/example_test.go",
+          "git_blob": "9bf813b5b49af68c74bc32926096eac4bd17a3a7",
+          "bytes": 6677,
+          "blake3": "b5f95d7b343c09e446ca572adc14c559e5fe3ccb2228fcc5b4f608a39b372819"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue49003.go",
+          "git_blob": "bf2e6c4d113cb0bb9e40a6d13987c5eba7c9edab",
+          "bytes": 240,
+          "blake3": "685289af19fdb5e84a9649a175cbdab9fea2db9815494758f69511b5a5b69178"
+        },
+        {
+          "path": "src/simd/archsimd/_gen/simdgen/sve/operands.go",
+          "git_blob": "bc905a48ba95daa17b564c0a8113838c0fd7650a",
+          "bytes": 24358,
+          "blake3": "a9fbaf0cc3af4b6ea1e14590edc5744fed70ccf20f10e57ac208b34b9cd7a0e0"
+        },
+        {
+          "path": "src/syscall/net_fake.go",
+          "git_blob": "549f2bece0a56cc536da67965343908791d523db",
+          "bytes": 883,
+          "blake3": "554686031a522be076c68485493de47cff47e534960cbca327bd858e02eea2d0"
+        },
+        {
+          "path": "src/cmd/cgo/internal/teststdio/testdata/stdio/file.go",
+          "git_blob": "d97ee4c3a172db930737bc23690ce8522a6fd5ed",
+          "bytes": 871,
+          "blake3": "0eceb4502f298da085b7aa49861a0136832915953595afcf1e42a4f63a090a16"
+        },
+        {
+          "path": "test/fixedbugs/issue26340.go",
+          "git_blob": "f973ce2237eb86232ed59f5362c31a2aa99788cf",
+          "bytes": 426,
+          "blake3": "5d002b12b81278775d3beeb6e91a85b0a7c17c5484fbab21e92e63985887c070"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/tools/internal/astutil/unpack.go",
+          "git_blob": "2538a7428b22603d5d8a635ebfbe13e22fda654d",
+          "bytes": 1473,
+          "blake3": "d1b42660577c5cd7273b6d141492a09e66d71e404783aa8d8fd3d9b227925fa5"
+        },
+        {
+          "path": "src/syscall/zsyscall_freebsd_arm.go",
+          "git_blob": "330f7090590e4e11d22a14e6b5a82c4773a55008",
+          "bytes": 31984,
+          "blake3": "767eef37d10dc7a708b1bfbf215dc454e6a1c5c7b81a3da0a09cae55f65e4dce"
+        },
+        {
+          "path": "test/fixedbugs/issue18808.go",
+          "git_blob": "c98386ee7847e6e7e68c659acd6dc40902a4c40b",
+          "bytes": 847,
+          "blake3": "bc1f345df9b3c1d49779867c579e7069e3b1ca51647fd48248124990ca2cad20"
+        },
+        {
+          "path": "src/sync/atomic/value_test.go",
+          "git_blob": "c9d1a0d80386a31a05ecef688955d9041c6b9533",
+          "bytes": 6695,
+          "blake3": "e6581faee5639a993e00aa4905aad5d13c08385ff8e36b6676ada9d9d0a1d5f4"
+        },
+        {
+          "path": "src/vendor/golang.org/x/net/quic/rtt.go",
+          "git_blob": "0dc9bf5bf26d78e142d9094de67c8ade6d63737b",
+          "bytes": 2281,
+          "blake3": "f0b2ae34e893d7542163e27630cf5cfe04c81e9b7bd07fbf017ae2edc1a4c8b4"
+        },
+        {
+          "path": "src/crypto/tls/ticket.go",
+          "git_blob": "11f7efde858539ff85d93db2addc4d3330d22413",
+          "bytes": 12931,
+          "blake3": "1a27cb962a3568f9592b9426cb0a0e56cdc2642c6a21b012c176d2b597323d5f"
+        },
+        {
+          "path": "src/net/http/internal/http2/transport_internal_test.go",
+          "git_blob": "049cbd328c61eb9a4449a2fe4e07f915e9704370",
+          "bytes": 3710,
+          "blake3": "3dd0318734e5f3e92ca71c3d0e124e7cc5f39f29f511cdb66b7ae1db39cc30a5"
+        },
+        {
+          "path": "test/fixedbugs/issue15609.go",
+          "git_blob": "fa3b75501172013e2a82af016a4987c3ad61850a",
+          "bytes": 207,
+          "blake3": "e3af09e41b58ebc1e871ae02175b938818d2c9fbd2af6790b2399f0c72eb4f99"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/tools/internal/astutil/clone.go",
+          "git_blob": "2c9b6bb484171010dda301ee5e5f5820aafdc7de",
+          "bytes": 1609,
+          "blake3": "10bdf74fc75bc29a5cff9af02a7dbf4ad349b34829db90937ea0642dd0c72924"
+        },
+        {
+          "path": "src/crypto/internal/fips140/nistec/p256_table_test.go",
+          "git_blob": "5b2757da2b4f43909cbcf24720f3844c25a6d031",
+          "bytes": 1070,
+          "blake3": "749f89ad9ede7112602f4fffd4741b8b2fe8fa7608728fb9744278ad4ec69d91"
+        },
+        {
+          "path": "test/fixedbugs/bug314.go",
+          "git_blob": "6e26d14e1f5447be1f3b81c94e965b32db7ea1e2",
+          "bytes": 471,
+          "blake3": "0521782917fec4bee0375ac2067a153c0af00114793552e460a9e6ebebaec0d3"
+        },
+        {
+          "path": "src/cmd/go/internal/vet/vet.go",
+          "git_blob": "3f45050159d12b335681ccd8be2df9fc38905efb",
+          "bytes": 16717,
+          "blake3": "a85025c228224c820a60a27a2d78b0cf318947e892407781a610e9adfd25fcbe"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sync/semaphore/semaphore.go",
+          "git_blob": "f2a7d3ff494dfbb2a8b11940c073027fc2168fde",
+          "bytes": 4614,
+          "blake3": "352043a728441ade85dab85be4ac080cdbd631165d2fe58fcd421adfe3836981"
+        },
+        {
+          "path": "src/cmd/cgo/internal/test/cgo_thread_lock.go",
+          "git_blob": "e8749384af14ba05aa192b2b7d47810156b08ad4",
+          "bytes": 939,
+          "blake3": "a3c61b33628a29497d3fbb18e00e977572464aaf1bcdd63fcb2661a293a8eb87"
+        },
+        {
+          "path": "src/os/exec/internal/fdtest/exists_unix.go",
+          "git_blob": "472a802d7baa52cfa578bbb9349ebf7ea2b3f654",
+          "bytes": 487,
+          "blake3": "491c731c70dfc703b5f294708a9f50bac9b26785e333aca3e518273ea085408a"
+        },
+        {
+          "path": "test/fixedbugs/bug325.go",
+          "git_blob": "74d7bbb92383b6b602ca7fb3988239a6b902f1f1",
+          "bytes": 368,
+          "blake3": "2532ebe183f0e85130ad2c7016733565fa25e2843eabd8568870dc8b15134e87"
+        },
+        {
+          "path": "src/sync/atomic/value.go",
+          "git_blob": "031a9d5680e5c4907db713b981a1270f6341a8c5",
+          "bytes": 5906,
+          "blake3": "027ae956c16a4cd83cefec46d7b12a4c956e74f3c8ddb20e00a6c68310a28f25"
+        },
+        {
+          "path": "src/internal/nettest/conn_test.go",
+          "git_blob": "d7c6830e0a4e882e8f6112a92c462be1e1acb75b",
+          "bytes": 11837,
+          "blake3": "8362ba57d0d69b5f751afaa2946c561e4288e042e65745b816ab48992ed4652d"
+        },
+        {
+          "path": "src/runtime/os2_plan9.go",
+          "git_blob": "58fb2be91f149e635f4cf171b429bd8cc645f4e2",
+          "bytes": 1517,
+          "blake3": "8a28552293964ab63f5f9d18556411869b2c195d1b533cd6cf53ebaff7c73fd4"
+        },
+        {
+          "path": "test/turing.go",
+          "git_blob": "acbe85b646ce7671dafc290afe39afb5aa5fe9e7",
+          "bytes": 893,
+          "blake3": "e52d75e22fcf98ea298be4fb7d3e3b9ac62c50a141c99e44d86a15449b00f888"
+        },
+        {
+          "path": "src/net/url/url_test.go",
+          "git_blob": "b38d3d7e2a46582b2123993d438d0d7180f1b195",
+          "bytes": 64873,
+          "blake3": "210523261f5a26521668da348ba2100913a04a9177df8f838eb7e32d238260e2"
+        },
+        {
+          "path": "src/crypto/x509/parser_test.go",
+          "git_blob": "0dab2f6ba27653cd9f65b5cb3c611fa4d8768cb9",
+          "bytes": 23922,
+          "blake3": "2dd53a37aa9ec62d8cfaf9651d6b3ec0051842878d8b5e8435de5ccb321b7e56"
+        },
+        {
+          "path": "src/runtime/synctest_test.go",
+          "git_blob": "1059d629d3b6f7e48687f4dbe7219bba1503c6e9",
+          "bytes": 816,
+          "blake3": "a0458b33678fb94d2e958431501bb7daaf4c6b539c2912f0cb9e18de4d864cc3"
+        },
+        {
+          "path": "src/archive/zip/fuzz_test.go",
+          "git_blob": "7dffde69bf5d5f8934298bf69887cb64a525a41c",
+          "bytes": 1718,
+          "blake3": "a3f4714286f2561db4ef91975e91f5fa077421a93068eef0281d55cbfc35feda"
+        },
+        {
+          "path": "src/runtime/mgcscavenge.go",
+          "git_blob": "325efc3ccdb5269b4669f7149c87a94660f3ac50",
+          "bytes": 53513,
+          "blake3": "b4441949e13e3e70dfc6c0376ea45b08f4978a070627321f8c19b786f2b8f9a0"
+        },
+        {
+          "path": "src/cmd/compile/internal/ssa/testdata/inline-dump.go",
+          "git_blob": "97893b6f212f986b9931fd5f678759b6e0ded95d",
+          "bytes": 178,
+          "blake3": "357cf3d7969ee9f35a5fc9602f8be55a650d811066c5d68c68816a1f6c2f905d"
+        },
+        {
+          "path": "src/cmd/compile/internal/syntax/dumper.go",
+          "git_blob": "9a021a4582903d23af4222226a91ffe1ddeb5149",
+          "bytes": 4610,
+          "blake3": "e0effd96e65c7b3d1e51b881f4779f3174d3594b59da58c68707ee0fa1276382"
+        },
+        {
+          "path": "test/interface/embed3.dir/embed1.go",
+          "git_blob": "d042482e941c540cd07cf4d05e3c0a3696a9eaec",
+          "bytes": 1596,
+          "blake3": "70680349d7bc4a9862f2719607b0d830016718d0ae2d3b3f6baf78b620cb0654"
+        },
+        {
+          "path": "test/fixedbugs/issue79874.go",
+          "git_blob": "03ab5acdc7179fbd3e8f4b24a49c3ec3abb72037",
+          "bytes": 1771,
+          "blake3": "126f552150377286dc32b29cbb50e97848abc7c2ba78a9626fa92439a82ecab2"
+        },
+        {
+          "path": "src/internal/syscall/windows/version_windows.go",
+          "git_blob": "5edf7a01e270d498cb9432908d6169d96adf78db",
+          "bytes": 4554,
+          "blake3": "608c56994bda42f56b1d08fa059305b44eb3d8607bb4256bfcf0a6b64a5887e4"
+        },
+        {
+          "path": "src/cmd/compile/internal/walk/assign.go",
+          "git_blob": "e19eea2d4c3e37f3ba15ff4265d37fe8a5879772",
+          "bytes": 21886,
+          "blake3": "7c1b80a01e43222dc0b43851c6b343b89642ac2484b19486c835d4300a9987a6"
+        },
+        {
+          "path": "src/runtime/testdata/testprogcgo/cgonoescape.go",
+          "git_blob": "2b7c7a9c551f46cbaa0321d1e6553c6bb1b6bff1",
+          "bytes": 1902,
+          "blake3": "c9498399d482c613796512aa5a474aa95a1857ffd971c41f236bcc40292b4f8c"
+        },
+        {
+          "path": "src/cmd/compile/internal/ir/node_gen.go",
+          "git_blob": "2ae0a43e49617c5c2b6af85183db08dd8daf0a4c",
+          "bytes": 43965,
+          "blake3": "b75352cfeb9d91c59f43335415128e7771d7619bb837c77190843c070e2a376e"
+        },
+        {
+          "path": "src/cmd/link/internal/ld/heap_test.go",
+          "git_blob": "08c90301e2462413727b45fccf4f6537fc3b8fce",
+          "bytes": 1918,
+          "blake3": "dff22997c5347d77ec0f67b6d645bb37962d18b44a3140b2d93bad603199a087"
+        },
+        {
+          "path": "src/internal/syscall/unix/faccessat_bsd.go",
+          "git_blob": "4b9ea738c80d774464344051fcf7735848232b60",
+          "bytes": 583,
+          "blake3": "e37620c92186069d5b22038831744b06085cdb111a1c0cacd872fa10d17402b0"
+        },
+        {
+          "path": "src/internal/poll/fd_mutex_test.go",
+          "git_blob": "62f953192d751eeae80fc819443d5b8b8dc60d61",
+          "bytes": 4048,
+          "blake3": "5770d8cf0b8a5af5a1e58c7d7c3b4aab2b68bfb4735180dc29d4ab7b3ff20c8c"
+        },
+        {
+          "path": "src/internal/poll/export_test.go",
+          "git_blob": "65549378e276f3407c8fea7a4f9f6cc414ecc3c1",
+          "bytes": 724,
+          "blake3": "23e4f426677ba28c0373cd2449b18d4146d339ac5c058cf7cf5e86cee01f4cc3"
+        },
+        {
+          "path": "src/cmd/compile/internal/syntax/testing.go",
+          "git_blob": "202b2efc3e0d913b3aaef4fafb8e98a27bdacc6a",
+          "bytes": 2159,
+          "blake3": "0038961c56810b02ee35ae941fa1dd5fe3f87410d1170a4250d601f91d0b0c02"
+        },
+        {
+          "path": "src/runtime/norace_test.go",
+          "git_blob": "3b5eca5341ec5d9f724489f23b3b374abcc25e98",
+          "bytes": 983,
+          "blake3": "1926b7da5682abdb6c7c13255bfe61a9df7bd9785dda15d30494cea18eaeb0f4"
+        },
+        {
+          "path": "src/math/atan.go",
+          "git_blob": "e722e99757fd2048f4d80fc6941b2c93f0b81442",
+          "bytes": 3099,
+          "blake3": "942cda77ca0405db5bf6fac004e0eac9661887924948cafab66095384b89f69d"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/arch/arm64/arm64asm/condition_util.go",
+          "git_blob": "f2fa11b9dc2da633d69911efb2257a5036252a67",
+          "bytes": 1449,
+          "blake3": "727b85329e5b91fd66ccc9f0750dc8d902781fd4abc486a8f2af5b2478d4b3e2"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/zsysnum_darwin_arm64.go",
+          "git_blob": "0dc9e8b4d95050bc0fd6fd89fec16ddce3dfbc17",
+          "bytes": 18189,
+          "blake3": "b45e758a7caafcbaebba425dff4f51d0e29554678dfd418a593e71872e76a0dc"
+        },
+        {
+          "path": "src/internal/goos/zgoos_solaris.go",
+          "git_blob": "c7058260f8e0d166817ed8a7daa20696bfbe3ded",
+          "bytes": 469,
+          "blake3": "fc50abe6901bd37ae2cd08f2c4003127122d35e32e5a67a33e565ae0ace7948a"
+        },
+        {
+          "path": "src/simd/archsimd/internal/simd_test/ternary_helpers_128_test.go",
+          "git_blob": "76722d97494944f5e58e86d894ab339579bb93e6",
+          "bytes": 8075,
+          "blake3": "17eb21e7dc96bb944ed05e5548d576b6ac132488439da77ea337d7430d18b341"
+        },
+        {
+          "path": "src/cmd/vendor/github.com/google/pprof/internal/plugin/plugin.go",
+          "git_blob": "e6f0827633dba2fe9c92d3dd4fdfc8e7e25fee0a",
+          "bytes": 8118,
+          "blake3": "eeb6cafe62d7a9104fda67cdd140913986b81d201fc7f1dd25b623e60e11461d"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/syscall_linux_386.go",
+          "git_blob": "210d545c93778cf6c16c1520aff1f1edb140809d",
+          "bytes": 9022,
+          "blake3": "c852d081154541ff8146b068370d64c875c646f1fb52c29a42ae852706095b73"
+        },
+        {
+          "path": "src/runtime/pprof/defs_darwin.go",
+          "git_blob": "2b2f68132c0576c6b61c592a9940ac40b7810a6e",
+          "bytes": 770,
+          "blake3": "8f993a455c15035f7f8afa880e6fc44b1e19b53a5128e54c4d93193698090911"
+        },
+        {
+          "path": "test/fixedbugs/issue22458.go",
+          "git_blob": "5c899295771dacd11776990d3a9d40bb88670229",
+          "bytes": 456,
+          "blake3": "8ded89791a9bbff3297ea2373ca6512b159f5c9faeec196928f7a751ddd17480"
+        },
+        {
+          "path": "test/fixedbugs/bug311.go",
+          "git_blob": "f5cab44c7e2c93bf0b1b35b38c0d576ab2c22baf",
+          "bytes": 377,
+          "blake3": "421885d07fa0d683bf7df6f3cf04361e9649719c89794741d3b0b113e6e603c0"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/zsysnum_zos_s390x.go",
+          "git_blob": "5e8c263ca9c6f77d8f2efc5e783e21c839d68f08",
+          "bytes": 150072,
+          "blake3": "87b06df18d80ccc50ca30f0238603426dea05788d5d23a1aa5c6fb96b7e9216d"
+        },
+        {
+          "path": "test/fixedbugs/issue33866.dir/a.go",
+          "git_blob": "9c782c5eedf37c331a0b307fc43f22d5b3ac8fcf",
+          "bytes": 314,
+          "blake3": "9630cea0ad64c3038ab53e2a90bb8d7b46d142115e72574518f6653cf2e8ff83"
+        },
+        {
+          "path": "test/fixedbugs/issue22904.go",
+          "git_blob": "02459c6a4e80201541dec58f37028a63d2f00947",
+          "bytes": 464,
+          "blake3": "90644cbd336b91a954ff5e40dc58fe40f66927db0a85405bdaaa48b016f987c6"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/sys/unix/syscall_darwin_libSystem.go",
+          "git_blob": "2f0fa76e4f65b17d55eba7a6996a43c73f3d3253",
+          "bytes": 1225,
+          "blake3": "f9247260e4663a81f01355b0630a783bc6f367aaa8be76022c41aa0189c631a8"
+        },
+        {
+          "path": "src/cmd/go/internal/work/security.go",
+          "git_blob": "1398f123c926724c06421d90913eec22ccb940b3",
+          "bytes": 13943,
+          "blake3": "6609c72251cc84b336e2d9eaa47680382c59eabff0cdc3adc430f6ecd3496647"
+        },
+        {
+          "path": "test/typeparam/append.go",
+          "git_blob": "61682625c1d4dbb4e1b065ef87f6aa226e5d9699",
+          "bytes": 597,
+          "blake3": "4b301caa3cc42b15923f850c66fa0d15de1d4c1f5986eee3ba2b396708c8a858"
+        },
+        {
+          "path": "src/cmd/internal/obj/x86/asm6.go",
+          "git_blob": "65fb1c9679459d603d94529c57d6af39adc72994",
+          "bytes": 149290,
+          "blake3": "152e062dcedcdfe7aadb66a84861057cba5a676846ef3a16c75ec0f0404e260c"
+        },
+        {
+          "path": "src/cmd/vendor/golang.org/x/tools/go/gcexportdata/importer.go",
+          "git_blob": "37a7247e26867306df8cb607c0643e0975e8ed7a",
+          "bytes": 2026,
+          "blake3": "0f87fbf28a877c9e4876e84c89f41071ae081a0e5d960b4845840620ca6da3fe"
+        },
+        {
+          "path": "test/fixedbugs/issue80520.go",
+          "git_blob": "863758c2af5d589abe1ef1b69c687e1809e9d0a0",
+          "bytes": 495,
+          "blake3": "6d92d1b230037975f67a79dcb62ce6613a2c0b9a47d64d11e0abc2e932613ff3"
+        },
+        {
+          "path": "src/runtime/defs_openbsd_ppc64.go",
+          "git_blob": "83f300cbaab85b19e194dba6b57b2bd2d6368113",
+          "bytes": 3073,
+          "blake3": "1b0c212bb503a7ac75a086e5eef0b7cf3bb2947494c6db8d090ea96812e24db9"
+        },
+        {
+          "path": "test/fixedbugs/bug248.dir/bug1.go",
+          "git_blob": "f1db77d2f5d31976a2af3c395e0e158f81400fdc",
+          "bytes": 226,
+          "blake3": "b8ef336c90d547353e211b62381f5d8ecb78ec9b7231b0d930553c0e5365379a"
+        },
+        {
+          "path": "src/internal/types/testdata/fixedbugs/issue40057.go",
+          "git_blob": "2996d398e7d732eae38eae55c6937773bc2ffc4b",
+          "bytes": 330,
+          "blake3": "43bee5d2637342ce7ed051e6c7930a93e0c2589bff3d4e2bfd7f51a1bd233c0c"
+        },
+        {
+          "path": "src/os/sys_windows.go",
+          "git_blob": "72ad90b924ad8a714670572444d46e912df2c044",
+          "bytes": 874,
+          "blake3": "8a2abe53e54d0f66c7b47eb600efd4c9cf705d715d3c76fea23e8e8197ee31a1"
+        },
+        {
+          "path": "src/runtime/os_windows.go",
+          "git_blob": "264be526bdc7471a3c01b8e5af0ea49748a2ab2c",
+          "bytes": 42949,
+          "blake3": "9900741f74e08a1259547733d3174558354efcdacab93f75ac6fc99d348c0d79"
+        },
+        {
+          "path": "src/cmd/link/internal/ld/testdata/issue42484/main.go",
+          "git_blob": "60fc110ffaa5158e653be75e74034bec10be0a63",
+          "bytes": 132,
+          "blake3": "adfb474c45ae727000aaef3812cd2da94c65bc58e123ec79b69e19c73f39c858"
+        },
+        {
+          "path": "test/typeparam/issue54537.go",
+          "git_blob": "614ed4648d509785c5b41bee9db647b51a1c6ac4",
+          "bytes": 336,
+          "blake3": "a8a8ae8236595837b89e0212b8f2c57a3745f8c2b6990b22b1f0003a24bc8890"
+        },
+        {
+          "path": "src/crypto/x509/cert_pool.go",
+          "git_blob": "4ca73b4e07072d5084908295d552495db2908675",
+          "bytes": 9422,
+          "blake3": "c6183f32d6ed5453c1cc8cb301772b25c4f3497037e20f320e681e01b63b58ec"
+        },
+        {
+          "path": "src/runtime/signal_solaris_amd64.go",
+          "git_blob": "b1da3139ed9ab0815b053d09e2cb1ec89f732707",
+          "bytes": 2525,
+          "blake3": "7c8941e8be1f8b16617b8e30f1c7fe8110df7ff652d63fda7da3aef4f615497a"
+        },
+        {
+          "path": "src/go/build/read_test.go",
+          "git_blob": "6851e6b6d6003eec431616fdf20ddf2968d6bf18",
+          "bytes": 6182,
+          "blake3": "26698eb846b72c40df1d917af07e596c5b01943069982e6fc5f05075d464a490"
+        },
+        {
+          "path": "src/math/rand/example_test.go",
+          "git_blob": "d656f470ebbfd66f5f7a9c1f5bd91510112f2b91",
+          "bytes": 4298,
+          "blake3": "5650a8f3a087009f80f83c6f8d9d7c826b547eadee79816ef715159f0f169124"
+        },
+        {
+          "path": "src/go/types/decl.go",
+          "git_blob": "fc32f1d6d917df2f3f2c17f1c5df35054ca66e3f",
+          "bytes": 27844,
+          "blake3": "ae610add3efa0f0a4c032312a31b59bb898fff34be283869f23da02a8d1b3c1c"
+        },
+        {
+          "path": "src/cmd/go/internal/envcmd/env.go",
+          "git_blob": "e648110e0136a8496ac8b2cb5ee46f0e9d85e027",
+          "bytes": 22015,
+          "blake3": "072fb99a4fbc5c5f349943bd8a8ae63be6255c1d6ca665bab7b3f1ab5bcdd7af"
+        },
+        {
+          "path": "src/encoding/xml/xml_test.go",
+          "git_blob": "10cefa068fec87ef2b4dadcbd5332c2a6ff97339",
+          "bytes": 38478,
+          "blake3": "f68b8bef0f741d56856cc24f604c69d509d9d9b813b2be5b6c84beb98cc3e96e"
+        },
+        {
+          "path": "src/syscall/zsysnum_linux_arm64.go",
+          "git_blob": "c03b59628a56b32b474fb7d926a43a8e0cc824b5",
+          "bytes": 9183,
+          "blake3": "fcd9ac2d4721171395332764cc541652dff6446d5a974cd8ee31266eca9eb730"
+        },
+        {
+          "path": "src/simd/archsimd/internal/simd_test/shift_helpers_wider_test.go",
+          "git_blob": "4efc276526f5643624beadd2f6fb29ed593788c4",
+          "bytes": 9606,
+          "blake3": "37d73009b57693e71a4f37b55d8f1b6641bd068504ff432e9f7d05ef25f08c8f"
+        },
+        {
+          "path": "src/syscall/zerrors_openbsd_amd64.go",
+          "git_blob": "69c68502bee64d35a726b095d5b1e0ea1450a21c",
+          "bytes": 64192,
+          "blake3": "2a94301d1903b144ca27cffbfabb7680d946b9e319f830c58670be983a5f4bc6"
+        },
+        {
+          "path": "test/typeparam/issue51522b.go",
+          "git_blob": "115b6b9c425f2baea5a6461c949514171b55636d",
+          "bytes": 730,
+          "blake3": "3ab248640398523d6ab9eadb65d9496917357936a4c45b93dfa5a3ab5ccfdd3a"
+        }
+      ]
+    },
+    "edited_path": "src\\io\\fs\\stat.go",
+    "change": "append one comment",
+    "sequence": [
+      "baseline/fresh",
+      "baseline/edit",
+      "current/fresh",
+      "current/edit"
+    ],
+    "timeout_seconds": null,
+    "limitations": [
+      "512-file development diagnostic; not full repository qualification",
+      "one trial per phase; uncontrolled OS caches and host contention",
+      "structural only; sampled RSS is a lower bound"
+    ],
+    "binaries": {
+      "baseline": {
+        "entmoot-mcp.exe": "8004685646f09c21b48b554ce6d5c7a4a2d359e9a80b6e6953b09d7e596eaabe",
+        "entmoot-producer.exe": "9e1ce3a6ee0481bbaf1eb25486740e62edf83c0643d83d48a508544c746b7041",
+        "entmoot.exe": "6344bfde95e8272aef7d60184983b3b38d787282e0443155345802cf53a6763d"
+      },
+      "current": {
+        "entmoot-mcp.exe": "226e2bcd9b66e84826ffb6ca468ba91458ba5ffd1d81e7df81709f9a1a9f328a",
+        "entmoot-producer.exe": "2628a8ac8d863a1b5ac9e2ade32dd1e35434e5cf3f4dcf4c500b222992d21c55",
+        "entmoot.exe": "4866ed3028e6d6a752e8f301a836a372599472ec707128ca08c96202c651badc"
+      }
+    },
+    "implementation_inputs_sha256": "fe88d684a5e039b2610370fe7ff27f1d7f9bfdb19642bfef6f42d3859c0372b9",
+    "runner_sha256": "efec9acc0d21b3dbb34b7be2ecfdd0b72ddfe27c56a77ecb033c7b10f9290196",
+    "base_revision": "84bd4a7056cf76b984330d6140688518006372a0"
+  },
+  "verification": {
+    "source_restored": true,
+    "binaries_unchanged": true,
+    "exact_node_versions_and_structural_edges_match": true,
+    "nodes": 68835,
+    "structural_edges": 69925,
+    "parsed_files": 510,
+    "unchanged_file_projections_reused": 509
+  },
+  "trials": [
+    {
+      "implementation": "baseline",
+      "trial": "fresh",
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\baseline\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\source",
+          "--structural-only"
+        ],
+        "cwd": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\source",
+        "started_utc": "2026-10-19T16:26:50.644838+00:00",
+        "wall_seconds": 35.01981109997723,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 95866880,
+        "os_peak_main_working_set_bytes": 115486720,
+        "sampled_tree_cpu_seconds": 32.171875,
+        "sampled_tree_read_bytes": 8754106961,
+        "sampled_tree_write_bytes": 6236889704,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 449,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\commands\\baseline-fresh-d6f1szzw\\stdout",
+        "stderr": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\commands\\baseline-fresh-d6f1szzw\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 5367,
+            "characters": 5367,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:4b4166ff6e6c9b0a8801c4aaf95b8c4709ed71c7ee9dd95f6176b8ae249b7feb",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 358,
+            "characters": 354,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:8d08f7c25dcf36cb1c9eea75f2dd6b2cc491366cae7ae6444338537098c32ded",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "retained_bytes": 251886320,
+      "inventory": {
+        "nodes": 68835,
+        "edges": 69925,
+        "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+        "edge_commitment": "862c4aa49867633df2471f71571b23bb63917eef70799a3d51bdd25f1cdc5b3b"
+      },
+      "publication": {
+        "indexed_files": 510,
+        "reused_syntax_files": 0,
+        "reused_extraction_files": 0,
+        "reused_stitching_files": 0,
+        "publication_outcome": "replaced",
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 1.532482,
+            "rss_before_bytes": 10432512,
+            "rss_after_bytes": 34217984
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 6.7805771,
+            "rss_before_bytes": 34217984,
+            "rss_after_bytes": 46026752
+          },
+          {
+            "phase": "inventory_metadata",
+            "wall_seconds": 0.0037806,
+            "rss_before_bytes": 43032576,
+            "rss_after_bytes": 44871680
+          },
+          {
+            "phase": "syntax_projection",
+            "wall_seconds": 14.1918772,
+            "rss_before_bytes": 46129152,
+            "rss_after_bytes": 62660608
+          },
+          {
+            "phase": "structural_resolution",
+            "wall_seconds": 4.8890149,
+            "rss_before_bytes": 62660608,
+            "rss_after_bytes": 67973120
+          },
+          {
+            "phase": "streamed_structural_publication",
+            "wall_seconds": 26.4620375,
+            "rss_before_bytes": 44945408,
+            "rss_after_bytes": 69054464
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 0.0511149,
+            "rss_before_bytes": 47874048,
+            "rss_after_bytes": 48984064
+          }
+        ]
+      }
+    },
+    {
+      "implementation": "baseline",
+      "trial": "edit",
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\baseline\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\source",
+          "--structural-only"
+        ],
+        "cwd": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\source",
+        "started_utc": "2026-10-19T16:27:25.850370+00:00",
+        "wall_seconds": 23.605065700015984,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 73232384,
+        "os_peak_main_working_set_bytes": 101638144,
+        "sampled_tree_cpu_seconds": 23.328125,
+        "sampled_tree_read_bytes": 6981755849,
+        "sampled_tree_write_bytes": 4821265859,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 303,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\commands\\baseline-edit-ogsbwcle\\stdout",
+        "stderr": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\commands\\baseline-edit-ogsbwcle\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 5492,
+            "characters": 5492,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:00c02e2fa3cefe732b94342e934cc3bab922e59a6a61096ca192e58f2621e16c",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 358,
+            "characters": 354,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:0e610b408a499581bd54a1401f12578613bc112bd0ebfb9081868ec08d540bf0",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "retained_bytes": 363407990,
+      "inventory": {
+        "nodes": 68835,
+        "edges": 69925,
+        "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+        "edge_commitment": "518a9de759fe7d7c6c8358aa15c30935d6158944f81ab36306c10cd72c3c9875"
+      },
+      "publication": {
+        "indexed_files": 1,
+        "reused_syntax_files": 509,
+        "reused_extraction_files": 0,
+        "reused_stitching_files": 509,
+        "publication_outcome": "replaced",
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 0.1021493,
+            "rss_before_bytes": 16457728,
+            "rss_after_bytes": 19435520
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 1.0480288,
+            "rss_before_bytes": 19435520,
+            "rss_after_bytes": 31141888
+          },
+          {
+            "phase": "verify_sealed_scan_reuse",
+            "wall_seconds": 2.5e-06,
+            "rss_before_bytes": 28340224,
+            "rss_after_bytes": 28348416
+          },
+          {
+            "phase": "inventory_metadata",
+            "wall_seconds": 0.0034284,
+            "rss_before_bytes": 28348416,
+            "rss_after_bytes": 30838784
+          },
+          {
+            "phase": "syntax_projection",
+            "wall_seconds": 11.6566973,
+            "rss_before_bytes": 32174080,
+            "rss_after_bytes": 49184768
+          },
+          {
+            "phase": "structural_resolution",
+            "wall_seconds": 3.4929149,
+            "rss_before_bytes": 49184768,
+            "rss_after_bytes": 49414144
+          },
+          {
+            "phase": "streamed_structural_publication",
+            "wall_seconds": 22.2094372,
+            "rss_before_bytes": 31002624,
+            "rss_after_bytes": 46989312
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 0.0555409,
+            "rss_before_bytes": 32522240,
+            "rss_after_bytes": 33865728
+          }
+        ]
+      }
+    },
+    {
+      "implementation": "current",
+      "trial": "fresh",
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\current\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\source",
+          "--structural-only"
+        ],
+        "cwd": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\source",
+        "started_utc": "2026-10-19T16:27:49.630260+00:00",
+        "wall_seconds": 30.444664100010414,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 93638656,
+        "os_peak_main_working_set_bytes": 115724288,
+        "sampled_tree_cpu_seconds": 28.265625,
+        "sampled_tree_read_bytes": 8156365190,
+        "sampled_tree_write_bytes": 6320440844,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 391,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\commands\\current-fresh-nl1qyuu1\\stdout",
+        "stderr": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\commands\\current-fresh-nl1qyuu1\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 5954,
+            "characters": 5954,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:e14444c72f88d917b0dfd7a31697532db6f3712049ea8eb9301ab536db442927",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 358,
+            "characters": 354,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:98d087aadd4b87e092f5dbbd18f247587f2110b3fa0d64408ab47e299c767aac",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "retained_bytes": 259698184,
+      "inventory": {
+        "nodes": 68835,
+        "edges": 69925,
+        "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+        "edge_commitment": "862c4aa49867633df2471f71571b23bb63917eef70799a3d51bdd25f1cdc5b3b"
+      },
+      "publication": {
+        "indexed_files": 510,
+        "reused_syntax_files": 0,
+        "reused_extraction_files": 0,
+        "reused_stitching_files": 0,
+        "publication_outcome": "replaced",
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 0.1858407,
+            "rss_before_bytes": 10584064,
+            "rss_after_bytes": 18575360
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 6.4071404,
+            "rss_before_bytes": 18575360,
+            "rss_after_bytes": 69242880
+          },
+          {
+            "phase": "inventory_metadata",
+            "wall_seconds": 0.00322,
+            "rss_before_bytes": 66224128,
+            "rss_after_bytes": 67325952
+          },
+          {
+            "phase": "syntax_projection",
+            "wall_seconds": 13.3444405,
+            "rss_before_bytes": 67772416,
+            "rss_after_bytes": 66863104
+          },
+          {
+            "phase": "structural_resolution",
+            "wall_seconds": 4.2105576,
+            "rss_before_bytes": 66863104,
+            "rss_after_bytes": 71282688
+          },
+          {
+            "phase": "publication_node_order",
+            "wall_seconds": 0.6494125,
+            "rss_before_bytes": 61919232,
+            "rss_after_bytes": 61988864
+          },
+          {
+            "phase": "publication_source_membership",
+            "wall_seconds": 0.0174724,
+            "rss_before_bytes": 61988864,
+            "rss_after_bytes": 63397888
+          },
+          {
+            "phase": "publication_commitments",
+            "wall_seconds": 2.9626921,
+            "rss_before_bytes": 63397888,
+            "rss_after_bytes": 63672320
+          },
+          {
+            "phase": "publication_file_selection",
+            "wall_seconds": 1.4867828,
+            "rss_before_bytes": 63676416,
+            "rss_after_bytes": 70381568
+          },
+          {
+            "phase": "publication_commit",
+            "wall_seconds": 0.8057206,
+            "rss_before_bytes": 70381568,
+            "rss_after_bytes": 70361088
+          },
+          {
+            "phase": "streamed_structural_publication",
+            "wall_seconds": 23.589442,
+            "rss_before_bytes": 67346432,
+            "rss_after_bytes": 70365184
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 0.0538284,
+            "rss_before_bytes": 47955968,
+            "rss_after_bytes": 49111040
+          }
+        ]
+      }
+    },
+    {
+      "implementation": "current",
+      "trial": "edit",
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\current\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\source",
+          "--structural-only"
+        ],
+        "cwd": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\source",
+        "started_utc": "2026-10-19T16:28:20.272820+00:00",
+        "wall_seconds": 17.491677800018806,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 76599296,
+        "os_peak_main_working_set_bytes": 101593088,
+        "sampled_tree_cpu_seconds": 16.96875,
+        "sampled_tree_read_bytes": 4273990235,
+        "sampled_tree_write_bytes": 3980569404,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 224,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\commands\\current-edit-m_3anhfb\\stdout",
+        "stderr": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement\\commands\\current-edit-m_3anhfb\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6063,
+            "characters": 6063,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:3d992ecb71f83813a28c368edfaacc1757d86becc42c687663ccef9cb1b0644a",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 358,
+            "characters": 354,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:f4f12becb910dd3320144908583de24ba4b96ec154b9c20786b750d511758fe3",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "retained_bytes": 370614424,
+      "inventory": {
+        "nodes": 68835,
+        "edges": 69925,
+        "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+        "edge_commitment": "518a9de759fe7d7c6c8358aa15c30935d6158944f81ab36306c10cd72c3c9875"
+      },
+      "publication": {
+        "indexed_files": 1,
+        "reused_syntax_files": 509,
+        "reused_extraction_files": 509,
+        "reused_stitching_files": 509,
+        "publication_outcome": "replaced",
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 0.1002041,
+            "rss_before_bytes": 16711680,
+            "rss_after_bytes": 19456000
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 1.0580142,
+            "rss_before_bytes": 19456000,
+            "rss_after_bytes": 31178752
+          },
+          {
+            "phase": "verify_sealed_scan_reuse",
+            "wall_seconds": 3e-07,
+            "rss_before_bytes": 29364224,
+            "rss_after_bytes": 29364224
+          },
+          {
+            "phase": "inventory_metadata",
+            "wall_seconds": 0.0030208,
+            "rss_before_bytes": 29364224,
+            "rss_after_bytes": 31244288
+          },
+          {
+            "phase": "syntax_projection",
+            "wall_seconds": 6.2980028,
+            "rss_before_bytes": 31752192,
+            "rss_after_bytes": 43941888
+          },
+          {
+            "phase": "structural_resolution",
+            "wall_seconds": 3.496208,
+            "rss_before_bytes": 43941888,
+            "rss_after_bytes": 47058944
+          },
+          {
+            "phase": "publication_node_order",
+            "wall_seconds": 0.7079165,
+            "rss_before_bytes": 45182976,
+            "rss_after_bytes": 46800896
+          },
+          {
+            "phase": "publication_source_membership",
+            "wall_seconds": 0.0180783,
+            "rss_before_bytes": 46800896,
+            "rss_after_bytes": 47611904
+          },
+          {
+            "phase": "publication_commitments",
+            "wall_seconds": 2.9902703,
+            "rss_before_bytes": 47611904,
+            "rss_after_bytes": 48005120
+          },
+          {
+            "phase": "publication_file_selection",
+            "wall_seconds": 1.6100193,
+            "rss_before_bytes": 48009216,
+            "rss_after_bytes": 46600192
+          },
+          {
+            "phase": "publication_commit",
+            "wall_seconds": 0.5662655,
+            "rss_before_bytes": 46604288,
+            "rss_after_bytes": 46678016
+          },
+          {
+            "phase": "streamed_structural_publication",
+            "wall_seconds": 15.8022747,
+            "rss_before_bytes": 31264768,
+            "rss_after_bytes": 46682112
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 0.0840585,
+            "rss_before_bytes": 31653888,
+            "rss_after_bytes": 32911360
+          }
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "512-file development diagnostic; not full repository qualification",
+    "one trial per phase; uncontrolled OS caches and host contention",
+    "structural only; sampled RSS is a lower bound",
+    "Subset packages are incomplete; this is not native semantic qualification.",
+    "The appended comment leaves structural node versions unchanged but changes source/snapshot commitments.",
+    "Fixed baseline/current order and concurrent validation workloads prevent a causal estimate or latency distribution.",
+    "Publication still rebuilds snapshot-qualified envelopes and verifies whole-view commitments; the result is not O(changed files)."
+  ],
+  "edit_wall_reduction_fraction": 0.2589862692054714
+}

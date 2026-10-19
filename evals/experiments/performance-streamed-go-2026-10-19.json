@@ -1,0 +1,3111 @@
+{
+  "kind": "streamed_substrate_characterization",
+  "plan": {
+    "source_revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+    "initial_source": {
+      "tracked_files": 16087,
+      "changed_inputs": {},
+      "all_bytes_verified": true
+    },
+    "source": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+    "base_revision": "84bd4a7056cf76b984330d6140688518006372a0",
+    "implementation": "committed source with frozen binary and input hashes; see implementation patch and manifest",
+    "binaries_sha256": {
+      "entmoot-mcp.exe": "8004685646f09c21b48b554ce6d5c7a4a2d359e9a80b6e6953b09d7e596eaabe",
+      "entmoot-producer.exe": "9e1ce3a6ee0481bbaf1eb25486740e62edf83c0643d83d48a508544c746b7041",
+      "entmoot.exe": "6344bfde95e8272aef7d60184983b3b38d787282e0443155345802cf53a6763d",
+      "measure_reads.exe": "45b3f435a75eb1692652591f9c6e719b3a1ff2c767fd4fadfc0513da7eeab5d5"
+    },
+    "runner_sha256": "cd86719a9ea08af27642e4c3fb7a1c95c7a0400df491cad06738e29f5c1a8e88",
+    "implementation_inputs_sha256": "4a08414d302ba95261bcddd8ec51a8850650b430127386170f0011f770ea2f42",
+    "profile": "release",
+    "features": [
+      "producer"
+    ],
+    "timeout_seconds": null,
+    "sequence": [
+      "fresh",
+      "no-change",
+      "read-probes",
+      "comment",
+      "body",
+      "compare-body",
+      "add",
+      "rename",
+      "delete",
+      "historical-read",
+      "injected-publication-failure",
+      "recovery"
+    ],
+    "host": "Windows-11-10.0.26300-SP0",
+    "memory_before": {
+      "total": 66094223360,
+      "available": 25966096384,
+      "percent": 60.7,
+      "used": 40128126976,
+      "free": 25966096384
+    },
+    "limitations": [
+      "one trial per phase",
+      "uncontrolled OS caches and host workloads",
+      "sampled RSS is a lower bound",
+      "storage measurements are post-command, not temporary/WAL peaks",
+      "structural workflow only; adapter controls are separate",
+      "comparison with prior non-producer binary includes build-feature differences",
+      "native/canon production and advanced reads still hydrate graphs",
+      "recovery injects a transactional error; it is not a process-kill or power-loss simulation"
+    ]
+  },
+  "fingerprint": {
+    "series": "entmoot.storage.v1",
+    "implementation": {
+      "contracts": "blake3:906fbb6ea01fcf12e5c3bf02f6e63f5aa4da617e569ee69c3c0beb80755869f1",
+      "derivation": "blake3:79998c9a24fe2dc62d44dbeff423aa0e717313fd263b5ee2ed25a720b8159d34"
+    },
+    "layout": "blake3:672408479e44627d7ac7ddfe2308cbc040d089e14a069cef21e63054c94c8a24"
+  },
+  "evidence_root": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019",
+  "implementation_patch_sha256": "6777379da8fbcca5ed8dcb556a29677200ffafc1dc99b296ae3e1df59b4bccc6",
+  "publication_trials": {
+    "fresh": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T14:16:16.033025+00:00",
+        "wall_seconds": 1430.738453799975,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 503627776,
+        "os_peak_main_working_set_bytes": 509632512,
+        "sampled_tree_cpu_seconds": 1391.125,
+        "sampled_tree_read_bytes": 464821593685,
+        "sampled_tree_write_bytes": 278510022338,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 18386,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\fresh-_t85m3r1\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\fresh-_t85m3r1\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6853,
+            "characters": 6853,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:09e0d1e97d8f52ec4475415b379515287f83552f87019dc2df5acbbf5448de46",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 588,
+            "characters": 572,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:c7b58a9b83695d277c84d5daebb652385ebe7fec224f2f12b8147a054313dc63",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "publication": {
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 0.5704864,
+            "rss_before_bytes": 10698752,
+            "rss_after_bytes": 37666816
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 208.3306728,
+            "rss_before_bytes": 37666816,
+            "rss_after_bytes": 189628416
+          },
+          {
+            "phase": "inventory_metadata",
+            "wall_seconds": 0.109749,
+            "rss_before_bytes": 77615104,
+            "rss_after_bytes": 112353280
+          },
+          {
+            "phase": "syntax_projection",
+            "wall_seconds": 601.8638914,
+            "rss_before_bytes": 112812032,
+            "rss_after_bytes": 300806144
+          },
+          {
+            "phase": "structural_resolution",
+            "wall_seconds": 209.8396903,
+            "rss_before_bytes": 300806144,
+            "rss_after_bytes": 317513728
+          },
+          {
+            "phase": "streamed_structural_publication",
+            "wall_seconds": 1219.3050923,
+            "rss_before_bytes": 112381952,
+            "rss_after_bytes": 270508032
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 0.7005642,
+            "rss_before_bytes": 125468672,
+            "rss_after_bytes": 155901952
+          }
+        ],
+        "indexed_files": 11832,
+        "reused_syntax_files": 0,
+        "reused_extraction_files": 0,
+        "reused_stitching_files": 0,
+        "snapshot": {
+          "repository_id": "local/source",
+          "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+          "source_state": "working_tree",
+          "snapshot_digest": "blake3:7de154a93f4740cbdebe7f1088e33072fa455184b8d7faa5f85929f1d12421e0"
+        },
+        "publication_outcome": "replaced",
+        "publication_digest": "blake3:9df05a9add18e277c96cc1c5dab52638cf20d78051cee4b09c3899657484c495"
+      },
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {},
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {},
+          "all_bytes_verified": true
+        }
+      },
+      "storage": {
+        "total_bytes": 7251517829,
+        "files": [
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "bytes": 7251505152
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\summary.json",
+            "bytes": 8833
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\adapter-profile.json",
+            "bytes": 2462
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current.json",
+            "bytes": 1096
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\write.lock",
+            "bytes": 5
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\.gitignore",
+            "bytes": 2
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.lease",
+            "bytes": 0
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.startup.lease",
+            "bytes": 0
+          }
+        ],
+        "method": "post-command sizes, not peaks",
+        "sqlite": [
+          {
+            "path": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "page_size": 4096,
+            "pages": 1770387,
+            "free_pages": 0,
+            "objects_unavailable": "no such table: dbstat"
+          }
+        ],
+        "measurement_seconds": 0.01272420003078878
+      }
+    },
+    "no-change": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T14:40:08.594836+00:00",
+        "wall_seconds": 27.77461379999295,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 171360256,
+        "os_peak_main_working_set_bytes": 218619904,
+        "sampled_tree_cpu_seconds": 29.90625,
+        "sampled_tree_read_bytes": 2998001996,
+        "sampled_tree_write_bytes": 51,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 357,
+          "observed_processes": 4,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\no-change-rchm29tc\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\no-change-rchm29tc\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6498,
+            "characters": 6498,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:44a087995c5500c2fa1a42230a8e38c5de7fd2c88cf9e1cb3921bce1aaa2c692",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 587,
+            "characters": 571,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:5290158dbf611499bc64716cb462dec4cf8573bec406cfb4291ab1ba98b963ae",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "publication": {
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 0.5698483,
+            "rss_before_bytes": 19865600,
+            "rss_after_bytes": 38010880
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 24.5427087,
+            "rss_before_bytes": 38010880,
+            "rss_after_bytes": 94842880
+          },
+          {
+            "phase": "verify_sealed_scan_reuse",
+            "wall_seconds": 1.8623216,
+            "rss_before_bytes": 92430336,
+            "rss_after_bytes": 118177792
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 0.6847943,
+            "rss_before_bytes": 61014016,
+            "rss_after_bytes": 84090880
+          }
+        ],
+        "indexed_files": 0,
+        "reused_syntax_files": 11832,
+        "reused_extraction_files": 0,
+        "reused_stitching_files": 11832,
+        "snapshot": {
+          "repository_id": "local/source",
+          "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+          "source_state": "working_tree",
+          "snapshot_digest": "blake3:7de154a93f4740cbdebe7f1088e33072fa455184b8d7faa5f85929f1d12421e0"
+        },
+        "publication_outcome": "unchanged",
+        "publication_digest": "blake3:9df05a9add18e277c96cc1c5dab52638cf20d78051cee4b09c3899657484c495"
+      },
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {},
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {},
+          "all_bytes_verified": true
+        }
+      },
+      "storage": {
+        "total_bytes": 7251517829,
+        "files": [
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "bytes": 7251505152
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\summary.json",
+            "bytes": 8833
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\adapter-profile.json",
+            "bytes": 2462
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current.json",
+            "bytes": 1096
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\write.lock",
+            "bytes": 5
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\.gitignore",
+            "bytes": 2
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.lease",
+            "bytes": 0
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.startup.lease",
+            "bytes": 0
+          }
+        ],
+        "method": "post-command sizes, not peaks",
+        "sqlite": [
+          {
+            "path": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "page_size": 4096,
+            "pages": 1770387,
+            "free_pages": 0,
+            "objects_unavailable": "no such table: dbstat"
+          }
+        ],
+        "measurement_seconds": 0.002294100006110966
+      }
+    },
+    "comment": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T14:43:27.816017+00:00",
+        "wall_seconds": 828.0438331000041,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 504762368,
+        "os_peak_main_working_set_bytes": 511832064,
+        "sampled_tree_cpu_seconds": 824.828125,
+        "sampled_tree_read_bytes": 357964951397,
+        "sampled_tree_write_bytes": 188799334235,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 11084,
+          "observed_processes": 3,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\comment-4taq0kmo\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\comment-4taq0kmo\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6966,
+            "characters": 6966,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:d4b3849fcd94d696b5e89d611e1b5ec11ff036c26af37d77291ebe1ebfbf0c8f",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 587,
+            "characters": 571,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:35e401d294a61766b7cc872d554148ff103e1d114e337a49eecdc7fe38193b72",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "publication": {
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 0.6092984,
+            "rss_before_bytes": 19869696,
+            "rss_after_bytes": 38014976
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 25.3127561,
+            "rss_before_bytes": 38014976,
+            "rss_after_bytes": 97218560
+          },
+          {
+            "phase": "verify_sealed_scan_reuse",
+            "wall_seconds": 3.5e-06,
+            "rss_before_bytes": 92921856,
+            "rss_after_bytes": 92930048
+          },
+          {
+            "phase": "inventory_metadata",
+            "wall_seconds": 0.0941216,
+            "rss_before_bytes": 92930048,
+            "rss_after_bytes": 112787456
+          },
+          {
+            "phase": "syntax_projection",
+            "wall_seconds": 402.5302475,
+            "rss_before_bytes": 113250304,
+            "rss_after_bytes": 257765376
+          },
+          {
+            "phase": "structural_resolution",
+            "wall_seconds": 116.079404,
+            "rss_before_bytes": 257765376,
+            "rss_after_bytes": 295563264
+          },
+          {
+            "phase": "streamed_structural_publication",
+            "wall_seconds": 800.0313057,
+            "rss_before_bytes": 112812032,
+            "rss_after_bytes": 244051968
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 0.670527,
+            "rss_before_bytes": 111931392,
+            "rss_after_bytes": 138584064
+          }
+        ],
+        "indexed_files": 1,
+        "reused_syntax_files": 11831,
+        "reused_extraction_files": 0,
+        "reused_stitching_files": 11831,
+        "snapshot": {
+          "repository_id": "local/source",
+          "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+          "source_state": "working_tree",
+          "snapshot_digest": "blake3:510c164206dc3e9b6aad7ec97276f37340d95cf320adc803879dfa5fe70a05b5"
+        },
+        "publication_outcome": "replaced",
+        "publication_digest": "blake3:12d1bca5d7ab76ced79fe4a74a1dc5ade06c42661306e4c7872b117dff489293"
+      },
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 411,
+              "blake3": "522f6719aa8f6e29102bdbe23392fe40380531754378386d4152a3f8546addbb"
+            }
+          },
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 411,
+              "blake3": "522f6719aa8f6e29102bdbe23392fe40380531754378386d4152a3f8546addbb"
+            }
+          },
+          "all_bytes_verified": true
+        }
+      },
+      "storage": {
+        "total_bytes": 10494998482,
+        "files": [
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "bytes": 10494976000
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\summary.json",
+            "bytes": 8988
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\summary.json",
+            "bytes": 8833
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\adapter-profile.json",
+            "bytes": 2462
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current.json",
+            "bytes": 1634
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\write.lock",
+            "bytes": 5
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\.gitignore",
+            "bytes": 2
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.lease",
+            "bytes": 0
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.startup.lease",
+            "bytes": 0
+          }
+        ],
+        "method": "post-command sizes, not peaks",
+        "sqlite": [
+          {
+            "path": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "page_size": 4096,
+            "pages": 2562250,
+            "free_pages": 0,
+            "objects_unavailable": "no such table: dbstat"
+          }
+        ],
+        "measurement_seconds": 0.0026970000471919775
+      }
+    },
+    "body": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T14:57:18.024967+00:00",
+        "wall_seconds": 749.6997652000282,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 508063744,
+        "os_peak_main_working_set_bytes": 510111744,
+        "sampled_tree_cpu_seconds": 746.265625,
+        "sampled_tree_read_bytes": 360297984952,
+        "sampled_tree_write_bytes": 188900943655,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 10880,
+          "observed_processes": 4,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\body-d6le25it\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\body-d6le25it\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6968,
+            "characters": 6968,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:ead8800c2b3aab8c1ddc5a02784a3ee6a000407160cdf945fdf44826af845ec9",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 587,
+            "characters": 571,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:5814c2aafb296396247e537ccf9dac1dd0b27249f22feda241b8e6f28bc125ce",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "publication": {
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 0.5772934,
+            "rss_before_bytes": 19787776,
+            "rss_after_bytes": 37986304
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 23.4929708,
+            "rss_before_bytes": 37986304,
+            "rss_after_bytes": 81305600
+          },
+          {
+            "phase": "verify_sealed_scan_reuse",
+            "wall_seconds": 7.1e-06,
+            "rss_before_bytes": 81301504,
+            "rss_after_bytes": 81309696
+          },
+          {
+            "phase": "inventory_metadata",
+            "wall_seconds": 0.0851702,
+            "rss_before_bytes": 81309696,
+            "rss_after_bytes": 109318144
+          },
+          {
+            "phase": "syntax_projection",
+            "wall_seconds": 345.0383504,
+            "rss_before_bytes": 110096384,
+            "rss_after_bytes": 257343488
+          },
+          {
+            "phase": "structural_resolution",
+            "wall_seconds": 114.4196272,
+            "rss_before_bytes": 257343488,
+            "rss_after_bytes": 300515328
+          },
+          {
+            "phase": "streamed_structural_publication",
+            "wall_seconds": 723.4809315,
+            "rss_before_bytes": 109416448,
+            "rss_after_bytes": 237600768
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 0.6839468,
+            "rss_before_bytes": 111984640,
+            "rss_after_bytes": 132354048
+          }
+        ],
+        "indexed_files": 1,
+        "reused_syntax_files": 11831,
+        "reused_extraction_files": 0,
+        "reused_stitching_files": 11831,
+        "snapshot": {
+          "repository_id": "local/source",
+          "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+          "source_state": "working_tree",
+          "snapshot_digest": "blake3:e9e917ad18edfe8f0996ef631df988f0d6a3aa840229df2f331f840ac0a088f3"
+        },
+        "publication_outcome": "replaced",
+        "publication_digest": "blake3:adb46a0e6a51eca80e03a907982b43d18d22691e9840dab84fe98ebba1a2273b"
+      },
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            }
+          },
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            }
+          },
+          "all_bytes_verified": true
+        }
+      },
+      "storage": {
+        "total_bytes": 13739904007,
+        "files": [
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "bytes": 13739872256
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-erTqoK\\summary.json",
+            "bytes": 8990
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\summary.json",
+            "bytes": 8988
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\summary.json",
+            "bytes": 8833
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\adapter-profile.json",
+            "bytes": 2462
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current.json",
+            "bytes": 1634
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-erTqoK\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\write.lock",
+            "bytes": 5
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\.gitignore",
+            "bytes": 2
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.lease",
+            "bytes": 0
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.startup.lease",
+            "bytes": 0
+          }
+        ],
+        "method": "post-command sizes, not peaks",
+        "sqlite": [
+          {
+            "path": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "page_size": 4096,
+            "pages": 3354461,
+            "free_pages": 0,
+            "objects_unavailable": "no such table: dbstat"
+          }
+        ],
+        "measurement_seconds": 0.0026643999735824764
+      }
+    },
+    "add": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T15:13:57.554940+00:00",
+        "wall_seconds": 780.821910300001,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 505057280,
+        "os_peak_main_working_set_bytes": 512491520,
+        "sampled_tree_cpu_seconds": 777.953125,
+        "sampled_tree_read_bytes": 361999822175,
+        "sampled_tree_write_bytes": 190640009762,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 10680,
+          "observed_processes": 4,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\add-41nmz4ko\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\add-41nmz4ko\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6967,
+            "characters": 6967,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:238dbb2679b9f7fe88b03b1511ce093bce03bd1ed5312c48798a3d095a6065c4",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 587,
+            "characters": 571,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:2c3c4be85a4e3d0276390e49fbc3ababee4a48dbe20633f1747b328b3772672e",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "publication": {
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 0.5251945,
+            "rss_before_bytes": 19767296,
+            "rss_after_bytes": 38756352
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 23.8180255,
+            "rss_before_bytes": 38756352,
+            "rss_after_bytes": 96399360
+          },
+          {
+            "phase": "verify_sealed_scan_reuse",
+            "wall_seconds": 4.8e-06,
+            "rss_before_bytes": 92467200,
+            "rss_after_bytes": 92475392
+          },
+          {
+            "phase": "inventory_metadata",
+            "wall_seconds": 0.0736949,
+            "rss_before_bytes": 92475392,
+            "rss_after_bytes": 113954816
+          },
+          {
+            "phase": "syntax_projection",
+            "wall_seconds": 354.1546304,
+            "rss_before_bytes": 114401280,
+            "rss_after_bytes": 258555904
+          },
+          {
+            "phase": "structural_resolution",
+            "wall_seconds": 117.8274311,
+            "rss_before_bytes": 258555904,
+            "rss_after_bytes": 295919616
+          },
+          {
+            "phase": "streamed_structural_publication",
+            "wall_seconds": 754.1027877,
+            "rss_before_bytes": 113963008,
+            "rss_after_bytes": 242057216
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 1.033026,
+            "rss_before_bytes": 113770496,
+            "rss_after_bytes": 142057472
+          }
+        ],
+        "indexed_files": 1,
+        "reused_syntax_files": 11832,
+        "reused_extraction_files": 0,
+        "reused_stitching_files": 11832,
+        "snapshot": {
+          "repository_id": "local/source",
+          "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+          "source_state": "working_tree",
+          "snapshot_digest": "blake3:c71946282498e605d406a18627a21cea224801f79867d1b05087504583c699b5"
+        },
+        "publication_outcome": "replaced",
+        "publication_digest": "blake3:029cfd7a81899550a4cae2cc74505a9708f8db200936024ce31e79a3300e1f28"
+      },
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            },
+            "src/math/entmoot_probe.go": {
+              "bytes": 68,
+              "blake3": "25f9a132c0c692eb1559f804ba0846412388dc79bdc11af5f54cf2380e46bd19"
+            }
+          },
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            },
+            "src/math/entmoot_probe.go": {
+              "bytes": 68,
+              "blake3": "25f9a132c0c692eb1559f804ba0846412388dc79bdc11af5f54cf2380e46bd19"
+            }
+          },
+          "all_bytes_verified": true
+        }
+      },
+      "storage": {
+        "total_bytes": 16990482491,
+        "files": [
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "bytes": 16990441472
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-erTqoK\\summary.json",
+            "bytes": 8990
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-d6kMxW\\summary.json",
+            "bytes": 8989
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\summary.json",
+            "bytes": 8988
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\summary.json",
+            "bytes": 8833
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\adapter-profile.json",
+            "bytes": 2462
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current.json",
+            "bytes": 1634
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-d6kMxW\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-erTqoK\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\write.lock",
+            "bytes": 5
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\.gitignore",
+            "bytes": 2
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.lease",
+            "bytes": 0
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.startup.lease",
+            "bytes": 0
+          }
+        ],
+        "method": "post-command sizes, not peaks",
+        "sqlite": [
+          {
+            "path": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "page_size": 4096,
+            "pages": 4148057,
+            "free_pages": 0,
+            "objects_unavailable": "no such table: dbstat"
+          }
+        ],
+        "measurement_seconds": 0.003023599972948432
+      }
+    },
+    "rename": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T15:27:00.445407+00:00",
+        "wall_seconds": 803.5252336999984,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 507154432,
+        "os_peak_main_working_set_bytes": 514928640,
+        "sampled_tree_cpu_seconds": 799.9375,
+        "sampled_tree_read_bytes": 363184347061,
+        "sampled_tree_write_bytes": 189513826046,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 11054,
+          "observed_processes": 3,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\rename-20767bqb\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\rename-20767bqb\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6967,
+            "characters": 6967,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:aea8186cf99b7d08d473675eea08cbba42ddc1a0e79e49a8ec4d9bbdea992bf0",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 587,
+            "characters": 571,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:b3af91af4cf164ef6de179b9bd4f0cffd058be85a874f3c4bf67885d9d5cab4e",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "publication": {
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 0.5862026,
+            "rss_before_bytes": 19517440,
+            "rss_after_bytes": 38240256
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 24.309048,
+            "rss_before_bytes": 38240256,
+            "rss_after_bytes": 96509952
+          },
+          {
+            "phase": "verify_sealed_scan_reuse",
+            "wall_seconds": 3.5e-06,
+            "rss_before_bytes": 93245440,
+            "rss_after_bytes": 93253632
+          },
+          {
+            "phase": "inventory_metadata",
+            "wall_seconds": 0.0750357,
+            "rss_before_bytes": 93253632,
+            "rss_after_bytes": 116449280
+          },
+          {
+            "phase": "syntax_projection",
+            "wall_seconds": 363.5337897,
+            "rss_before_bytes": 116875264,
+            "rss_after_bytes": 292773888
+          },
+          {
+            "phase": "structural_resolution",
+            "wall_seconds": 121.0756695,
+            "rss_before_bytes": 292773888,
+            "rss_after_bytes": 296103936
+          },
+          {
+            "phase": "streamed_structural_publication",
+            "wall_seconds": 776.2706134,
+            "rss_before_bytes": 116461568,
+            "rss_after_bytes": 252567552
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 0.9116455,
+            "rss_before_bytes": 114143232,
+            "rss_after_bytes": 146198528
+          }
+        ],
+        "indexed_files": 1,
+        "reused_syntax_files": 11832,
+        "reused_extraction_files": 0,
+        "reused_stitching_files": 11832,
+        "snapshot": {
+          "repository_id": "local/source",
+          "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+          "source_state": "working_tree",
+          "snapshot_digest": "blake3:3a32240ff6a053eedfc67f5051cb719ce820dea491ce635bd46097696ecc218c"
+        },
+        "publication_outcome": "replaced",
+        "publication_digest": "blake3:abd858705b28ac8a1c849890c0d258868ad09921450d13bf2f57be126e9c8ab5"
+      },
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            },
+            "src/math/entmoot_probe_moved.go": {
+              "bytes": 68,
+              "blake3": "25f9a132c0c692eb1559f804ba0846412388dc79bdc11af5f54cf2380e46bd19"
+            }
+          },
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            },
+            "src/math/entmoot_probe_moved.go": {
+              "bytes": 68,
+              "blake3": "25f9a132c0c692eb1559f804ba0846412388dc79bdc11af5f54cf2380e46bd19"
+            }
+          },
+          "all_bytes_verified": true
+        }
+      },
+      "storage": {
+        "total_bytes": 20236579951,
+        "files": [
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "bytes": 20236529664
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-erTqoK\\summary.json",
+            "bytes": 8990
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-d6kMxW\\summary.json",
+            "bytes": 8989
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-NBp7TW\\summary.json",
+            "bytes": 8989
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\summary.json",
+            "bytes": 8988
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\summary.json",
+            "bytes": 8833
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\adapter-profile.json",
+            "bytes": 2462
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current.json",
+            "bytes": 1634
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-d6kMxW\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-erTqoK\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-NBp7TW\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\write.lock",
+            "bytes": 5
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\.gitignore",
+            "bytes": 2
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.lease",
+            "bytes": 0
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.startup.lease",
+            "bytes": 0
+          }
+        ],
+        "method": "post-command sizes, not peaks",
+        "sqlite": [
+          {
+            "path": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "page_size": 4096,
+            "pages": 4940559,
+            "free_pages": 0,
+            "objects_unavailable": "no such table: dbstat"
+          }
+        ],
+        "measurement_seconds": 0.003070899983868003
+      }
+    },
+    "delete": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T15:40:26.310207+00:00",
+        "wall_seconds": 27.55982359999325,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 208211968,
+        "os_peak_main_working_set_bytes": 220872704,
+        "sampled_tree_cpu_seconds": 29.28125,
+        "sampled_tree_read_bytes": 3116210102,
+        "sampled_tree_write_bytes": 2467,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 394,
+          "observed_processes": 4,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\delete-yc06800e\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\delete-yc06800e\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6741,
+            "characters": 6741,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:7b0c4772b66f3226203baa70e7ac35f66016b58c34e4444c41c2d27cdfd60ac9",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 587,
+            "characters": 571,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:f75fb4208581a66cddd5ba39eeb6f74dc58fe339551bf4e9b0430a2d86584ff2",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "publication": {
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 0.6198659,
+            "rss_before_bytes": 19931136,
+            "rss_after_bytes": 39460864
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 24.2362205,
+            "rss_before_bytes": 39460864,
+            "rss_after_bytes": 92323840
+          },
+          {
+            "phase": "verify_sealed_scan_reuse",
+            "wall_seconds": 4.4e-06,
+            "rss_before_bytes": 89042944,
+            "rss_after_bytes": 89051136
+          },
+          {
+            "phase": "inventory_metadata",
+            "wall_seconds": 0.0877855,
+            "rss_before_bytes": 89051136,
+            "rss_after_bytes": 110723072
+          },
+          {
+            "phase": "streamed_structural_publication",
+            "wall_seconds": 1.6035561,
+            "rss_before_bytes": 110731264,
+            "rss_after_bytes": 121757696
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 0.8097926,
+            "rss_before_bytes": 97173504,
+            "rss_after_bytes": 115929088
+          }
+        ],
+        "indexed_files": 0,
+        "reused_syntax_files": 11832,
+        "reused_extraction_files": 0,
+        "reused_stitching_files": 11832,
+        "snapshot": {
+          "repository_id": "local/source",
+          "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+          "source_state": "working_tree",
+          "snapshot_digest": "blake3:e9e917ad18edfe8f0996ef631df988f0d6a3aa840229df2f331f840ac0a088f3"
+        },
+        "publication_outcome": "unchanged",
+        "publication_digest": "blake3:adb46a0e6a51eca80e03a907982b43d18d22691e9840dab84fe98ebba1a2273b"
+      },
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            }
+          },
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 410,
+              "blake3": "0a00278409f2790c7818bb32834a019f52eea3b4138e5410e36809aa411f4fee"
+            }
+          },
+          "all_bytes_verified": true
+        }
+      },
+      "storage": {
+        "total_bytes": 20236588909,
+        "files": [
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "bytes": 20236529664
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-erTqoK\\summary.json",
+            "bytes": 8990
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-d6kMxW\\summary.json",
+            "bytes": 8989
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-NBp7TW\\summary.json",
+            "bytes": 8989
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\summary.json",
+            "bytes": 8988
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\summary.json",
+            "bytes": 8833
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-Hrp26C\\summary.json",
+            "bytes": 8679
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\adapter-profile.json",
+            "bytes": 2462
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current.json",
+            "bytes": 1634
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-d6kMxW\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-erTqoK\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-Hrp26C\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-NBp7TW\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\write.lock",
+            "bytes": 5
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\.gitignore",
+            "bytes": 2
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.lease",
+            "bytes": 0
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.startup.lease",
+            "bytes": 0
+          }
+        ],
+        "method": "post-command sizes, not peaks",
+        "sqlite": [
+          {
+            "path": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "page_size": 4096,
+            "pages": 4940559,
+            "free_pages": 0,
+            "objects_unavailable": "no such table: dbstat"
+          }
+        ],
+        "measurement_seconds": 0.0028919000178575516
+      }
+    },
+    "recovery": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\entmoot.exe",
+          "--json",
+          "--standalone",
+          "init",
+          "--root",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+          "--structural-only"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T15:41:24.427339+00:00",
+        "wall_seconds": 1781.8264993000193,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 504467456,
+        "os_peak_main_working_set_bytes": 511864832,
+        "sampled_tree_cpu_seconds": 1518.578125,
+        "sampled_tree_read_bytes": 364169899437,
+        "sampled_tree_write_bytes": 191688445044,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 22866,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\recovery-qk4drb51\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\recovery-qk4drb51\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 6975,
+            "characters": 6975,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af4571f482c586733dd0382f89b1b0dc2407602ada49ae6c22335d3a51c28ef5",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 588,
+            "characters": 572,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:ecb6690e7c2de1608baf958a579f8332b227020a4a7e4f04f9b34aad7d6a3156",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "publication": {
+        "phases": [
+          {
+            "phase": "source_observation",
+            "wall_seconds": 0.5881756,
+            "rss_before_bytes": 19795968,
+            "rss_after_bytes": 38092800
+          },
+          {
+            "phase": "parse_and_retain_file_facts",
+            "wall_seconds": 24.3060258,
+            "rss_before_bytes": 38092800,
+            "rss_after_bytes": 93581312
+          },
+          {
+            "phase": "verify_sealed_scan_reuse",
+            "wall_seconds": 0.0010714,
+            "rss_before_bytes": 91197440,
+            "rss_after_bytes": 91209728
+          },
+          {
+            "phase": "inventory_metadata",
+            "wall_seconds": 0.0735209,
+            "rss_before_bytes": 91209728,
+            "rss_after_bytes": 112930816
+          },
+          {
+            "phase": "syntax_projection",
+            "wall_seconds": 491.0299372,
+            "rss_before_bytes": 113319936,
+            "rss_after_bytes": 257392640
+          },
+          {
+            "phase": "structural_resolution",
+            "wall_seconds": 192.9946785,
+            "rss_before_bytes": 257392640,
+            "rss_after_bytes": 287703040
+          },
+          {
+            "phase": "streamed_structural_publication",
+            "wall_seconds": 1627.6553198,
+            "rss_before_bytes": 112947200,
+            "rss_after_bytes": 242257920
+          },
+          {
+            "phase": "publication_source_fence",
+            "wall_seconds": 127.1302348,
+            "rss_before_bytes": 111013888,
+            "rss_after_bytes": 141324288
+          }
+        ],
+        "indexed_files": 0,
+        "reused_syntax_files": 11832,
+        "reused_extraction_files": 0,
+        "reused_stitching_files": 11831,
+        "snapshot": {
+          "repository_id": "local/source",
+          "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+          "source_state": "working_tree",
+          "snapshot_digest": "blake3:e2873e2cb2be2800130a7e1068b1deb5a77734e434cf3d962ebd7d8655ac7bcc"
+        },
+        "publication_outcome": "replaced",
+        "publication_digest": "blake3:e339c7e1e3206079c8d3a9f1547c4e92b9d43dab85f8684d95ce6887fdcfa7fb"
+      },
+      "source_verification": {
+        "before": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 455,
+              "blake3": "c732fff87ade71278e353fe2facfce889026956394ee88c24741ec314016ab88"
+            }
+          },
+          "all_bytes_verified": true
+        },
+        "after": {
+          "tracked_files": 16087,
+          "changed_inputs": {
+            "src/math/abs.go": {
+              "bytes": 455,
+              "blake3": "c732fff87ade71278e353fe2facfce889026956394ee88c24741ec314016ab88"
+            }
+          },
+          "all_bytes_verified": true
+        }
+      },
+      "storage": {
+        "total_bytes": 23482219433,
+        "files": [
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "bytes": 23482150912
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-PEYC9f\\summary.json",
+            "bytes": 8997
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-erTqoK\\summary.json",
+            "bytes": 8990
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-d6kMxW\\summary.json",
+            "bytes": 8989
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-NBp7TW\\summary.json",
+            "bytes": 8989
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\summary.json",
+            "bytes": 8988
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\summary.json",
+            "bytes": 8833
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-Hrp26C\\summary.json",
+            "bytes": 8679
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\adapter-profile.json",
+            "bytes": 2462
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current.json",
+            "bytes": 1634
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-bqjzQy\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-d6kMxW\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-erTqoK\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-Hrp26C\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-NBp7TW\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-PEYC9f\\publication.view.json",
+            "bytes": 279
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\write.lock",
+            "bytes": 5
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\.gitignore",
+            "bytes": 2
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.lease",
+            "bytes": 0
+          },
+          {
+            "path": "workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3.startup.lease",
+            "bytes": 0
+          }
+        ],
+        "method": "post-command sizes, not peaks",
+        "sqlite": [
+          {
+            "path": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\knowledge.sqlite3",
+            "page_size": 4096,
+            "pages": 5732947,
+            "free_pages": 0,
+            "objects_unavailable": "no such table: dbstat"
+          }
+        ],
+        "measurement_seconds": 0.006814599968492985
+      }
+    }
+  },
+  "retained_reads": {
+    "find-path": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\find-path-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T14:40:37.345673+00:00",
+        "wall_seconds": 0.2571023000054993,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 12255232,
+        "os_peak_main_working_set_bytes": 13029376,
+        "sampled_tree_cpu_seconds": 0,
+        "sampled_tree_read_bytes": 8679,
+        "sampled_tree_write_bytes": 0,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 1,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\find-path-kri34why\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\find-path-kri34why\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 4110,
+            "characters": 4110,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:15f82728c7f9b26758afd068d35821c9090fff2a56afad51c6965d8cdcdc809b",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "request": {
+        "operation": "find",
+        "output": {
+          "after": null,
+          "limit": 10,
+          "max_bytes": null,
+          "tier": "compact"
+        },
+        "request": {
+          "kind": "subject",
+          "limit": 3,
+          "path": "src/math/abs.go",
+          "query": "Abs"
+        }
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18927616,
+        "rss_before_bytes": 5656576,
+        "wall_seconds": 0.0389292
+      },
+      "measurements": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 20299776,
+            "rss_before_bytes": 18927616,
+            "wall_seconds": 0.0046099
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20713472,
+            "rss_before_bytes": 20307968,
+            "wall_seconds": 0.0035225
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20729856,
+            "rss_before_bytes": 20721664,
+            "wall_seconds": 0.0031822
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20426752,
+            "rss_before_bytes": 20729856,
+            "wall_seconds": 0.0043921
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20709376,
+            "rss_before_bytes": 20426752,
+            "wall_seconds": 0.0034846
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20602880,
+            "rss_before_bytes": 20709376,
+            "wall_seconds": 0.0032868
+          },
+          "output_bytes": 1779,
+          "output_digest": "blake3:1c8444496a95f63278f867fb2d5958c21cb0de6a8f6f0818fc43b4a2c68fe8a3",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ],
+      "warm_median_seconds": 0.0034846,
+      "limitations": [
+        "one process and publication",
+        "OS cache state uncontrolled",
+        "RSS endpoints are not peaks",
+        "timings include query delivery and serialization",
+        "repeated response equality is not independent semantic qualification"
+      ]
+    },
+    "find-id": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\find-id-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T14:40:37.610018+00:00",
+        "wall_seconds": 0.0855291000334546,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 12263424,
+        "os_peak_main_working_set_bytes": 13025280,
+        "sampled_tree_cpu_seconds": 0.015625,
+        "sampled_tree_read_bytes": 811529,
+        "sampled_tree_write_bytes": 0,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 1,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\find-id-8nad4hjl\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\find-id-8nad4hjl\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 3659,
+            "characters": 3659,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:e4416fed864b01e83de71cde7265922800e7dcfb0d72793bce9291660f900c00",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "request": {
+        "operation": "find",
+        "output": {
+          "after": null,
+          "limit": 10,
+          "max_bytes": null,
+          "tier": "compact"
+        },
+        "request": {
+          "kind": "subject",
+          "limit": 3,
+          "query": "66f0e1a7b42517ababa1c0eaa8054ff72732f1f41b3409225fba69f1df58bd82"
+        }
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18919424,
+        "rss_before_bytes": 5652480,
+        "wall_seconds": 0.0349541
+      },
+      "measurements": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 20414464,
+            "rss_before_bytes": 18919424,
+            "wall_seconds": 0.0043642
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20561920,
+            "rss_before_bytes": 20422656,
+            "wall_seconds": 0.0035015
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20520960,
+            "rss_before_bytes": 20570112,
+            "wall_seconds": 0.0032692
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20611072,
+            "rss_before_bytes": 20520960,
+            "wall_seconds": 0.0033166
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20611072,
+            "rss_before_bytes": 20611072,
+            "wall_seconds": 0.0033504
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20770816,
+            "rss_before_bytes": 20611072,
+            "wall_seconds": 0.0032207
+          },
+          "output_bytes": 1292,
+          "output_digest": "blake3:d1b1f6032dc95bcb16d8c75c51a4dc16f60dfc0bdb468650d15b964abacde20b",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ],
+      "warm_median_seconds": 0.0033166,
+      "limitations": [
+        "one process and publication",
+        "OS cache state uncontrolled",
+        "RSS endpoints are not peaks",
+        "timings include query delivery and serialization",
+        "repeated response equality is not independent semantic qualification"
+      ]
+    },
+    "read-source": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\read-source-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T14:40:37.702608+00:00",
+        "wall_seconds": 0.08670049998909235,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 11788288,
+        "os_peak_main_working_set_bytes": 12996608,
+        "sampled_tree_cpu_seconds": 0.015625,
+        "sampled_tree_read_bytes": 467474,
+        "sampled_tree_write_bytes": 0,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 1,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\read-source-1knhw_yo\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\read-source-1knhw_yo\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 4625,
+            "characters": 4625,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:8e4401a630b38c389d4e0afb38b2dc4a558a9dd0b5e4fa237807bc18b628d5e4",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "request": {
+        "operation": "read",
+        "output": {
+          "after": null,
+          "limit": 10,
+          "max_bytes": null,
+          "tier": "compact"
+        },
+        "request": {
+          "context_lines": 0,
+          "end_line": 15,
+          "kind": "source",
+          "max_bytes": 4096,
+          "path": "src/math/abs.go",
+          "start_line": 1
+        }
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18886656,
+        "rss_before_bytes": 5623808,
+        "wall_seconds": 0.0364146
+      },
+      "measurements": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 19935232,
+            "rss_before_bytes": 18886656,
+            "wall_seconds": 0.0036526
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20172800,
+            "rss_before_bytes": 19943424,
+            "wall_seconds": 0.0031896
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 19898368,
+            "rss_before_bytes": 20180992,
+            "wall_seconds": 0.003152
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20209664,
+            "rss_before_bytes": 19898368,
+            "wall_seconds": 0.0029771
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20230144,
+            "rss_before_bytes": 20209664,
+            "wall_seconds": 0.0030602
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20267008,
+            "rss_before_bytes": 20230144,
+            "wall_seconds": 0.0029056
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ],
+      "warm_median_seconds": 0.0030602,
+      "limitations": [
+        "one process and publication",
+        "OS cache state uncontrolled",
+        "RSS endpoints are not peaks",
+        "timings include query delivery and serialization",
+        "repeated response equality is not independent semantic qualification"
+      ]
+    },
+    "inspect-subject": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\inspect-subject-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T14:40:37.797959+00:00",
+        "wall_seconds": 163.02882000000682,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 9653710848,
+        "os_peak_main_working_set_bytes": 9653714944,
+        "sampled_tree_cpu_seconds": 162.4375,
+        "sampled_tree_read_bytes": 87365239195,
+        "sampled_tree_write_bytes": 5091,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 2095,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\inspect-subject-ytlbdpco\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\inspect-subject-ytlbdpco\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 5091,
+            "characters": 5091,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:5806736be46ae84655e366a7943291175e940121833effc3c4829827b635f42a",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "request": {
+        "operation": "inspect",
+        "output": {
+          "after": null,
+          "limit": 10,
+          "max_bytes": null,
+          "tier": "compact"
+        },
+        "request": {
+          "id": "66f0e1a7b42517ababa1c0eaa8054ff72732f1f41b3409225fba69f1df58bd82",
+          "kind": "subject",
+          "limit": 10
+        }
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18903040,
+        "rss_before_bytes": 5640192,
+        "wall_seconds": 0.0349501
+      },
+      "measurements": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 9613398016,
+            "rss_before_bytes": 18903040,
+            "wall_seconds": 153.7196683
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9613410304,
+            "rss_before_bytes": 9613406208,
+            "wall_seconds": 0.0038361
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9613447168,
+            "rss_before_bytes": 9613418496,
+            "wall_seconds": 0.0035071
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9613451264,
+            "rss_before_bytes": 9613447168,
+            "wall_seconds": 0.0032698
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9613451264,
+            "rss_before_bytes": 9613451264,
+            "wall_seconds": 0.0033706
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 9613451264,
+            "rss_before_bytes": 9613451264,
+            "wall_seconds": 0.0032173
+          },
+          "output_bytes": 2699,
+          "output_digest": "blake3:891370f526bf795a2eeeeced1fdb299e0968d9d4a4626553d0286bb3caf29eb9",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ],
+      "warm_median_seconds": 0.0033706,
+      "limitations": [
+        "one process and publication",
+        "OS cache state uncontrolled",
+        "RSS endpoints are not peaks",
+        "timings include query delivery and serialization",
+        "repeated response equality is not independent semantic qualification"
+      ]
+    },
+    "inspect-callers": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\inspect-callers-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T14:43:20.831624+00:00",
+        "wall_seconds": 3.1128825999912806,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 27127808,
+        "os_peak_main_working_set_bytes": 27131904,
+        "sampled_tree_cpu_seconds": 3.03125,
+        "sampled_tree_read_bytes": 3834372104,
+        "sampled_tree_write_bytes": 0,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 40,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\inspect-callers-g8xlf9s3\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\inspect-callers-g8xlf9s3\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 4088,
+            "characters": 4088,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:d4bf727c20a1ad031845453386c8df795127e1cf5034274335c750e7f9ff1f03",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "request": {
+        "operation": "inspect",
+        "output": {
+          "after": null,
+          "limit": 10,
+          "max_bytes": null,
+          "tier": "compact"
+        },
+        "request": {
+          "id": "66f0e1a7b42517ababa1c0eaa8054ff72732f1f41b3409225fba69f1df58bd82",
+          "kind": "callers",
+          "limit": 10
+        }
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18903040,
+        "rss_before_bytes": 5636096,
+        "wall_seconds": 0.0361935
+      },
+      "measurements": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 21213184,
+            "rss_before_bytes": 18903040,
+            "wall_seconds": 0.4842433
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 21278720,
+            "rss_before_bytes": 21221376,
+            "wall_seconds": 0.5055527
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 21606400,
+            "rss_before_bytes": 21286912,
+            "wall_seconds": 0.5874114
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 21299200,
+            "rss_before_bytes": 21041152,
+            "wall_seconds": 0.4887589
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 21381120,
+            "rss_before_bytes": 20746240,
+            "wall_seconds": 0.4863794
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 21495808,
+            "rss_before_bytes": 21381120,
+            "wall_seconds": 0.4813051
+          },
+          "output_bytes": 1720,
+          "output_digest": "blake3:84cbcb31f0eeebd629134b647f40122e5ea7484b735322b161a906d0684d0f72",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ],
+      "warm_median_seconds": 0.4887589,
+      "limitations": [
+        "one process and publication",
+        "OS cache state uncontrolled",
+        "RSS endpoints are not peaks",
+        "timings include query delivery and serialization",
+        "repeated response equality is not independent semantic qualification"
+      ]
+    },
+    "inspect-callees": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\inspect-callees-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T14:43:23.951962+00:00",
+        "wall_seconds": 2.995316000015009,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 27533312,
+        "os_peak_main_working_set_bytes": 27533312,
+        "sampled_tree_cpu_seconds": 2.96875,
+        "sampled_tree_read_bytes": 3851293340,
+        "sampled_tree_write_bytes": 0,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 39,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\inspect-callees-rbyl7x31\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\inspect-callees-rbyl7x31\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 4281,
+            "characters": 4281,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:0a63196087a83e75fd594d7ac5273d2ed0e83371d5a43f99b4170bd0fc060a22",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "request": {
+        "operation": "inspect",
+        "output": {
+          "after": null,
+          "limit": 10,
+          "max_bytes": null,
+          "tier": "compact"
+        },
+        "request": {
+          "id": "66f0e1a7b42517ababa1c0eaa8054ff72732f1f41b3409225fba69f1df58bd82",
+          "kind": "callees",
+          "limit": 10
+        }
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18907136,
+        "rss_before_bytes": 5640192,
+        "wall_seconds": 0.034298
+      },
+      "measurements": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 21282816,
+            "rss_before_bytes": 18907136,
+            "wall_seconds": 0.4935541
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 21950464,
+            "rss_before_bytes": 21291008,
+            "wall_seconds": 0.4870599
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 22482944,
+            "rss_before_bytes": 21958656,
+            "wall_seconds": 0.4864885
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 22470656,
+            "rss_before_bytes": 21938176,
+            "wall_seconds": 0.4821971
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 22593536,
+            "rss_before_bytes": 21925888,
+            "wall_seconds": 0.4905642
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 22732800,
+            "rss_before_bytes": 22003712,
+            "wall_seconds": 0.4860448
+          },
+          "output_bytes": 1914,
+          "output_digest": "blake3:aec1859684345821a7d9c00df75a2ac6d449cfdec3b5e3760274a8c127ca3eb0",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ],
+      "warm_median_seconds": 0.4864885,
+      "limitations": [
+        "one process and publication",
+        "OS cache state uncontrolled",
+        "RSS endpoints are not peaks",
+        "timings include query delivery and serialization",
+        "repeated response equality is not independent semantic qualification"
+      ]
+    },
+    "historical-read": {
+      "process": {
+        "status": "complete",
+        "exit_code": 0,
+        "arguments": [
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\measure_reads.exe",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+          "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\historical-read-request.json"
+        ],
+        "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "started_utc": "2026-10-19T15:40:54.889939+00:00",
+        "wall_seconds": 0.09322149999206886,
+        "launch_error": null,
+        "sampled_peak_tree_rss_bytes": 11374592,
+        "os_peak_main_working_set_bytes": 12996608,
+        "sampled_tree_cpu_seconds": 0.015625,
+        "sampled_tree_read_bytes": 119314,
+        "sampled_tree_write_bytes": 0,
+        "resource_method": {
+          "sampling_interval_seconds": 0.05,
+          "samples": 1,
+          "observed_processes": 1,
+          "cpu": "sum_last_observed_process_counters"
+        },
+        "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\historical-read-9sqv8fuq\\stdout",
+        "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\historical-read-9sqv8fuq\\stderr",
+        "input": null,
+        "output": {
+          "stdout": {
+            "bytes": 4625,
+            "characters": 4625,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:0f4f080d817a3cd4a5920d78794b1217c2d0401e70caa8820bd3d9a601f79998",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          },
+          "stderr": {
+            "bytes": 0,
+            "characters": 0,
+            "character_encoding": "utf8_replace",
+            "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+            "tokens": null,
+            "tokenizer": null,
+            "token_status": "not_requested"
+          }
+        },
+        "limitations": [
+          "process_counters_incomplete",
+          "rss_sum_can_count_shared_pages_more_than_once",
+          "short_lived_children_may_be_unobserved"
+        ]
+      },
+      "request": {
+        "operation": "read",
+        "output": {
+          "after": null,
+          "limit": 10,
+          "max_bytes": null,
+          "tier": "compact"
+        },
+        "request": {
+          "context_lines": 0,
+          "end_line": 15,
+          "kind": "source",
+          "max_bytes": 4096,
+          "path": "src/math/abs.go",
+          "start_line": 1
+        }
+      },
+      "opening": {
+        "phase": "open",
+        "rss_after_bytes": 18898944,
+        "rss_before_bytes": 5623808,
+        "wall_seconds": 0.0350767
+      },
+      "measurements": [
+        {
+          "measurement": {
+            "phase": "cold_query",
+            "rss_after_bytes": 19947520,
+            "rss_before_bytes": 18898944,
+            "wall_seconds": 0.003734
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 0,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20013056,
+            "rss_before_bytes": 19955712,
+            "wall_seconds": 0.0033488
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 1,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20193280,
+            "rss_before_bytes": 20021248,
+            "wall_seconds": 0.0034836
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 2,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20209664,
+            "rss_before_bytes": 20193280,
+            "wall_seconds": 0.0029788
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 3,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 19845120,
+            "rss_before_bytes": 20209664,
+            "wall_seconds": 0.0029719
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 4,
+          "same_as_first": true
+        },
+        {
+          "measurement": {
+            "phase": "warm_query",
+            "rss_after_bytes": 20246528,
+            "rss_before_bytes": 19845120,
+            "wall_seconds": 0.0031521
+          },
+          "output_bytes": 2256,
+          "output_digest": "blake3:e3876057744ece346cc9aeae76314338b3026192ac9787c2d79ea85d09581dc2",
+          "repetition": 5,
+          "same_as_first": true
+        }
+      ],
+      "warm_median_seconds": 0.0031521,
+      "limitations": [
+        "one process and publication",
+        "OS cache state uncontrolled",
+        "RSS endpoints are not peaks",
+        "timings include query delivery and serialization",
+        "repeated response equality is not independent semantic qualification"
+      ]
+    }
+  },
+  "completion": {
+    "status": "commands_complete_harness_assertion_failed",
+    "binaries_unchanged": true,
+    "original_runner_exit_code": 1,
+    "original_completion_marker_present": false,
+    "posthoc_recovery_oracle": "newly indexed = 0; reused = initial indexed count = 11832",
+    "limitations": [
+      "The original qualification harness failed; this is independent post-hoc grading, not a rewritten successful run.",
+      "Timing overlapped host validation workloads; recovery and source-fence outliers are retained."
+    ]
+  },
+  "restored_source": {
+    "tracked_files": 16087,
+    "changed_inputs": {},
+    "all_bytes_verified": true
+  },
+  "comparison": {
+    "process": {
+      "status": "complete",
+      "exit_code": 0,
+      "arguments": [
+        "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\entmoot.exe",
+        "--json",
+        "--standalone",
+        "assess",
+        "overlay",
+        "--base-graph",
+        "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-6oSx7D\\publication.view.json",
+        "--head-graph",
+        "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\data\\workspaces\\blake3-df060927d12bae1a7fb32417017acc1433e3fcbab117f007f1bb43937e1ed505\\store\\current\\generation-erTqoK\\publication.view.json",
+        "--path-prefix",
+        "src/math/abs.go"
+      ],
+      "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+      "started_utc": "2026-10-19T15:09:48.829883+00:00",
+      "wall_seconds": 247.8953870999976,
+      "launch_error": null,
+      "sampled_peak_tree_rss_bytes": 11794853888,
+      "os_peak_main_working_set_bytes": 11794866176,
+      "sampled_tree_cpu_seconds": 246.734375,
+      "sampled_tree_read_bytes": 173691005956,
+      "sampled_tree_write_bytes": 954,
+      "resource_method": {
+        "sampling_interval_seconds": 0.05,
+        "samples": 3636,
+        "observed_processes": 1,
+        "cpu": "sum_last_observed_process_counters"
+      },
+      "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\compare-body-dispku5t\\stdout",
+      "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\compare-body-dispku5t\\stderr",
+      "input": null,
+      "output": {
+        "stdout": {
+          "bytes": 954,
+          "characters": 954,
+          "character_encoding": "utf8_replace",
+          "content_digest": "blake3:43694244e203d93fb9da9c38f851afda027cc97e4d816b5dd4b957a93904fa7c",
+          "tokens": null,
+          "tokenizer": null,
+          "token_status": "not_requested"
+        },
+        "stderr": {
+          "bytes": 0,
+          "characters": 0,
+          "character_encoding": "utf8_replace",
+          "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+          "tokens": null,
+          "tokenizer": null,
+          "token_status": "not_requested"
+        }
+      },
+      "limitations": [
+        "process_counters_incomplete",
+        "rss_sum_can_count_shared_pages_more_than_once",
+        "short_lived_children_may_be_unobserved"
+      ]
+    },
+    "report": {
+      "schema": "entmoot.inventory_overlay.v1",
+      "base_snapshot": {
+        "repository_id": "local/source",
+        "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+        "source_state": "working_tree",
+        "snapshot_digest": "blake3:7de154a93f4740cbdebe7f1088e33072fa455184b8d7faa5f85929f1d12421e0"
+      },
+      "head_snapshot": {
+        "repository_id": "local/source",
+        "revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+        "source_state": "working_tree",
+        "snapshot_digest": "blake3:e9e917ad18edfe8f0996ef631df988f0d6a3aa840229df2f331f840ac0a088f3"
+      },
+      "deltas": [
+        {
+          "name": "Abs",
+          "path": "src/math/abs.go",
+          "language": "go",
+          "change": "retained",
+          "logic_address": "logic|local/source|go|src/math/abs.go|-|Abs|function|-|-"
+        }
+      ],
+      "introduced": 0,
+      "removed": 0,
+      "retained": 1,
+      "limitations": [
+        "inventory_presence_only; not Bound/Fits and not SemVer",
+        "missing_evidence_is_not_absence",
+        "scope_kind_signature_presence; not body or API compatibility",
+        "identical_declarations_preserve_multiplicity; individual_correspondence_not_established"
+      ]
+    }
+  },
+  "recovery": {
+    "failed_process": {
+      "status": "failed",
+      "exit_code": 1,
+      "arguments": [
+        "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\bin\\entmoot.exe",
+        "--json",
+        "--standalone",
+        "init",
+        "--root",
+        "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+        "--structural-only"
+      ],
+      "cwd": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\source",
+      "started_utc": "2026-10-19T15:40:55.877309+00:00",
+      "wall_seconds": 26.387407399946824,
+      "launch_error": null,
+      "sampled_peak_tree_rss_bytes": 209903616,
+      "os_peak_main_working_set_bytes": 221642752,
+      "sampled_tree_cpu_seconds": 28.796875,
+      "sampled_tree_read_bytes": 3264031030,
+      "sampled_tree_write_bytes": 352758050,
+      "resource_method": {
+        "sampling_interval_seconds": 0.05,
+        "samples": 372,
+        "observed_processes": 4,
+        "cpu": "sum_last_observed_process_counters"
+      },
+      "stdout": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\injected-publication-failure-992it0vn\\stdout",
+      "stderr": "G:\\GitHub\\entmoot\\.tmp\\performance-streamed-20261019\\commands\\injected-publication-failure-992it0vn\\stderr",
+      "input": null,
+      "output": {
+        "stdout": {
+          "bytes": 0,
+          "characters": 0,
+          "character_encoding": "utf8_replace",
+          "content_digest": "blake3:af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+          "tokens": null,
+          "tokenizer": null,
+          "token_status": "not_requested"
+        },
+        "stderr": {
+          "bytes": 428,
+          "characters": 428,
+          "character_encoding": "utf8_replace",
+          "content_digest": "blake3:4cc96c3d98a8aaef561980d7c85afd31bbe91d470f5203958f7b3dafa8bcabb0",
+          "tokens": null,
+          "tokenizer": null,
+          "token_status": "not_requested"
+        }
+      },
+      "limitations": [
+        "process_counters_incomplete",
+        "rss_sum_can_count_shared_pages_more_than_once",
+        "short_lived_children_may_be_unobserved"
+      ]
+    },
+    "failure_verification": {
+      "before": {
+        "tracked_files": 16087,
+        "changed_inputs": {
+          "src/math/abs.go": {
+            "bytes": 455,
+            "blake3": "c732fff87ade71278e353fe2facfce889026956394ee88c24741ec314016ab88"
+          }
+        },
+        "all_bytes_verified": true
+      },
+      "after": {
+        "tracked_files": 16087,
+        "changed_inputs": {
+          "src/math/abs.go": {
+            "bytes": 455,
+            "blake3": "c732fff87ade71278e353fe2facfce889026956394ee88c24741ec314016ab88"
+          }
+        },
+        "all_bytes_verified": true
+      },
+      "publication_pointer_unchanged": true,
+      "retained_views_unchanged": true,
+      "prior_units": 11836,
+      "retained_units": 11837
+    },
+    "retry_verification": {
+      "source_verified": true,
+      "source_restoration_rechecked": true,
+      "tracked_files": 16087,
+      "prior_publication_survived_failure": true,
+      "completed_file_units_reused": 11832,
+      "newly_parsed_files": 0,
+      "historical_source_rechecked": true,
+      "binaries_unchanged": true
+    }
+  },
+  "implementation_revision": "84bd4a7056cf76b984330d6140688518006372a0",
+  "posthoc_collector_sha256": "f6fa4509fd327ab77d53f156f1ff00922da1e75c697cdea296024daf47a843b8",
+  "qualification_scope": {
+    "product_commands": "all planned trials completed, including the expected injected transactional failure",
+    "harness": "failed final recovery-counter assertion; original runner and missing completion marker preserved",
+    "independent_posthoc_checks": "source and binary hashes, historical source, recovery counters, retained failure verification and repeated read equality passed",
+    "unrun_planned_trials": [],
+    "not_qualified": [
+      "native semantics",
+      "process-kill or power-loss recovery",
+      "multi-trial latency distributions",
+      "current incremental publisher implementation"
+    ]
+  },
+  "limitations": [
+    "One trial per publication phase; uncontrolled OS cache and other host jobs.",
+    "The later recovery trial overlapped local build/validation work; retain the 1781.8s result and 127.1s source-fence outlier without attributing a cause.",
+    "Sampled RSS is a lower bound; short-query endpoint RSS can exceed the process sampler.",
+    "Storage is post-command retained size, not temporary/WAL peak; SQLite dbstat attribution was unavailable.",
+    "Parent streamed_structural_publication overlaps syntax_projection and structural_resolution; do not sum them.",
+    "The delete trial returned to an existing historical source selection; its 27.6s is not the cost of producing an arbitrary deletion."
+  ],
+  "prior_comparisons": [
+    {
+      "report": "performance-go-unbounded-2026-10-18.json",
+      "same_go_revision": true,
+      "prior_fresh_seconds": 2720.1170557999867,
+      "prior_fresh_peak_rss_bytes": 7173054464,
+      "prior_fresh_retained_bytes": 21674701334,
+      "current_to_prior_wall_ratio": 0.5259841486414248,
+      "current_to_prior_rss_ratio": 0.07021106259928712,
+      "current_to_prior_retained_ratio": 0.33456137260008806
+    },
+    {
+      "report": "performance-substrate-checkpoint-2026-10-19.json",
+      "same_go_revision": true,
+      "prior_fresh_seconds": 1136.0015908999485,
+      "prior_fresh_peak_rss_bytes": 6027845632,
+      "prior_fresh_retained_bytes": 8158274085,
+      "current_to_prior_wall_ratio": 1.259451100474722,
+      "current_to_prior_rss_ratio": 0.0835502112606191,
+      "current_to_prior_retained_ratio": 0.8888544014882775
+    }
+  ]
+}

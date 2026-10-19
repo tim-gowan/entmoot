@@ -274,18 +274,15 @@ digests/spans, with build and native-scope limitations kept explicit. That histo
 sample does not establish current release readiness; the repaired controls still
 require [release qualification](PLANNING.md#current-qualification-blockers).
 
-Large-repository performance remains unqualified: the
-[2026-10-18 Go trial](evals/experiments/performance-go-2026-10-18.json) at `8d3b225`
-timed out during initial publication after 20 minutes on 16,087 tracked files
-(11,836 Go files), with 23.1GB sampled peak RSS. Warm-read and refresh measurements
-were unavailable. This Windows host was under memory pressure.
-The [memory attribution](evals/experiments/memory-go-2026-10-18.json) led to compact
-nodes and disk-staged IR. On the frozen 512-file sample,
-[IR-first changes](evals/experiments/memory-ir-first-2026-10-18.json) reduced
-publisher-preparation peak Rust allocations from 841MB to 411MB; the
-[operation fixes](evals/experiments/memory-operations-2026-10-18.json) reduce it to
-238MB, with full publication at 239MB. These diagnostics do not qualify
-large-repository latency or establish a process RSS bound.
+Large-repository performance remains partial. The
+[full Go characterization](evals/experiments/performance-streamed-go-2026-10-19.json)
+at `84bd4a7` published 11,832 parsed files in 23.8 minutes with 0.50GB sampled peak
+RSS; single-file edits still took 12.5–13.8 minutes. Exact path/ID and source
+reads took 3–5ms inside the engine, but cold subject context still loaded a graph
+and took 154s. The runner's final recovery assertion failed; independent post-hoc
+checks verified recovery and preserved that failure. The newer incremental
+publisher awaits the same full-corpus qualification. [PLANNING](PLANNING.md)
+records the remaining costs and earlier attempts.
 
 | Capability | Maturity | Utility and limit / verification owner |
 |---|---|---|

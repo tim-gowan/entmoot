@@ -260,10 +260,16 @@ fn build_with_file_facts(
                             reason: "IR lacks source commitment".into(),
                         }
                     })?;
-                    let record = cache.record(path)?.ok_or_else(|| {
+                    let mut part = header.clone();
+                    part.snapshot_files = vec![SnapshotFileDigest {
+                        path: path.clone(),
+                        content_digest: digest.to_owned(),
+                    }]
+                    .into();
+                    let unit = cache.retained_unit(path).ok_or_else(|| {
                         KnowledgeRepositoryError::InvalidRecord {
                             collection: "file_facts",
-                            reason: "file lacks parser IR".into(),
+                            reason: "file lacks a local sealed parser unit".into(),
                         }
                     })?;
                     let source = cache.source(path)?.ok_or_else(|| {
@@ -272,21 +278,26 @@ fn build_with_file_facts(
                             reason: "file lacks captured source".into(),
                         }
                     })?;
+                    if let Some(part) = writer.reuse_syntax(unit, &part)? {
+                        index.extend_nodes(&part.nodes);
+                        cache.reused_extraction += 1;
+                        continue;
+                    }
+                    let record = cache.record(path)?.ok_or_else(|| {
+                        KnowledgeRepositoryError::InvalidRecord {
+                            collection: "file_facts",
+                            reason: "file lacks parser IR".into(),
+                        }
+                    })?;
                     let syntax =
                         SyntaxPart::build_source(&prepared.root, path, digest, &record, &source)
                             .map_err(|error| KnowledgeRepositoryError::InvalidRecord {
                                 collection: "inventory",
                                 reason: error.to_string(),
                             })?;
-                    let mut part = header.clone();
-                    part.snapshot_files = vec![SnapshotFileDigest {
-                        path: path.clone(),
-                        content_digest: digest.to_owned(),
-                    }]
-                    .into();
                     syntax.apply(&mut part);
                     index.extend_nodes(&part.nodes);
-                    writer.append(&part)?;
+                    writer.append_syntax(unit, &part)?;
                 }
                 cache.phases.push(extract.finish());
                 let resolve = crate::measurement::PhaseTimer::start("structural_resolution");
@@ -1254,6 +1265,11 @@ mod retained_structural_tests {
             else {
                 panic!("changed publication must be retained")
             };
+            assert_eq!(
+                cache.reused_extraction,
+                [0, 1, 2, 2, 2][step],
+                "unchanged files must reuse their sealed syntax projection",
+            );
             assert!(
                 metadata
                     .nodes
@@ -1370,5 +1386,129 @@ mod retained_structural_tests {
                 "later writes must preserve historical revision membership"
             );
         }
+    }
+
+    fn retain_test_revision(
+        source: &Path,
+        data: &Path,
+        previous: Option<&Path>,
+        step: usize,
+    ) -> (PathBuf, TopologyGraph, usize) {
+        let StructuralRefresh::Retained { view, cache, .. } = retain_structural_inventory(
+            source,
+            TopologyBuildOptions::default(),
+            previous,
+            &data.join("knowledge.sqlite3"),
+            false,
+            None,
+            &[],
+        )
+        .unwrap() else {
+            panic!("changed revision must be retained")
+        };
+        let reused = cache.reused_extraction;
+        drop(cache);
+        let locator = data.join(format!("{step}.view.json"));
+        std::fs::write(
+            &locator,
+            serde_json::to_vec(&KnowledgeViewLocator {
+                database: data.join("knowledge.sqlite3"),
+                view,
+            })
+            .unwrap(),
+        )
+        .unwrap();
+        let actual = SqliteKnowledgeRepository::open_read_snapshot(&locator)
+            .unwrap()
+            .load_inventory(false)
+            .unwrap()
+            .unwrap();
+        let expected =
+            build_topology_with_syntax_cache(source, TopologyBuildOptions::default(), None)
+                .unwrap()
+                .0;
+        assert_eq!(
+            serde_json::to_value(&actual).unwrap(),
+            serde_json::to_value(expected).unwrap()
+        );
+        (locator, actual, reused)
+    }
+
+    #[test]
+    fn damaged_projection_aborts_new_view_and_preserves_history() {
+        for damage in [
+            "DELETE FROM structural_file_nodes WHERE unit_id=(SELECT unit_id FROM file_fact_units WHERE path='a.py') AND ordinal=0",
+            "DELETE FROM structural_file_edges WHERE unit_id=(SELECT unit_id FROM file_fact_units WHERE path='a.py') AND ordinal=0",
+            "UPDATE inventory_node_versions SET label='damaged' WHERE node_key=(SELECT node_key FROM structural_file_nodes WHERE unit_id=(SELECT unit_id FROM file_fact_units WHERE path='a.py') AND ordinal=0)",
+        ] {
+            let source = tempfile::tempdir().unwrap();
+            let data = tempfile::tempdir().unwrap();
+            std::fs::write(source.path().join("a.py"), "def keep():\n    return 1\n").unwrap();
+            std::fs::write(source.path().join("b.py"), "def change():\n    return 1\n").unwrap();
+            let (locator, before, _) = retain_test_revision(source.path(), data.path(), None, 0);
+            let database = data.path().join("knowledge.sqlite3");
+            let backup = data.path().join("before.sqlite3");
+            // No live repositories remain; retain the exact pre-damage database.
+            std::fs::copy(&database, &backup).unwrap();
+            let connection = rusqlite::Connection::open(&database).unwrap();
+            assert!(connection.execute(damage, []).unwrap() > 0);
+            drop(connection);
+            std::fs::write(source.path().join("b.py"), "def change():\n    return 2\n").unwrap();
+            let error = retain_structural_inventory(source.path(), TopologyBuildOptions::default(),
+                Some(&locator), &database, false, None, &[]).err().expect("damaged sealed reuse must fail");
+            assert!(error.to_string().contains("commitment"), "{error}");
+            let connection = rusqlite::Connection::open(&database).unwrap();
+            assert_eq!(connection.query_row("SELECT COUNT(*) FROM inventory_headers", [], |r|r.get::<_,i64>(0)).unwrap(), 1);
+            drop(connection);
+            std::fs::copy(&backup, &database).unwrap();
+            let historical = SqliteKnowledgeRepository::open_read_snapshot(&locator).unwrap()
+                .load_inventory(false).unwrap().unwrap();
+            assert_eq!(before.content_digest().unwrap(), historical.content_digest().unwrap());
+        }
+    }
+
+    #[test]
+    fn collecting_history_retains_shared_projections_and_removes_orphans() {
+        let source = tempfile::tempdir().unwrap();
+        let data = tempfile::tempdir().unwrap();
+        std::fs::write(source.path().join("a.py"), "def keep():\n    return 1\n").unwrap();
+        std::fs::write(source.path().join("b.py"), "def change():\n    return 1\n").unwrap();
+        let (first, _, _) = retain_test_revision(source.path(), data.path(), None, 0);
+        std::fs::write(source.path().join("b.py"), "def change():\n    return 2\n").unwrap();
+        let (second, expected, _) =
+            retain_test_revision(source.path(), data.path(), Some(&first), 1);
+        let old: KnowledgeViewLocator =
+            serde_json::from_slice(&std::fs::read(first).unwrap()).unwrap();
+        let database = data.path().join("knowledge.sqlite3");
+        {
+            let mut maintenance = knowledge_db::retention::Maintenance::open(&database).unwrap();
+            maintenance
+                .collect(&std::collections::BTreeSet::from([old.view]))
+                .unwrap();
+        }
+        let retained = SqliteKnowledgeRepository::open_read_snapshot(&second)
+            .unwrap()
+            .load_inventory(false)
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            retained.content_digest().unwrap(),
+            expected.content_digest().unwrap()
+        );
+        let connection = rusqlite::Connection::open(&database).unwrap();
+        assert_eq!(
+            connection
+                .query_row(
+                    "SELECT COUNT(*) FROM structural_file_projections",
+                    [],
+                    |r| r.get::<_, i64>(0)
+                )
+                .unwrap(),
+            2
+        );
+        drop(connection);
+        std::fs::write(source.path().join("b.py"), "def change():\n    return 3\n").unwrap();
+        let (_, _, reused) = retain_test_revision(source.path(), data.path(), Some(&second), 2);
+        assert_eq!(reused, 1);
     }
 }

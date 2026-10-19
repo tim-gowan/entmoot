@@ -134,7 +134,14 @@ selects immutable file membership; offline retention removes unreachable units.
 structural call summaries, including their negative lookup dependencies, in the
 selected revision's file membership. This replaces the global mutable cache and
 lets historical publications reuse their own verified selection. It persists no
-syntax graph fragments. Parsing admits at most 32 files and
+second syntax graph body. A sealed file projection records ordered references to
+existing node versions and structural-edge payloads. Reuse checks exact source,
+path/context, each content digest and the complete membership commitment before
+copying integer memberships in SQLite. Snapshot-qualified syntax records are
+rebound to the new revision; calls still recheck positive, negative and ambiguous
+lookup dependencies. Corrupt sealed projections fail rather than silently falling
+back. Retention follows these references and removes orphaned projections.
+Parsing admits at most 32 files and
 32 MiB of source, processing at most four admitted files at a time. Reused
 workers hand results directly to the writer through rendezvous channels;
 oversized files run alone. These are admission limits, not a total RSS ceiling. Extraction reads captured source and builds a
@@ -144,7 +151,8 @@ the cross-file barrier; call decisions then publish one file at a time. The
 repository graph is never accumulated in this path. Its view ID commits to the
 parser-unit selection, complete publication metadata and derivation fingerprint
 before insertion, avoiding a rewrite of all record keys at the end. Canonical
-graph/export and membership commitments independently stream retained rows.
+graph/export and membership commitments share one serialization of retained nodes;
+each keeps its existing domain and envelope.
 Explicit graph imports retain their graph-content view identity. File/endpoint validation, immutable
 identity collisions and the transaction preserve the same published graph.
 `ScanMetadata` carries membership and explicit gaps.
@@ -465,9 +473,10 @@ the same extractor and structural resolver. This adopts the file-owned construct
 boundary illustrated by [stack graphs](https://docs.rs/stack-graphs/latest/stack_graphs/),
 while retaining Entmoot's conservative structural resolution and native qualification.
 It does not introduce stack-graph language rules. Ordinary initialization and durable
-inventory also share a disposable latest-only cache of source-qualified syntax
-parts and scope-free call decisions. Repository identity, relative path, exact source
-digest and policies qualify each file; implementation/layout fingerprints fence
+inventory reuse source-qualified parser facts and scope-free call decisions from
+retained revision membership. Durable inventory retains its own fenced part
+checkpoints; ordinary publication uses the sealed file references above.
+Repository identity, relative path, exact source digest and policies qualify each file; implementation/layout fingerprints fence
 derivation changes. Host roots do not prevent reuse across worktrees in the same
 repository. Structural decisions record the exact callable-index reads, including
 absent paths, ambiguous results and caller membership. Unchanged read digests allow
@@ -477,8 +486,9 @@ replays native evidence. This follows the tracked-input/unchanged-result discipl
 of [rustc incremental queries](https://rustc-dev-guide.rust-lang.org/queries/incremental-compilation-in-detail.html)
 without introducing a general query engine. Cache membership has a content commitment
 over verified payload bytes and pinned reads, avoiding repeated tree serialization.
-An unchanged complete cache needs no refresh. Durable cache updates commit with the fenced graph seal and progress
-cleanup. Concurrent jobs may replace the cache, but cannot change immutable results.
+An unchanged complete selection needs no refresh. Durable membership updates commit
+with the fenced graph seal and progress cleanup; a later producer cannot overwrite
+an earlier revision's file selection.
 Cache hydration and complete index construction remain whole-operation costs.
 Part membership, phase cursor and worker fence commit together. Retention preserves
 parts through live checkpoints; sealing or cancellation releases their membership.

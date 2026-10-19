@@ -64,8 +64,9 @@ pub struct WorkspaceSummary {
     #[serde(default)]
     pub reused_syntax_files: usize,
     #[serde(default)]
-    /// Kept for receipt compatibility; disposable syntax graphs are rebuilt,
-    /// so this counter is zero. Parsed-file reuse is reported separately.
+    /// Files whose sealed syntax projection was verified and reused in a new view.
+    /// Selecting an unchanged/historical complete view does not run extraction
+    /// and reports zero here. Parsed-file reuse is reported separately.
     pub reused_extraction_files: usize,
     #[serde(default)]
     pub reused_stitching_files: usize,

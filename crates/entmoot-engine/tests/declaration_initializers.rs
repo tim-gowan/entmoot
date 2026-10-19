@@ -95,7 +95,11 @@ fn revision_sequence_invalidates_negative_lookups_and_reuses_unchanged_targets()
         )
         .unwrap();
         assert_eq!(summary.reused_syntax_files, reused, "parse step {step}");
-        assert_eq!(summary.reused_extraction_files, 0, "extract step {step}");
+        assert_eq!(
+            summary.reused_extraction_files,
+            [0, 0, 2, 2, 2, 3, 3, 0, 1, 3, 2][step],
+            "extract step {step}",
+        );
         assert_eq!(
             summary.reused_stitching_files, stitched,
             "stitch step {step}"
@@ -221,7 +225,7 @@ fn workspace_syntax_cache_skips_unchanged_parses_and_reindexes_full_changed_file
         .unwrap();
         assert_eq!(next.indexed_files, 1, "{path}");
         assert_eq!(next.reused_syntax_files, CASES.len() - 1, "{path}");
-        assert_eq!(next.reused_extraction_files, 0, "{path}");
+        assert_eq!(next.reused_extraction_files, CASES.len() - 1, "{path}");
         assert_eq!(next.reused_stitching_files, CASES.len() - 1, "{path}");
         let graph = entmoot_engine::load_graph_json(&next.publication.graph).unwrap();
         let cold = entmoot_engine::build_topology_from_repo_with_options(
@@ -337,7 +341,7 @@ fn unchanged_caller_syntax_rebinds_after_sibling_module_ambiguity() {
         initialize_workspace(root.path(), Some("fixture"), &Default::default(), &options).unwrap();
     assert_eq!(next.indexed_files, 1);
     assert_eq!(next.reused_syntax_files, 2);
-    assert_eq!(next.reused_extraction_files, 0);
+    assert_eq!(next.reused_extraction_files, 2);
     assert_eq!(next.reused_stitching_files, 1);
     let graph = entmoot_engine::load_graph_json(&next.publication.graph).unwrap();
     let cold = entmoot_engine::build_topology_from_repo_with_options(

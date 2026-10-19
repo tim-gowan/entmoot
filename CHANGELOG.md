@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-19: Reuse unchanged file projections during publication
+
+- Seal ordered references to existing file-local node versions and edges; verify
+  their source/context and content/membership commitments before reuse. Copy
+  memberships in SQLite while rebuilding current-snapshot claim envelopes.
+- Keep negative/ambiguous call dependency checks, transactional rollback and
+  historical reads; retain projection references through offline collection.
+- Remove the second complete node serialization during publication commitments
+  and repeated preparation/writes in shared payload/path interners. Report
+  finalization phases separately. A frozen 512-file diagnostic reduced one-file
+  refresh from 23.6s to 17.5s with exact node/edge parity; full-repository refresh
+  qualification of this change is pending.
+
 ## 2026-10-19: Retain canonical file facts before projection
 
 - Consolidate callable identity and signature facts, retain sealed file units

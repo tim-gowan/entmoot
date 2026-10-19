@@ -17,7 +17,7 @@ pub(crate) struct StructuralWriter<'a, 'db> {
 
 impl StructuralWriter<'_, '_> {
     /// File projections are validated with their exact retained endpoint/parent
-    /// context. Global identity collisions fail during insertion, never overwrite.
+    /// context. Global identity collisions abort the view, never overwrite.
     pub(crate) fn append(&mut self, graph: &TopologyGraph) -> Result<(), KnowledgeRepositoryError> {
         let mut checked = graph.clone();
         let mut needed = BTreeSet::new();
@@ -77,6 +77,44 @@ impl StructuralWriter<'_, '_> {
             insert_immutable_chunk(self.transaction, &batch.store)?;
         }
         Ok(())
+    }
+
+    pub(crate) fn append_syntax(
+        &mut self,
+        unit: i64,
+        graph: &TopologyGraph,
+    ) -> Result<(), KnowledgeRepositoryError> {
+        self.append(graph)?;
+        super::structural_files::seal(self.transaction, unit, graph)
+    }
+
+    pub(crate) fn reuse_syntax(
+        &mut self,
+        unit: i64,
+        header: &TopologyGraph,
+    ) -> Result<Option<TopologyGraph>, KnowledgeRepositoryError> {
+        let Some(projection) = super::structural_files::load(self.transaction, unit, header)?
+        else {
+            return Ok(None);
+        };
+        // Copy integer memberships and existing edge references in SQLite, not
+        // through a Rust lookup/insert round trip for each unchanged node.
+        self.transaction.prepare_cached("INSERT OR IGNORE INTO inventory_nodes SELECT (SELECT view_key FROM inventory_headers WHERE view_id=(SELECT id FROM temp.selected_knowledge_view)),?2+ROW_NUMBER() OVER(ORDER BY ordinal)-1,node_key FROM structural_file_nodes WHERE unit_id=?1")?
+            .execute(params![unit,i64::try_from(self.ordinal).map_err(|e|invalid_record("inventory",e))?])?;
+        self.ordinal = self
+            .ordinal
+            .checked_add(projection.graph.nodes.len())
+            .ok_or_else(|| invalid_record("inventory", "node ordinal overflow"))?;
+        self.transaction.prepare_cached("INSERT INTO scoped_records(view_id,collection,record_id,payload) SELECT (SELECT id FROM temp.selected_knowledge_view),'structural_edges',record_id,payload FROM structural_file_edges WHERE unit_id=?1 ON CONFLICT(view_id,collection,record_id) DO UPDATE SET payload=CASE WHEN scoped_records.payload=excluded.payload THEN excluded.payload ELSE NULL END")?
+            .execute([unit])?;
+        // These envelopes include the current snapshot. Reusing the unchanged
+        // syntax does not authorize copying an older revision's record IDs.
+        let mut syntax = projection.graph.clone();
+        syntax.edges.clear();
+        for batch in KnowledgeStoreBatches::from_graph(&syntax, PublicationBuffer::default())? {
+            insert_immutable_chunk(self.transaction, &batch?.store)?;
+        }
+        Ok(Some(projection.graph))
     }
 
     fn node(&self, id: &str) -> Result<Option<TopologyNode>, KnowledgeRepositoryError> {
@@ -218,6 +256,13 @@ impl SqliteKnowledgeRepository {
         final_part.rebuild_indexes();
         writer.append(&final_part)?;
         drop(writer);
+        let conflicting: bool = transaction.query_row("SELECT EXISTS(SELECT 1 FROM inventory_nodes JOIN inventory_node_versions USING(node_key) WHERE view_key=(SELECT view_key FROM inventory_headers WHERE view_id=?1) GROUP BY node_id HAVING COUNT(*)>1)", [&view], |row|row.get(0))?;
+        if conflicting {
+            return Err(invalid_record(
+                "inventory",
+                "conflicting structural node identity",
+            ));
+        }
         let duplicate: bool = transaction.query_row("SELECT EXISTS(SELECT 1 FROM inventory_nodes JOIN inventory_node_versions USING(node_key) WHERE view_key=(SELECT view_key FROM inventory_headers WHERE view_id=?1) AND kind='declaration' AND address_id IS NOT NULL GROUP BY address_id HAVING COUNT(*)>1)", [&view], |row| row.get(0))?;
         if duplicate {
             return Err(invalid_record(
@@ -226,20 +271,25 @@ impl SqliteKnowledgeRepository {
             ));
         }
         // Reorder integer membership positions without a second payload copy.
+        let order = crate::measurement::PhaseTimer::start("publication_node_order");
         transaction.execute_batch(PREPARE_NODE_ORDER)?;
         transaction.execute(APPLY_NODE_ORDER, [])?;
         transaction.execute_batch(FINISH_NODE_ORDER)?;
+        cache.phases.push(order.finish());
+        let files = crate::measurement::PhaseTimer::start("publication_source_membership");
         for (ordinal, file) in metadata.snapshot_files.iter().enumerate() {
             let path = super::inventory::intern_path(&transaction, &file.path)?;
             let (source, _) =
                 super::inventory::intern_source_digest(&transaction, &file.content_digest)?;
             transaction.execute("INSERT INTO inventory_files VALUES((SELECT view_key FROM inventory_headers WHERE view_id=?1),?2,?3,?4)",params![view,i64::try_from(ordinal).map_err(|e|invalid_record("inventory",e))?,path,source])?;
         }
+        cache.phases.push(files.finish());
+        let commitments = crate::measurement::PhaseTimer::start("publication_commitments");
         let mut digest = blake3::Hasher::new();
-        stream_graph(&transaction, metadata, &mut digest)?;
+        let inventory_digest = stream_graph(&transaction, metadata, &mut digest)?;
         digest.update(b"\n");
         let export = format!("blake3:{}", digest.finalize().to_hex());
-        let inventory_digest = streamed_inventory_digest(&transaction, metadata)?;
+        cache.phases.push(commitments.finish());
         transaction.execute(
             "UPDATE inventory_headers SET graph_digest=?1,inventory_digest=?2 WHERE view_id=?3",
             params![export, inventory_digest, view],
@@ -247,9 +297,13 @@ impl SqliteKnowledgeRepository {
         // The immutable graph commitment covers the complete canonical projection,
         // including syntax-derived records; mutable stores retain their row digest.
         set_store_digest(&transaction, &export)?;
+        let selection = crate::measurement::PhaseTimer::start("publication_file_selection");
         super::syntax_cache::PreparedCache::prepare(cache)?.store(&transaction)?;
+        cache.phases.push(selection.finish());
         transaction.execute("UPDATE temp.selected_knowledge_view SET id=?1", [selected])?;
+        let commit = crate::measurement::PhaseTimer::start("publication_commit");
         transaction.commit()?;
+        cache.phases.push(commit.finish());
         Ok((view.clone(), PublicationOutcome::Replaced { digest: view }))
     }
 }
@@ -317,11 +371,36 @@ impl<'de> serde::Deserialize<'de> for Envelope {
         deserializer.deserialize_map(Fields)
     }
 }
+// Feed the same verified node bytes to both commitments. The inventory digest
+// must not require a second hydration/serialization of every unchanged node.
+struct NodeCommitments<'a, W> {
+    output: &'a mut W,
+    inventory: &'a mut blake3::Hasher,
+}
+impl<W: Write> Write for NodeCommitments<'_, W> {
+    fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+        self.output.write_all(bytes)?;
+        self.inventory.update(bytes);
+        Ok(bytes.len())
+    }
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.output.flush()
+    }
+}
+
 fn stream_graph(
     connection: &Connection,
     metadata: &TopologyGraph,
     output: &mut impl Write,
-) -> Result<(), KnowledgeRepositoryError> {
+) -> Result<String, KnowledgeRepositoryError> {
+    let mut inventory = blake3::Hasher::new();
+    inventory.write_all(b"[")?;
+    serde_json::to_writer(&mut inventory, "entmoot.inventory.membership.v1")?;
+    inventory.write_all(b",")?;
+    serde_json::to_writer(&mut inventory, &metadata.snapshot)?;
+    inventory.write_all(b",")?;
+    serde_json::to_writer(&mut inventory, &metadata.policy_ids)?;
+    inventory.write_all(b",")?;
     let mut header = metadata.clone();
     header.nodes = Vec::new().into();
     header.edges = Vec::new().into();
@@ -377,31 +456,16 @@ fn stream_graph(
         serde_json::to_writer(&mut *output, &key)?;
         output.write_all(b":")?;
         match key.as_str() {
-            "nodes"=>stream_nodes(connection,output)?,
+            "nodes"=>stream_nodes(connection,&mut NodeCommitments { output, inventory: &mut inventory })?,
             "edges"=>stream_records::<crate::graph::StructuralEdge>(connection,"structural_edges","json_extract(CAST(p.body AS TEXT),'$.body.from'),json_extract(CAST(p.body AS TEXT),'$.body.to'),CASE json_extract(CAST(p.body AS TEXT),'$.body.kind') WHEN 'contains' THEN 0 WHEN 'imports' THEN 1 WHEN 'calls' THEN 2 WHEN 'has_control_site' THEN 3 ELSE 4 END",output)?,
             _=>output.write_all(value.get().as_bytes())?,
         }
     }
     output.write_all(b"}")?;
-    Ok(())
-}
-fn streamed_inventory_digest(
-    connection: &Connection,
-    metadata: &TopologyGraph,
-) -> Result<String, KnowledgeRepositoryError> {
-    let mut hash = blake3::Hasher::new();
-    hash.write_all(b"[")?;
-    serde_json::to_writer(&mut hash, "entmoot.inventory.membership.v1")?;
-    hash.write_all(b",")?;
-    serde_json::to_writer(&mut hash, &metadata.snapshot)?;
-    hash.write_all(b",")?;
-    serde_json::to_writer(&mut hash, &metadata.policy_ids)?;
-    hash.write_all(b",")?;
-    stream_nodes(connection, &mut hash)?;
-    hash.write_all(b",")?;
-    serde_json::to_writer(&mut hash, &metadata.snapshot_files)?;
-    hash.write_all(b"]")?;
-    Ok(format!("blake3:{}", hash.finalize().to_hex()))
+    inventory.write_all(b",")?;
+    serde_json::to_writer(&mut inventory, &metadata.snapshot_files)?;
+    inventory.write_all(b"]")?;
+    Ok(format!("blake3:{}", inventory.finalize().to_hex()))
 }
 
 #[cfg(test)]

@@ -107,11 +107,8 @@ pub(super) fn intern_payload(
     let canonical = serde_json::to_vec(&body)?;
     let digest = blake3::hash(&canonical);
     if let Some(id) = connection
-        .query_row(
-            "SELECT payload_id FROM shared_payloads WHERE digest=?1",
-            [digest.as_bytes().as_slice()],
-            |r| r.get(0),
-        )
+        .prepare_cached("SELECT payload_id FROM shared_payloads WHERE digest=?1")?
+        .query_row([digest.as_bytes().as_slice()], |r| r.get(0))
         .optional()?
     {
         return Ok(id);
@@ -157,13 +154,12 @@ pub(super) fn intern_payload(
             metadata.insert(key, id);
         }
     }
-    connection.execute(
-        "INSERT INTO shared_payloads(digest,body) VALUES(?1,?2)",
-        params![
+    connection
+        .prepare_cached("INSERT INTO shared_payloads(digest,body) VALUES(?1,?2)")?
+        .execute(params![
             digest.as_bytes().as_slice(),
             serde_json::to_vec(&Payload { body, metadata })?
-        ],
-    )?;
+        ])?;
     Ok(connection.last_insert_rowid())
 }
 
@@ -174,15 +170,17 @@ pub(super) fn intern_metadata_bytes(
     bytes: &[u8],
 ) -> Result<i64, KnowledgeRepositoryError> {
     let digest = blake3::hash(bytes);
-    connection.execute(
-        "INSERT OR IGNORE INTO shared_metadata(digest,body) VALUES(?1,?2)",
-        params![digest.as_bytes().as_slice(), bytes],
-    )?;
-    Ok(connection.query_row(
-        "SELECT metadata_id FROM shared_metadata WHERE digest=?1",
-        [digest.as_bytes().as_slice()],
-        |row| row.get(0),
-    )?)
+    if let Some(id) = connection
+        .prepare_cached("SELECT metadata_id FROM shared_metadata WHERE digest=?1")?
+        .query_row([digest.as_bytes().as_slice()], |row| row.get(0))
+        .optional()?
+    {
+        return Ok(id);
+    }
+    connection
+        .prepare_cached("INSERT INTO shared_metadata(digest,body) VALUES(?1,?2)")?
+        .execute(params![digest.as_bytes().as_slice(), bytes])?;
+    Ok(connection.last_insert_rowid())
 }
 
 pub(super) fn hydrate_metadata_bytes(
