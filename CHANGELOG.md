@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-19: Align Windows package-api roots with sidecar spelling
+
+- Port Pyright path containment from merged storage qualification: compare
+  realpaths (case-insensitive on Windows, strip verbatim prefixes) and surface
+  outside-root packages as provider errors without weakening references_complete.
+- Native Python package-api controls hand environment and source roots in the
+  same ordinary drive spelling the sidecar uses for `request.root`.
+
 ## 2026-10-19: Reuse unchanged file projections during publication
 
 - Seal ordered references to existing file-local node versions and edges; verify

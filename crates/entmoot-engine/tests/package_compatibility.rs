@@ -880,9 +880,32 @@ fn native_python_five_controls() {
     }
     let _restore = Restore(prior);
     std::env::set_var("ENTMOOT_PYTHON_ENVIRONMENT", &config);
+    // Match sidecar request.root spelling (canonicalize + strip Windows \\?\).
+    let ordinary = |path: &std::path::Path| -> std::path::PathBuf {
+        let canonical = std::fs::canonicalize(path).unwrap();
+        #[cfg(windows)]
+        {
+            use std::path::{Component, Prefix};
+            let mut components = canonical.components();
+            if let Some(Component::Prefix(prefix)) = components.next() {
+                if let Prefix::VerbatimDisk(drive) = prefix.kind() {
+                    let mut plain = std::path::PathBuf::from(format!("{}:\\", char::from(drive)));
+                    for part in components {
+                        if let Component::Normal(value) = part {
+                            plain.push(value);
+                        }
+                    }
+                    return plain;
+                }
+            }
+        }
+        canonical
+    };
     let mut serial = 0;
     let mut native = |mut item: Fixture, package_root: &std::path::Path| {
-        if item._root.path() != package_root {
+        let source_root = ordinary(item._root.path());
+        let package_root = ordinary(package_root);
+        if source_root != package_root {
             // Operator evidence qualifies origin joins, not uv/installation support.
             let lock = b"opaque harness selection";
             std::fs::write(item._root.path().join("fixture.lock"), lock).unwrap();
@@ -900,7 +923,7 @@ fn native_python_five_controls() {
                 item._root.path().join(".entmoot/lock_bindings.json"),
                 serde_json::to_vec(&serde_json::json!({
                     "producer":"entmoot.test", "policy":"opaque_fixture.v1",
-                    "packages":[{"root":package_root,"instance":instance}]
+                    "packages":[{"root":&package_root,"instance":instance}]
                 }))
                 .unwrap(),
             )
@@ -917,8 +940,8 @@ fn native_python_five_controls() {
         std::fs::write(
             &config,
             serde_json::to_vec(&serde_json::json!({
-                "interpreter": python.trim(), "import_roots": [package_root],
-                "packages": [{"name": "native-python-fixture", "module": "", "root": package_root}]
+                "interpreter": python.trim(), "import_roots": [&package_root],
+                "packages": [{"name": "native-python-fixture", "module": "", "root": &package_root}]
             }))
             .unwrap(),
         )
@@ -928,7 +951,8 @@ fn native_python_five_controls() {
         let result = produce_python_resolver(NativeProduceRequest {
             canon: false,
             graph_path,
-            source_root: item._root.path().to_owned(),
+            // Ordinary spelling keeps sidecar request.root aligned with environment.json.
+            source_root: source_root.clone(),
             output_dir: run.path().join(format!("producer-{serial}")),
             budget: ProducerBudget {
                 wall: std::time::Duration::from_secs(90),
@@ -944,6 +968,19 @@ fn native_python_five_controls() {
             result.raw.diagnostics
         );
         assert!(!result.raw.budget_exceeded);
+        if source_root == package_root {
+            assert!(
+                result
+                    .artifact
+                    .package_api
+                    .as_ref()
+                    .is_some_and(|api| !api.surfaces.is_empty()),
+                "same-root package_api surfaces missing; diagnostics={:?} provider_errors={:?} api={:?}",
+                result.raw.diagnostics,
+                result.raw.build_context.get("provider_errors"),
+                result.artifact.package_api
+            );
+        }
         item.artifact = result.artifact;
         serial += 1;
         item
