@@ -7,7 +7,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use entmoot_contracts::query::{
     BoundedWalkBudget, CallDirection, FindQuery, HopEvidenceFilter, InspectQuery, QueryRequest,
-    QueryService, QueryServiceError, ReadQuery, SeededPathRequest, TraverseQuery,
+    QueryService, QueryServiceError,
 };
 use entmoot_core::{ground_truth::policy_from_config_name, StructuralHashPolicy};
 use rmcp::{
@@ -20,6 +20,7 @@ type Failure = (&'static str, String);
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 struct NeighborhoodArgs {
     #[serde(default)]
     prune: entmoot_contracts::query::TraversalPrune,
@@ -45,6 +46,7 @@ struct NeighborhoodArgs {
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 struct ImpactRelayArgs {
     /// Same portable request as CLI relay-impact; compact caller pages by default.
     #[serde(default)]
@@ -164,6 +166,7 @@ struct Args {
 // serde's outer deny_unknown_fields is incompatible with flattening a tagged enum.
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[schemars(deny_unknown_fields)]
+#[allow(dead_code)]
 struct QueryArgs<T> {
     #[serde(flatten)]
     request: T,
@@ -176,6 +179,7 @@ type InspectArgs = QueryArgs<InspectQuery>;
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 struct BoundaryArgs {
     #[serde(default)]
     request: entmoot_contracts::query::CallBoundaryRequest,
@@ -185,6 +189,7 @@ struct BoundaryArgs {
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 struct TraverseArgs {
     /// Same per-hop evidence policy as neighborhood.
     #[serde(default)]
@@ -223,6 +228,7 @@ struct TraverseArgs {
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 struct ReadSourceArgs {
     /// Compact by default (10 items, 16 KiB); explain/export expand selected evidence.
     /// Output continuation is pinned; deferred detail is not search truncation.
@@ -237,6 +243,7 @@ struct ReadSourceArgs {
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 struct CallNeighborhoodArgs {
     /// Compact by default (10 items, 16 KiB); explain/export expand selected evidence.
     /// Output continuation is pinned; deferred detail is not search truncation.
@@ -252,6 +259,7 @@ struct CallNeighborhoodArgs {
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 struct QueryPassthroughArgs {
     request: QueryRequest,
 }
@@ -280,6 +288,7 @@ struct InventoryOverlayArgs {
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 struct SeededPathArgs {
     #[serde(default)]
     prune: entmoot_contracts::query::TraversalPrune,
@@ -301,6 +310,7 @@ struct SeededPathArgs {
 
 #[derive(Clone)]
 struct EntmootMcp {
+    contract_root: PathBuf,
     collaboration_store: Option<PathBuf>,
     collaboration_source_root: Option<PathBuf>,
     operation_executor: execution::OperationExecutor,
@@ -354,28 +364,45 @@ impl EntmootMcp {
         }
     }
 
+    fn contract_database(&self) -> Result<PathBuf, entmoot_workspace::ContractSnapshotError> {
+        entmoot_workspace::workspace::storage_directory(&self.contract_root)
+            .map(|directory| directory.join("contracts.sqlite3"))
+            .map_err(|error| entmoot_workspace::ContractSnapshotError::Message(error.to_string()))
+    }
+
+    fn contract_error(error: entmoot_workspace::ContractSnapshotError) -> CallToolResult {
+        Self::contract_tool::<serde_json::Value>(Err(error))
+    }
+
+    fn contract_tool<T: serde::Serialize>(
+        result: Result<T, entmoot_workspace::ContractSnapshotError>,
+    ) -> CallToolResult {
+        match result.and_then(|value| {
+            serde_json::to_value(value).map_err(|error| {
+                entmoot_workspace::ContractSnapshotError::Message(error.to_string())
+            })
+        }) {
+            Ok(value) => CallToolResult::structured(value),
+            Err(error) => {
+                let kind = match &error {
+                    entmoot_workspace::ContractSnapshotError::MissingFact(_) => "missing_fact",
+                    _ => "execution",
+                };
+                CallToolResult::structured_error(serde_json::json!({
+                    "schema_version": "entmoot.query.error.v1",
+                    "status": "error",
+                    "kind": kind,
+                    "message": error.to_string(),
+                }))
+            }
+        }
+    }
+
     fn ready(
         &self,
     ) -> Result<std::sync::Arc<entmoot_workspace::workspace::OpenedQueryBundle>, QueryServiceError>
     {
         self.deferred.wait(self.ready_timeout)
-    }
-
-    fn execute_query(&self, request: QueryRequest) -> CallToolResult {
-        let token = request
-            .output()
-            .after
-            .as_ref()
-            .and_then(|c| c.search_slice.as_deref())
-            .or_else(|| match &request {
-                QueryRequest::Traverse { request, .. } => request.continuation(),
-                _ => None,
-            });
-        Self::tool_result(
-            self.deferred
-                .wait_for_token(token, self.ready_timeout)
-                .and_then(|bundle| bundle.engine.execute(request)),
-        )
     }
 
     fn tool_result(
@@ -567,8 +594,13 @@ impl EntmootMcp {
         )
     )]
     async fn relay_impact(&self, Parameters(args): Parameters<ImpactRelayArgs>) -> CallToolResult {
+        let _ = args;
         self.dispatch(move |server| {
-            server.warming_or(|bundle| QueryService::relay_impact(&bundle.engine, args.request))
+            let database = match server.contract_database() {
+                Ok(database) => database,
+                Err(error) => return Self::contract_error(error),
+            };
+            Self::contract_tool(entmoot_workspace::contract_relay(&database, None, None))
         })
         .await
     }
@@ -584,21 +616,28 @@ impl EntmootMcp {
     )]
     async fn neighborhood(&self, Parameters(args): Parameters<NeighborhoodArgs>) -> CallToolResult {
         self.dispatch(move |server| {
-            server.execute_query(QueryRequest::Traverse {
-                request: TraverseQuery::Neighborhood {
-                    endpoint_selector: args.endpoint_selector.map(Box::new),
-                    prune: args.prune,
-                    resumable: args.resumable,
-                    continuation: args.continuation,
-                    start: args.start,
-                    direction: args.direction,
-                    predicates: args.predicates,
-                    evidence_filter: args.evidence_filter,
-                    endpoint_role: args.endpoint_role,
-                    budget: args.budget,
-                },
-                output: args.output,
-            })
+            if args.endpoint_role.is_some() {
+                return Self::contract_error(
+                    entmoot_workspace::ContractSnapshotError::MissingFact(
+                        entmoot_workspace::FACT_PROVIDER_ROLES,
+                    ),
+                );
+            }
+            let database = match server.contract_database() {
+                Ok(database) => database,
+                Err(error) => return Self::contract_error(error),
+            };
+            let direction = match args.direction {
+                CallDirection::Callers => "callers",
+                CallDirection::Callees => "callees",
+            };
+            Self::contract_tool(entmoot_workspace::contract_neighborhood(
+                &database,
+                &args.start,
+                direction,
+                args.budget.max_hops,
+                None,
+            ))
         })
         .await
     }
@@ -612,9 +651,13 @@ impl EntmootMcp {
             open_world_hint = false
         )
     )]
-    async fn query(&self, Parameters(args): Parameters<QueryPassthroughArgs>) -> CallToolResult {
-        self.dispatch(move |server| server.execute_query(args.request))
-            .await
+    async fn query(&self, Parameters(_args): Parameters<QueryPassthroughArgs>) -> CallToolResult {
+        self.dispatch(move |_server| {
+            Self::contract_error(entmoot_workspace::ContractSnapshotError::MissingFact(
+                entmoot_workspace::FACT_GRAPH_PUBLICATION,
+            ))
+        })
+        .await
     }
 
     #[tool(
@@ -628,12 +671,25 @@ impl EntmootMcp {
     )]
     async fn boundaries(&self, Parameters(args): Parameters<BoundaryArgs>) -> CallToolResult {
         self.dispatch(move |server| {
-            server.execute_query(QueryRequest::Find {
-                request: FindQuery::CallBoundary {
-                    request: args.request,
-                },
-                output: args.output,
-            })
+            if args.request.outcome.is_some()
+                || args.request.reason.is_some()
+                || args.request.build_context.is_some()
+            {
+                return Self::contract_error(
+                    entmoot_workspace::ContractSnapshotError::MissingFact(
+                        entmoot_workspace::FACT_NATIVE_DISPATCH,
+                    ),
+                );
+            }
+            let database = match server.contract_database() {
+                Ok(database) => database,
+                Err(error) => return Self::contract_error(error),
+            };
+            Self::contract_tool(entmoot_workspace::contract_boundaries(
+                &database,
+                None,
+                args.request.path.as_deref(),
+            ))
         })
         .await
     }
@@ -649,17 +705,36 @@ impl EntmootMcp {
     )]
     async fn find(&self, Parameters(args): Parameters<FindArgs>) -> CallToolResult {
         self.dispatch(move |server| {
-            let bundle = match server.ready() {
-                Ok(bundle) => bundle,
-                Err(error) => return Self::tool_result(Err(error)),
+            let database = match server.contract_database() {
+                Ok(database) => database,
+                Err(error) => return Self::contract_error(error),
             };
-            Self::tool_result(QueryService::execute(
-                &bundle.engine,
-                QueryRequest::Find {
-                    request: args.request,
-                    output: args.output,
-                },
-            ))
+            match args.request {
+                FindQuery::Subject {
+                    query,
+                    path,
+                    limit,
+                    selector,
+                    line: _,
+                } => {
+                    if selector.is_some() {
+                        return Self::contract_error(
+                            entmoot_workspace::ContractSnapshotError::MissingFact(
+                                entmoot_workspace::FACT_OTHER_EVIDENCE,
+                            ),
+                        );
+                    }
+                    Self::contract_tool(entmoot_workspace::find_contracts(
+                        &database,
+                        query.as_deref(),
+                        path.as_deref(),
+                        limit.unwrap_or(50),
+                    ))
+                }
+                _ => Self::contract_error(entmoot_workspace::ContractSnapshotError::MissingFact(
+                    entmoot_workspace::FACT_OTHER_EVIDENCE,
+                )),
+            }
         })
         .await
     }
@@ -675,17 +750,24 @@ impl EntmootMcp {
     )]
     async fn inspect(&self, Parameters(args): Parameters<InspectArgs>) -> CallToolResult {
         self.dispatch(move |server| {
-            let bundle = match server.ready() {
-                Ok(bundle) => bundle,
-                Err(error) => return Self::tool_result(Err(error)),
+            let database = match server.contract_database() {
+                Ok(database) => database,
+                Err(error) => return Self::contract_error(error),
             };
-            Self::tool_result(QueryService::execute(
-                &bundle.engine,
-                QueryRequest::Inspect {
-                    request: args.request,
-                    output: args.output,
-                },
-            ))
+            match args.request {
+                InspectQuery::Subject { id, .. } => {
+                    Self::contract_tool(entmoot_workspace::inspect_contract(&database, &id))
+                }
+                InspectQuery::Callers { id, .. } => {
+                    Self::contract_tool(entmoot_workspace::contract_caller_set(&database, &id))
+                }
+                InspectQuery::Callees { id, .. } => {
+                    Self::contract_tool(entmoot_workspace::contract_callee_set(&database, &id))
+                }
+                _ => Self::contract_error(entmoot_workspace::ContractSnapshotError::MissingFact(
+                    entmoot_workspace::FACT_OTHER_EVIDENCE,
+                )),
+            }
         })
         .await
     }
@@ -701,33 +783,28 @@ impl EntmootMcp {
     )]
     async fn traverse(&self, Parameters(args): Parameters<TraverseArgs>) -> CallToolResult {
         self.dispatch(move |server| {
-            let defaults = BoundedWalkBudget::default();
-            server.execute_query(QueryRequest::Traverse {
-                request: TraverseQuery::Path {
-                    evidence_filter: args.evidence_filter,
-                    prune: args.prune,
-                    resumable: args.resumable,
-                    continuation: args.continuation,
-                    start: args.start,
-                    target: args.target,
-                    predicates: args.predicates,
-                    budget: BoundedWalkBudget {
-                        max_hops: args.max_hops.unwrap_or(defaults.max_hops),
-                        max_expansions: args.max_expansions.unwrap_or(defaults.max_expansions),
-                        max_examined_edges: args
-                            .max_examined_edges
-                            .unwrap_or(defaults.max_examined_edges),
-                        max_edges_per_node: args
-                            .max_edges_per_node
-                            .unwrap_or(defaults.max_edges_per_node),
-                        max_results: args.max_results.unwrap_or(defaults.max_results),
-                        max_evidence_per_hop: args
-                            .max_evidence_per_hop
-                            .unwrap_or(defaults.max_evidence_per_hop),
-                    },
-                },
-                output: args.output,
-            })
+            let database = match server.contract_database() {
+                Ok(database) => database,
+                Err(error) => return Self::contract_error(error),
+            };
+            if args
+                .predicates
+                .iter()
+                .any(|predicate| predicate != "calls" && predicate != "all")
+            {
+                return Self::contract_error(
+                    entmoot_workspace::ContractSnapshotError::MissingFact(
+                        entmoot_workspace::FACT_OTHER_EVIDENCE,
+                    ),
+                );
+            }
+            Self::contract_tool(entmoot_workspace::contract_path(
+                &database,
+                &args.start,
+                &args.target,
+                args.max_hops.unwrap_or(6),
+                None,
+            ))
         })
         .await
     }
@@ -741,24 +818,10 @@ impl EntmootMcp {
             open_world_hint = false
         )
     )]
-    async fn read_source(&self, Parameters(args): Parameters<ReadSourceArgs>) -> CallToolResult {
-        self.dispatch(move |server| {
-            let bundle = match server.ready() {
-                Ok(bundle) => bundle,
-                Err(error) => return Self::tool_result(Err(error)),
-            };
-            Self::tool_result(QueryService::execute(
-                &bundle.engine,
-                QueryRequest::Read {
-                    request: ReadQuery::Source {
-                        path: args.path,
-                        start_line: args.start_line,
-                        end_line: args.end_line,
-                        context_lines: args.context_lines,
-                        max_bytes: args.max_bytes,
-                    },
-                    output: args.output,
-                },
+    async fn read_source(&self, Parameters(_args): Parameters<ReadSourceArgs>) -> CallToolResult {
+        self.dispatch(move |_server| {
+            Self::contract_error(entmoot_workspace::ContractSnapshotError::MissingFact(
+                entmoot_workspace::FACT_SOURCE_TEXT,
             ))
         })
         .await
@@ -775,20 +838,13 @@ impl EntmootMcp {
     )]
     async fn callers(&self, Parameters(args): Parameters<CallNeighborhoodArgs>) -> CallToolResult {
         self.dispatch(move |server| {
-            let bundle = match server.ready() {
-                Ok(bundle) => bundle,
-                Err(error) => return Self::tool_result(Err(error)),
+            let database = match server.contract_database() {
+                Ok(database) => database,
+                Err(error) => return Self::contract_error(error),
             };
-            Self::tool_result(QueryService::execute(
-                &bundle.engine,
-                QueryRequest::Inspect {
-                    request: InspectQuery::Callers {
-                        id: args.subject,
-                        after: args.after,
-                        limit: args.limit,
-                    },
-                    output: args.output,
-                },
+            Self::contract_tool(entmoot_workspace::contract_caller_set(
+                &database,
+                &args.subject,
             ))
         })
         .await
@@ -805,20 +861,13 @@ impl EntmootMcp {
     )]
     async fn callees(&self, Parameters(args): Parameters<CallNeighborhoodArgs>) -> CallToolResult {
         self.dispatch(move |server| {
-            let bundle = match server.ready() {
-                Ok(bundle) => bundle,
-                Err(error) => return Self::tool_result(Err(error)),
+            let database = match server.contract_database() {
+                Ok(database) => database,
+                Err(error) => return Self::contract_error(error),
             };
-            Self::tool_result(QueryService::execute(
-                &bundle.engine,
-                QueryRequest::Inspect {
-                    request: InspectQuery::Callees {
-                        id: args.subject,
-                        after: args.after,
-                        limit: args.limit,
-                    },
-                    output: args.output,
-                },
+            Self::contract_tool(entmoot_workspace::contract_callee_set(
+                &database,
+                &args.subject,
             ))
         })
         .await
@@ -837,8 +886,13 @@ impl EntmootMcp {
         &self,
         Parameters(request): Parameters<entmoot_contracts::query::StatusRequest>,
     ) -> CallToolResult {
+        let _ = request;
         self.dispatch(move |server| {
-            server.warming_or(|bundle| QueryService::status(&bundle.engine, request))
+            let database = match server.contract_database() {
+                Ok(database) => database,
+                Err(error) => return Self::contract_error(error),
+            };
+            Self::contract_tool(entmoot_workspace::contract_status(&database))
         })
         .await
     }
@@ -857,7 +911,24 @@ impl EntmootMcp {
         Parameters(request): Parameters<entmoot_contracts::query::InventoryRequest>,
     ) -> CallToolResult {
         self.dispatch(move |server| {
-            server.warming_or(|bundle| QueryService::inventory(&bundle.engine, request))
+            if request.kinds.iter().any(|kind| kind.as_str() != "callable") {
+                return Self::contract_error(
+                    entmoot_workspace::ContractSnapshotError::MissingFact(
+                        entmoot_workspace::FACT_NON_CALLABLE,
+                    ),
+                );
+            }
+            let database = match server.contract_database() {
+                Ok(database) => database,
+                Err(error) => return Self::contract_error(error),
+            };
+            Self::contract_tool(entmoot_workspace::contract_inventory(
+                &database,
+                None,
+                request.path.as_deref(),
+                request.offset,
+                request.limit,
+            ))
         })
         .await
     }
@@ -974,7 +1045,15 @@ impl EntmootMcp {
         Parameters(request): Parameters<entmoot_contracts::query::CallComponentsRequest>,
     ) -> CallToolResult {
         self.dispatch(move |server| {
-            server.warming_or(|bundle| QueryService::call_components(&bundle.engine, request))
+            let database = match server.contract_database() {
+                Ok(database) => database,
+                Err(error) => return Self::contract_error(error),
+            };
+            Self::contract_tool(entmoot_workspace::contract_components(
+                &database,
+                request.offset,
+                request.limit,
+            ))
         })
         .await
     }
@@ -992,30 +1071,11 @@ impl EntmootMcp {
         &self,
         Parameters(args): Parameters<SeededPathArgs>,
     ) -> CallToolResult {
-        self.dispatch(move |server| {
-            let defaults = SeededPathRequest::default();
-            let request = SeededPathRequest {
-                prune: args.prune,
-                evidence_filter: args.evidence_filter,
-                output: args.output,
-                include_hypotheses: args
-                    .include_hypotheses
-                    .unwrap_or(defaults.include_hypotheses),
-                from_role: args.from_role.unwrap_or(defaults.from_role),
-                to_role: args.to_role.unwrap_or(defaults.to_role),
-                max_seed_assertions: args
-                    .max_seed_assertions
-                    .unwrap_or(defaults.max_seed_assertions),
-                max_pairs: args.max_pairs.unwrap_or(defaults.max_pairs),
-                max_discovery_expansions: args
-                    .max_discovery_expansions
-                    .unwrap_or(defaults.max_discovery_expansions),
-                max_discovery_edges: args
-                    .max_discovery_edges
-                    .unwrap_or(defaults.max_discovery_edges),
-                walk: args.walk.unwrap_or(defaults.walk),
-            };
-            server.warming_or(|bundle| QueryService::trace_seeds(&bundle.engine, request))
+        let _ = args;
+        self.dispatch(move |_server| {
+            Self::contract_error(entmoot_workspace::ContractSnapshotError::MissingFact(
+                entmoot_workspace::FACT_PROVIDER_ROLES,
+            ))
         })
         .await
     }
@@ -1137,23 +1197,30 @@ async fn main() -> Result<()> {
         max_index_edges: args.max_index_edges,
         ..Default::default()
     };
-    let (graph_path, publication_store, publication_root) =
+    let (graph_path, publication_store, publication_root, contract_only) =
         if let Some(publication) = &args.publication {
-            resolve_publication(publication)?
+            let (graph, store, root) = resolve_publication(publication)?;
+            (graph, store, root, false)
         } else if let Some(graph) = &args.graph {
-            (graph.clone(), None, None)
+            (graph.clone(), None, None, false)
         } else {
-            let publication = entmoot_workspace::workspace::discover_publication(&discovery_start)?;
-            (
-                publication.current.graph,
-                Some(publication.current.store),
-                Some(publication.current.source_root),
-            )
+            match entmoot_workspace::workspace::discover_publication(&discovery_start) {
+                Ok(publication) => (
+                    publication.current.graph,
+                    Some(publication.current.store),
+                    Some(publication.current.source_root),
+                    false,
+                ),
+                Err(_) => (PathBuf::new(), None, None, true),
+            }
         };
-    let store = args
-        .store
-        .or(publication_store)
-        .unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph_path));
+    let store = args.store.or(publication_store).unwrap_or_else(|| {
+        if contract_only {
+            PathBuf::new()
+        } else {
+            entmoot_workspace::workspace::default_store_path(&graph_path)
+        }
+    });
     let require_source = args.source_root.is_some();
     let source_root = args.source_root.or(publication_root);
     let discovered_base = if args.graph.is_none() {
@@ -1189,7 +1256,7 @@ async fn main() -> Result<()> {
                     );
                 } else {
                     eprintln!(
-                        "entmoot-mcp: adapter profile hard gaps: {}; run entmoot init after building adapters, or omit --require-adapter-config",
+                        "entmoot-mcp: adapter profile hard gaps: {}; run entmoot bind after building adapters, or omit --require-adapter-config",
                         gaps.join(", ")
                     );
                 }
@@ -1203,7 +1270,7 @@ async fn main() -> Result<()> {
             }
             Ok(None) => {
                 eprintln!(
-                    "entmoot-mcp: no workspace adapter profile for {}; run entmoot init",
+                    "entmoot-mcp: no workspace adapter profile for {}; run entmoot bind",
                     root.display()
                 );
                 if args.require_adapter_config {
@@ -1229,6 +1296,10 @@ async fn main() -> Result<()> {
         ),
         None => None,
     };
+    let contract_root = explicit_directory
+        .clone()
+        .or_else(|| source_root.clone())
+        .unwrap_or_else(|| discovery_start.clone());
     let spec = entmoot_workspace::workspace::PublicationOpenSpec {
         query_options,
         graph: graph_path,
@@ -1239,16 +1310,25 @@ async fn main() -> Result<()> {
         providers: args.provider,
         discovery_root,
     };
-    let deferred = match pointer {
-        Some(pointer) => entmoot_workspace::workspace::DeferredQueryBundle::start_monitored(
-            spec,
-            pointer,
-            follow_compare,
-            args.continuation_generations.into(),
-        ),
-        None => entmoot_workspace::workspace::DeferredQueryBundle::start(spec),
+    let deferred = if contract_only {
+        entmoot_workspace::workspace::DeferredQueryBundle::start_with(|| {
+            Err(QueryServiceError::Unavailable(
+                "no current workspace publication; run entmoot bind".into(),
+            ))
+        })
+    } else {
+        match pointer {
+            Some(pointer) => entmoot_workspace::workspace::DeferredQueryBundle::start_monitored(
+                spec,
+                pointer,
+                follow_compare,
+                args.continuation_generations.into(),
+            ),
+            None => entmoot_workspace::workspace::DeferredQueryBundle::start(spec),
+        }
     };
     let service = EntmootMcp {
+        contract_root,
         collaboration_store,
         collaboration_source_root: args.collaboration_source_root,
         operation_executor: execution::OperationExecutor::new(

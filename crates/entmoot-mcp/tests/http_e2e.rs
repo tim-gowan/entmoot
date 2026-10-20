@@ -1,5 +1,4 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
-use entmoot_contracts::query::QueryService;
 use entmoot_engine::{KnowledgeRepository, KnowledgeStore, SqliteKnowledgeRepository};
 use rmcp::{
     model::CallToolRequestParams,
@@ -11,23 +10,8 @@ use rmcp::{
 use serde_json::{json, Value};
 use tokio::io::{AsyncBufReadExt, BufReader};
 
-fn stable(value: &mut Value) {
-    match value {
-        Value::Object(values) => {
-            values.remove("elapsed_micros");
-            values.remove("index_micros");
-            values.remove("evidence_micros");
-            for value in values.values_mut() {
-                stable(value);
-            }
-        }
-        Value::Array(values) => values.iter_mut().for_each(stable),
-        _ => {}
-    }
-}
-
 #[tokio::test]
-async fn loopback_auth_shared_queries_and_resumable_paging() {
+async fn loopback_auth_rejects_anonymous_calls_and_graph_queries() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
         dir.path().join("main.rs"),
@@ -37,13 +21,6 @@ async fn loopback_auth_shared_queries_and_resumable_paging() {
     let graph =
         entmoot_engine::build_topology_from_repo_with_options(dir.path(), Default::default())
             .unwrap();
-    let root = graph
-        .nodes
-        .iter()
-        .find(|n| n.kind == entmoot_engine::NodeKind::Callable && n.label == "root")
-        .unwrap()
-        .id
-        .clone();
     let graph_path = dir.path().join("graph.json");
     let store = dir.path().join("graph.json.knowledge.sqlite3");
     entmoot_engine::write_graph_json(&graph, &graph_path).unwrap();
@@ -113,16 +90,7 @@ async fn loopback_auth_shared_queries_and_resumable_paging() {
     let mut config = StreamableHttpClientTransportConfig::with_uri(url.clone()).auth_header(token);
     config.allow_stateless = true;
     let client = ().serve(StreamableHttpClientTransport::with_client(http, config)).await.unwrap();
-    let engine =
-        entmoot_engine::workspace::open_query_bundle_paths(&graph_path, &store, None, None, false)
-            .unwrap()
-            .engine;
     let request = json!({"operation":"find","request":{"kind":"subject","query":"root"}});
-    let mut expected = engine
-        .execute(serde_json::from_value(request.clone()).unwrap())
-        .unwrap()
-        .into_value()
-        .unwrap();
     let result = client
         .call_tool(
             CallToolRequestParams::new("query")
@@ -130,57 +98,29 @@ async fn loopback_auth_shared_queries_and_resumable_paging() {
         )
         .await
         .unwrap();
-    assert_ne!(result.is_error, Some(true));
-    let mut actual = result.structured_content.unwrap();
-    stable(&mut actual);
-    stable(&mut expected);
-    assert_eq!(actual, expected);
-
-    let mut request = json!({"operation":"traverse","request":{"kind":"neighborhood","start":root,"direction":"callees","predicates":["calls"],"evidence_filter":"any","resumable":true,"budget":{"max_hops":2,"max_expansions":1,"max_examined_edges":100,"max_edges_per_node":0,"max_results":3}},"output":{"limit":1}});
-    let call = |request: Value| {
-        CallToolRequestParams::new("query")
-            .with_arguments(json!({"request":request}).as_object().unwrap().clone())
-    };
-    let first = client.call_tool(call(request.clone())).await.unwrap();
-    assert_ne!(first.is_error, Some(true), "{first:?}");
-    let first = first.structured_content.unwrap();
-    assert_eq!(first["items"].as_array().unwrap().len(), 1);
-    assert!(first["search_receipt"]["slice_token"].is_string());
-    assert!(first["page"]["next_cursor"].is_object());
-    request["output"]["after"] = first["page"]["next_cursor"].clone();
-    let second = client
-        .call_tool(call(request.clone()))
-        .await
+    assert_eq!(result.is_error, Some(true));
+    assert!(result.structured_content.unwrap()["message"]
+        .as_str()
         .unwrap()
-        .structured_content
-        .unwrap();
-    assert_eq!(second["search_receipt"], first["search_receipt"]);
-    assert_ne!(second["items"], first["items"]);
-    let retry = client
-        .call_tool(call(request.clone()))
-        .await
-        .unwrap()
-        .structured_content
-        .unwrap();
-    assert_eq!(retry, second);
-
-    // Exercise the actual CLI frontend through a new stateless MCP connection,
-    // including a replay token created by a different client.
+        .contains("graph publication"));
     let request_path = dir.path().join("replay.json");
-    std::fs::write(&request_path, serde_json::to_vec(&request).unwrap()).unwrap();
+    std::fs::write(
+        &request_path,
+        serde_json::to_vec(
+            &json!({"operation":"find","request":{"kind":"subject","query":"root"}}),
+        )
+        .unwrap(),
+    )
+    .unwrap();
     let output = std::process::Command::new(cli)
-        .args(["--backend", &url, "request", "--request"])
+        .arg("-C")
+        .arg(dir.path())
+        .args(["request", "--request"])
         .arg(&request_path)
-        .env("ENTMOOT_QUERY_TOKEN", token)
         .output()
         .unwrap();
-    assert!(
-        output.status.success(),
-        "{}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    let cli: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(cli, second);
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("graph publication"));
     client.cancel().await.unwrap();
     child.kill().await.unwrap();
     child.wait().await.unwrap();

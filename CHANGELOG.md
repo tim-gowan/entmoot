@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-10-20: Callable contract snapshots
+
+- Advance the workspace crates and their exact internal dependencies to
+  `0.0.1-alpha.2`.
+- `init` stores caller/callee/unresolved sets for a clean HEAD revision. Identity
+  is the span-free occurrence key. `structural_hash` and `signature_hash` are
+  recorded; the event is the set diff. A comment that leaves the sets unchanged
+  emits no change. A dirty tree is refused.
+- `find`, `inspect`, `callers`, `callees`, `inventory`, `status`, `boundaries`,
+  `path`, `neighborhood`, `call-components`, and `relay-impact` read that
+  snapshot. `read-source`, `audit-calls`, and `trace-seeded-paths` fail because
+  the snapshot does not store source text, native dispatch, or provider-role
+  seeds. Bind still uses the existing publication owner.
+
+## 2026-10-19: Warm-refresh latency attribution (Go one-file)
+
+- Child timers under `syntax_projection` and `structural_resolution`, plus
+  publication row counts, on the membership-cut Go corpus. One-file comment
+  refresh ~316s; capture/source fence ~0.6s. Dominant shares: membership digest
+  ~61s, per-file syntax SQL copy ~57s, node-order ~50s, file selection ~41s,
+  sealed verify ~31s, call SQL reuse ~30s, fact walk ~27s. Call-index extend
+  ~0.3s.
+- Sealed reuse feeds the call index from callables only and no longer builds a
+  full `TopologyGraph` per reused file. Damage checks still re-hash every
+  hydrated node. Remeasure: comment refresh 316s → 306s; SQL copy unchanged.
+  One-shot batched membership INSERT across all reused units multiplied wall
+  and was not kept.
+  Evidence: `G:/GitHub/entmoot/.tmp/performance-latency-20261019/`
+  ([performance-latency-go-2026-10-19.json](evals/experiments/performance-latency-go-2026-10-19.json)).
+
 ## 2026-10-19: Scoped subject-context and path-prefixed overlay reads
 
 - Deferred `inspect kind=subject` builds a path-local projection (path nodes,

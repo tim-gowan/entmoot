@@ -2,9 +2,6 @@
 
 use anyhow::Result;
 use clap::{Args, ValueEnum};
-use entmoot_contracts::query::{
-    CallDirection, HopEvidenceFilter, ProviderRoleSelector, TraverseQuery,
-};
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum Direction {
@@ -24,11 +21,10 @@ pub(super) struct NeighborhoodArgs {
     #[arg(long)]
     endpoint_parameter_type_contains: Option<String>,
     #[command(flatten)]
-    prune: super::navigation_walk::PruneArgs,
-    #[command(flatten)]
     budget: super::navigation_walk::WalkBudgetArgs,
-    #[command(flatten)]
-    execution: super::navigation_walk::WalkExecutionArgs,
+    /// Snapshot whose callables are checked against unbound edges in this walk.
+    #[arg(long)]
+    against: Option<String>,
     #[command(flatten)]
     output: super::output::InformationArgs,
     /// Exact node ID, occurrence address or display reference (use request/find first).
@@ -51,66 +47,35 @@ pub(super) struct NeighborhoodArgs {
     max_role_assertions: usize,
 }
 
-fn query(args: &NeighborhoodArgs) -> Result<entmoot_contracts::query::QueryRequest> {
-    use entmoot_contracts::query::{
-        CallableSelector, InventoryKind, ParameterSelector, SubjectSelector, TextCase, TextMatch,
-    };
-    let contains = |value: &String| TextMatch::Contains {
-        value: value.clone(),
-        case: TextCase::Sensitive,
-    };
-    let endpoint_selector =
-        (args.endpoint_name_contains.is_some() || args.endpoint_parameter_type_contains.is_some())
-            .then(|| SubjectSelector {
-                kinds: vec![InventoryKind::Callable],
-                name: args.endpoint_name_contains.as_ref().map(contains),
-                callable: args.endpoint_parameter_type_contains.as_ref().map(|value| {
-                    CallableSelector {
-                        parameters: vec![ParameterSelector {
-                            declared_type_syntax: Some(contains(value)),
-                            ..Default::default()
-                        }],
-                        ..Default::default()
-                    }
-                }),
-                ..Default::default()
-            });
-    let request = TraverseQuery::Neighborhood {
-        endpoint_selector: endpoint_selector.map(Box::new),
-        prune: args.prune.request(),
-        resumable: args.execution.resumable,
-        continuation: args.execution.continuation.clone(),
-        start: args.subject.clone(),
-        direction: match args.direction {
-            Direction::Callers => CallDirection::Callers,
-            Direction::Callees => CallDirection::Callees,
-        },
-        predicates: super::navigation_walk::predicates(&args.predicates)?,
-        evidence_filter: if args.include_candidates {
-            HopEvidenceFilter::Any
-        } else {
-            HopEvidenceFilter::ResolvedOnly
-        },
-        endpoint_role: args.role.clone().map(|role| ProviderRoleSelector {
-            role,
-            include_hypotheses: args.include_hypotheses,
-            max_assertions: args.max_role_assertions,
-        }),
-        budget: args.budget.request(),
-    };
-    let mut output = entmoot_contracts::query::OutputOptions::default();
-    args.output.apply(&mut output)?;
-    Ok(entmoot_contracts::query::QueryRequest::Traverse { request, output })
-}
-
-impl NeighborhoodArgs {
-    pub(super) fn backend_request(&self) -> Result<entmoot_contracts::query::QueryRequest> {
-        self.execution.validate_backend()?;
-        query(self)
-    }
-}
-
 pub(super) fn run(args: NeighborhoodArgs) -> Result<()> {
-    let request = query(&args)?;
-    args.execution.run(request)
+    if args.role.is_some() {
+        return super::contracts::gap(entmoot_workspace::FACT_PROVIDER_ROLES);
+    }
+    if args.endpoint_name_contains.is_some() || args.endpoint_parameter_type_contains.is_some() {
+        return super::contracts::gap(entmoot_workspace::FACT_OTHER_EVIDENCE);
+    }
+    if args
+        .predicates
+        .iter()
+        .any(|predicate| predicate != "calls" && predicate != "all")
+    {
+        return super::contracts::gap(entmoot_workspace::FACT_OTHER_EVIDENCE);
+    }
+    let _ = (
+        args.include_hypotheses,
+        args.include_candidates,
+        args.max_role_assertions,
+        &args.output,
+    );
+    let direction = match args.direction {
+        Direction::Callers => "callers",
+        Direction::Callees => "callees",
+    };
+    super::contracts::emit(&entmoot_workspace::contract_neighborhood(
+        &super::contracts::database()?,
+        &args.subject,
+        direction,
+        args.budget.max_hops,
+        args.against.as_deref(),
+    )?)
 }

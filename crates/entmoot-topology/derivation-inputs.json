@@ -39,7 +39,7 @@
     "crates/entmoot-native/src/native_resolver/producers/mod.rs": "948a781223151bce2e650c1b2cd6907774841981f7efd247f4034951d00028ce",
     "crates/entmoot-native/src/native_resolver/producers/oxc.rs": "e046912dfa415c52cd30ba462baf8498815b621e04347045311b5192fc3962e7",
     "crates/entmoot-native/src/native_resolver/producers/oxc_package_api.rs": "76e709f52cb504bd7f3629a1fd192c863bd3d8fd72ec381e496631af68d5054c",
-    "crates/entmoot-native/src/native_resolver/producers/pyright_program.ts": "4d313cd16f2dc77541f8c9fe15370c0369b3be741a976572c768b3b7fea3e7b3",
+    "crates/entmoot-native/src/native_resolver/producers/pyright_program.ts": "1731d6c5e333458ed79514ac192eee412ce0e67843603d4a51e440755a8a6f30",
     "crates/entmoot-native/src/native_resolver/producers/python.rs": "4ad95b8aed76030c5fd8ae44b47c23046a450fee5732f877bf5b031e72363bc3",
     "crates/entmoot-native/src/native_resolver/producers/roslyn.rs": "545c74d3c691b7078ae137a19156f546121a95cf7ec5622ac0ac34e64c4bb204",
     "crates/entmoot-native/src/native_resolver/producers/sidecar.rs": "c9fd70f180e1ef9dff7f6100698de5eb84690c8099aca3166af19a30791c68ee",
@@ -63,7 +63,7 @@
     "crates/entmoot-ops/src/test_validation.rs": "a23e24d1c2091c9cf75423388130ad2535a359abe7476bb6e7da75581864d4ba",
     "crates/entmoot-query/src/compatibility.rs": "30b45a69b97ce2db17e8d27b351c8d0d4d12f749b6fd72f2fccdf84be6144301",
     "crates/entmoot-query/src/lib.rs": "11a79585dd6610650bc645662314890f3900dd25f384432e5ca8993741c89ab6",
-    "crates/entmoot-query/src/query.rs": "103f0a96a48e287bf26bb04ebfd65de66e3957b98a9aa7b2a9c22abd07813372",
+    "crates/entmoot-query/src/query.rs": "c62c7ebae1aecc7751c05eb5990910b8cb70f251ca2011a8af33b6b28826cf56",
     "crates/entmoot-query/src/query/adjacency.rs": "33ec831628a31888e4e1fdd836547a66f570a5314a70eb83d1b5ed61a7b50985",
     "crates/entmoot-query/src/query/admission.rs": "485b46da72be5670b33730672cbc00fc9485de1f2b804f4a9fbaa769148f9e2f",
     "crates/entmoot-query/src/query/assessments.rs": "40a2f538996fe51bd9b43fcf8adab197e90508d72e198b4876bdcda05fc38197",
@@ -80,12 +80,13 @@
     "crates/entmoot-query/src/query/inventory.rs": "210479290ee5fb634177841a7045692fb3b747ad433e2e80e5830e13fd78d79a",
     "crates/entmoot-query/src/query/knowledge.rs": "c4dff66d4afd599ca693bdef0a28e28ed6e05ac3fe25d4e4ea3e04f3896fa1c3",
     "crates/entmoot-query/src/query/neighborhood.rs": "d8d72a075f8de54f38265f8d640592cacd27ecef05c61b7d3851420b1c925dbc",
-    "crates/entmoot-query/src/query/output.rs": "ceebcdfc1facca47b4fecd52a044496fa398861be7e8eda35b7034bee6349951",
+    "crates/entmoot-query/src/query/output.rs": "bd4809b44070ac8d27ec5fff00151c6c123340e165c4e7b568e545dff3b61d6d",
     "crates/entmoot-query/src/query/read.rs": "ff513496726697ebe5386cda9d74fd0fb2c54247b9b98bc9c1d5a21a8d80c167",
     "crates/entmoot-query/src/query/receipt.rs": "178e7609ecd5ef73f73ef5cfa810b586e293ab5fe58580d8b830d3f7b8a3faa8",
     "crates/entmoot-query/src/query/relationships.rs": "2fd3b45bb172f070eb630697f36889e8361cbdc72e98ba5e7a9cbfa08212d052",
     "crates/entmoot-query/src/query/requests.rs": "fde2dc6468d47aefa7f529868942be3b22f4b7978c39c7ef50fa56844b4bfbd9",
-    "crates/entmoot-query/src/query/retained_calls.rs": "b6d40c79f4041ab0def71108a9865dae19dea56473e00bf7336d62c2bde8c03b",
+    "crates/entmoot-query/src/query/retained_calls.rs": "27355a610dc88937bfe073c5b0e48d2cd4742660ea30a548cd479c407b362649",
+    "crates/entmoot-query/src/query/retained_subject.rs": "6a0502333c5ec7701c1badc0bdabf566765ecda8eb9c245c40953a33e92728c6",
     "crates/entmoot-query/src/query/roles.rs": "860c85bb64991799aefaa707a8f05b97ab62b408c7abaf72a1e8ec1f4c7b3b38",
     "crates/entmoot-query/src/query/seeds.rs": "c48c15bf8d8d98790bad214d2b5c21ce6f59ba1952b111bcc8894c718b792fe0",
     "crates/entmoot-query/src/query/selection.rs": "fbe160a858dab6b00c985fcf0738d09914d54c02fad7eee549cd8df641cfc231",
@@ -107,16 +108,17 @@
     "crates/entmoot-store/src/checkpoints/revalidation.rs": "afff604f8d4a86526fbd60ccbc8fb4329c07045c01584c22ac4671e0272805f4",
     "crates/entmoot-store/src/clock.rs": "757cd24caf09472622df828febc14468f6a6f3c5bf72d5a025a110c17fc608c5",
     "crates/entmoot-store/src/config_inventory.rs": "665038a72b221f4f9b67dd595c5a0fb38b6d42c99e6257c27749910e68675e04",
-    "crates/entmoot-store/src/graph_io.rs": "bd825ea95d30f8b04c8b455430cbb5e477f0ae9f760178f392ff18f9f1efb592",
-    "crates/entmoot-store/src/inventory.rs": "c681ac6f8b2f04bead060619c21ae735c1a05e1d2af99fc611c18fda202c49ee",
+    "crates/entmoot-store/src/contract_snapshot.rs": "52ab25f5ab415a18952d833d1f73581634dfaf9353e8a8941b6efea5f2c71cce",
+    "crates/entmoot-store/src/graph_io.rs": "eed29bb05780594e752a69c85c829b1d14b6584c9f549843d3d43545bd7879a0",
+    "crates/entmoot-store/src/inventory.rs": "508e7d230c67d33170164ddfae7d81518e760a29bb792120e16110dbcf38fbff",
     "crates/entmoot-store/src/inventory_stitch.rs": "aee2896a8ebda02e19c633ac906a9490c77f0fd4f579ee2c82cb3a6e070e2664",
-    "crates/entmoot-store/src/knowledge_db.rs": "561b642bdf671bedf3fe578a3999f8cdb0b92e786f0d9c42136b018a05d034ec",
+    "crates/entmoot-store/src/knowledge_db.rs": "e0e8c43173174919aba076c109a49fed309a37a88804ec246a13ed17937a1e74",
     "crates/entmoot-store/src/knowledge_db/buffered.rs": "39d054709dce4dddd66d4021514f00146cbe39415a6d86cbfc50b64cb3667141",
     "crates/entmoot-store/src/knowledge_db/buffered_stage.rs": "7d7fbd1c96658ceaed5e4d88b065f58b48201fc709f286a914272fe85f29f216",
     "crates/entmoot-store/src/knowledge_db/file_facts.rs": "dbc107dcd48b24d6b3e5b065aa515f7deb369c1d30f1e16b713da458d90d9208",
     "crates/entmoot-store/src/knowledge_db/fingerprint.rs": "2c6e18ed59318b1e6abe336f025cfc5a2c8f07a635aec88f1fbb636f2bbb4e75",
     "crates/entmoot-store/src/knowledge_db/indexed_reads.rs": "c84b90180b3262d16b67ad0160bdea2252d0ebcbc5d0faeafc53fb13e760f795",
-    "crates/entmoot-store/src/knowledge_db/inventory.rs": "e36e3869595b729707b282cf86f9cafb48bd4cd686f0d84fa0f84eb037d0716d",
+    "crates/entmoot-store/src/knowledge_db/inventory.rs": "eb3bf92341b32cc15423438426fd7a6092bd963ad7b73bd1f426f2a5fe919b7a",
     "crates/entmoot-store/src/knowledge_db/layout.rs": "7ca93b0e268160b4321a6023246b8386ac149b2ab1b67a0d665a762732686739",
     "crates/entmoot-store/src/knowledge_db/operations.rs": "dc4be1a618d9b8c5b9cb9a6dccef342c87599b73314a52dd76b8adee2b6b3f2f",
     "crates/entmoot-store/src/knowledge_db/operations/binding.rs": "79669720e8a69edb535a0406cdd019ac275c2991d80243486df05f5257b42b8e",
@@ -128,14 +130,14 @@
     "crates/entmoot-store/src/knowledge_db/operations/stitch.rs": "9f549506f4c573dd8f90586d37d22321938a300c5826c0c8c6cbd5735ee3e844",
     "crates/entmoot-store/src/knowledge_db/retention.rs": "6baf918c6aaf8abc74cf0a8acf1cc0c4c8118aabee207733f3d8e9e0809f91ba",
     "crates/entmoot-store/src/knowledge_db/store_batches.rs": "0ba3095efd1ab0e95e56ce1e89ba0cf7bc665ffdd189f05f3defa791a170c990",
-    "crates/entmoot-store/src/knowledge_db/structural.rs": "3c58a29da807422379b0d1aff0c622ac49c473d7e1e1d30f95751195159f8f75",
-    "crates/entmoot-store/src/knowledge_db/structural_files.rs": "42f8e4df49f3c430bcf2cef3a6127e8e8ec0f77252305250fefdcbf80ba38bbf",
+    "crates/entmoot-store/src/knowledge_db/structural.rs": "73794899441ef631b37ce559afeadf6871cdf86b8636bca1213c839b4bd3c7ff",
+    "crates/entmoot-store/src/knowledge_db/structural_files.rs": "0ca095735ac463d99a77f730e3dbd15acbe2466e866d69090dbee2184c1096d5",
     "crates/entmoot-store/src/knowledge_db/syntax_cache.rs": "a993c2760230c86c068c79a6ebf9f8e7353524906f778671c2a98cf62977b291",
-    "crates/entmoot-store/src/lib.rs": "c43c407f23e10da394a6790a9bb43964d0bf6bebbb493bc08ed79371ee0c4e74",
-    "crates/entmoot-store/src/location.rs": "cad96c9be20c1bdcbbd354dde5dbcd0e120e65f7579db0d7956cc8e12d2a51dd",
+    "crates/entmoot-store/src/lib.rs": "8d69d5a2caff4ec6ade99d4eb7e73dcdfbae322b54d846f5fcd2660dc3cf9c1e",
+    "crates/entmoot-store/src/location.rs": "f7b2c7b2c195b0fda8e590915b987a100484b51d14fc5374e33b2ee83c44826b",
     "crates/entmoot-store/src/manifest_state.rs": "38c6ab80228cca5f7c779ceeaa5807d5fbeab72b53d9a925c36c68a592d8bf77",
-    "crates/entmoot-store/src/measurement.rs": "994fed76af28df839e0b710e736ae5819f220f2fccf55613bec353138c051155",
-    "crates/entmoot-store/src/read.rs": "94db4a8e9e67b99cd8432d6375e6dd1dfd07d59779efa62621c958ef83e111d0",
+    "crates/entmoot-store/src/measurement.rs": "6d1bb99699650bf3086f726012d42f4757c5cd0130cef8d38bf7162a3b6f21a0",
+    "crates/entmoot-store/src/read.rs": "0d848e3ac34b85be7c491186cc254d35182ab328d756c7d6a6b6ac205f27b433",
     "crates/entmoot-store/src/revalidation.rs": "1401c7b0dcf61d21faa35093e974a63c66817fa204d535e4e842105eb8f1821a",
     "crates/entmoot-store/src/scan_topology.rs": "d3c159e00e51ed684fb653079fb454dba644465fefa50489d4784e0c05a67dc0",
     "crates/entmoot-store/src/source_store/git_repository.rs": "3d6fd4f887908499282c67bff7d89bb0293304c334671312b2b7ae6f2af4a7c2",
@@ -144,8 +146,8 @@
     "crates/entmoot-store/src/source_store/publication.rs": "96bb4862fcf42da1b164ee241abe8bbf401879f2715e66ef24e9a39ed227c27d",
     "crates/entmoot-store/src/sqlite_startup.rs": "f51eee6da4d565e258bf332dd6f56481100712f0848640b1288d190a1fb5cd57",
     "crates/entmoot-store/src/storage_lease.rs": "ae6b6ce8c083c93899a45893409e6e2e1b70a2d3af60c4f6ed03cd4881fc8967",
-    "crates/entmoot-workspace/src/lib.rs": "60fd470879198eb6c8de9e9a79fe5d8c847153c6463d3819d51296641f21e8ee",
-    "crates/entmoot-workspace/src/workspace.rs": "760843dfd344e4081a124d67ee5bbf21d10ed91f5b2789354670b9af099e6dfd",
+    "crates/entmoot-workspace/src/lib.rs": "b425d6603ce7060d7a79738fbf19c2d1651d7433836fc186e799745aee4905a1",
+    "crates/entmoot-workspace/src/workspace.rs": "6db7adaaef85f0cd7df2d7d15d68b9deb4b779cf56b6129d30ae3367f8db092f",
     "crates/entmoot-workspace/src/workspace/impact.rs": "c7dfbed47702b30648b7a198be86dc9a15505fa8e6975202bb7d09b6670bf52b",
     "crates/entmoot-workspace/src/workspace/location.rs": "3b5dc9e5b7188044b46e3835cd2e4251dfca2c1cdb887efcde460fd42835f85e",
     "crates/entmoot-workspace/src/workspace/open.rs": "856e8a2ef82de2897e74e818955c1652ddf5421880cb927d89fc02e5059128c7",
@@ -157,15 +159,15 @@
         "blake3": "1.8.2",
         "entmoot-contracts": {
           "path": "../entmoot-contracts",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-core": {
           "path": "../entmoot-core",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-store": {
           "path": "../entmoot-store",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "serde": {
           "features": [
@@ -188,19 +190,19 @@
         "cap-std": "4.0.3",
         "entmoot-contracts": {
           "path": "../entmoot-contracts",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-core": {
           "path": "../entmoot-core",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-evidence": {
           "path": "../entmoot-evidence",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-store": {
           "path": "../entmoot-store",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "oxc": {
           "features": [
@@ -311,23 +313,23 @@
         "blake3": "1.8.2",
         "entmoot-contracts": {
           "path": "../entmoot-contracts",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-core": {
           "path": "../entmoot-core",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-native": {
           "path": "../entmoot-native",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-query": {
           "path": "../entmoot-query",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-store": {
           "path": "../entmoot-store",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "serde": {
           "features": [
@@ -356,19 +358,19 @@
         "blake3": "1.8.2",
         "entmoot-contracts": {
           "path": "../entmoot-contracts",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-core": {
           "path": "../entmoot-core",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-evidence": {
           "path": "../entmoot-evidence",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-store": {
           "path": "../entmoot-store",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "globset": "0.4.20",
         "rapidfuzz": "0.5.0",
@@ -392,15 +394,15 @@
         "blake3": "1.8.2",
         "entmoot-contracts": {
           "path": "../entmoot-contracts",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-core": {
           "path": "../entmoot-core",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-topology": {
           "path": "../entmoot-topology",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "gix": "0.87.1",
         "rayon": "1.11.0",
@@ -455,27 +457,27 @@
         "blake3": "1.8.2",
         "entmoot-contracts": {
           "path": "../entmoot-contracts",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-core": {
           "path": "../entmoot-core",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-native": {
           "path": "../entmoot-native",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-ops": {
           "path": "../entmoot-ops",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-query": {
           "path": "../entmoot-query",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "entmoot-store": {
           "path": "../entmoot-store",
-          "version": "=0.0.1-alpha.1"
+          "version": "=0.0.1-alpha.2"
         },
         "serde": {
           "features": [
@@ -6837,11 +6839,11 @@
       "blake3": "1.8.2",
       "entmoot-contracts": {
         "path": "../entmoot-contracts",
-        "version": "=0.0.1-alpha.1"
+        "version": "=0.0.1-alpha.2"
       },
       "entmoot-core": {
         "path": "../entmoot-core",
-        "version": "=0.0.1-alpha.1"
+        "version": "=0.0.1-alpha.2"
       },
       "serde": {
         "features": [
@@ -6857,7 +6859,7 @@
       "edition": "2021",
       "name": "entmoot-topology",
       "rust-version": "1.98",
-      "version": "0.0.1-alpha.1"
+      "version": "0.0.1-alpha.2"
     }
   }
 }

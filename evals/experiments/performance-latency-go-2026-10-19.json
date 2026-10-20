@@ -1,0 +1,40 @@
+{
+  "kind": "warm_refresh_latency_attribution",
+  "evidence_root": "G:\\GitHub\\entmoot\\.tmp\\performance-latency-20261019",
+  "source_revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+  "structural_only": true,
+  "stage_a_comment": {
+    "wall_seconds": 315.75311099999817,
+    "syntax_projection_seconds": 90.1370661,
+    "syntax_reuse_verify_seconds": 30.7261996,
+    "syntax_reuse_sql_copy_seconds": 56.7436166,
+    "syntax_reuse_index_extend_seconds": 0.2741842,
+    "structural_resolution_seconds": 37.4868443,
+    "call_reuse_sql_seconds": 29.547657,
+    "publication_commitments_seconds": 60.8850842,
+    "publication_node_order_seconds": 49.5282816,
+    "publication_file_selection_seconds": 41.4887125,
+    "parse_and_retain_file_facts_seconds": 27.16181,
+    "member_nodes": 1933828,
+    "reused_extraction_files": 11831
+  },
+  "stage_b_comment": {
+    "wall_seconds": 305.6917260000482,
+    "saved_wall_seconds": 10.06138499994995,
+    "syntax_projection_seconds": 84.1328763,
+    "syntax_reuse_verify_seconds": 27.3377214,
+    "syntax_reuse_sql_copy_seconds": 55.7825018,
+    "publication_commitments_seconds": 60.4723598,
+    "publication_node_order_seconds": 49.8952682,
+    "publication_file_selection_seconds": 38.1122367
+  },
+  "rejected": [
+    "one-shot batched membership INSERT over all reused units multiplied wall and was reverted"
+  ],
+  "limitations": [
+    "one trial per phase",
+    "uncontrolled OS caches",
+    "RSS endpoints are not peaks",
+    "structural-only; not the 512-file Git-capture refresh profile"
+  ]
+}

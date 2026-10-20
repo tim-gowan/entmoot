@@ -4,9 +4,7 @@ use entmoot_contracts::{
     blake3_hex, ArtifactFormat, ArtifactManifest, ArtifactProducer, ScopeCompleteness,
     ScopeUniverse,
 };
-use entmoot_engine::{
-    load_graph_json, GraphSummary, KnowledgeRead, KnowledgeRepository, SqliteKnowledgeRepository,
-};
+use entmoot_engine::{load_graph_json, GraphSummary, KnowledgeRead, SqliteKnowledgeRepository};
 
 fn cli() -> Command {
     Command::new(env!("CARGO_BIN_EXE_entmoot"))
@@ -50,10 +48,10 @@ fn retention_cli_plans_without_deleting_then_applies_a_fenced_plan() {
         )
         .unwrap();
         let output = retention(&[
-            "init",
+            "bind",
+            "--structural-only",
             "--root",
             directory.path().to_str().unwrap(),
-            "--structural-only",
         ]);
         assert!(
             output.status.success(),
@@ -75,10 +73,10 @@ fn retention_cli_plans_without_deleting_then_applies_a_fenced_plan() {
         String::from_utf8_lossy(&output.stderr)
     );
     let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(value["remove_views"].as_array().unwrap().len(), 2);
+    assert_eq!(value["remove_views"].as_array().unwrap().len(), 3);
     assert_eq!(
         std::fs::read_dir(storage.join("current")).unwrap().count(),
-        4
+        5
     );
     let output = retention(&[
         "storage-apply",
@@ -107,25 +105,6 @@ fn retention_cli_plans_without_deleting_then_applies_a_fenced_plan() {
     assert!(String::from_utf8_lossy(&output.stderr).contains("stale"));
 }
 
-fn without_telemetry(value: &mut serde_json::Value) {
-    match value {
-        serde_json::Value::Object(object) => {
-            object.remove("elapsed_micros");
-            object.remove("index_micros");
-            object.remove("evidence_micros");
-            for child in object.values_mut() {
-                without_telemetry(child);
-            }
-        }
-        serde_json::Value::Array(items) => {
-            for child in items {
-                without_telemetry(child);
-            }
-        }
-        _ => {}
-    }
-}
-
 #[test]
 fn explicit_index_and_attach_enforce_volume_budget_without_replacing_publication() {
     for relocated in [false, true] {
@@ -144,7 +123,7 @@ fn explicit_index_and_attach_enforce_volume_budget_without_replacing_publication
         let output = cli()
             .arg("--data-dir")
             .arg(&data)
-            .args(["init", "--structural-only", "--root"])
+            .args(["bind", "--structural-only", "--root"])
             .arg(&source)
             .output()
             .unwrap();
@@ -208,215 +187,7 @@ fn explicit_index_and_attach_enforce_volume_budget_without_replacing_publication
 }
 
 #[test]
-fn typed_request_frontend_matches_service_and_preserves_publication() {
-    use entmoot_contracts::query::{BoundedWalkBudget, QueryRequest, QueryService};
-    let directory = tempfile::tempdir().unwrap();
-    std::fs::write(
-        directory.path().join("a.py"),
-        "def leaf():\n    pass\nLIMIT = -1\n",
-    )
-    .unwrap();
-    let graph =
-        entmoot_engine::build_topology_from_repo_with_options(directory.path(), Default::default())
-            .unwrap();
-    let graph_path = directory.path().join("graph.json");
-    let store_path = directory.path().join("graph.json.knowledge.sqlite3");
-    entmoot_engine::write_graph_json(&graph, &graph_path).unwrap();
-    SqliteKnowledgeRepository::open(&store_path)
-        .unwrap()
-        .replace_all(&entmoot_engine::KnowledgeStore::extract_from_graph(&graph))
-        .unwrap();
-    let request_path = directory.path().join("request.json");
-    std::fs::write(
-        &request_path,
-        br#"{"operation":"find","request":{"kind":"subject","query":"leaf","limit":5}}"#,
-    )
-    .unwrap();
-    let before = std::fs::read(&graph_path).unwrap();
-    let engine = entmoot_engine::QueryEngine::new(graph, store_path).with_source_store(
-        std::sync::Arc::new(entmoot_engine::GixSourceStore::open(directory.path()).unwrap()),
-    );
-    for request in [
-        serde_json::json!({"operation":"find","request":{"kind":"initializer","integer":"-1"}}),
-        serde_json::json!({"operation":"find","request":{"kind":"initializer","integer":"01"}}),
-        serde_json::json!({"operation":"find","request":{"kind":"subject","query":"leaf","limit":5}}),
-        serde_json::json!({"operation":"inspect","request":{"kind":"trace","id":"absent"}}),
-        serde_json::json!({"operation":"read","request":{"kind":"source","path":"a.py","start_line":1}}),
-        serde_json::json!({"operation":"traverse","request":{"kind":"path","start":"absent","target":"also-absent","predicates":["calls"],"budget":BoundedWalkBudget::default()}}),
-        serde_json::json!({"operation":"find","request":{"kind":"location","path":"a.py","line":0}}),
-    ] {
-        for tier in ["compact", "explain", "export"] {
-            let mut request = request.clone();
-            request["output"] = serde_json::json!({"tier":tier});
-            std::fs::write(&request_path, serde_json::to_vec(&request).unwrap()).unwrap();
-            let result = QueryService::execute(
-                &engine,
-                serde_json::from_value::<QueryRequest>(request.clone()).unwrap(),
-            );
-            let success = result.is_ok();
-            let mut expected = match result {
-                Ok(value) => value.into_value().unwrap(),
-                Err(error) => {
-                    serde_json::json!({"schema_version":"entmoot.query.error.v1","status":"error","kind":error.code(),"message":error.to_string()})
-                }
-            };
-            let output = cli()
-                .arg("request")
-                .arg("--graph")
-                .arg(&graph_path)
-                .arg("--request")
-                .arg(&request_path)
-                .output()
-                .unwrap();
-            assert_eq!(
-                output.status.success(),
-                success,
-                "{}",
-                String::from_utf8_lossy(&output.stderr)
-            );
-            let mut actual: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-            // Wall time is execution telemetry; all semantic receipts must still match.
-            for value in [&mut actual, &mut expected] {
-                without_telemetry(value);
-            }
-            assert_eq!(actual, expected);
-            std::fs::write(
-                &request_path,
-                serde_json::to_vec(&vec![request.clone(), request]).unwrap(),
-            )
-            .unwrap();
-            let batch = cli()
-                .arg("request")
-                .arg("--batch")
-                .arg("--graph")
-                .arg(&graph_path)
-                .arg("--request")
-                .arg(&request_path)
-                .output()
-                .unwrap();
-            assert_eq!(batch.status.success(), success);
-            let batch_value: serde_json::Value = serde_json::from_slice(&batch.stdout).unwrap();
-            if success {
-                let rows = batch_value.as_array().unwrap();
-                assert_eq!(rows.len(), 2);
-                for row in rows {
-                    let mut row = row.clone();
-                    without_telemetry(&mut row);
-                    assert_eq!(row, expected);
-                }
-            } else {
-                assert_eq!(batch_value, expected);
-            }
-        }
-    }
-    std::fs::write(
-        &request_path,
-        br#"{"operation":"find","request":{"kind":"subject","path":"a.py","limit":100},"output":{"tier":"export"}}"#,
-    )
-    .unwrap();
-    let override_result = cli()
-        .args(["request", "--detail", "compact", "--output-limit", "1"])
-        .arg("--graph")
-        .arg(&graph_path)
-        .arg("--request")
-        .arg(&request_path)
-        .output()
-        .unwrap();
-    assert!(
-        override_result.status.success(),
-        "{}",
-        String::from_utf8_lossy(&override_result.stderr)
-    );
-    let page: serde_json::Value = serde_json::from_slice(&override_result.stdout).unwrap();
-    assert_eq!(page["tier"], "compact");
-    assert_eq!(page["page"]["returned"], 1);
-    assert!(override_result.stdout.len() <= 16385);
-    let cursor_path = directory.path().join("cursor.json");
-    std::fs::write(
-        &cursor_path,
-        serde_json::to_vec(&page["page"]["next_cursor"]).unwrap(),
-    )
-    .unwrap();
-    let continuation = cli()
-        .args([
-            "request",
-            "--detail",
-            "compact",
-            "--output-limit",
-            "1",
-            "--output-after",
-        ])
-        .arg(cursor_path)
-        .arg("--graph")
-        .arg(&graph_path)
-        .arg("--request")
-        .arg(&request_path)
-        .output()
-        .unwrap();
-    assert!(
-        continuation.status.success(),
-        "{}",
-        String::from_utf8_lossy(&continuation.stderr)
-    );
-    let next: serde_json::Value = serde_json::from_slice(&continuation.stdout).unwrap();
-    assert_ne!(page["items"], next["items"]);
-    std::fs::write(&request_path, b"[]").unwrap();
-    assert!(!cli()
-        .arg("request")
-        .arg("--batch")
-        .arg("--graph")
-        .arg(&graph_path)
-        .arg("--request")
-        .arg(&request_path)
-        .output()
-        .unwrap()
-        .status
-        .success());
-    assert_eq!(std::fs::read(&graph_path).unwrap(), before);
-
-    let expected_status =
-        QueryService::status(&engine, entmoot_contracts::query::StatusRequest::default()).unwrap();
-    let status_output = cli()
-        .arg("status")
-        .arg("--graph")
-        .arg(&graph_path)
-        .output()
-        .unwrap();
-    assert!(
-        status_output.status.success(),
-        "{}",
-        String::from_utf8_lossy(&status_output.stderr)
-    );
-    let actual_status: serde_json::Value = serde_json::from_slice(&status_output.stdout).unwrap();
-    assert_eq!(
-        actual_status,
-        serde_json::to_value(expected_status).unwrap()
-    );
-
-    // Malformed input must be rejected before even trying to open publication paths.
-    std::fs::write(
-        &request_path,
-        br#"{"operation":"find","request":{"kind":"subject"},"unexpected":true}"#,
-    )
-    .unwrap();
-    let missing = directory.path().join("missing.sqlite3");
-    let output = cli()
-        .arg("request")
-        .arg("--graph")
-        .arg("missing.json")
-        .arg("--store")
-        .arg(&missing)
-        .arg("--request")
-        .arg(&request_path)
-        .output()
-        .unwrap();
-    assert!(!output.status.success());
-    assert!(String::from_utf8_lossy(&output.stderr).contains("unknown field"));
-    assert!(!missing.exists());
-}
-
-#[test]
-fn native_call_audit_emits_accounting_before_failing_the_gate() {
+fn native_call_audit_does_not_emit_a_publication_report() {
     let directory = tempfile::tempdir().unwrap();
     std::fs::write(
         directory.path().join("a.py"),
@@ -436,18 +207,9 @@ fn native_call_audit_emits_accounting_before_failing_the_gate() {
         .output()
         .unwrap();
     assert!(!output.status.success());
-    let report: entmoot_contracts::ResolverAccounting =
-        serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(report.callables.len(), 2);
-    assert_eq!(report.static_work_remaining, 1);
+    assert!(String::from_utf8_lossy(&output.stderr).contains("native dispatch"));
+    assert!(output.stdout.is_empty());
     assert_eq!(std::fs::read(&file).unwrap(), before);
-    assert!(cli()
-        .args(["audit-calls", "--graph"])
-        .arg(&file)
-        .output()
-        .unwrap()
-        .status
-        .success());
 }
 
 fn analysis_input(marginal_value: &str) -> serde_json::Value {

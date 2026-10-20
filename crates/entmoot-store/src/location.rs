@@ -371,7 +371,7 @@ pub fn discover_publication(start: &Path) -> Result<WorkspacePublication, Worksp
         }
     }
     Err(WorkspaceError::Invalid(
-        "no current workspace publication; run entmoot init or pass --graph/--publication".into(),
+        "no current workspace publication; run entmoot bind or pass --graph/--publication".into(),
     ))
 }
 
@@ -385,7 +385,7 @@ pub fn read_publication(path: &Path) -> Result<WorkspacePublication, WorkspaceEr
     // Reading a pointer must not initialize an empty store.
     if !publication.current.graph.is_file() || !publication.current.store.is_file() {
         return Err(WorkspaceError::Invalid(
-            "publication graph/store missing; run entmoot init".into(),
+            "publication graph/store missing; run entmoot bind".into(),
         ));
     }
     Ok(publication)

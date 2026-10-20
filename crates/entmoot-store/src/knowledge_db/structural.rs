@@ -7,6 +7,16 @@ use crate::{NodeKind, SnapshotFileDigest, TopologyGraph, TopologyNode};
 use serde::de::{MapAccess, Visitor};
 use serde_json::value::RawValue;
 use std::io::Write;
+use std::time::Duration;
+
+/// Timed sealed-syntax reuse for phase attribution.
+pub(crate) struct SyntaxReuse {
+    pub callables: Vec<TopologyNode>,
+    pub verify: Duration,
+    pub sql_copy: Duration,
+    pub nodes: usize,
+    pub edges: usize,
+}
 
 pub(crate) struct StructuralWriter<'a, 'db> {
     transaction: &'a Transaction<'db>,
@@ -93,28 +103,39 @@ impl StructuralWriter<'_, '_> {
         super::structural_files::seal(self.transaction, unit, graph)
     }
 
+    /// Verified sealed reuse without assembling a TopologyGraph. Timings
+    /// separate commitment verify (+ callable index feed) from SQL membership copy.
     pub(crate) fn reuse_syntax(
         &mut self,
         unit: i64,
-        header: &TopologyGraph,
-    ) -> Result<Option<TopologyGraph>, KnowledgeRepositoryError> {
-        let Some(projection) = super::structural_files::load(self.transaction, unit, header)?
+        _header: &TopologyGraph,
+    ) -> Result<Option<SyntaxReuse>, KnowledgeRepositoryError> {
+        let verify_started = std::time::Instant::now();
+        let Some(sealed) = super::structural_files::verify_for_reuse(self.transaction, unit)?
         else {
             return Ok(None);
         };
+        let verify = verify_started.elapsed();
+        let nodes = sealed.nodes;
+        let edges = sealed.edges;
+        let copy_started = std::time::Instant::now();
         // Copy integer memberships and existing edge references in SQLite, not
         // through a Rust lookup/insert round trip for each unchanged node.
         self.transaction.prepare_cached("INSERT OR IGNORE INTO inventory_nodes SELECT (SELECT view_key FROM inventory_headers WHERE view_id=(SELECT id FROM temp.selected_knowledge_view)),?2+ROW_NUMBER() OVER(ORDER BY ordinal)-1,node_key FROM structural_file_nodes WHERE unit_id=?1")?
             .execute(params![unit,i64::try_from(self.ordinal).map_err(|e|invalid_record("inventory",e))?])?;
         self.ordinal = self
             .ordinal
-            .checked_add(projection.graph.nodes.len())
+            .checked_add(nodes)
             .ok_or_else(|| invalid_record("inventory", "node ordinal overflow"))?;
         self.transaction.prepare_cached("INSERT INTO scoped_records(view_id,collection,record_id,payload) SELECT (SELECT id FROM temp.selected_knowledge_view),'structural_edges',record_id,payload FROM structural_file_edges WHERE unit_id=?1 ON CONFLICT(view_id,collection,record_id) DO UPDATE SET payload=CASE WHEN scoped_records.payload=excluded.payload THEN excluded.payload ELSE NULL END")?
             .execute([unit])?;
-        // Membership plus sealed node versions already carry syntax markers.
-        // Do not mint snapshot-qualified site envelopes for unchanged files.
-        Ok(Some(projection.graph))
+        Ok(Some(SyntaxReuse {
+            callables: sealed.callables,
+            verify,
+            sql_copy: copy_started.elapsed(),
+            nodes,
+            edges,
+        }))
     }
 
     /// Copy sealed revision-independent call rows when CallSummary inputs match.
@@ -288,10 +309,18 @@ impl SqliteKnowledgeRepository {
         }
         // Reorder integer membership positions without a second payload copy.
         let order = crate::measurement::PhaseTimer::start("publication_node_order");
+        let member_nodes: i64 = transaction.query_row(
+            "SELECT COUNT(*) FROM inventory_nodes WHERE view_key=(SELECT view_key FROM inventory_headers WHERE view_id=?1)",
+            [&view],
+            |row| row.get(0),
+        )?;
         transaction.execute_batch(PREPARE_NODE_ORDER)?;
         transaction.execute(APPLY_NODE_ORDER, [])?;
         transaction.execute_batch(FINISH_NODE_ORDER)?;
-        cache.phases.push(order.finish());
+        let mut order = order.finish();
+        order.items =
+            Some(u64::try_from(member_nodes).map_err(|error| invalid_record("inventory", error))?);
+        cache.phases.push(order);
         let files = crate::measurement::PhaseTimer::start("publication_source_membership");
         for (ordinal, file) in metadata.snapshot_files.iter().enumerate() {
             let path = super::inventory::intern_path(&transaction, &file.path)?;
@@ -299,12 +328,17 @@ impl SqliteKnowledgeRepository {
                 super::inventory::intern_source_digest(&transaction, &file.content_digest)?;
             transaction.execute("INSERT INTO inventory_files VALUES((SELECT view_key FROM inventory_headers WHERE view_id=?1),?2,?3,?4)",params![view,i64::try_from(ordinal).map_err(|e|invalid_record("inventory",e))?,path,source])?;
         }
-        cache.phases.push(files.finish());
+        let mut files = files.finish();
+        files.items = Some(metadata.snapshot_files.len() as u64);
+        cache.phases.push(files);
         // Ordinary structural seals commit membership (snapshot, policies, nodes,
         // files). Full graph-export streaming stays an explicit verification path.
         let commitments = crate::measurement::PhaseTimer::start("publication_commitments");
         let inventory_digest = membership_digest(&transaction, metadata)?;
-        cache.phases.push(commitments.finish());
+        let mut commitments = commitments.finish();
+        commitments.items =
+            Some(u64::try_from(member_nodes).map_err(|error| invalid_record("inventory", error))?);
+        cache.phases.push(commitments);
         transaction.execute(
             "UPDATE inventory_headers SET graph_digest=?1,inventory_digest=?2 WHERE view_id=?3",
             params![inventory_digest, inventory_digest, view],
@@ -312,7 +346,9 @@ impl SqliteKnowledgeRepository {
         set_store_digest(&transaction, &inventory_digest)?;
         let selection = crate::measurement::PhaseTimer::start("publication_file_selection");
         super::syntax_cache::PreparedCache::prepare(cache)?.store(&transaction)?;
-        cache.phases.push(selection.finish());
+        let mut selection = selection.finish();
+        selection.items = Some(cache.len() as u64);
+        cache.phases.push(selection);
         transaction.execute("UPDATE temp.selected_knowledge_view SET id=?1", [selected])?;
         let commit = crate::measurement::PhaseTimer::start("publication_commit");
         transaction.commit()?;

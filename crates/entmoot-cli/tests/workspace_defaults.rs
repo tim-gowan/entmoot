@@ -68,76 +68,136 @@ fn json(root: &Path, args: &[&str]) -> Value {
     serde_json::from_slice(&output.stdout).unwrap()
 }
 
+fn commit_all(root: &Path) {
+    let add = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args(["add", "."])
+        .output()
+        .unwrap();
+    assert!(
+        add.status.success(),
+        "{}",
+        String::from_utf8_lossy(&add.stderr)
+    );
+    let output = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args([
+            "-c",
+            "user.email=test@example.com",
+            "-c",
+            "user.name=test",
+            "-c",
+            "commit.gpgsign=false",
+            "commit",
+            "-q",
+            "-m",
+            "revise",
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+fn commit_tree(root: &Path) {
+    let git = |args: &[&str]| {
+        let output = Command::new("git")
+            .arg("-C")
+            .arg(root)
+            .args(args)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    };
+    git(&["init", "-q"]);
+    git(&["add", "."]);
+    let output = Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args([
+            "-c",
+            "user.email=test@example.com",
+            "-c",
+            "user.name=test",
+            "-c",
+            "commit.gpgsign=false",
+            "commit",
+            "-q",
+            "-m",
+            "snapshot",
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
 #[test]
-fn typed_find_and_durable_path_use_portable_requests_after_restart() {
+fn contract_find_and_path_walk_stored_edges() {
     let fixture = WorkspaceFixture::new();
     let root = fixture.path();
-    fs::write(root.join("main.rs"), "struct Request;\nfn handle_good(request: Request) { bridge(); }\nfn handle_cross(request: usize, other: Request) {}\nfn bridge() { helper(); extra(); }\nfn helper() {}\nfn extra() {}\n").unwrap();
-    let find = [
-        "find",
-        "--name-contains",
-        "handle",
-        "--parameter-name",
-        "request",
-        "--parameter-type-contains",
-        "Request",
-    ];
-    let first = json(root, &find);
-    assert_eq!(first["selection"]["matched"], 1);
-    let subject = first["items"][0]["subject"].as_str().unwrap();
-    assert_eq!(
-        first["subjects"][subject]["display_ref"],
-        "main.rs::handle_good"
-    );
-    assert_eq!(
-        first["subjects"][subject]["selection_match"]["parameter_positions"],
-        serde_json::json!([[0]])
-    );
-    let request = storage(root).join("typed-find.json");
-    fs::write(&request, serde_json::to_vec(&first["query"]).unwrap()).unwrap();
-    let shared = json(root, &["request", "--request", request.to_str().unwrap()]);
-    assert_eq!(shared["subjects"], first["subjects"]);
-    assert_eq!(shared["selection"], first["selection"]);
-    let helper = json(
+    fs::write(
+        root.join("walk.py"),
+        "def target():\n    return 1\n\ndef middle():\n    return target()\n\ndef start():\n    middle()\n    missing()\n",
+    )
+    .unwrap();
+    commit_tree(root);
+    let receipt = json(root, &["init"]);
+    assert!(receipt["snapshot_id"].as_str().unwrap().len() > 8);
+    assert!(receipt["callable_count"].as_u64().unwrap() >= 3);
+    let typed = run(
         root,
-        &["find", "--name-exact", "helper", "--kind", "callable"],
+        &[
+            "find",
+            "--name-contains",
+            "start",
+            "--parameter-type-contains",
+            "Request",
+        ],
     );
-    let target = helper["items"][0]["subject"].as_str().unwrap();
-    let rejected = run(
-        root,
-        &["--standalone", "path", subject, target, "--resumable"],
-    );
-    assert!(!rejected.status.success());
-    assert!(String::from_utf8_lossy(&rejected.stderr).contains("--durable"));
-    let base = [
-        "--standalone",
-        "path",
-        subject,
-        target,
-        "--predicate",
-        "calls",
-        "--resumable",
-        "--durable",
-        "--max-expansions",
-        "1",
-    ];
-    let mut page = json(root, &base);
-    assert!(page["search_receipt"]["continuation"].is_string());
-    for _ in 0..16 {
-        let Some(token) = page["search_receipt"]["continuation"].as_str() else {
-            assert!(page["items"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .any(|i| i["kind"] == "path"));
-            assert_eq!(fs::read_dir(root).unwrap().count(), 1);
-            return;
-        };
-        let mut args = base.to_vec();
-        args.extend(["--continuation", token]);
-        page = json(root, &args);
-    }
-    panic!("durable fixture did not finish");
+    assert!(!typed.status.success());
+    assert!(String::from_utf8_lossy(&typed.stderr).contains("contract snapshot does not store"));
+    let found = json(root, &["find", "--name-exact", "start"]);
+    assert_eq!(found.as_array().unwrap().len(), 1);
+    let start = found[0]["occurrence_key"].as_str().unwrap();
+    let walked = json(root, &["path", start, "target", "--max-hops", "4"]);
+    assert!(walked["routes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|route| route.as_array().unwrap().len() == 3));
+    assert!(walked["unbound"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|edge| edge["target"] == "missing" && edge["status"] == "unbound"));
+    let callers = json(root, &["callers", "target"]);
+    assert!(callers["set"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|key| key.as_str().unwrap().contains("middle")));
+    let source = run(root, &["read-source", "walk.py"]);
+    assert!(!source.status.success());
+    assert!(String::from_utf8_lossy(&source.stderr).contains("source text"));
+    let audit = run(root, &["audit-calls", "--graph", "missing.json"]);
+    assert!(!audit.status.success());
+    assert!(String::from_utf8_lossy(&audit.stderr).contains("native dispatch"));
+    let trace = run(root, &["trace-seeded-paths"]);
+    assert!(!trace.status.success());
+    assert!(String::from_utf8_lossy(&trace.stderr).contains("provider-role seeds"));
 }
 
 #[test]
@@ -616,10 +676,8 @@ fn collaboration_producer_cli_resumes_a_sealed_result_in_a_new_process() {
 fn native_budget_defaults_to_one_hour_and_accepts_explicit_override() {
     let root = WorkspaceFixture::new();
     fs::write(root.path().join("api.py"), "def leaf(): return 1\n").unwrap();
-    let indexed = json(root.path(), &["init", "--structural-only"]);
+    let indexed = json(root.path(), &["bind", "--structural-only"]);
     assert_eq!(indexed["budget_seconds"], 3600);
-    let planned = json(root.path(), &["bind", "--plan-only"]);
-    assert_eq!(planned["budget_seconds"], 3600);
     let bounded = json(
         root.path(),
         &["bind", "--plan-only", "--timeout-seconds", "17"],
@@ -647,7 +705,7 @@ fn experimental_canon_is_required_and_published_only_by_explicit_bind() {
         br#"{"min_tokens":5,"canonical":true}"#,
     )
     .unwrap();
-    json(root.path(), &["init"]);
+    json(root.path(), &["bind", "--structural-only"]);
     let missing = json(
         root.path(),
         &["assess", "clones", "--request", "request.json"],
@@ -674,20 +732,12 @@ fn experimental_canon_is_required_and_published_only_by_explicit_bind() {
     assert!(!alias.status.success());
 }
 
-fn init_with_summary(root: &Path, args: &[&str]) -> (Value, String) {
-    let output = run(root, args);
-    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
-    assert!(output.status.success(), "{stderr}");
-    assert!(!output.stdout.starts_with(&[239, 187, 191]));
-    (serde_json::from_slice(&output.stdout).unwrap(), stderr)
-}
-
 #[test]
 fn explicit_test_validation_writes_ingestible_status_without_changing_publication() {
     let root = WorkspaceFixture::new();
     let output = tempfile::tempdir().unwrap();
     fs::write(root.path().join("lib.rs"), "fn value() {}\n").unwrap();
-    json(root.path(), &["init", "--structural-only"]);
+    json(root.path(), &["bind", "--structural-only"]);
     let before = fs::read(storage(root.path()).join("current.json")).unwrap();
     let graph =
         entmoot_engine::build_topology_from_repo_with_options(root.path(), Default::default())
@@ -754,7 +804,7 @@ fn assessment_commands_are_read_only_and_refuse_unqualified_absence() {
         br#"{"min_tokens":5,"include_statements":false}"#,
     )
     .unwrap();
-    json(root.path(), &["init", "--structural-only"]);
+    json(root.path(), &["bind", "--structural-only"]);
     let pointer = storage(root.path()).join("current.json");
     let before = fs::read(&pointer).unwrap();
     let clones = json(
@@ -809,8 +859,7 @@ fn rust_profile_reaches_automatic_production_and_fences_planned_inputs() {
     let initialized = json(
         root.path(),
         &[
-            "init",
-            "--require-native",
+            "bind",
             "--cargo-features",
             "b,a",
             "--rust-test-root",
@@ -877,7 +926,6 @@ fn native_cache_fingerprints_are_checked_before_reuse_or_publication() {
         "function leaf() { return 1; } function caller() { return leaf(); }\n",
     )
     .unwrap();
-    let _initialized = json(root.path(), &["init"]);
     let first = json(root.path(), &["bind"]);
     let reused = json(root.path(), &["bind"]);
     let stage = reused["stages"]
@@ -985,57 +1033,43 @@ fn native_cache_fingerprints_are_checked_before_reuse_or_publication() {
 #[test]
 fn defaults_examples_and_read_discovery() {
     let root = WorkspaceFixture::new();
-    for example in ["find-subject", "unresolved", "read-source"] {
+    for example in ["find", "path", "neighborhood", "boundaries", "status"] {
         let request = json(root.path(), &["request", "--example", example]);
-        let _: entmoot_contracts::query::QueryRequest = serde_json::from_value(request).unwrap();
+        assert_eq!(request["operation"], example);
     }
     assert!(!root.path().join(".entmoot").exists());
     fs::write(root.path().join("app.py"), "def work():\n    return 1\n").unwrap();
-    let (report, stderr) = init_with_summary(root.path(), &["init", "--structural-only"]);
-    assert!(
-        stderr.contains("entmoot init complete"),
-        "missing operator summary: {stderr}"
-    );
-    assert!(
-        stderr.contains("outcome=") || stderr.contains("[OK]") || stderr.contains("[INCOMPLETE]"),
-        "missing outcome banner: {stderr}"
-    );
-    assert!(report["publication"]["graph"]
-        .as_str()
-        .unwrap()
-        .contains("workspaces"));
-    assert!(
-        storage(root.path()).join("adapter-profile.json").is_file(),
-        "init must refresh adapter-profile.json"
-    );
-    let pointer = storage(root.path()).join("current.json");
-    let before = fs::read(&pointer).unwrap();
+    commit_tree(root.path());
+    let report = json(root.path(), &["init"]);
+    assert!(report["snapshot_id"].as_str().unwrap().len() > 8);
+    assert!(!storage(root.path()).join("current.json").exists());
     let status = json(root.path(), &["status"]);
-    assert!(
-        status.get("adapter_profile").is_some_and(|v| !v.is_null()),
-        "status must surface adapter_profile: {status}"
-    );
-    assert!(status["limitations"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|v| v.as_str().unwrap_or("").contains("entmoot bind")));
-    for suggestion in status["suggested_selectors"].as_array().unwrap() {
-        let _: entmoot_contracts::query::QueryRequest =
-            serde_json::from_value(suggestion["request"].clone()).unwrap();
-    }
+    assert_eq!(status["snapshot_id"], report["snapshot_id"]);
     let request = storage(root.path()).join("find.json");
     fs::write(
         &request,
-        br#"{"operation":"find","request":{"kind":"subject","query":"work","limit":1}}"#,
+        br#"{"operation":"find","query":"work","limit":1}"#,
     )
     .unwrap();
     let result = json(
         root.path(),
         &["request", "--request", request.to_str().unwrap()],
     );
-    assert_ne!(result["status"], "conflict");
-    assert_eq!(fs::read(&pointer).unwrap(), before);
+    assert_eq!(result.as_array().unwrap().len(), 1);
+    fs::write(
+        &request,
+        br#"{"operation":"find","request":{"kind":"subject","query":"work"}}"#,
+    )
+    .unwrap();
+    let publication = run(
+        root.path(),
+        &["request", "--request", request.to_str().unwrap()],
+    );
+    assert!(!publication.status.success());
+    assert!(String::from_utf8_lossy(&publication.stderr).contains("graph publication"));
+    json(root.path(), &["bind", "--structural-only"]);
+    let pointer = storage(root.path()).join("current.json");
+    let before = fs::read(&pointer).unwrap();
     let fail = entmoot_cmd(root.path())
         .env(
             "ENTMOOT_PYTHON_ENVIRONMENT",
@@ -1063,12 +1097,12 @@ fn bind_requires_native_by_default_and_structural_only_waives() {
         .env_remove("ENTMOOT_GO_ADAPTER")
         .env_remove("ENTMOOT_GO_VIA_DOCKER")
         .env("ENTMOOT_ADAPTERS_ROOT", &empty_adapters)
-        .args(["init"])
+        .args(["bind", "--structural-only"])
         .output()
         .unwrap();
     assert!(
         init.status.success(),
-        "init stays structural-first: {}",
+        "structural bind records the adapter gap: {}",
         String::from_utf8_lossy(&init.stderr)
     );
     let profile: Value = serde_json::from_slice(
@@ -1129,7 +1163,7 @@ fn assess_alias_and_compatibility_reads_preserve_publications() {
         "pub fn api(x: i32) -> i32 { x }\n",
     )
     .unwrap();
-    let initialized = json(root.path(), &["init", "--structural-only"]);
+    let initialized = json(root.path(), &["bind", "--structural-only"]);
     let graph = initialized["publication"]["graph"].as_str().unwrap();
     let graph_before = fs::read(graph).unwrap();
     let pointer = storage(root.path()).join("current.json");
@@ -1189,14 +1223,13 @@ fn collapsed_impact_and_bind_need_no_graph_flags() {
         "function target() { return 1; }\nfunction caller() { return target(); }\n",
     )
     .unwrap();
-    let _ = json(root.path(), &["init"]);
     let base = json(root.path(), &["bind"]);
     fs::write(
         root.path().join("app.js"),
         "function target() { return 2; }\nfunction caller() { return target(); }\n",
     )
     .unwrap();
-    let head = json(root.path(), &["init", "--structural-only"]);
+    let head = json(root.path(), &["bind", "--structural-only"]);
     let base_graph = base["publication"]["graph"].as_str().unwrap();
     let head_graph = head["publication"]["graph"].as_str().unwrap();
     let package_path = storage(root.path()).join("impact.json");
@@ -1269,70 +1302,49 @@ function caller() { return sanitize(target()); }
 }
 
 #[test]
-fn impact_relay_matches_shared_service_and_is_read_only() {
-    use entmoot_contracts::query::{ImpactRelayRequest, QueryService};
-    use entmoot_engine::{
-        build_topology_from_repo_with_options, write_graph_json, KnowledgeRepository,
-        KnowledgeStore, QueryEngine, SqliteKnowledgeRepository,
-    };
+fn relay_impact_reports_callers_of_a_changed_set() {
     let root = WorkspaceFixture::new();
-    let src = root.path().join("source");
-    fs::create_dir(&src).unwrap();
-    let source = "fn leaf() -> i32 { 1 }\nfn first() { leaf(); }\nfn second() { leaf(); }";
-    fs::write(src.join("lib.rs"), source).unwrap();
-    let base = build_topology_from_repo_with_options(&src, Default::default()).unwrap();
-    fs::write(src.join("lib.rs"), source.replace("{ 1 }", "{ 2 }")).unwrap();
-    let head = build_topology_from_repo_with_options(&src, Default::default()).unwrap();
-    let base_path = root.path().join("base.json");
-    let head_path = root.path().join("head.json");
-    write_graph_json(&base, &base_path).unwrap();
-    write_graph_json(&head, &head_path).unwrap();
-    let store = entmoot_engine::workspace::default_store_path(&head_path);
-    SqliteKnowledgeRepository::open(&store)
-        .unwrap()
-        .replace_all(&KnowledgeStore::extract_from_graph(&head))
-        .unwrap();
-    let engine = QueryEngine::new(head, store).with_compare_graph(base);
-    let request_path = root.path().join("relay.json");
-    let request: ImpactRelayRequest = serde_json::from_value(
-        serde_json::json!({"evidence_filter":"any","callers_output":{"limit":1}}),
+    fs::write(
+        root.path().join("lib.rs"),
+        "fn leaf() {}\nfn first() { leaf(); }\nfn second() { leaf(); }\n",
     )
     .unwrap();
-    fs::write(&request_path, serde_json::to_vec(&request).unwrap()).unwrap();
-    let args = [
-        "relay-impact",
-        "--graph",
-        head_path.to_str().unwrap(),
-        "--compare-graph",
-        base_path.to_str().unwrap(),
-        "--request",
-        request_path.to_str().unwrap(),
-    ];
-    let before = fs::read(&head_path).unwrap();
-    let mut actual = json(root.path(), &args);
-    let mut expected = serde_json::to_value(engine.relay_impact(request).unwrap()).unwrap();
-    fn without_timing(value: &mut Value) {
-        match value {
-            Value::Object(map) => {
-                for field in ["elapsed_micros", "index_micros", "evidence_micros"] {
-                    map.remove(field);
-                }
-                for v in map.values_mut() {
-                    without_timing(v);
-                }
-            }
-            Value::Array(values) => values.iter_mut().for_each(without_timing),
-            _ => {}
-        }
-    }
-    without_timing(&mut actual);
-    without_timing(&mut expected);
-    assert_eq!(actual, expected);
-    assert_eq!(before, fs::read(&head_path).unwrap());
-    fs::write(&request_path, br#"{"output":{"max_bytes":128}}"#).unwrap();
-    let failed = run(root.path(), &args);
-    assert!(!failed.status.success());
-    assert!(String::from_utf8_lossy(&failed.stdout).contains("invalid_request"));
+    commit_tree(root.path());
+    json(root.path(), &["init"]);
+    fs::write(
+        root.path().join("lib.rs"),
+        "fn leaf() {}\nfn first() {}\nfn second() { leaf(); }\n",
+    )
+    .unwrap();
+    commit_all(root.path());
+    json(root.path(), &["init"]);
+    let relay = json(root.path(), &["relay-impact"]);
+    let leaf = relay["diff"]["changes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|change| {
+            change["occurrence_key"]
+                .as_str()
+                .unwrap()
+                .contains("|leaf|")
+        })
+        .expect("leaf caller set changed");
+    assert!(leaf["callers_removed"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|key| key.as_str().unwrap().contains("|first|")));
+    assert!(relay["affected"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["occurrence_key"] == leaf["occurrence_key"])
+        .unwrap()["set"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|key| key.as_str().unwrap().contains("|second|")));
 }
 
 #[test]
@@ -1343,7 +1355,7 @@ fn java_adapter_pin_is_exclusive_in_plan_summaries() {
         "class Api { int api() { return 1; } }",
     )
     .unwrap();
-    json(root.path(), &["init", "--structural-only"]);
+    json(root.path(), &["bind", "--structural-only"]);
     let adapters = tempfile::tempdir().unwrap();
     let fallback = adapters.path().join("java");
     fs::create_dir(&fallback).unwrap();
@@ -1434,7 +1446,7 @@ else:
             .output()
             .unwrap()
     };
-    let first = invoke(&["init", "--require-native"]);
+    let first = invoke(&["bind"]);
     assert!(
         first.status.success(),
         "{}",
@@ -1518,33 +1530,46 @@ fn automatic_storage_is_reused_and_can_live_outside_source() {
         );
         serde_json::from_slice(&output.stdout).unwrap()
     };
-    let found = invoke(&["find", "entmoot_smoke_fn"]);
-    assert_eq!(found["result_bounds"]["total_matches"], 1);
+    commit_tree(&source);
+    let receipt = invoke(&["init"]);
+    assert!(receipt["snapshot_id"].as_str().unwrap().len() > 8);
     assert!(!source.join(".entmoot").exists());
-    let pointer = entmoot_engine::workspace::storage_directory_in(&source, Some(&data))
-        .unwrap()
-        .join("current.json");
-    let before = fs::read(&pointer).unwrap();
-    let boundary = invoke(&[
-        "boundaries",
-        "--callee",
-        "*.toString()",
-        "--outcome",
-        "unreported",
-    ]);
-    assert_eq!(boundary["result_bounds"]["total_matches"], 1);
-    assert_eq!(
-        boundary["completeness"]["native_libraries"]["status"],
-        "not_established"
-    );
-    invoke(&["status"]);
-    assert_eq!(before, fs::read(&pointer).unwrap());
-    // Stale source does not silently replace history during a query.
+    let found = invoke(&["find", "entmoot_smoke_fn"]);
+    assert_eq!(found.as_array().unwrap().len(), 1);
+    let native = Command::new(env!("CARGO_BIN_EXE_entmoot"))
+        .env("RUST_LOG", "warn")
+        .args([
+            "--data-dir",
+            data.to_str().unwrap(),
+            "-C",
+            source.to_str().unwrap(),
+            "--json",
+            "boundaries",
+            "--outcome",
+            "unreported",
+        ])
+        .output()
+        .unwrap();
+    assert!(!native.status.success());
+    assert!(String::from_utf8_lossy(&native.stderr).contains("native dispatch"));
+    let status = invoke(&["status"]);
+    assert_eq!(status["snapshot_id"], receipt["snapshot_id"]);
     fs::write(source.join("app.py"), "def changed(): pass\n").unwrap();
-    invoke(&["find", "entmoot_smoke_fn"]);
-    assert_eq!(before, fs::read(&pointer).unwrap());
-    invoke(&["init"]);
-    assert_ne!(before, fs::read(&pointer).unwrap());
+    let still = invoke(&["find", "entmoot_smoke_fn"]);
+    assert_eq!(still.as_array().unwrap().len(), 1);
+    let dirty = Command::new(env!("CARGO_BIN_EXE_entmoot"))
+        .env("RUST_LOG", "warn")
+        .args([
+            "--data-dir",
+            data.to_str().unwrap(),
+            "-C",
+            source.to_str().unwrap(),
+            "init",
+        ])
+        .output()
+        .unwrap();
+    assert!(!dirty.status.success());
+    assert!(String::from_utf8_lossy(&dirty.stderr).contains("clean tree"));
 }
 
 #[test]
@@ -1565,7 +1590,7 @@ fn invalid_storage_configuration_rejects_reads_and_writes_without_redirecting_pu
             fs::write(namespace.join("config.json"), serde_json::to_vec(&serde_json::json!({
                 "schema":"entmoot.config.v1", "mode":"local", "volume":fixture.path().join("custom-volume")
             })).unwrap()).unwrap();
-            json(&source, &["init", "--structural-only"]);
+            json(&source, &["bind", "--structural-only"]);
             let volume = storage(&source);
             let pointer = volume.join("current.json");
             let before = fs::read(&pointer).unwrap();
@@ -1578,7 +1603,7 @@ fn invalid_storage_configuration_rejects_reads_and_writes_without_redirecting_pu
             fs::write(&config, bad).unwrap();
             let plan = fixture.path().join("plan.json");
             for command in [
-                vec!["init", "--structural-only"],
+                vec!["bind", "--structural-only"],
                 vec!["bind", "--structural-only"],
                 vec!["find", "leaf"],
                 vec![
@@ -1656,53 +1681,23 @@ fn native_archive_is_readable_after_restart_in_default_and_relocated_volumes() {
             );
             serde_json::from_slice::<Value>(&output.stdout).unwrap()
         };
-        let first = invoke(&["init", "--require-native"]);
+        let first = invoke(&["bind"]);
         assert_eq!(first["stages"][0]["stage"], "produced");
-        // A distinct CLI process must hydrate native detail from the published store.
-        let boundaries = invoke(&["boundaries", "--detail", "export"]);
-        assert_eq!(boundaries["result"]["items"].as_array().unwrap().len(), 1);
-        assert_eq!(
-            boundaries["result"]["items"][0]["boundary"]["evaluations"]
-                .as_array()
-                .unwrap()
-                .len(),
-            1
-        );
-        assert!(
-            !boundaries
-                .to_string()
-                .contains("native_detail_not_retained"),
-            "{boundaries}"
-        );
         assert!(storage(&source).join("knowledge.sqlite3.objects").is_dir());
         invoke(&["bind", "--full"]);
-        let restarted = invoke(&["boundaries", "--detail", "export"]);
-        assert_eq!(
-            restarted["result"]["items"][0]["boundary"]["evaluations"]
-                .as_array()
-                .unwrap()
-                .len(),
-            1
-        );
-        assert!(
-            !restarted.to_string().contains("native_detail_not_retained"),
-            "{restarted}"
-        );
+        assert!(storage(&source).join("knowledge.sqlite3.objects").is_dir());
         let request = fixture.path().join("boundaries.json");
-        fs::write(&request, br#"{"operation":"find","request":{"kind":"call_boundary","request":{}},"output":{"tier":"export"}}"#).unwrap();
-        let historical = invoke(&[
-            "request",
-            "--graph",
-            first["publication"]["graph"].as_str().unwrap(),
-            "--store",
-            first["publication"]["store"].as_str().unwrap(),
-            "--request",
-            request.to_str().unwrap(),
-        ]);
-        assert_eq!(
-            historical["result"]["items"], boundaries["result"]["items"],
-            "later bind changed historical native detail"
-        );
+        fs::write(
+            &request,
+            br#"{"operation":"find","request":{"kind":"call_boundary","request":{}}}"#,
+        )
+        .unwrap();
+        let historical = entmoot_cmd(&source)
+            .args(["request", "--request", request.to_str().unwrap()])
+            .output()
+            .unwrap();
+        assert!(!historical.status.success());
+        assert!(String::from_utf8_lossy(&historical.stderr).contains("graph publication"));
         assert_eq!(fs::read_to_string(source.join("main.c")).unwrap(), code);
         assert_eq!(
             fs::read_dir(&source).unwrap().count(),

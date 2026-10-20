@@ -1,7 +1,6 @@
 //! Parsing only; shared query operations own information-tier semantics.
-use anyhow::{Context, Result};
+use anyhow::Result;
 use clap::{Args, ValueEnum};
-use entmoot_contracts::query::{InformationTier, OutputOptions};
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -28,34 +27,6 @@ pub(super) struct InformationArgs {
     /// JSON page.next_cursor from the same query/publication; compact only.
     #[arg(long)]
     output_after: Option<PathBuf>,
-}
-
-impl InformationArgs {
-    pub(super) fn apply(&self, options: &mut OutputOptions) -> Result<()> {
-        if let Some(tier) = self.detail {
-            options.tier = match tier {
-                Detail::Compact => InformationTier::Compact,
-                Detail::Explain => InformationTier::Explain,
-                Detail::Export => InformationTier::Export,
-            };
-        }
-        if let Some(bytes) = self.output_max_bytes {
-            options.max_bytes = Some(usize::try_from(bytes)?);
-        }
-        if let Some(limit) = self.output_limit {
-            options.limit = usize::from(limit);
-        }
-        if let Some(path) = &self.output_after {
-            options.after = Some(
-                serde_json::from_slice(
-                    &std::fs::read(path)
-                        .with_context(|| format!("read output cursor {}", path.display()))?,
-                )
-                .context("decode OutputCursor")?,
-            );
-        }
-        Ok(())
-    }
 }
 
 static JSON: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);

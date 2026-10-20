@@ -11,7 +11,7 @@ use rmcp::{
 };
 
 #[tokio::test]
-async fn typed_subject_tool_matches_portable_request_after_restart() {
+async fn typed_subject_selector_and_graph_query_stay_gaps_after_restart() {
     use serde_json::json;
     let fixture = tempfile::tempdir().unwrap();
     let source = fixture.path().join("source");
@@ -37,17 +37,9 @@ async fn typed_subject_tool_matches_portable_request_after_restart() {
             )
             .await
             .unwrap();
-        assert_ne!(response.is_error, Some(true), "{response:?}");
-        let found = response.structured_content.unwrap();
-        assert_eq!(found["selection"]["matched"], 1);
-        let subject = found["items"][0]["subject"].as_str().unwrap();
-        assert_eq!(
-            found["subjects"][subject]["display_ref"],
-            "main.rs::handle_good"
-        );
-        assert_eq!(
-            found["subjects"][subject]["selection_match"]["parameter_positions"],
-            json!([[0]])
+        assert_gap(
+            &response,
+            "evidence other than caller, callee, and unresolved sets",
         );
         let shared = client
             .call_tool(
@@ -59,14 +51,12 @@ async fn typed_subject_tool_matches_portable_request_after_restart() {
                 ),
             )
             .await
-            .unwrap()
-            .structured_content
             .unwrap();
-        assert_eq!(shared["selection"], found["selection"]);
-        assert_eq!(shared["subjects"], found["subjects"]);
+        assert_gap(&shared, "graph publication");
         client.cancel().await.unwrap();
     }
-    assert_eq!(std::fs::read_dir(source).unwrap().count(), 1);
+    assert_eq!(std::fs::read_dir(&source).unwrap().count(), 1);
+    assert!(!source.join(".entmoot").exists());
 }
 
 #[test]
@@ -117,8 +107,18 @@ fn invalid_storage_configuration_refuses_stdio_startup_without_bootstrapping() {
     }
 }
 
+fn assert_gap(result: &rmcp::model::CallToolResult, fact: &str) {
+    assert_eq!(result.is_error, Some(true), "{result:?}");
+    let body = result.structured_content.as_ref().unwrap();
+    assert_eq!(body["kind"], "missing_fact");
+    assert!(
+        body["message"].as_str().unwrap_or("").contains(fact),
+        "{body}"
+    );
+}
+
 #[tokio::test]
-async fn automatic_workspace_and_boundary_query_survive_stdio_restart() {
+async fn boundary_native_filters_do_not_bootstrap_a_publication() {
     let fixture = tempfile::tempdir().unwrap();
     let source = fixture.path().join("source");
     let data = fixture.path().join("data");
@@ -143,17 +143,7 @@ async fn automatic_workspace_and_boundary_query_survive_stdio_restart() {
         let response = client.call_tool(CallToolRequestParams::new("boundaries").with_arguments(
             serde_json::from_value(serde_json::json!({"request":{"callee":"*.toString()","outcome":"unreported"}})).unwrap()
         )).await.unwrap();
-        assert_ne!(response.is_error, Some(true));
-        let value = response.structured_content.unwrap();
-        assert_eq!(value["result_bounds"]["total_matches"], 1);
-        assert_eq!(
-            value["completeness"]["repository"]["status"],
-            "not_established"
-        );
-        assert_eq!(
-            value["completeness"]["dependencies"]["status"],
-            "not_established"
-        );
+        assert_gap(&response, "native dispatch");
         client.cancel().await.unwrap();
         let current = std::fs::read(&pointer).unwrap();
         if let Some(previous) = &previous {
@@ -332,25 +322,6 @@ async fn mcp_binding_submission_and_pause_require_explicit_host_scope_and_surviv
             .generation,
         1
     );
-}
-
-fn without_telemetry(value: &mut serde_json::Value) {
-    match value {
-        serde_json::Value::Object(object) => {
-            object.remove("elapsed_micros");
-            object.remove("index_micros");
-            object.remove("evidence_micros");
-            for child in object.values_mut() {
-                without_telemetry(child);
-            }
-        }
-        serde_json::Value::Array(items) => {
-            for child in items {
-                without_telemetry(child);
-            }
-        }
-        _ => {}
-    }
 }
 
 #[tokio::test]
@@ -745,11 +716,11 @@ async fn stdio_server_lists_and_calls_navigation_tools() {
         )
         .await
         .unwrap();
-    assert_ne!(
-        early_status.is_error,
-        Some(true),
-        "tools/call status must succeed once the deferred open completes"
-    );
+    assert_eq!(early_status.is_error, Some(true));
+    assert!(early_status.structured_content.as_ref().unwrap()["message"]
+        .as_str()
+        .unwrap()
+        .contains("no contract snapshot"));
     // Exact payload parity includes evidence receipts, budgets, and unknown outcomes.
     let engine = entmoot_engine::QueryEngine::new(graph.clone(), store_path.clone())
         .with_source_store(std::sync::Arc::new(
@@ -787,30 +758,13 @@ async fn stdio_server_lists_and_calls_navigation_tools() {
         for tier in ["compact", "explain", "export"] {
             let mut request = request.clone();
             request["output"] = serde_json::json!({"tier":tier});
-            let expected = entmoot_contracts::query::QueryService::execute(
-                &engine,
-                serde_json::from_value(request.clone()).unwrap(),
-            );
-            let failed = expected.is_err();
-            let mut expected = match expected {
-                Ok(value) => value.into_value().unwrap(),
-                Err(error) => {
-                    serde_json::json!({"schema_version":"entmoot.query.error.v1","status":"error","kind":error.code(),"message":error.to_string()})
-                }
-            };
             let result = client
                 .call_tool(CallToolRequestParams::new("query").with_arguments(
                     serde_json::from_value(serde_json::json!({"request":request})).unwrap(),
                 ))
                 .await
                 .unwrap();
-            assert_eq!(result.is_error == Some(true), failed);
-            let mut actual = result.structured_content.unwrap();
-            // Wall time is execution telemetry; all semantic receipts must still match.
-            for value in [&mut actual, &mut expected] {
-                without_telemetry(value);
-            }
-            assert_eq!(actual, expected);
+            assert_gap(&result, "graph publication");
         }
     }
     assert_eq!(
@@ -870,12 +824,11 @@ async fn stdio_server_lists_and_calls_navigation_tools() {
         .call_tool(CallToolRequestParams::new("find").with_arguments(arguments))
         .await
         .unwrap();
-    assert_ne!(result.is_error, Some(true));
-    assert!(!result.content.is_empty());
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["tier"],
-        "compact"
-    );
+    assert_eq!(result.is_error, Some(true));
+    assert!(result.structured_content.as_ref().unwrap()["message"]
+        .as_str()
+        .unwrap()
+        .contains("no contract snapshot"));
 
     let status = client
         .call_tool(
@@ -884,31 +837,27 @@ async fn stdio_server_lists_and_calls_navigation_tools() {
         )
         .await
         .unwrap();
-    assert_ne!(status.is_error, Some(true));
-    let status_body = status.structured_content.as_ref().unwrap();
-    assert_eq!(status_body["schema_version"], "entmoot.query.status.v1");
-    let expected_status =
-        entmoot_contracts::query::QueryService::status(&engine, Default::default()).unwrap();
-    assert_eq!(status_body, &serde_json::to_value(expected_status).unwrap());
+    assert_eq!(status.is_error, Some(true));
+    assert!(status.structured_content.as_ref().unwrap()["message"]
+        .as_str()
+        .unwrap()
+        .contains("no contract snapshot"));
 
-    let initializer_args =
-        serde_json::json!({"kind":"initializer","integer":"-1","output":{"tier":"export"}});
     let initializer_result = client
         .call_tool(
-            CallToolRequestParams::new("find")
-                .with_arguments(serde_json::from_value(initializer_args.clone()).unwrap()),
+            CallToolRequestParams::new("find").with_arguments(
+                serde_json::from_value(
+                    serde_json::json!({"kind":"initializer","integer":"-1","output":{"tier":"export"}}),
+                )
+                .unwrap(),
+            ),
         )
         .await
         .unwrap();
-    assert_ne!(initializer_result.is_error, Some(true));
-    let expected = entmoot_contracts::query::QueryService::execute(&engine, serde_json::from_value(serde_json::json!({
-        "operation":"find","request":{"kind":"initializer","integer":"-1"},"output":{"tier":"export"}
-    })).unwrap()).unwrap().into_value().unwrap();
-    assert_eq!(
-        initializer_result.structured_content.as_ref().unwrap(),
-        &expected
+    assert_gap(
+        &initializer_result,
+        "evidence other than caller, callee, and unresolved sets",
     );
-    assert_eq!(expected["result"]["items"].as_array().unwrap().len(), 1);
 
     let facet = client
         .call_tool(
@@ -924,65 +873,59 @@ async fn stdio_server_lists_and_calls_navigation_tools() {
         )
         .await
         .unwrap();
-    assert_ne!(facet.is_error, Some(true));
-    assert_eq!(
-        facet.structured_content.as_ref().unwrap()["items"][0]["record_kind"],
-        "facet"
+    assert_gap(
+        &facet,
+        "evidence other than caller, callee, and unresolved sets",
     );
 
-    let arguments = serde_json::from_value(serde_json::json!({
-        "kind": "location",
-        "path": "main.rs",
-        "line": 2,
-        "column": 15
-    }))
-    .unwrap();
     let result = client
-        .call_tool(CallToolRequestParams::new("find").with_arguments(arguments))
+        .call_tool(
+            CallToolRequestParams::new("find").with_arguments(
+                serde_json::from_value(serde_json::json!({
+                    "kind": "location",
+                    "path": "main.rs",
+                    "line": 2,
+                    "column": 15
+                }))
+                .unwrap(),
+            ),
+        )
         .await
         .unwrap();
-    assert_eq!(
-        {
-            let body = result.structured_content.as_ref().unwrap();
-            &body["subjects"][body["items"][0]["subject"].as_str().unwrap()]["kind"]
-        },
-        "call_stub"
+    assert_gap(
+        &result,
+        "evidence other than caller, callee, and unresolved sets",
     );
 
-    let arguments = serde_json::from_value(serde_json::json!({
-        "path": "main.rs",
-        "start_line": 2,
-        "context_lines": 1
-    }))
-    .unwrap();
     let result = client
-        .call_tool(CallToolRequestParams::new("read_source").with_arguments(arguments))
+        .call_tool(
+            CallToolRequestParams::new("read_source").with_arguments(
+                serde_json::from_value(serde_json::json!({
+                    "path": "main.rs",
+                    "start_line": 2,
+                    "context_lines": 1
+                }))
+                .unwrap(),
+            ),
+        )
         .await
         .unwrap();
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["items"][0]["kind"],
-        "source_line"
-    );
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["status"],
-        "known"
-    );
-    let arguments = serde_json::from_value(serde_json::json!({
-        "kind": "trace",
-        "id": "finding-that-does-not-exist"
-    }))
-    .unwrap();
+    assert_gap(&result, "source text");
     let result = client
-        .call_tool(CallToolRequestParams::new("inspect").with_arguments(arguments))
+        .call_tool(
+            CallToolRequestParams::new("inspect").with_arguments(
+                serde_json::from_value(serde_json::json!({
+                    "kind": "trace",
+                    "id": "finding-that-does-not-exist"
+                }))
+                .unwrap(),
+            ),
+        )
         .await
         .unwrap();
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["tier"],
-        "compact"
-    );
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["status"],
-        "unknown"
+    assert_gap(
+        &result,
+        "evidence other than caller, callee, and unresolved sets",
     );
 
     let arguments = serde_json::from_value(serde_json::json!({
@@ -1012,9 +955,9 @@ async fn stdio_server_lists_and_calls_navigation_tools() {
         .call_tool(CallToolRequestParams::new("find").with_arguments(arguments))
         .await
         .unwrap();
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["tier"],
-        "compact"
+    assert_gap(
+        &result,
+        "evidence other than caller, callee, and unresolved sets",
     );
 
     let arguments = serde_json::from_value(serde_json::json!({
@@ -1029,29 +972,11 @@ async fn stdio_server_lists_and_calls_navigation_tools() {
         .call_tool(CallToolRequestParams::new("traverse").with_arguments(arguments))
         .await
         .unwrap();
-    assert_ne!(result.is_error, Some(true), "{result:?}");
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["tier"],
-        "compact"
-    );
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["status"],
-        "known"
-    );
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["items"][0]["classification"],
-        "candidate"
-    );
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["query"]["request"]["budget"]
-            ["max_evidence_per_hop"],
-        0
-    );
-    let body = result.structured_content.as_ref().unwrap();
-    let hop = &body["edges"][body["items"][0]["edges"][0].as_str().unwrap()];
-    assert!(hop["claim_count"].as_u64().unwrap() > 0);
-    assert_eq!(body["details_deferred"], true);
-    assert_eq!(body["search_truncated"], false);
+    assert_eq!(result.is_error, Some(true));
+    assert!(result.structured_content.as_ref().unwrap()["message"]
+        .as_str()
+        .unwrap()
+        .contains("no contract snapshot"));
 
     let arguments =
         serde_json::from_value(serde_json::json!({"subject": caller_id, "limit": 10})).unwrap();
@@ -1059,18 +984,11 @@ async fn stdio_server_lists_and_calls_navigation_tools() {
         .call_tool(CallToolRequestParams::new("callees").with_arguments(arguments))
         .await
         .unwrap();
-    assert_ne!(result.is_error, Some(true), "{result:?}");
-    let calls = result.structured_content.as_ref().unwrap();
-    assert_eq!(calls["tier"], "compact");
-    assert_eq!(calls["query"]["request"]["kind"], "callees");
-    assert_eq!(
-        calls["edges"][calls["items"][0]["edge"].as_str().unwrap()]["object"],
-        callee_id
-    );
-    assert_eq!(
-        calls["gaps"][0],
-        "repository_call_graph_completeness_not_established"
-    );
+    assert_eq!(result.is_error, Some(true));
+    assert!(result.structured_content.as_ref().unwrap()["message"]
+        .as_str()
+        .unwrap()
+        .contains("no contract snapshot"));
 
     let arguments =
         serde_json::from_value(serde_json::json!({"subject": callee_id, "limit": 10})).unwrap();
@@ -1078,57 +996,41 @@ async fn stdio_server_lists_and_calls_navigation_tools() {
         .call_tool(CallToolRequestParams::new("callers").with_arguments(arguments))
         .await
         .unwrap();
-    assert_ne!(result.is_error, Some(true), "{result:?}");
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["query"]["request"]["kind"],
-        "callers"
-    );
-
-    let arguments = serde_json::from_value(serde_json::json!({
-        "request": {
-            "operation": "find",
-            "request": { "kind": "subject", "query": "caller", "limit": 5 }
-        }
-    }))
-    .unwrap();
-    let result = client
-        .call_tool(CallToolRequestParams::new("query").with_arguments(arguments))
-        .await
-        .unwrap();
-    assert_ne!(result.is_error, Some(true), "{result:?}");
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["tier"],
-        "compact"
-    );
-
-    let arguments = serde_json::from_value(serde_json::json!({})).unwrap();
-    let result = client
-        .call_tool(CallToolRequestParams::new("trace_seeded_paths").with_arguments(arguments))
-        .await
-        .unwrap();
-    assert_ne!(result.is_error, Some(true), "{result:?}");
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["tier"],
-        "compact"
-    );
-    assert_eq!(
-        result.structured_content.unwrap(),
-        serde_json::to_value(
-            entmoot_contracts::query::QueryService::trace_seeds(&engine, Default::default())
-                .unwrap()
-        )
-        .unwrap()
-    );
-    let arguments = serde_json::from_value(serde_json::json!({"max_pairs": 0})).unwrap();
-    let result = client
-        .call_tool(CallToolRequestParams::new("trace_seeded_paths").with_arguments(arguments))
-        .await
-        .unwrap();
     assert_eq!(result.is_error, Some(true));
-    assert_eq!(
-        result.structured_content.as_ref().unwrap()["kind"],
-        "invalid_request"
-    );
+
+    let result = client
+        .call_tool(
+            CallToolRequestParams::new("query").with_arguments(
+                serde_json::from_value(serde_json::json!({
+                    "request": {
+                        "operation": "find",
+                        "request": { "kind": "subject", "query": "caller", "limit": 5 }
+                    }
+                }))
+                .unwrap(),
+            ),
+        )
+        .await
+        .unwrap();
+    assert_gap(&result, "graph publication");
+
+    let result = client
+        .call_tool(
+            CallToolRequestParams::new("trace_seeded_paths")
+                .with_arguments(serde_json::from_value(serde_json::json!({})).unwrap()),
+        )
+        .await
+        .unwrap();
+    assert_gap(&result, "provider-role seeds");
+    let result = client
+        .call_tool(
+            CallToolRequestParams::new("trace_seeded_paths").with_arguments(
+                serde_json::from_value(serde_json::json!({"max_pairs": 0})).unwrap(),
+            ),
+        )
+        .await
+        .unwrap();
+    assert_gap(&result, "provider-role seeds");
 
     let result = client
         .call_tool(CallToolRequestParams::new("impact"))
@@ -1139,37 +1041,26 @@ async fn stdio_server_lists_and_calls_navigation_tools() {
         serde_json::to_value(entmoot_engine::compare_revision_impact(&graph, &graph).unwrap())
             .unwrap()
     );
-    let request = serde_json::json!({
-        "start":caller_id,"direction":"callers","predicates":["calls"],"evidence_filter":"resolved_only",
-        "budget":entmoot_contracts::query::BoundedWalkBudget::default()
-    });
-    let mut typed = request.clone();
-    typed
-        .as_object_mut()
-        .unwrap()
-        .insert("kind".into(), "neighborhood".into());
-    let expected = entmoot_contracts::query::QueryService::execute(
-        &engine,
-        serde_json::from_value(serde_json::json!({"operation":"traverse", "request":typed}))
-            .unwrap(),
-    )
-    .unwrap()
-    .into_value()
-    .unwrap();
     let actual = client
         .call_tool(
-            CallToolRequestParams::new("neighborhood")
-                .with_arguments(serde_json::from_value(request).unwrap()),
+            CallToolRequestParams::new("neighborhood").with_arguments(
+                serde_json::from_value(serde_json::json!({
+                    "start": caller_id,
+                    "direction": "callers",
+                    "predicates": ["calls"],
+                    "evidence_filter": "resolved_only",
+                    "budget": entmoot_contracts::query::BoundedWalkBudget::default()
+                }))
+                .unwrap(),
+            ),
         )
         .await
-        .unwrap()
-        .structured_content
         .unwrap();
-    let mut actual = actual;
-    let mut expected = expected;
-    without_telemetry(&mut actual);
-    without_telemetry(&mut expected);
-    assert_eq!(actual, expected);
+    assert_eq!(actual.is_error, Some(true));
+    assert!(actual.structured_content.as_ref().unwrap()["message"]
+        .as_str()
+        .unwrap()
+        .contains("no contract snapshot"));
     client.cancel().await.unwrap();
 }
 
@@ -1247,63 +1138,121 @@ async fn impact_with_publication_null_base_uses_working_tree_not_compare_graph_e
 }
 
 #[tokio::test]
-async fn impact_relay_matches_shared_service_for_pages_and_refusals() {
-    use entmoot_contracts::query::{ImpactRelayRequest, QueryService};
+async fn relay_impact_reports_callers_of_a_changed_set() {
     let directory = tempfile::tempdir().unwrap();
     let source_dir = directory.path().join("source");
     std::fs::create_dir(&source_dir).unwrap();
-    let source = "fn leaf() -> i32 { 1 }\nfn first() { leaf(); }\nfn second() { leaf(); }";
-    std::fs::write(source_dir.join("lib.rs"), source).unwrap();
-    let base = build_topology_from_repo_with_options(&source_dir, Default::default()).unwrap();
-    std::fs::write(source_dir.join("lib.rs"), source.replace("{ 1 }", "{ 2 }")).unwrap();
-    let head = build_topology_from_repo_with_options(&source_dir, Default::default()).unwrap();
-    let base_path = directory.path().join("base.json");
-    let head_path = directory.path().join("head.json");
-    write_graph_json(&base, &base_path).unwrap();
-    write_graph_json(&head, &head_path).unwrap();
-    let store = entmoot_engine::workspace::default_store_path(&head_path);
-    SqliteKnowledgeRepository::open(&store)
+    std::fs::write(
+        source_dir.join("lib.rs"),
+        "fn leaf() {}\nfn first() { leaf(); }\nfn second() { leaf(); }\n",
+    )
+    .unwrap();
+    let data = directory.path().join("data");
+    let cli = std::path::Path::new(env!("CARGO_BIN_EXE_entmoot-mcp"))
+        .parent()
         .unwrap()
-        .replace_all(&KnowledgeStore::extract_from_graph(&head))
-        .unwrap();
-    let engine = entmoot_engine::QueryEngine::new(head, store).with_compare_graph(base);
+        .join(format!("entmoot{}", std::env::consts::EXE_SUFFIX));
+    let commit = |message: &str| {
+        for args in [
+            vec!["init", "-q"],
+            vec!["add", "."],
+            vec![
+                "-c",
+                "user.email=test@example.com",
+                "-c",
+                "user.name=test",
+                "-c",
+                "commit.gpgsign=false",
+                "commit",
+                "-q",
+                "-m",
+                message,
+            ],
+        ] {
+            let output = std::process::Command::new("git")
+                .arg("-C")
+                .arg(&source_dir)
+                .args(args)
+                .output()
+                .unwrap();
+            assert!(
+                output.status.success(),
+                "{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    };
+    let init = || {
+        let output = std::process::Command::new(&cli)
+            .args(["--data-dir"])
+            .arg(&data)
+            .args(["-C"])
+            .arg(&source_dir)
+            .arg("init")
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    };
+    commit("base");
+    init();
+    std::fs::write(
+        source_dir.join("lib.rs"),
+        "fn leaf() {}\nfn first() {}\nfn second() { leaf(); }\n",
+    )
+    .unwrap();
+    commit("head");
+    init();
     let transport = TokioChildProcess::new(
         tokio::process::Command::new(env!("CARGO_BIN_EXE_entmoot-mcp")).configure(|command| {
             command
-                .arg("--graph")
-                .arg(&head_path)
-                .arg("--compare-graph")
-                .arg(&base_path);
+                .arg("--data-dir")
+                .arg(&data)
+                .arg("-C")
+                .arg(&source_dir);
         }),
     )
     .unwrap();
     let client = ().serve(transport).await.unwrap();
-    for value in [
-        serde_json::json!({"evidence_filter":"any","callers_output":{"limit":1}}),
-        serde_json::json!({"output":{"max_bytes":128}}),
-    ] {
-        let request: ImpactRelayRequest = serde_json::from_value(value.clone()).unwrap();
-        let expected = engine.relay_impact(request);
-        let actual = client
-            .call_tool(CallToolRequestParams::new("relay_impact").with_arguments(
-                serde_json::from_value(serde_json::json!({"request":value})).unwrap(),
-            ))
-            .await
-            .unwrap();
-        match expected {
-            Ok(result) => {
-                assert_ne!(actual.is_error, Some(true));
-                let mut actual = actual.structured_content.unwrap();
-                let mut expected = serde_json::to_value(result).unwrap();
-                without_telemetry(&mut actual);
-                without_telemetry(&mut expected);
-                assert_eq!(actual, expected);
-            }
-            Err(error) => {
-                assert_eq!(actual.is_error, Some(true));
-                assert_eq!(actual.structured_content.unwrap()["kind"], error.code());
-            }
-        }
-    }
+    let actual = client
+        .call_tool(
+            CallToolRequestParams::new("relay_impact").with_arguments(
+                serde_json::from_value(serde_json::json!({"request":{"output":{"max_bytes":128}}}))
+                    .unwrap(),
+            ),
+        )
+        .await
+        .unwrap();
+    assert_ne!(actual.is_error, Some(true), "{actual:?}");
+    let relay = actual.structured_content.unwrap();
+    let leaf = relay["diff"]["changes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|change| {
+            change["occurrence_key"]
+                .as_str()
+                .unwrap()
+                .contains("|leaf|")
+        })
+        .expect("leaf caller set changed");
+    assert!(leaf["callers_removed"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|key| key.as_str().unwrap().contains("|first|")));
+    assert!(relay["affected"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["occurrence_key"] == leaf["occurrence_key"])
+        .unwrap()["set"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|key| key.as_str().unwrap().contains("|second|")));
     client.cancel().await.unwrap();
 }

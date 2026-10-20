@@ -5,6 +5,16 @@ attributable observations and bounded revision impact. Consumers make judgments;
 Entmoot reports evidence, correspondence and limits. Current work is in
 [PLANNING](../../PLANNING.md).
 
+## Callable contract snapshots
+
+Alpha structural init captures a clean revision (release or default-branch HEAD,
+not a dirty tree) as callable caller and callee sets. The occurrence key
+`lang|path|scope|symbol|kind` tells occurrences apart. `structural_hash` records
+whether that definition changed and does not include callee bodies, so it is not
+the subscriber event. The event is the diff of caller, callee, and unresolved
+sets between two snapshots. Full-view publication remains the bind path until
+that owner is removed; structural init does not write one.
+
 ## Identity and meaning
 
 A definition is implementation content under a structural policy. An occurrence
@@ -145,8 +155,9 @@ Parsing admits at most 32 files and
 32 MiB of source, processing at most four admitted files at a time. Reused
 workers hand results directly to the writer through rendezvous channels;
 oversized files run alone. These are admission limits, not a total RSS ceiling. Extraction reads captured source and builds a
-disposable file projection. Ordinary structural init writes that projection into
-an unpublished SQLite view and drops it. The complete callable lookup index is
+disposable file projection. Bind writes that projection into
+an unpublished SQLite view and drops it. Structural init stores the contract
+snapshot instead. The complete callable lookup index is
 the cross-file barrier; call decisions then publish one file at a time. The
 repository graph is never accumulated in this path. Its view ID commits to the
 parser-unit selection, complete publication metadata and derivation fingerprint

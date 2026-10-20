@@ -640,6 +640,18 @@ fn bind_graph(
     Ok(stages)
 }
 
+/// Store caller/callee sets for one clean revision. This does not publish an inventory view.
+pub fn capture_revision_contracts(
+    root: &Path,
+    subject: &str,
+    revision: &str,
+) -> Result<entmoot_store::ContractSnapshotReceipt, WorkspaceError> {
+    let root = fs::canonicalize(root).map_err(location::failure)?;
+    let database = storage_directory(&root)?.join("contracts.sqlite3");
+    entmoot_store::capture_contract_snapshot(&root, &database, subject, revision)
+        .map_err(location::failure)
+}
+
 /// Publish a source snapshot for explicit init or first-use frontend preparation.
 /// Query-service reads do not call this; frontends may bootstrap missing inventory.
 pub fn initialize_workspace(
@@ -786,7 +798,15 @@ pub fn bind_workspace(
     let previous = discover_publication(root)?;
     let source = previous.current.source_root.clone();
     let graph = crate::load_graph_json(&previous.current.graph).map_err(failure)?;
-    verify_sources(&graph, &source)?;
+    if verify_sources(&graph, &source).is_err() {
+        drop(_guard);
+        return initialize_workspace(
+            &source,
+            None,
+            &entmoot_contracts::StructuralHashPolicy::default(),
+            options,
+        );
+    }
     publish(source, graph, Some(previous), options, None, None)
 }
 
@@ -908,9 +928,7 @@ fn verify_source_manifest(
     if !materialization_eq(&observed.snapshot, snapshot)
         || observed.snapshot_files.as_slice() != files
     {
-        return Err(failure(
-            "source snapshot changed; run entmoot init (or index) before bind",
-        ));
+        return Err(failure("source snapshot changed during the operation"));
     }
     Ok(())
 }
@@ -1622,22 +1640,14 @@ mod tests {
         assert!(strict_err.contains("invalid_environment"), "{strict_err}");
         assert_eq!(fs::read(&pointer).unwrap(), original);
         fs::write(dir.path().join("new.py"), "def added():\n    pass\n").unwrap();
-        let drift_err = match bind_workspace(dir.path(), &BindOptions::default()) {
-            Ok(summary) => {
-                restore();
-                panic!("expected snapshot changed, got {summary:?}");
-            }
-            Err(error) => error.to_string(),
-        };
-        assert!(drift_err.contains("snapshot changed"), "{drift_err}");
-        assert_eq!(fs::read(&pointer).unwrap(), original);
-        let second = match initialize_workspace(dir.path(), Some("fixture"), &policy(), &opts) {
+        let second = match bind_workspace(dir.path(), &opts) {
             Ok(value) => value,
             Err(error) => {
                 restore();
                 panic!("{error}");
             }
         };
+        assert_ne!(fs::read(&pointer).unwrap(), original);
         assert_ne!(second.snapshot, first.snapshot);
         let left = crate::KnowledgeViewLocator::read(&first.publication.store)
             .unwrap()

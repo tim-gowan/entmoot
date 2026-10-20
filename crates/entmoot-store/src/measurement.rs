@@ -9,6 +9,32 @@ pub struct PhaseMeasurement {
     pub wall_seconds: f64,
     pub rss_before_bytes: Option<u64>,
     pub rss_after_bytes: Option<u64>,
+    /// Optional item count for attribution (files, nodes, edges, rows).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub items: Option<u64>,
+}
+
+impl PhaseMeasurement {
+    /// Child timer without RSS endpoints; used to split a parent phase.
+    pub fn elapsed(phase: impl Into<String>, wall_seconds: f64) -> Self {
+        Self {
+            phase: phase.into(),
+            wall_seconds,
+            rss_before_bytes: None,
+            rss_after_bytes: None,
+            items: None,
+        }
+    }
+
+    pub fn elapsed_with_items(phase: impl Into<String>, wall_seconds: f64, items: u64) -> Self {
+        Self {
+            phase: phase.into(),
+            wall_seconds,
+            rss_before_bytes: None,
+            rss_after_bytes: None,
+            items: Some(items),
+        }
+    }
 }
 
 pub struct PhaseTimer {
@@ -35,6 +61,7 @@ impl PhaseTimer {
             wall_seconds: self.start.elapsed().as_secs_f64(),
             rss_before_bytes: self.rss,
             rss_after_bytes: resident_bytes(),
+            items: None,
         };
         tracing::info!(
             phase = self.phase,

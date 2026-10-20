@@ -23,9 +23,9 @@ tracing stage progress and an always-on operator summary (not gated by
 solver noise with e.g. `RUST_LOG=warn,entmoot_engine=info,ra_ap_=debug`. Incomplete
 `entmoot bind` requires native by default; use `--structural-only` to waive.
 Boot prints adapter-profile awareness from the home-scoped store; pass
-`--require-adapter-config` to fail closed on hard gaps. Start `entmoot-mcp -C <source>`; first use prepares structural inventory.
+`--require-adapter-config` to fail closed on hard gaps. Start `entmoot-mcp -C <source>` without a publication. Contract tools read the snapshot from `init`. Publication tools need `bind`.
 Storage defaults to `~/.entmoot` (`--data-dir` / `ENTMOOT_DATA_DIR` override).
-Existing publications are reused; `entmoot init` explicitly refreshes.
+`entmoot init` captures the contract snapshot. `entmoot bind` publishes native evidence.
 Startup discovers the home-scoped `current.json`; bare MCP `impact` compares that
 baseline with a freshly indexed, twice-verified working tree. The same
 working-tree path applies when an advanced `--publication` selection has

@@ -253,6 +253,14 @@ fn build_with_file_facts(
                 header.snapshot = metadata.snapshot.clone();
                 header.policy_ids = metadata.policy_ids.clone();
                 let extract = crate::measurement::PhaseTimer::start("syntax_projection");
+                let mut reuse_verify = std::time::Duration::ZERO;
+                let mut reuse_sql = std::time::Duration::ZERO;
+                let mut reuse_index = std::time::Duration::ZERO;
+                let mut parse_append = std::time::Duration::ZERO;
+                let mut nodes_hydrated = 0u64;
+                let mut edges_hydrated = 0u64;
+                let mut files_reused = 0u64;
+                let mut files_parsed = 0u64;
                 for path in &paths {
                     let digest = cache.source_digest(path).ok_or_else(|| {
                         KnowledgeRepositoryError::InvalidRecord {
@@ -278,11 +286,19 @@ fn build_with_file_facts(
                             reason: "file lacks captured source".into(),
                         }
                     })?;
-                    if let Some(part) = writer.reuse_syntax(unit, &part)? {
-                        index.extend_nodes(&part.nodes);
+                    if let Some(reused) = writer.reuse_syntax(unit, &part)? {
+                        reuse_verify += reused.verify;
+                        reuse_sql += reused.sql_copy;
+                        nodes_hydrated += reused.nodes as u64;
+                        edges_hydrated += reused.edges as u64;
+                        files_reused += 1;
+                        let index_started = std::time::Instant::now();
+                        index.extend_nodes(&reused.callables);
+                        reuse_index += index_started.elapsed();
                         cache.reused_extraction += 1;
                         continue;
                     }
+                    let parse_started = std::time::Instant::now();
                     let record = cache.record(path)?.ok_or_else(|| {
                         KnowledgeRepositoryError::InvalidRecord {
                             collection: "file_facts",
@@ -298,9 +314,51 @@ fn build_with_file_facts(
                     syntax.apply(&mut part);
                     index.extend_nodes(&part.nodes);
                     writer.append_syntax(unit, &part)?;
+                    parse_append += parse_started.elapsed();
+                    files_parsed += 1;
                 }
                 cache.phases.push(extract.finish());
+                cache
+                    .phases
+                    .push(crate::measurement::PhaseMeasurement::elapsed_with_items(
+                        "syntax_reuse_verify",
+                        reuse_verify.as_secs_f64(),
+                        nodes_hydrated,
+                    ));
+                cache
+                    .phases
+                    .push(crate::measurement::PhaseMeasurement::elapsed_with_items(
+                        "syntax_reuse_sql_copy",
+                        reuse_sql.as_secs_f64(),
+                        files_reused,
+                    ));
+                cache
+                    .phases
+                    .push(crate::measurement::PhaseMeasurement::elapsed_with_items(
+                        "syntax_reuse_index_extend",
+                        reuse_index.as_secs_f64(),
+                        files_reused,
+                    ));
+                cache
+                    .phases
+                    .push(crate::measurement::PhaseMeasurement::elapsed_with_items(
+                        "syntax_parse_append",
+                        parse_append.as_secs_f64(),
+                        files_parsed,
+                    ));
+                cache
+                    .phases
+                    .push(crate::measurement::PhaseMeasurement::elapsed_with_items(
+                        "syntax_reuse_edges_hydrated",
+                        0.0,
+                        edges_hydrated,
+                    ));
                 let resolve = crate::measurement::PhaseTimer::start("structural_resolution");
+                let mut match_scan = std::time::Duration::ZERO;
+                let mut call_reuse = std::time::Duration::ZERO;
+                let mut call_rebuild = std::time::Duration::ZERO;
+                let mut calls_reused = 0u64;
+                let mut calls_rebuilt = 0u64;
                 for path in &paths {
                     let digest = cache.source_digest(path).ok_or_else(|| {
                         KnowledgeRepositoryError::InvalidRecord {
@@ -314,11 +372,16 @@ fn build_with_file_facts(
                             reason: "file lacks a local sealed parser unit".into(),
                         }
                     })?;
-                    if let Some(calls) = prior
+                    let match_started = std::time::Instant::now();
+                    let matched = prior
                         .qualified_calls(path, digest)?
-                        .filter(|calls| calls.matches(&index))
-                    {
+                        .filter(|calls| calls.matches(&index));
+                    match_scan += match_started.elapsed();
+                    if let Some(calls) = matched {
+                        let reuse_started = std::time::Instant::now();
                         if writer.reuse_calls(unit)? {
+                            call_reuse += reuse_started.elapsed();
+                            calls_reused += 1;
                             cache.reused_stitching += 1;
                             cache.insert_calls(path, &calls)?;
                             continue;
@@ -327,10 +390,13 @@ fn build_with_file_facts(
                         let mut part = header.clone();
                         calls.apply(&mut part);
                         writer.append_calls(unit, &part)?;
+                        call_rebuild += reuse_started.elapsed();
+                        calls_rebuilt += 1;
                         cache.reused_stitching += 1;
                         cache.insert_calls(path, &calls)?;
                         continue;
                     }
+                    let rebuild_started = std::time::Instant::now();
                     let record = cache.record(path)?.ok_or_else(|| {
                         KnowledgeRepositoryError::InvalidRecord {
                             collection: "file_facts",
@@ -342,8 +408,31 @@ fn build_with_file_facts(
                     calls.apply(&mut part);
                     writer.append_calls(unit, &part)?;
                     cache.insert_calls(path, &calls)?;
+                    call_rebuild += rebuild_started.elapsed();
+                    calls_rebuilt += 1;
                 }
                 cache.phases.push(resolve.finish());
+                cache
+                    .phases
+                    .push(crate::measurement::PhaseMeasurement::elapsed_with_items(
+                        "call_summary_match_scan",
+                        match_scan.as_secs_f64(),
+                        paths.len() as u64,
+                    ));
+                cache
+                    .phases
+                    .push(crate::measurement::PhaseMeasurement::elapsed_with_items(
+                        "call_reuse_sql",
+                        call_reuse.as_secs_f64(),
+                        calls_reused,
+                    ));
+                cache
+                    .phases
+                    .push(crate::measurement::PhaseMeasurement::elapsed_with_items(
+                        "call_rebuild",
+                        call_rebuild.as_secs_f64(),
+                        calls_rebuilt,
+                    ));
                 Ok(())
             })?;
         cache.phases.push(retain.finish());

@@ -70,15 +70,15 @@ entmoot find entmoot_smoke_fn
 entmoot inspect <id-returned-by-find>
 entmoot callers <id-returned-by-find>
 entmoot callees <id-returned-by-find>
-entmoot read-source src/main.rs --start-line 1 --end-line 30
+entmoot boundaries
 entmoot impact
 entmoot init
 ```
 
 `impact` compares the retained baseline with working-tree changes. `init`
-explicitly refreshes that baseline and adapter discovery. A read does not silently
+captures caller and callee sets for a clean revision. A read does not silently
 replace history, refresh stale source, launch native tools or migrate old stores.
-Verified source reads report source drift. Terminals receive readable output;
+Terminals receive readable output;
 `--json` and redirected output receive the typed JSON contract. Use `--detail
 explain` for evidence and `--detail export` for the full bounded result. Search
 limits and compact presentation limits are separate; preserve returned cursors.
@@ -87,20 +87,12 @@ limits and compact presentation limits are separate; preserve returned cursors.
 sequenceDiagram
     actor User as Developer or agent
     participant CLI as CLI or MCP
-    participant Engine as Shared engine
-    participant Store as Local knowledge store
-    User->>CLI: Find a symbol
-    CLI->>Engine: Bounded query
-    opt No structural publication exists
-        Engine->>Engine: Inventory source without a language compiler
-        Engine->>Store: Atomically publish inventory
-    end
-    Engine->>Store: Read a retained revision
-    Store-->>Engine: Facts and attributed claims
-    Engine-->>User: Matches, evidence limits and next page
-    User->>CLI: Inspect an ID or follow a continuation
-    CLI->>Engine: Reuse publication
-    Engine-->>User: Selected details and verified source
+    participant Store as Contract snapshot
+    User->>CLI: init on a clean revision
+    CLI->>Store: Store caller and callee sets
+    User->>CLI: find, callers, callees, or path
+    CLI->>Store: Read the latest snapshot
+    Store-->>User: Sets, routes, and the set diff
 ```
 
 ## Choose an operation
@@ -111,15 +103,15 @@ syntax. These entry points cover the operator workflows:
 
 | Question or action | Commands / starting syntax |
 |---|---|
-| Find code and verify its source | `find entmoot_smoke_fn`, `inspect <id>`, `read-source src/main.rs --start-line 1 --end-line 30` |
-| Navigate represented calls and open work | `callers <id>`, `callees <id>`, `boundaries --reason indirect_call`; `neighborhood`, `trace-seeded-paths`, `call-components` for bounded graph views |
-| Understand inventory and evidence coverage | `status`, `inventory`, `audit-calls`; `artifact` and `query` for retained evidence |
-| Refresh or enrich knowledge explicitly | `init`, `bind`, `attach`; `deps` for declared dependency subjects |
+| Find a callable and its sets | `find entmoot_smoke_fn`, `inspect <occurrence>`, `callers <occurrence>`, `callees <occurrence>` |
+| Walk stored edges | `path <start> <target>`, `neighborhood <occurrence>`, `boundaries`, `call-components`, `relay-impact` |
+| See the latest snapshot | `status`, `inventory` |
+| Capture sets or publish native evidence | `init` stores the contract snapshot; `bind` publishes native evidence |
 | Investigate a change or upgrade | `impact`, `assess overlay`, `relay-impact`, `assess`, `revalidate`; [impact](docs/runbooks/impact.md) and [compatibility](docs/runbooks/compatibility.md) explain their distinct guarantees |
 | Inspect identities and review clone candidates | `hash --help`, `policy`, `assess clones`; use a `CloneRequest` for explicit budgets and filters in the [worked examples](docs/runbooks/revision-evaluation.md) |
 | Plan or execute attributed work | `plan-analysis`, `work`, `validate-tests`; planning never launches a compiler or scanner |
 | Manage retained state and local collaboration | `storage-plan`, reviewed `storage-apply`, `collaborate`; `fingerprint` identifies compatible readers |
-| Reuse a portable query or evaluate fixtures | `request --example unresolved`, `request --request query.json`, `request --batch --request queries.json`; `validate-ground-truth` checks labeled fixtures |
+| Reuse a contract request | `request --example find`, `request --request query.json` |
 
 Start with compact output. Request `--detail explain` when deciding whether a
 result applies, or `--detail export` for a bounded machine export. Follow
@@ -139,9 +131,10 @@ Build/install the CLI with `--features producer` for in-process Rust Analyzer/Ox
 and its matched `entmoot-producer` helper. Other adapters require explicit
 [setup](docs/runbooks/resolver-adapters.md); setup and analyzed project builds can
 execute project code and belong in a trusted, isolated environment.
-`entmoot bind` requires native support for inventoried languages. Missing tools
-fail visibly; `--structural-only` is an explicit waiver. `init`/`bind` never install
-SDKs or download toolchains.
+`entmoot init` stores caller and callee sets for a clean HEAD revision.
+`entmoot bind` publishes native evidence and requires native support for
+inventoried languages. Missing tools fail visibly; `--structural-only` is an
+explicit waiver on bind. Neither command installs SDKs or downloads toolchains.
 
 ```text
 entmoot boundaries --callee "object.toString()" --detail export
@@ -195,9 +188,9 @@ sequenceDiagram
     Engine->>Store: Read retained baseline
     Engine-->>User: Changes and bounded affected callers
     Note over User,Store: Impact reads do not refresh the baseline or prove upgrade safety
-    User->>Engine: init to refresh inventory explicitly
-    Engine->>Store: Publish a new revision view
-    Note over Store: Retained historical views remain independently addressable
+    User->>Engine: init on a clean revision
+    Engine->>Store: Store caller and callee sets
+    Note over Store: A later snapshot diffs the previous one; the views are not merged
 ```
 
 ## What the hashes mean

@@ -10,6 +10,7 @@ pub mod artifact_store;
 pub mod checkpoints;
 pub mod clock;
 pub mod config_inventory;
+pub mod contract_snapshot;
 pub mod inventory;
 pub mod inventory_stitch;
 pub mod location;
@@ -26,6 +27,17 @@ pub use config_inventory::{
     apply_configuration_inventory, detect_configuration_syntax, index_configuration_source,
     index_repository_configurations, ConfigDiagnostic, ConfigInventory, ConfigInventoryError,
     ConfigSource, ConfigSyntax,
+};
+pub use contract_snapshot::{
+    bind_unbound_edges, capture_contract_snapshot, contract_boundaries, contract_callee_set,
+    contract_callees, contract_caller_set, contract_callers, contract_components,
+    contract_inventory, contract_neighborhood, contract_path, contract_relay, contract_status,
+    diff_contract_snapshots, find_contracts, inspect_contract, resolve_occurrence,
+    ContractBoundaries, ContractCallSet, ContractComponents, ContractDiff, ContractInspection,
+    ContractInventory, ContractMatch, ContractNeighborhood, ContractPath, ContractRelay,
+    ContractSnapshotError, ContractSnapshotReceipt, ContractStatus, UnboundEdge,
+    FACT_GRAPH_PUBLICATION, FACT_NATIVE_DISPATCH, FACT_NON_CALLABLE, FACT_OTHER_EVIDENCE,
+    FACT_PROVIDER_ROLES, FACT_SOURCE_TEXT,
 };
 pub use entmoot_contracts::{
     ArtifactDiagnostic, ContentDigest, DiagnosticSeverity, ProducerSource,

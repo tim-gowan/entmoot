@@ -42,7 +42,7 @@ metadata and is not whole-store or query-latency qualification. Phase measuremen
 source observation, file-fact production, graph projection, structural resolution
 and publication, with RSS endpoints explicitly distinguished from peaks.
 
-Ordinary structural init now writes file projections directly to a sealed view;
+Bind writes file projections directly to a sealed view;
 only its callable lookup index spans files. Verified unchanged refreshes skip
 projection/resolution/publication. Callers, callees and unresolved reads use
 retained indexes. Node versions and syntax bodies share storage across revisions
@@ -597,20 +597,41 @@ allocated storage still need separate instrumentation if required by the wider s
   series with compatibility fingerprints, and remove obsolete duplication through
   ordinary changes. Do not add retention ledgers or blanket archive requirements.
 
-The next performance investigation is the remaining warm-refresh cost in cache
-loading, complete index assembly, source reobservation and publication. The latest
-three alternating baseline/current development-CLI probe pairs used four Git worktrees
-and 512 Python/TypeScript files. Median edit → refresh → Git capture → two peer
-comparisons was 18.18s, or 20.19s with one process exit/resume (+11.1%). Initial
-publication/capture took about 43s separately; main SQLite files were about 184MB.
-Refresh (7.57s), conflict execution (6.41s) and Git capture (4.07s) dominate.
-Reports and saved prefixes matched, and source refs/indexes were unchanged.
-These fixtures exclude native runs and do not qualify build overhead, peak memory,
-release performance or larger repositories. Reproduction and raw evidence are in
-`.tmp/refresh-profile/`; earlier costs and recovery exceptions remain in CHANGELOG.
-Use representative current-workflow scale probes to extend those measurements;
-do not launch a universal performance campaign or infer an inner bottleneck from
-whole-phase timings.
+Alpha structural init now stores callable caller/callee sets for a clean revision
+instead of sealing an inventory view. The subscriber event is the set diff.
+Occurrence key is `lang|path|scope|symbol|kind`; structural hash records
+definition change and is not that event. Full-view publication remains on bind
+until that owner is removed. The warm-refresh cost below is why that view is
+not the init product.
+
+Warm one-file Go refresh (~316s structural-only on the membership-cut corpus) is
+dominated by publication and per-file sealed reuse SQL, not capture/Git
+fence (~0.6s). Stage A child timers under
+`G:/GitHub/entmoot/.tmp/performance-latency-20261019/` (parent coverage ≥97% for
+`syntax_projection`):
+
+| Phase / child | Wall (s) | Notes |
+|---|---:|---|
+| `publication_commitments` | ~61 | streams ~1.93M member nodes |
+| `syntax_reuse_sql_copy` | ~57 | per-file membership INSERT |
+| `publication_node_order` | ~50 | window reorder of all members |
+| `publication_file_selection` | ~41 | full `file_fact_membership` rewrite |
+| `syntax_reuse_verify` | ~31 | hydrate+hash sealed nodes/edges |
+| `call_reuse_sql` | ~30 | per-file sealed call copy |
+| `parse_and_retain_file_facts` | ~27 | full-manifest fact walk |
+| `syntax_reuse_index_extend` | ~0.3 | not the bottleneck |
+
+`source_observation` / fence stay cheap. Dropping non-callable nodes from the
+disposable call index (still hydrating every sealed node for digest checks)
+cut the same one-file refresh only ~10s (316s → 306s); verify fell ~3s and
+SQL copy stayed ~56s. A one-shot batched membership SQL over all reused units
+**regressed** (multiplied wall); keep per-file prepared copies until a measured
+incremental-view design exists. Next trims, in measured order:
+incremental `file_fact_membership` / cheaper membership digest or deferred node
+order for warm views; sealed edge-digest columns to shrink verify without
+dropping denormalized-column damage checks; batched `call_reuse_sql`. Do not
+infer O(changed-files) from parent phase names alone. Older 512-file refresh-
+profile medians (~18s with Git capture) remain a different ritual/scale.
 
 ## CLI/MCP workflow usability
 

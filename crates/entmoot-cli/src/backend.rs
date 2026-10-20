@@ -1,7 +1,6 @@
 //! Explicit MCP client for the shared read service. Never starts a backend.
 use super::{AssessCommand, Commands};
 use anyhow::{bail, Context, Result};
-use entmoot_contracts::query::*;
 use rmcp::{
     model::CallToolRequestParams,
     transport::{
@@ -30,36 +29,23 @@ fn configured(paths: &[&Option<PathBuf>]) -> Result<()> {
 }
 
 pub(super) fn run(command: &Commands, url: &str, token_file: Option<&Path>) -> Result<bool> {
-    let mut batch = false;
     let mut complete = false;
     let mut out = None;
     let calls: Vec<(&str,Value)> = match command {
-        Commands::Request { graph,publication,store,source_root,request: path,example,output,batch: batched } => {
-            if example.is_some() { return Ok(false); }
-            configured(&[graph,publication,store,source_root])?;
-            let bytes = std::fs::read(path.as_ref().context("--request is required")?)?;
-            let mut requests: Vec<QueryRequest> = if *batched { serde_json::from_slice(&bytes)? } else { vec![serde_json::from_slice(&bytes)?] };
-            if requests.is_empty() || requests.len()>1000 { bail!("request batch must contain 1..=1000 requests"); }
-            for request in &mut requests { let mut options = request.output().clone(); output.apply(&mut options)?; request.set_output(options); }
-            batch = *batched;
-            requests.into_iter().map(|request| ("query",json!({"request":request}))).collect()
-        }
-        Commands::Status { graph,publication,store,source_root,compare_graph,request:path } => {
-            configured(&[graph,publication,store,source_root,compare_graph])?;
-            vec![("status",value(request::<StatusRequest>(path)?)?)]
-        }
-        Commands::Inventory { graph,publication,store,source_root,request:path,kinds,path:prefix,offset,limit } => {
-            configured(&[graph,publication,store,source_root])?;
-            let mut request = request::<InventoryRequest>(path)?;
-            if path.is_none() { if !kinds.is_empty() { request.kinds=kinds.clone(); } request.path=prefix.clone();request.offset= *offset;request.limit= *limit; }
-            vec![("inventory",value(request)?)]
-        }
-        Commands::CallComponents { graph,publication,store,source_root,request:path,offset,limit,sample_limit,max_nodes,max_edges } => {
-            configured(&[graph,publication,store,source_root])?;
-            let mut request = request::<CallComponentsRequest>(path)?;
-            if path.is_none() { request.offset= *offset;request.limit= *limit;request.sample_limit= *sample_limit;request.max_nodes= *max_nodes;request.max_edges= *max_edges; }
-            vec![("call_components",value(request)?)]
-        }
+        Commands::Request { .. }
+        | Commands::Status
+        | Commands::Inventory { .. }
+        | Commands::CallComponents { .. }
+        | Commands::Find(_)
+        | Commands::Inspect(_)
+        | Commands::ReadSource(_)
+        | Commands::Callers(_)
+        | Commands::Callees(_)
+        | Commands::Boundaries(_)
+        | Commands::Neighborhood(_)
+        | Commands::Path(_)
+        | Commands::RelayImpact { .. }
+        | Commands::TraceSeededPaths { .. } => return Ok(false),
         Commands::Assess { command: AssessCommand::Clones { graph,publication,store,source_root,request:path } } => {
             configured(&[graph,publication,store,source_root])?;
             vec![("assess_clones",value(request::<entmoot_contracts::CloneRequest>(path)?)?)]
@@ -80,22 +66,6 @@ pub(super) fn run(command: &Commands, url: &str, token_file: Option<&Path>) -> R
             out=args.out.as_deref();
             if args.tests { vec![("assess_test_impact",value(request::<entmoot_contracts::TestImpactRequest>(&args.test_targets)?)?)] } else { vec![("impact",json!({}))] }
         }
-        Commands::RelayImpact { graph,compare_graph,store,request:path,output } => {
-            configured(&[graph,compare_graph,store])?;
-            let mut request=request::<ImpactRelayRequest>(path)?;output.apply(&mut request.output)?;
-            vec![("relay_impact",json!({"request":request}))]
-        }
-        Commands::TraceSeededPaths { graph,store,request:path,output } => {
-            configured(&[graph,store])?;
-            let mut request=request::<SeededPathRequest>(path)?;output.apply(&mut request.output)?;
-            vec![("trace_seeded_paths",value(request)?)]
-        }
-        Commands::Neighborhood(args) => vec![("query",json!({"request":args.backend_request()?}))],
-        Commands::Path(args) => vec![("query",json!({"request":args.backend_request()?}))],
-        Commands::Find(_) | Commands::Inspect(_) | Commands::ReadSource(_) | Commands::Callers(_) | Commands::Callees(_) | Commands::Boundaries(_) => {
-            let request = super::navigation::request(command)?.context("missing navigation request")?;
-            vec![("query",json!({"request":request}))]
-        },
         Commands::Query { .. } => bail!("expert store reads remain standalone; use --standalone or the portable request operation with the backend"),
         _ => return Ok(false),
     };
@@ -156,14 +126,10 @@ pub(super) fn run(command: &Commands, url: &str, token_file: Option<&Path>) -> R
         service.cancel().await?;
         Ok::<_, anyhow::Error>(results)
     })?;
-    let result = if batch {
-        Value::Array(results)
-    } else {
-        results
-            .into_iter()
-            .next()
-            .context("backend returned no result")?
-    };
+    let result = results
+        .into_iter()
+        .next()
+        .context("backend returned no result")?;
     if let Some(nudge) = result["nudge"].as_str() {
         eprintln!("{nudge}");
     }

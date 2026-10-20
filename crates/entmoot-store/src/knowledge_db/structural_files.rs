@@ -3,11 +3,7 @@
 //! and copied by membership when CallSummary inputs still match.
 use super::inventory::{hydrate_node, NODE_COLUMNS};
 use super::*;
-use crate::{StructuralEdge, TopologyGraph};
-
-pub(super) struct VerifiedProjection {
-    pub graph: TopologyGraph,
-}
+use crate::TopologyGraph;
 
 fn commitment(
     connection: &Connection,
@@ -86,14 +82,20 @@ pub(super) fn seal(
     Ok(())
 }
 
-/// Verify membership and each referenced content commitment before reuse.
-/// Missing projections are ordinary cache misses; damaged sealed projections
-/// fail visibly instead of silently dropping nodes, edges or unknown outcomes.
-pub(super) fn load(
+/// Sealed projection check without building a TopologyGraph. Uses stored node
+/// digests and edge payload hashes; damaged seals fail visibly.
+pub(super) struct SealedReuse {
+    pub nodes: usize,
+    pub edges: usize,
+    pub callables: Vec<crate::TopologyNode>,
+}
+
+/// Verify membership commitments, then hydrate only callable inventory for the
+/// disposable call index. Missing projections are ordinary cache misses.
+pub(super) fn verify_for_reuse(
     connection: &Connection,
     unit: i64,
-    header: &TopologyGraph,
-) -> Result<Option<VerifiedProjection>, KnowledgeRepositoryError> {
+) -> Result<Option<SealedReuse>, KnowledgeRepositoryError> {
     let expected: Option<Vec<u8>> = connection
         .prepare_cached("SELECT commitment FROM structural_file_projections WHERE unit_id=?1")?
         .query_row([unit], |row| row.get(0))
@@ -101,14 +103,20 @@ pub(super) fn load(
     let Some(expected) = expected else {
         return Ok(None);
     };
-    let mut projection = VerifiedProjection {
-        graph: header.clone(),
-    };
-    let mut nodes = Vec::new();
-    let mut edges = Vec::new();
+    // Hydrate each sealed node once: re-hash catches denormalized column drift,
+    // and callables are retained for the disposable call index. Non-callables are
+    // dropped after the digest check so reuse does not assemble a TopologyGraph.
     let columns = NODE_COLUMNS.replace("n.ordinal", "m.ordinal");
-    let mut statement = connection.prepare_cached(&format!("SELECT {columns} FROM structural_file_nodes m JOIN inventory_node_versions v USING(node_key) LEFT JOIN shared_definitions d USING(definition_id) LEFT JOIN shared_paths p USING(path_id) WHERE m.unit_id=?1 ORDER BY m.ordinal"))?;
+    let mut statement = connection.prepare_cached(&format!(
+        "SELECT {columns} FROM structural_file_nodes m \
+         JOIN inventory_node_versions v USING(node_key) \
+         LEFT JOIN shared_definitions d USING(definition_id) \
+         LEFT JOIN shared_paths p USING(path_id) \
+         WHERE m.unit_id=?1 ORDER BY m.ordinal"
+    ))?;
     let mut rows = statement.query([unit])?;
+    let mut nodes = Vec::new();
+    let mut callables = Vec::new();
     while let Some(row) = rows.next()? {
         let node = hydrate_node(connection, row)?;
         let digest = *blake3::hash(&serde_json::to_vec(&node)?).as_bytes();
@@ -119,23 +127,21 @@ pub(super) fn load(
             ));
         }
         nodes.push(digest);
-        projection.graph.nodes.push(node);
+        if node.kind == crate::NodeKind::Callable {
+            callables.push(node);
+        }
     }
-    let mut statement = connection.prepare_cached("SELECT m.record_id,m.payload FROM structural_file_edges m WHERE m.unit_id=?1 ORDER BY m.ordinal")?;
+    let mut edges = Vec::new();
+    let mut statement = connection.prepare_cached(
+        "SELECT m.record_id,m.payload FROM structural_file_edges m \
+         WHERE m.unit_id=?1 ORDER BY m.ordinal",
+    )?;
     let mut rows = statement.query([unit])?;
     while let Some(row) = rows.next()? {
         let id: String = row.get(0)?;
         let payload = row.get(1)?;
         let bytes = hydrate_payload(connection, payload)?;
-        let edge: StructuralEdge = serde_json::from_slice(&bytes)?;
-        if StoredRow::new("structural_edges", &edge)?.record_id != id {
-            return Err(invalid_record(
-                "file_projection",
-                "edge identity commitment mismatch",
-            ));
-        }
         edges.push((id, *blake3::hash(&bytes).as_bytes()));
-        projection.graph.edges.push(edge);
     }
     if commitment(connection, unit, &nodes, &edges)?.as_slice() != expected {
         return Err(invalid_record(
@@ -143,8 +149,11 @@ pub(super) fn load(
             "file projection membership commitment mismatch",
         ));
     }
-    projection.graph.rebuild_indexes();
-    Ok(Some(projection))
+    Ok(Some(SealedReuse {
+        nodes: nodes.len(),
+        edges: edges.len(),
+        callables,
+    }))
 }
 
 const CALL_COLLECTIONS: &[&str] = &[

@@ -9,6 +9,7 @@ static SOURCE_DIRECTORY: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new
 
 mod backend;
 mod collaborate;
+mod contracts;
 mod navigation;
 mod navigation_walk;
 mod neighborhood;
@@ -117,29 +118,14 @@ enum Commands {
         #[arg(long, default_value_t=120, value_parser=clap::value_parser!(u64).range(1..=3600))]
         timeout_seconds: u64,
     },
-    /// Walk dependents, source-labeled origins, or sink-labeled destinations.
+    /// Walk dependents or dependencies of one callable in the contract snapshot.
     Neighborhood(neighborhood::NeighborhoodArgs),
-    /// Refresh source inventory and discover optional native adapters.
+    /// Capture caller and callee sets for the clean HEAD revision. A dirty tree is refused.
     Init {
-        #[command(flatten)]
-        rust: rust_profile::RustProfileArgs,
-        /// Git top-level from cwd when omitted; explicit roots preserve scoped indexing.
+        /// Git top-level from cwd when omitted.
         #[arg(long)]
         root: Option<PathBuf>,
-        #[arg(long)]
-        repo: Option<String>,
-        #[arg(long, default_value = "v1")]
-        config: String,
-        /// Inventory only (default). Refreshes adapter profile without requiring adapters.
-        #[arg(long, conflicts_with = "require_native")]
-        structural_only: bool,
-        /// Require native adapters during init (opt-in; default init stays structural-first).
-        #[arg(long)]
-        require_native: bool,
-        /// Per native producer wall-clock allowance (seconds).
-        #[arg(long, default_value_t = entmoot_workspace::ProducerBudget::DEFAULT_WALL_SECONDS, value_parser = clap::value_parser!(u64).range(1..=3600))]
-        timeout_seconds: u64,
-        /// Declared publication subject (`pkg:…` or repository[`#path`]).
+        /// Subject label stored with the snapshot. Defaults to the directory name.
         #[arg(long)]
         subject: Option<String>,
     },
@@ -180,49 +166,25 @@ enum Commands {
         #[arg(long)]
         subject: Option<String>,
     },
-    /// Execute a portable QueryRequest JSON document using the shared read-only service.
+    /// Run one contract operation. A graph publication request is refused.
     Request {
         #[command(flatten)]
         output: output::InformationArgs,
-        /// Validated graph publication to query.
-        #[arg(long)]
-        graph: Option<PathBuf>,
-        /// Local publication pointer; otherwise discover the workspace's current publication.
-        #[arg(long, conflicts_with = "graph")]
-        publication: Option<PathBuf>,
-        /// Defaults to the graph's adjacent knowledge store.
-        #[arg(long)]
-        store: Option<PathBuf>,
-        /// JSON QueryRequest file (same request as MCP query.request).
+        /// JSON contract operation.
         #[arg(long)]
         request: Option<PathBuf>,
-        /// Print a complete portable request and exit without opening a publication.
-        #[arg(long, conflicts_with = "request", value_parser = ["find-subject", "find-parameter", "path", "neighborhood", "unresolved", "read-source"])]
+        /// Print one contract operation and exit.
+        #[arg(long, conflicts_with = "request", value_parser = ["find", "path", "neighborhood", "boundaries", "status"])]
         example: Option<String>,
-        /// Interpret the request file as 1..=1000 QueryRequests and return results in order.
-        /// Shares one immutable inventory/index load; no producers run.
-        #[arg(long)]
-        batch: bool,
-        /// Source checkout for digest-verified reads.
-        #[arg(long)]
-        source_root: Option<PathBuf>,
     },
-    /// Relay changed callables from an immutable pair to compact head caller pages.
+    /// Join the contract diff to the callers of each changed callable.
     RelayImpact {
-        #[command(flatten)]
-        output: output::InformationArgs,
-        /// Head graph publication to query.
+        /// Base snapshot id. Defaults to the previous snapshot for this subject.
         #[arg(long)]
-        graph: Option<PathBuf>,
-        /// Base graph publication to compare.
+        base: Option<String>,
+        /// Head snapshot id. Defaults to the latest snapshot.
         #[arg(long)]
-        compare_graph: Option<PathBuf>,
-        /// Defaults to the head graph's adjacent knowledge store.
-        #[arg(long)]
-        store: Option<PathBuf>,
-        /// Portable ImpactRelayRequest JSON; same request as MCP relay_impact.
-        #[arg(long)]
-        request: Option<PathBuf>,
+        head: Option<String>,
     },
     /// Discover directed call routes between attached provider-role seeds.
     TraceSeededPaths {
@@ -237,40 +199,11 @@ enum Commands {
         #[arg(long)]
         request: Option<PathBuf>,
     },
-    /// Report publication health and bounded high-signal find selectors.
-    Status {
-        #[arg(long)]
-        graph: Option<PathBuf>,
-        /// Local publication pointer; otherwise discover the workspace's current publication.
-        #[arg(long, conflicts_with = "graph")]
-        publication: Option<PathBuf>,
-        /// Defaults to the graph's adjacent durable knowledge store.
-        #[arg(long)]
-        store: Option<PathBuf>,
-        /// Source checkout for health reporting when configured.
-        #[arg(long)]
-        source_root: Option<PathBuf>,
-        /// Optional compare graph for `changed_subject` suggestions.
-        #[arg(long)]
-        compare_graph: Option<PathBuf>,
-        /// Optional StatusRequest JSON; defaults omit compare identity.
-        #[arg(long)]
-        request: Option<PathBuf>,
-    },
-    /// Page materialized inventory subjects (default: callables).
+    /// Report the latest contract snapshot and its set diff.
+    Status,
+    /// Page callables in the latest contract snapshot.
     Inventory {
-        #[arg(long)]
-        graph: Option<PathBuf>,
-        #[arg(long, conflicts_with = "graph")]
-        publication: Option<PathBuf>,
-        #[arg(long)]
-        store: Option<PathBuf>,
-        #[arg(long)]
-        source_root: Option<PathBuf>,
-        /// Optional InventoryRequest JSON; otherwise use flags below.
-        #[arg(long)]
-        request: Option<PathBuf>,
-        /// Subject kinds (repeatable). Defaults to callable.
+        /// Subject kinds (repeatable). A kind other than callable is a gap.
         #[arg(long = "kind")]
         kinds: Vec<String>,
         /// Repository-relative path prefix filter.
@@ -281,29 +214,12 @@ enum Commands {
         #[arg(long, default_value_t = 50)]
         limit: usize,
     },
-    /// Page weakly connected call-relation components (review islands, not dead code).
+    /// Page weakly connected components of stored caller/callee edges.
     CallComponents {
-        #[arg(long)]
-        graph: Option<PathBuf>,
-        #[arg(long, conflicts_with = "graph")]
-        publication: Option<PathBuf>,
-        #[arg(long)]
-        store: Option<PathBuf>,
-        #[arg(long)]
-        source_root: Option<PathBuf>,
-        /// Optional CallComponentsRequest JSON.
-        #[arg(long)]
-        request: Option<PathBuf>,
         #[arg(long, default_value_t = 0)]
         offset: usize,
         #[arg(long, default_value_t = 32)]
         limit: usize,
-        #[arg(long, default_value_t = 16)]
-        sample_limit: usize,
-        #[arg(long, default_value_t = 100_000)]
-        max_nodes: usize,
-        #[arg(long, default_value_t = 100_000)]
-        max_edges: usize,
     },
     /// Account for every inventoried callable and call site against native evidence.
     AuditCalls {
@@ -761,17 +677,6 @@ fn main() {
     }
 }
 
-fn report_query_error(error: entmoot_contracts::query::QueryServiceError) -> anyhow::Error {
-    println!(
-        "{}",
-        serde_json::json!({
-            "schema_version": "entmoot.query.error.v1", "status": "error",
-            "kind": error.code(), "message": error.to_string(),
-        })
-    );
-    error.into()
-}
-
 fn resolve_default_database(store: Option<PathBuf>) -> Result<PathBuf> {
     if let Some(path) = store {
         return Ok(path);
@@ -807,16 +712,13 @@ fn run() -> Result<()> {
             }
         }
     }
-    if let Some(request) = navigation::request(&cli.command)? {
-        return navigation::run(request);
-    }
     match cli.command {
-        Commands::Find(_)
-        | Commands::Inspect(_)
-        | Commands::ReadSource(_)
-        | Commands::Callers(_)
-        | Commands::Callees(_)
-        | Commands::Boundaries(_) => bail!("navigation request was not handled"),
+        Commands::Find(args) => args.run()?,
+        Commands::Inspect(args) => args.run_inspect()?,
+        Commands::ReadSource(_) => contracts::gap(entmoot_workspace::FACT_SOURCE_TEXT)?,
+        Commands::Callers(args) => args.run_callers()?,
+        Commands::Callees(args) => args.run_callees()?,
+        Commands::Boundaries(args) => args.run()?,
         Commands::StoragePlan { root, policy, out } => {
             use entmoot_workspace::workspace::retention::{plan_retention, read_retention_policy};
             let policy = match policy {
@@ -848,42 +750,22 @@ fn run() -> Result<()> {
             })?;
             crate::output::emit(&receipt)?;
         }
-        Commands::Init {
-            rust,
-            root,
-            repo,
-            config,
-            structural_only,
-            require_native,
-            timeout_seconds,
-            subject,
-        } => {
+        Commands::Init { root, subject } => {
             let root = match root.or_else(|| SOURCE_DIRECTORY.get().cloned()) {
                 Some(root) => fs::canonicalize(root)?,
                 None => entmoot_workspace::workspace::workspace_root(&std::env::current_dir()?)?,
             };
-            // Bare init is structural-first: publish inventory + refresh adapter profile.
-            // Opt in with --require-native to hard-fail missing adapters during init.
-            let structural_only = structural_only || !require_native;
-            let mut options = workspace_options(
-                false,
-                require_native,
-                false,
-                structural_only,
-                timeout_seconds,
-            );
-            options.rust_profile = rust.into_profile()?;
-            if let Some(raw) = subject {
-                options.subject = Some(subject_args::parse_subject(&raw)?);
-            }
-            let summary = entmoot_workspace::workspace::initialize_workspace(
-                &root,
-                repo.as_deref(),
-                &load_normalization_policy(&config)?,
-                &options,
+            let revision = clean_head(&root, None)?;
+            let subject = subject
+                .or_else(|| {
+                    root.file_name()
+                        .map(|name| name.to_string_lossy().into_owned())
+                })
+                .ok_or_else(|| anyhow::anyhow!("snapshot subject is required"))?;
+            let receipt = entmoot_workspace::workspace::capture_revision_contracts(
+                &root, &subject, &revision,
             )?;
-            operator_summary::write_workspace_summary("init", &summary);
-            crate::output::emit(&summary)?;
+            crate::output::emit(&receipt)?;
         }
         Commands::Bind {
             experimental,
@@ -944,262 +826,44 @@ fn run() -> Result<()> {
         Commands::Neighborhood(args) => neighborhood::run(args)?,
         Commands::Path(args) => args.run()?,
         Commands::Request {
-            output,
-            graph,
-            publication,
-            store,
+            output: _,
             request,
             example,
-            source_root,
-            batch,
-        } => {
-            if let Some(example) = example {
-                let value = match example.as_str() {
-                    "find-parameter" => serde_json::json!({"operation":"find","request":{
-                        "kind":"subject","selector":{"kinds":["callable"],
-                        "name":{"mode":"contains","value":"handle"},
-                        "callable":{"parameters":[{"declared_type_syntax":{"mode":"contains","value":"Request"}}]}}
-                    }}),
-                    "path" => serde_json::json!({"operation":"traverse","request":{
-                        "kind":"path","start":"<origin-id>","target":"<destination-id>","predicates":["calls"],
-                        "evidence_filter":"resolved_only","prune":{"subjects":[]},"budget":{}
-                    }}),
-                    "neighborhood" => serde_json::json!({"operation":"traverse","request":{
-                        "kind":"neighborhood","start":"<subject-id>","direction":"callers","predicates":["calls"],
-                        "evidence_filter":"resolved_only","endpoint_selector":{"name":{"mode":"contains","value":"handle"}},"budget":{}
-                    }}),
-                    "unresolved" => {
-                        serde_json::json!({"operation":"inspect","request":{"kind":"unresolved","id":"<subject-id>","limit":50}})
-                    }
-                    "read-source" => {
-                        serde_json::json!({"operation":"read","request":{"kind":"source","path":"src/main.rs","start_line":1,"end_line":40}})
-                    }
-                    _ => {
-                        serde_json::json!({"operation":"find","request":{"kind":"subject","query":"main","limit":20}})
-                    }
-                };
-                let _: entmoot_contracts::query::QueryRequest =
-                    serde_json::from_value(value.clone())?;
-                crate::output::emit(&value)?;
-                return Ok(());
-            }
-            let (graph, store, source_root) =
-                resolve_read_paths(graph, publication, store, source_root)?;
-            let bytes = fs::read(
-                request.context("--request is required (or use --example find-subject)")?,
-            )?;
-            let mut requests: Vec<entmoot_contracts::query::QueryRequest> = if batch {
-                serde_json::from_slice(&bytes).context("decode QueryRequest array")?
-            } else {
-                vec![serde_json::from_slice(&bytes).context("decode QueryRequest")?]
-            };
-            for request in &mut requests {
-                let mut options = request.output().clone();
-                output.apply(&mut options)?;
-                request.set_output(options);
-            }
-            if requests.is_empty() || requests.len() > 1000 {
-                bail!("request batch must contain 1..=1000 requests");
-            }
-            let store =
-                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
-            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
-                &graph,
-                &store,
-                source_root.as_deref(),
-                None,
-                source_root.is_some(),
-            )
-            .map_err(|error| anyhow!(error.to_string()))?;
-            let engine = opened.engine;
-            let service: &dyn entmoot_contracts::query::QueryService = &engine;
-            let results = requests
-                .into_iter()
-                .map(|request| service.execute(request))
-                .collect::<Result<Vec<_>, _>>();
-            match results {
-                Ok(results) => {
-                    if batch {
-                        crate::output::emit(&results)?;
-                    } else if let Some(result) = results.first() {
-                        crate::output::emit(result)?;
-                    }
-                }
-                Err(error) => {
-                    return Err(report_query_error(error));
-                }
-            }
+        } => contracts::run_request(request, example)?,
+        Commands::RelayImpact { base, head } => {
+            contracts::emit(&entmoot_workspace::contract_relay(
+                &contracts::database()?,
+                base.as_deref(),
+                head.as_deref(),
+            )?)?;
         }
-        Commands::RelayImpact {
-            output,
-            graph,
-            compare_graph,
-            store,
-            request,
-        } => {
-            let graph = graph.context("--graph is required for standalone reads")?;
-            let compare_graph =
-                compare_graph.context("--compare-graph is required for standalone relay impact")?;
-            let mut request =
-                match request {
-                    Some(path) => serde_json::from_slice::<
-                        entmoot_contracts::query::ImpactRelayRequest,
-                    >(&fs::read(path)?)?,
-                    None => entmoot_contracts::query::ImpactRelayRequest::default(),
-                };
-            output.apply(&mut request.output)?;
-            let store =
-                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
-            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
-                &graph,
-                &store,
-                None,
-                Some(&compare_graph),
-                false,
-            )
-            .map_err(|error| anyhow!(error.to_string()))?;
-            let report =
-                entmoot_contracts::query::QueryService::relay_impact(&opened.engine, request)
-                    .map_err(report_query_error)?;
-            crate::output::emit(&report)?;
+        Commands::TraceSeededPaths { .. } => {
+            contracts::gap(entmoot_workspace::FACT_PROVIDER_ROLES)?;
         }
-        Commands::TraceSeededPaths {
-            output,
-            graph,
-            store,
-            request,
-        } => {
-            let graph = graph.context("--graph is required for standalone reads")?;
-            let store =
-                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
-            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
-                &graph, &store, None, None, false,
-            )
-            .map_err(|error| anyhow!(error.to_string()))?;
-            let mut request =
-                match request {
-                    Some(path) => serde_json::from_slice::<
-                        entmoot_contracts::query::SeededPathRequest,
-                    >(&fs::read(path)?)?,
-                    None => entmoot_contracts::query::SeededPathRequest::default(),
-                };
-            output.apply(&mut request.output)?;
-            let report =
-                entmoot_contracts::query::QueryService::trace_seeds(&opened.engine, request)
-                    .map_err(report_query_error)?;
-            crate::output::emit(&report)?;
-        }
-        Commands::Status {
-            graph,
-            publication,
-            store,
-            source_root,
-            compare_graph,
-            request,
-        } => {
-            let (graph, store, source_root) =
-                resolve_read_paths(graph, publication, store, source_root)?;
-            let store =
-                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
-            let request = match request {
-                Some(path) => serde_json::from_slice::<entmoot_contracts::query::StatusRequest>(
-                    &fs::read(path)?,
-                )?,
-                None => entmoot_contracts::query::StatusRequest::default(),
-            };
-            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
-                &graph,
-                &store,
-                source_root.as_deref(),
-                compare_graph.as_deref(),
-                source_root.is_some(),
-            )
-            .map_err(|error| anyhow!(error.to_string()))?;
-            let report = entmoot_contracts::query::QueryService::status(&opened.engine, request)?;
-            crate::output::emit(&report)?;
-        }
+        Commands::Status => contracts::status()?,
         Commands::Inventory {
-            graph,
-            publication,
-            store,
-            source_root,
-            request,
             kinds,
             path,
             offset,
             limit,
         } => {
-            let (graph, store, source_root) =
-                resolve_read_paths(graph, publication, store, source_root)?;
-            let store =
-                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
-            let request = match request {
-                Some(path) => serde_json::from_slice::<entmoot_contracts::query::InventoryRequest>(
-                    &fs::read(path)?,
-                )?,
-                None => {
-                    let mut request = entmoot_contracts::query::InventoryRequest::default();
-                    if !kinds.is_empty() {
-                        request.kinds = kinds;
-                    }
-                    request.path = path;
-                    request.offset = offset;
-                    request.limit = limit;
-                    request
-                }
-            };
-            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
-                &graph,
-                &store,
-                source_root.as_deref(),
-                None,
-                source_root.is_some(),
-            )
-            .map_err(|error| anyhow!(error.to_string()))?;
-            let report =
-                entmoot_contracts::query::QueryService::inventory(&opened.engine, request)?;
-            crate::output::emit(&report)?;
+            if kinds.iter().any(|kind| kind != "callable") {
+                contracts::gap(entmoot_workspace::FACT_NON_CALLABLE)?;
+            }
+            contracts::emit(&entmoot_workspace::contract_inventory(
+                &contracts::database()?,
+                kinds.first().map(String::as_str),
+                path.as_deref(),
+                offset,
+                limit,
+            )?)?;
         }
-        Commands::CallComponents {
-            graph,
-            publication,
-            store,
-            source_root,
-            request,
-            offset,
-            limit,
-            sample_limit,
-            max_nodes,
-            max_edges,
-        } => {
-            let (graph, store, source_root) =
-                resolve_read_paths(graph, publication, store, source_root)?;
-            let store =
-                store.unwrap_or_else(|| entmoot_workspace::workspace::default_store_path(&graph));
-            let request = match request {
-                Some(path) => serde_json::from_slice::<
-                    entmoot_contracts::query::CallComponentsRequest,
-                >(&fs::read(path)?)?,
-                None => entmoot_contracts::query::CallComponentsRequest {
-                    predicate: "calls".into(),
-                    offset,
-                    limit,
-                    sample_limit,
-                    max_nodes,
-                    max_edges,
-                },
-            };
-            let opened = entmoot_workspace::workspace::open_query_bundle_paths(
-                &graph,
-                &store,
-                source_root.as_deref(),
-                None,
-                source_root.is_some(),
-            )
-            .map_err(|error| anyhow!(error.to_string()))?;
-            let report =
-                entmoot_contracts::query::QueryService::call_components(&opened.engine, request)?;
-            crate::output::emit(&report)?;
+        Commands::CallComponents { offset, limit } => {
+            contracts::emit(&entmoot_workspace::contract_components(
+                &contracts::database()?,
+                offset,
+                limit,
+            )?)?;
         }
         Commands::Assess {
             command:
@@ -1270,40 +934,8 @@ fn run() -> Result<()> {
                 bail!("completeness not established");
             }
         }
-        Commands::AuditCalls {
-            graph,
-            artifacts,
-            entrypoint,
-            build_context,
-            require_accounted,
-        } => {
-            let graph = load_graph_json(&graph).map_err(|e| anyhow!(e.to_string()))?;
-            let audit = entmoot_workspace::resolver_accounting::audit_resolver_manifests(
-                &graph, &artifacts,
-            )?;
-            if let Some(context) = build_context {
-                let context = entmoot_contracts::ContentDigest::parse(context)?;
-                let reachability = entmoot_workspace::resolver_accounting::audit_reachability(
-                    &audit,
-                    &context,
-                    &entrypoint,
-                )?;
-                println!(
-                    "{}",
-                    serde_json::to_string_pretty(
-                        &serde_json::json!({"accounting":audit,"reachability":reachability})
-                    )?
-                );
-            } else {
-                crate::output::emit(&audit)?;
-            }
-            if require_accounted
-                && (audit.static_work_remaining > 0
-                    || audit.producer_omissions > 0
-                    || !audit.inventory_gaps.is_empty())
-            {
-                bail!("native accounting incomplete: {} sites require static work; {} producer omissions; {} inventory gaps", audit.static_work_remaining, audit.producer_omissions, audit.inventory_gaps.len());
-            }
+        Commands::AuditCalls { .. } => {
+            contracts::gap(entmoot_workspace::FACT_NATIVE_DISPATCH)?;
         }
         Commands::PlanAnalysis {
             request,
@@ -1682,6 +1314,37 @@ fn run() -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn clean_head(root: &Path, revision: Option<&str>) -> Result<String> {
+    let porcelain = git_output(root, &["status", "--porcelain"])?;
+    if !porcelain.trim().is_empty() {
+        anyhow::bail!("contract snapshot requires a clean tree; dirty files are not a revision");
+    }
+    let head = git_output(root, &["rev-parse", "HEAD"])?;
+    let head = head.trim().to_owned();
+    if let Some(revision) = revision {
+        if revision != head {
+            anyhow::bail!("revision {revision} is not HEAD {head}; snapshot does not check out another revision");
+        }
+    }
+    Ok(head)
+}
+
+fn git_output(root: &Path, args: &[&str]) -> Result<String> {
+    let output = std::process::Command::new("git")
+        .arg("-C")
+        .arg(root)
+        .args(args)
+        .output()?;
+    if !output.status.success() {
+        anyhow::bail!(
+            "git {} failed: {}",
+            args.join(" "),
+            String::from_utf8_lossy(&output.stderr).trim()
+        );
+    }
+    Ok(String::from_utf8(output.stdout)?)
 }
 
 fn workspace_options(

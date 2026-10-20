@@ -927,7 +927,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "anyhow",
  "clap",
@@ -949,7 +949,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-contracts"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "blake3",
  "packageurl",
@@ -961,7 +961,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-core"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "assert_matches",
  "blake3",
@@ -990,7 +990,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-engine"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "blake3",
  "entmoot-contracts",
@@ -1004,7 +1004,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-evidence"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "blake3",
  "entmoot-contracts",
@@ -1018,7 +1018,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-mcp"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "anyhow",
  "axum",
@@ -1039,7 +1039,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-native"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "blake3",
  "cap-std",
@@ -1070,7 +1070,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-ops"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "blake3",
  "entmoot-contracts",
@@ -1087,7 +1087,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-query"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "blake3",
  "entmoot-contracts",
@@ -1107,7 +1107,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-store"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "blake3",
  "entmoot-contracts",
@@ -1131,7 +1131,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-topology"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "blake3",
  "entmoot-contracts",
@@ -1144,7 +1144,7 @@ dependencies = [
 
 [[package]]
 name = "entmoot-workspace"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "blake3",
  "entmoot-contracts",

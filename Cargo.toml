@@ -6,7 +6,7 @@ resolver = "2"
 [workspace.package]
 repository = "https://github.com/tim-gowan/entmoot"
 rust-version = "1.98"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 
 # Sound production constraints (tests allowed via .clippy.toml allow-*-in-tests).
 # Cargo.toml sha2/sha256 bans stay in scripts/pre_commit_check.py; AST policy is Dylint
