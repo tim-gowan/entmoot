@@ -58,7 +58,7 @@ pub fn graph_source(graph: &TopologyGraph) -> Result<ProducerSource, OperationEr
 }
 
 pub mod graph_io;
-pub use graph_io::{load_graph_json, write_graph_json};
+pub use graph_io::{load_graph_json, load_inventory_for_paths, write_graph_json};
 
 pub mod read;
 

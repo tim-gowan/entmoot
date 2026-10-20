@@ -289,6 +289,125 @@ impl SqliteKnowledgeRepository {
         }))
     }
 
+    /// Structural edges whose endpoints are among the supplied node ids.
+    /// Absence of a matching edge is not absence of the relation elsewhere.
+    pub fn inventory_structural_edges_for_nodes(
+        &self,
+        node_ids: &[String],
+    ) -> Result<Option<Vec<crate::StructuralEdge>>, KnowledgeRepositoryError> {
+        if self.inventory_export_digest()?.is_none() {
+            return Ok(None);
+        }
+        if node_ids.is_empty() {
+            return Ok(Some(Vec::new()));
+        }
+        if node_ids.len() > 4096 {
+            return Err(invalid_record(
+                "inventory",
+                "at most 4096 node ids are allowed for structural edge selection",
+            ));
+        }
+        let ids = serde_json::to_string(node_ids)?;
+        let mut statement = self.connection.prepare_cached(
+            "SELECT r.payload FROM scoped_records r JOIN shared_payloads p ON p.payload_id=r.payload WHERE r.view_id=(SELECT id FROM temp.selected_knowledge_view) AND r.collection='structural_edges' AND (json_extract(CAST(p.body AS TEXT),'$.body.from') IN (SELECT value FROM json_each(?1)) OR json_extract(CAST(p.body AS TEXT),'$.body.to') IN (SELECT value FROM json_each(?1))) ORDER BY json_extract(CAST(p.body AS TEXT),'$.body.from'),json_extract(CAST(p.body AS TEXT),'$.body.to'),CASE json_extract(CAST(p.body AS TEXT),'$.body.kind') WHEN 'contains' THEN 0 WHEN 'imports' THEN 1 WHEN 'calls' THEN 2 WHEN 'has_control_site' THEN 3 ELSE 4 END",
+        )?;
+        let mut rows = statement.query(params![ids])?;
+        let mut edges = Vec::new();
+        while let Some(row) = rows.next()? {
+            edges.push(hydrate_record(&self.connection, row.get(0)?)?);
+        }
+        Ok(Some(edges))
+    }
+
+    /// Nodes whose repository path equals a prefix or lies under `prefix/`.
+    /// Pages by membership ordinal; empty prefixes select nothing, not the
+    /// whole inventory.
+    pub fn inventory_nodes_under_prefixes(
+        &self,
+        prefixes: &[String],
+        after: Option<i64>,
+        limit: usize,
+    ) -> Result<Option<crate::read::InventoryNodePage>, KnowledgeRepositoryError> {
+        if !(1..=1024).contains(&limit) {
+            return Err(invalid_record(
+                "inventory",
+                "node page limit must be in 1..=1024",
+            ));
+        }
+        if prefixes.is_empty() {
+            return Ok(Some(crate::read::InventoryNodePage {
+                nodes: Vec::new(),
+                next_ordinal: None,
+            }));
+        }
+        if prefixes.len() > 64 {
+            return Err(invalid_record(
+                "inventory",
+                "at most 64 path prefixes are allowed",
+            ));
+        }
+        if self.inventory_export_digest()?.is_none() {
+            return Ok(None);
+        }
+        for prefix in prefixes {
+            if prefix.is_empty()
+                || prefix.contains('\\')
+                || prefix.contains('\0')
+                || prefix
+                    .split('/')
+                    .any(|part| part.is_empty() || part == "." || part == "..")
+            {
+                return Err(invalid_record(
+                    "inventory",
+                    "path prefixes must be repository-relative POSIX paths without traversal",
+                ));
+            }
+        }
+        let prefix_json = serde_json::to_string(prefixes)?;
+        let sql = format!(
+            "SELECT {NODE_COLUMNS} FROM {NODE_FROM} WHERE n.view_key=(SELECT view_key FROM inventory_headers WHERE view_id=(SELECT id FROM temp.selected_knowledge_view)) AND n.ordinal>?1 AND p.path IS NOT NULL AND (p.path IN (SELECT value FROM json_each(?3)) OR EXISTS (SELECT 1 FROM json_each(?3) j WHERE p.path LIKE j.value || '/%')) ORDER BY n.ordinal LIMIT ?2"
+        );
+        let mut statement = self.connection.prepare_cached(&sql)?;
+        let sql_limit = i64::try_from(limit).map_err(|e| invalid_record("inventory", e))?;
+        let after = after.unwrap_or(-1);
+        let mut rows = statement.query(params![after, sql_limit + 1, prefix_json])?;
+        let mut nodes = Vec::new();
+        let mut page_bytes = 0usize;
+        let mut last = None;
+        let mut more = false;
+        while let Some(row) = rows.next()? {
+            if nodes.len() == limit {
+                more = true;
+                break;
+            }
+            let node = hydrate_node(&self.connection, row)?;
+            let expected: Vec<u8> = row.get(4)?;
+            let encoded = serde_json::to_vec(&node)?;
+            if blake3::hash(&encoded).as_bytes().as_slice() != expected {
+                return Err(invalid_record(
+                    "inventory",
+                    "node membership commitment mismatch",
+                ));
+            }
+            if encoded.len() > 8 * 1024 * 1024 {
+                return Err(KnowledgeRepositoryError::BufferLimit(
+                    "inventory node exceeds 8 MiB",
+                ));
+            }
+            if page_bytes + encoded.len() > 8 * 1024 * 1024 {
+                more = true;
+                break;
+            }
+            page_bytes += encoded.len();
+            last = Some(row.get(0)?);
+            nodes.push(node);
+        }
+        Ok(Some(crate::read::InventoryNodePage {
+            nodes,
+            next_ordinal: if more { last } else { None },
+        }))
+    }
+
     /// Hydrate hot navigation records only. Provider symbol dumps, resolution
     /// payloads and ordered traces stay in the repository until requested.
     pub fn load_inventory(

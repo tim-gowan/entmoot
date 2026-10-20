@@ -118,6 +118,25 @@ pub trait KnowledgeRead {
         Ok(None)
     }
 
+    /// Structural edges incident to the supplied node ids. None means unsupported.
+    fn inventory_structural_edges_for_nodes(
+        &self,
+        _node_ids: &[String],
+    ) -> Result<Option<Vec<crate::StructuralEdge>>, KnowledgeRepositoryError> {
+        Ok(None)
+    }
+
+    /// Nodes under exact or nested path prefixes. Empty prefixes yield an empty
+    /// page; None means the backend cannot answer.
+    fn inventory_nodes_under_prefixes(
+        &self,
+        _prefixes: &[String],
+        _after: Option<i64>,
+        _limit: usize,
+    ) -> Result<Option<InventoryNodePage>, KnowledgeRepositoryError> {
+        Ok(None)
+    }
+
     /// None means this backend does not retain a source inventory header.
     fn inventory_metadata(&self) -> Result<Option<InventoryMetadata>, KnowledgeRepositoryError> {
         Ok(None)
@@ -309,6 +328,23 @@ impl KnowledgeRead for Box<dyn KnowledgeRead> {
         limit: usize,
     ) -> Result<Option<InventoryNodePage>, KnowledgeRepositoryError> {
         self.as_ref().inventory_nodes(path, after, limit)
+    }
+
+    fn inventory_structural_edges_for_nodes(
+        &self,
+        node_ids: &[String],
+    ) -> Result<Option<Vec<crate::StructuralEdge>>, KnowledgeRepositoryError> {
+        self.as_ref().inventory_structural_edges_for_nodes(node_ids)
+    }
+
+    fn inventory_nodes_under_prefixes(
+        &self,
+        prefixes: &[String],
+        after: Option<i64>,
+        limit: usize,
+    ) -> Result<Option<InventoryNodePage>, KnowledgeRepositoryError> {
+        self.as_ref()
+            .inventory_nodes_under_prefixes(prefixes, after, limit)
     }
 
     fn inventory_metadata(&self) -> Result<Option<InventoryMetadata>, KnowledgeRepositoryError> {

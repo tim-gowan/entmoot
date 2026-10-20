@@ -69,10 +69,12 @@ semantics. The incremental publisher on the same corpus is recorded below.
 
 Native/canon production still uses graph views; native output is one
 complete family artifact, although every family now consumes compact pinned
-structural input. Subject-context, traversal, impact and advanced reads still
-hydrate a deferred graph. Replace those only with scoped reads that preserve
-full counts, provenance and explicit unknowns; do not claim a total RSS ceiling
-or sub-second latency from worker admission limits or successful fixture tests.
+structural input. Subject-context and path-prefixed overlay now use scoped
+membership pages; traversal, impact, attachment findings on deferred subject
+opens and other advanced reads still hydrate a deferred graph. Replace those
+only with scoped reads that preserve full counts, provenance and explicit
+unknowns; do not claim a total RSS ceiling or sub-second latency from worker
+admission limits or successful fixture tests.
 
 The [intermediate checkpoint](evals/experiments/performance-substrate-checkpoint-2026-10-19.json)
 completed the same full Go workflow: fresh publication took 1,136s, peaked at
@@ -120,18 +122,42 @@ These are measured single-trial improvements on edit refresh and recovery, not
 repository-wide readiness. Structural publication now shares revision-independent
 call records through file membership, keeps syntax markers on sealed node versions
 without per-view site rebind, and seals ordinary views with membership commitments
-instead of a mandatory full graph-export stream. Complete callable index
-construction for changed resolution frontiers and cold subject/compare graph
-consumers still scale with the selected repository; this is not yet a measured
-O(changed-files) refresh. Import statements alone cannot close native dependency
-or dispatch frontiers. A reference is not necessarily a call, and provider
-relationships do not prove a closed dispatch set. Retain unmatched sites as
-explicit unknowns; do not invent type, dispatch or completeness facts a provider
-did not report. Claims that a call, dependency or dispatch frontier is open or
-closed must stay explicit and evidence-scoped. Qualify provider-specific binding,
-dispatch, dependency coverage and configuration separately from the compiler-free
-structural lane. Re-measure the 512-file and full Go incremental probes after this
-cut before claiming latency qualification.
+instead of a mandatory full graph-export stream. Deferred subject-context inspect
+and path-prefixed overlay loads use scoped membership pages rather than a full
+navigation hydrate; traversal, impact and attachment-bearing subject findings on
+deferred opens still need further scoped work. Complete callable index
+construction for changed resolution frontiers still scales with the selected
+repository; this is not yet a measured O(changed-files) refresh. Import statements
+alone cannot close native dependency or dispatch frontiers. A reference is not
+necessarily a call, and provider relationships do not prove a closed dispatch set.
+Retain unmatched sites as explicit unknowns; do not invent type, dispatch or
+completeness facts a provider did not report. Claims that a call, dependency or
+dispatch frontier is open or closed must stay explicit and evidence-scoped. Qualify
+provider-specific binding, dispatch, dependency coverage and configuration
+separately from the compiler-free structural lane.
+
+The [membership-cut 512 development comparison](evals/experiments/performance-incremental-512-2026-10-19-membership.json)
+at `6804fc5` reused sealed projections on a one-file comment edit (7.27s current vs
+21.58s streamed baseline; fresh 25.9s vs 32.5s). Node membership commitments
+matched between arms; structural edge `record_id` commitments diverged at equal
+edge counts and are recorded in `parity.json`, not treated as semantic inventory
+equality.
+
+The [membership-cut full Go characterization](evals/experiments/performance-incremental-go-2026-10-19-membership.json)
+at `6804fc5` (workstation, no timeout) completed the same sequence: fresh 1,074.6s
+with 0.51GB sampled peak RSS; no-change 25.9s; comment/body 257–258s (about 55%
+faster than the prior incremental 576–590s); add/rename ~308–310s; delete 28.9s;
+recovery 327.7s. Cold inspect-subject still took 101.9s and about 9.32GB RSS;
+compare-body took 198.9s and 10.18GB — still full-graph consumers on that tip.
+Exact find/source stayed sub-second; callers/callees about 2.8s process wall.
+The [post-4a scoped-read remount](evals/experiments/performance-scoped-reads-post4a-2026-10-19.json)
+reopened the same publications with path-local subject inspect and path-prefixed
+overlay loads: inspect-subject ~76.7s / 35MB sampled RSS (was 101.9s / 9.32GB);
+compare-body ~23.4s / 21MB (was 198.9s / 10.18GB). Single-trial remount only.
+Path-scoped overlay report parity under a shared prefix is covered by a unit
+control; retained subject emits `attachment_inventory_not_materialized` instead of
+treating unloaded findings as absence. Traversal/impact and hydrating attachment
+inventory on deferred subject opens remain open.
 
 The split preserves a conservative v1 whole-engine derivation fence. Qualify
 component-specific fingerprints before narrowing its invalidation scope. Measure

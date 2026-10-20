@@ -110,6 +110,9 @@ pub enum QueryGapCode {
     SourceInventoryFailed,
     /// A file-scoped subject has no complete owning structural path to its file.
     ContainmentPathNotMaterialized,
+    /// Retained subject context did not hydrate attachment/finding inventory.
+    /// Empty findings on that path mean unselected, not absence.
+    AttachmentInventoryNotMaterialized,
     /// Evidence id was not found as finding, assertion, proposition, or edge.
     EvidenceIdNotFound,
     /// Finding or trace id was not found.

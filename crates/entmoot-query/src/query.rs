@@ -30,6 +30,7 @@ mod read;
 mod receipt;
 mod requests;
 mod retained_calls;
+mod retained_subject;
 mod roles;
 mod seeds;
 mod selection;
@@ -681,6 +682,9 @@ impl QueryEngine {
     pub fn inspect(&self, request: InspectQuery) -> Result<QueryResult, QueryError> {
         if self.deferred_navigation.is_some() {
             if let Some((_, result)) = self.retained_call_inspect(&request)? {
+                return Ok(result);
+            }
+            if let Some((_, result)) = self.retained_subject_inspect(&request)? {
                 return Ok(result);
             }
             return self.navigation()?.inspect(request);

@@ -841,6 +841,20 @@ impl crate::read::KnowledgeRead for SqliteKnowledgeRepository {
     ) -> Result<Option<crate::read::InventoryNodePage>, KnowledgeRepositoryError> {
         SqliteKnowledgeRepository::inventory_nodes(self, path, after, limit)
     }
+    fn inventory_structural_edges_for_nodes(
+        &self,
+        node_ids: &[String],
+    ) -> Result<Option<Vec<crate::StructuralEdge>>, KnowledgeRepositoryError> {
+        SqliteKnowledgeRepository::inventory_structural_edges_for_nodes(self, node_ids)
+    }
+    fn inventory_nodes_under_prefixes(
+        &self,
+        prefixes: &[String],
+        after: Option<i64>,
+        limit: usize,
+    ) -> Result<Option<crate::read::InventoryNodePage>, KnowledgeRepositoryError> {
+        SqliteKnowledgeRepository::inventory_nodes_under_prefixes(self, prefixes, after, limit)
+    }
     fn inventory_metadata(
         &self,
     ) -> Result<Option<crate::read::InventoryMetadata>, KnowledgeRepositoryError> {

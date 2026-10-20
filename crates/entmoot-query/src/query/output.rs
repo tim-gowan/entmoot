@@ -115,6 +115,9 @@ impl QueryEngine {
                 if let Some((projected, result)) = self.retained_call_inspect(inspect)? {
                     return projected.deliver_prepared_query(request, Some(result));
                 }
+                if let Some((projected, result)) = self.retained_subject_inspect(inspect)? {
+                    return projected.deliver_prepared_query(request, Some(result));
+                }
             }
         }
         if self.deferred_navigation.is_some()

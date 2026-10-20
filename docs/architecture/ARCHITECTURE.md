@@ -188,18 +188,25 @@ Verified source, subject-find, callers, callees and unresolved-attempt reads do
 not materialize a graph. Subject search
 pages retained nodes, narrows paths and exact hash selectors before hydration, checks each node's
 commitment and retains only the requested ranked cards. Call pages use retained
-subject/object indexes and selected endpoint/claim context. A sparse reverse
+subject/object indexes and selected endpoint/claim context. Subject-context
+inspect on a deferred open likewise builds a path-local projection (path
+membership, parent chain, incident structural edges, scoped relation endpoints)
+without materializing repository navigation. A sparse reverse
 contradiction index preserves conflicts originating outside the page. Unresolved
 continuation commitments stream the selected attempts without collecting them.
 Unscoped text still scans node pages; this is a memory bound, not a sub-second
-lookup qualification. Other
+lookup qualification. Path-prefixed inventory overlay pages matching membership
+nodes instead of loading a complete inventory; empty prefixes still hydrate the
+full view. Scoped overlay projections narrow `snapshot_files` to the selected
+prefixes and clear off-path parents so validation matches the page without
+pretending containment is complete. Other
 navigation operations explicitly hydrate a shared deferred projection. Graph
 access is fallible so a missing projection cannot appear as an empty inventory.
 Comparison bases pin their locator and lifecycle lease at open and hydrate once
 on the first comparison. Ordinary source/find requests do not load the base;
 failed base loads remain explicit and shared by cloned query handles.
-Native/canon production and these remaining graph reads still materialize graph
-views, tracked in PLANNING. An unchanged structural refresh verifies the complete
+Native/canon production, traversal, impact and remaining full-graph reads still
+materialize graph views, tracked in PLANNING. An unchanged structural refresh verifies the complete
 source/policy/scan-gap commitment and sealed file/call membership before skipping
 projection, resolution and publication; a second full source fence still applies. Phase receipts report
 elapsed time and RSS endpoints, not phase peaks; tracing also records unfinished

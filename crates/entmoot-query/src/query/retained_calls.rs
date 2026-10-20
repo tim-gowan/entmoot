@@ -135,7 +135,7 @@ impl QueryEngine {
     }
 }
 
-fn insert_read_node(
+pub(super) fn insert_read_node(
     graph: &mut TopologyGraph,
     repository: &impl KnowledgeRead,
     node: TopologyNode,
@@ -152,7 +152,7 @@ fn insert_read_node(
     Ok(())
 }
 
-fn exact_match(node: &TopologyNode, subject: &str) -> bool {
+pub(super) fn exact_match(node: &TopologyNode, subject: &str) -> bool {
     node.id == subject
         || node.display_ref == subject
         || node.address_id.as_deref() == Some(subject)
@@ -164,7 +164,7 @@ fn exact_match(node: &TopologyNode, subject: &str) -> bool {
         })
 }
 
-fn retained_exact_nodes(
+pub(super) fn retained_exact_nodes(
     repository: &impl KnowledgeRead,
     subject: &str,
 ) -> Result<Option<Vec<TopologyNode>>, QueryError> {
@@ -193,7 +193,7 @@ fn retained_exact_nodes(
     }
 }
 
-fn retained_address_nodes(
+pub(super) fn retained_address_nodes(
     repository: &impl KnowledgeRead,
     repository_id: &str,
     address: &Address,

@@ -262,6 +262,11 @@
               "type": "string"
             },
             {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
+              "type": "string"
+            },
+            {
               "const": "evidence_id_not_found",
               "description": "Evidence id was not found as finding, assertion, proposition, or edge.",
               "type": "string"
@@ -3610,6 +3615,11 @@
             {
               "const": "containment_path_not_materialized",
               "description": "A file-scoped subject has no complete owning structural path to its file.",
+              "type": "string"
+            },
+            {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
               "type": "string"
             },
             {
@@ -9445,6 +9455,11 @@
               "type": "string"
             },
             {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
+              "type": "string"
+            },
+            {
               "const": "evidence_id_not_found",
               "description": "Evidence id was not found as finding, assertion, proposition, or edge.",
               "type": "string"
@@ -14541,6 +14556,11 @@
               "type": "string"
             },
             {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
+              "type": "string"
+            },
+            {
               "const": "evidence_id_not_found",
               "description": "Evidence id was not found as finding, assertion, proposition, or edge.",
               "type": "string"
@@ -17712,6 +17732,11 @@
               "type": "string"
             },
             {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
+              "type": "string"
+            },
+            {
               "const": "evidence_id_not_found",
               "description": "Evidence id was not found as finding, assertion, proposition, or edge.",
               "type": "string"
@@ -19732,6 +19757,11 @@
         {
           "const": "containment_path_not_materialized",
           "description": "A file-scoped subject has no complete owning structural path to its file.",
+          "type": "string"
+        },
+        {
+          "const": "attachment_inventory_not_materialized",
+          "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
           "type": "string"
         },
         {
@@ -24264,6 +24294,11 @@
             {
               "const": "containment_path_not_materialized",
               "description": "A file-scoped subject has no complete owning structural path to its file.",
+              "type": "string"
+            },
+            {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
               "type": "string"
             },
             {
@@ -35796,6 +35831,11 @@
               "type": "string"
             },
             {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
+              "type": "string"
+            },
+            {
               "const": "evidence_id_not_found",
               "description": "Evidence id was not found as finding, assertion, proposition, or edge.",
               "type": "string"
@@ -45205,6 +45245,11 @@
               "type": "string"
             },
             {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
+              "type": "string"
+            },
+            {
               "const": "evidence_id_not_found",
               "description": "Evidence id was not found as finding, assertion, proposition, or edge.",
               "type": "string"
@@ -49152,6 +49197,11 @@
             {
               "const": "containment_path_not_materialized",
               "description": "A file-scoped subject has no complete owning structural path to its file.",
+              "type": "string"
+            },
+            {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
               "type": "string"
             },
             {
@@ -56328,6 +56378,11 @@
             {
               "const": "containment_path_not_materialized",
               "description": "A file-scoped subject has no complete owning structural path to its file.",
+              "type": "string"
+            },
+            {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
               "type": "string"
             },
             {
@@ -67640,6 +67695,11 @@
               "type": "string"
             },
             {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
+              "type": "string"
+            },
+            {
               "const": "evidence_id_not_found",
               "description": "Evidence id was not found as finding, assertion, proposition, or edge.",
               "type": "string"
@@ -76556,6 +76616,11 @@
             {
               "const": "containment_path_not_materialized",
               "description": "A file-scoped subject has no complete owning structural path to its file.",
+              "type": "string"
+            },
+            {
+              "const": "attachment_inventory_not_materialized",
+              "description": "Retained subject context did not hydrate attachment/finding inventory.\nEmpty findings on that path mean unselected, not absence.",
               "type": "string"
             },
             {

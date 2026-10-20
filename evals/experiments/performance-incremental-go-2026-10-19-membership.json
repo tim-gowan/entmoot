@@ -1,0 +1,128 @@
+{
+  "kind": "incremental_publication_characterization",
+  "evidence_root": "G:\\GitHub\\entmoot\\.tmp\\performance-incremental-20261019-membership",
+  "membership_cut_commit": "6804fc536470d7540c792da6b747897bdcd8a7a2",
+  "base_revision": "6804fc536470d7540c792da6b747897bdcd8a7a2",
+  "source_revision": "ea0fa54dc5048902083c3364bdbdbfb12770a613",
+  "publication_trials": {
+    "fresh": {
+      "wall_seconds": 1074.5877494000015,
+      "sampled_peak_tree_rss_bytes": 505692160,
+      "indexed_files": 11832,
+      "reused_syntax_files": 0,
+      "reused_extraction_files": 0,
+      "publication_outcome": "replaced"
+    },
+    "no-change": {
+      "wall_seconds": 25.898891900025774,
+      "sampled_peak_tree_rss_bytes": 178245632,
+      "indexed_files": 0,
+      "reused_syntax_files": 11832,
+      "reused_extraction_files": 0,
+      "publication_outcome": "unchanged"
+    },
+    "comment": {
+      "wall_seconds": 257.8650148999877,
+      "sampled_peak_tree_rss_bytes": 312590336,
+      "indexed_files": 1,
+      "reused_syntax_files": 11831,
+      "reused_extraction_files": 11831,
+      "publication_outcome": "replaced"
+    },
+    "body": {
+      "wall_seconds": 257.22104809997836,
+      "sampled_peak_tree_rss_bytes": 306573312,
+      "indexed_files": 1,
+      "reused_syntax_files": 11831,
+      "reused_extraction_files": 11831,
+      "publication_outcome": "replaced"
+    },
+    "add": {
+      "wall_seconds": 307.8567922000075,
+      "sampled_peak_tree_rss_bytes": 309559296,
+      "indexed_files": 1,
+      "reused_syntax_files": 11832,
+      "reused_extraction_files": 11832,
+      "publication_outcome": "replaced"
+    },
+    "rename": {
+      "wall_seconds": 310.13153890002286,
+      "sampled_peak_tree_rss_bytes": 309993472,
+      "indexed_files": 1,
+      "reused_syntax_files": 11832,
+      "reused_extraction_files": 11832,
+      "publication_outcome": "replaced"
+    },
+    "delete": {
+      "wall_seconds": 28.904655599966645,
+      "sampled_peak_tree_rss_bytes": 213336064,
+      "indexed_files": 0,
+      "reused_syntax_files": 11832,
+      "reused_extraction_files": 0,
+      "publication_outcome": "unchanged"
+    },
+    "recovery": {
+      "wall_seconds": 327.687408400001,
+      "sampled_peak_tree_rss_bytes": 313905152,
+      "indexed_files": 0,
+      "reused_syntax_files": 11832,
+      "reused_extraction_files": 11831,
+      "publication_outcome": "replaced"
+    }
+  },
+  "retained_reads": {
+    "find-path": {
+      "process_wall_seconds": 0.24490109999896958,
+      "sampled_peak_tree_rss_bytes": 8187904,
+      "warm_median_seconds": 0.003389
+    },
+    "find-id": {
+      "process_wall_seconds": 0.08720820001326501,
+      "sampled_peak_tree_rss_bytes": 8302592,
+      "warm_median_seconds": 0.0034784
+    },
+    "read-source": {
+      "process_wall_seconds": 0.0837411000393331,
+      "sampled_peak_tree_rss_bytes": 8728576,
+      "warm_median_seconds": 0.0029562
+    },
+    "inspect-subject": {
+      "process_wall_seconds": 101.94758470001398,
+      "sampled_peak_tree_rss_bytes": 9319346176,
+      "warm_median_seconds": 0.003011
+    },
+    "inspect-callers": {
+      "process_wall_seconds": 2.8072266000090167,
+      "sampled_peak_tree_rss_bytes": 27222016,
+      "warm_median_seconds": 0.4540889
+    },
+    "inspect-callees": {
+      "process_wall_seconds": 2.837028000038117,
+      "sampled_peak_tree_rss_bytes": 27574272,
+      "warm_median_seconds": 0.4560902
+    },
+    "historical-read": {
+      "process_wall_seconds": 0.09433459996944293,
+      "sampled_peak_tree_rss_bytes": 5402624,
+      "warm_median_seconds": 0.0034809
+    }
+  },
+  "comparison": {
+    "wall_seconds": 198.8531146000023,
+    "sampled_peak_tree_rss_bytes": 10181259264
+  },
+  "recovery": {
+    "retry_wall_seconds": 327.687408400001,
+    "reused_syntax_files": 11832
+  },
+  "limitations": [
+    "one trial per phase",
+    "uncontrolled OS caches and host workloads",
+    "sampled RSS is a lower bound",
+    "storage measurements are post-command, not temporary/WAL peaks",
+    "structural workflow only; adapter controls are separate",
+    "comparison with prior non-producer binary includes build-feature differences",
+    "native/canon production and advanced reads still hydrate graphs",
+    "recovery injects a transactional error; it is not a process-kill or power-loss simulation"
+  ]
+}

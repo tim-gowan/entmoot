@@ -1,0 +1,114 @@
+{
+  "kind": "incremental_publication_development_comparison",
+  "evidence_root": "C:\\Users\\Tim\\.codex\\worktrees\\architectural-split\\entmoot\\.tmp\\incremental-publication\\measurement",
+  "base_revision": "6804fc536470d7540c792da6b747897bdcd8a7a2",
+  "membership_cut_commit": "6804fc536470d7540c792da6b747897bdcd8a7a2",
+  "parity": {
+    "exact_node_versions_match": true,
+    "exact_structural_edge_record_ids_match": false,
+    "notes": [
+      {
+        "trial": "fresh",
+        "node_commitment_match": true,
+        "edge_count_match": true,
+        "edge_record_id_commitment_match": false,
+        "baseline": {
+          "nodes": 68835,
+          "edges": 69925,
+          "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+          "edge_commitment": "8a81785f45cd55ec42ae8ffd2b3c9b2abe7b36b32825040003bf434f99fa8b8d"
+        },
+        "current": {
+          "nodes": 68835,
+          "edges": 69925,
+          "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+          "edge_commitment": "793dfff744c1ba683c81df204e619dbbe19d533017871a83a6e7cc05a6e3c0b2"
+        }
+      },
+      {
+        "trial": "edit",
+        "node_commitment_match": true,
+        "edge_count_match": true,
+        "edge_record_id_commitment_match": false,
+        "baseline": {
+          "nodes": 68835,
+          "edges": 69925,
+          "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+          "edge_commitment": "2a02d62e0126a3a9a187bf55524cf2241cf3550f30ff05e325e3f9ec09b7e4d8"
+        },
+        "current": {
+          "nodes": 68835,
+          "edges": 69925,
+          "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+          "edge_commitment": "793dfff744c1ba683c81df204e619dbbe19d533017871a83a6e7cc05a6e3c0b2"
+        }
+      }
+    ]
+  },
+  "trials": [
+    {
+      "implementation": "baseline",
+      "trial": "fresh",
+      "wall_seconds": 32.52342670003418,
+      "sampled_peak_tree_rss_bytes": 101089280,
+      "retained_bytes": 251920202,
+      "inventory": {
+        "nodes": 68835,
+        "edges": 69925,
+        "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+        "edge_commitment": "8a81785f45cd55ec42ae8ffd2b3c9b2abe7b36b32825040003bf434f99fa8b8d"
+      },
+      "indexed_files": 510,
+      "reused_syntax_files": 0,
+      "reused_extraction_files": 0
+    },
+    {
+      "implementation": "baseline",
+      "trial": "edit",
+      "wall_seconds": 21.57923510001274,
+      "sampled_peak_tree_rss_bytes": 82558976,
+      "retained_bytes": 363380984,
+      "inventory": {
+        "nodes": 68835,
+        "edges": 69925,
+        "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+        "edge_commitment": "2a02d62e0126a3a9a187bf55524cf2241cf3550f30ff05e325e3f9ec09b7e4d8"
+      },
+      "indexed_files": 1,
+      "reused_syntax_files": 509,
+      "reused_extraction_files": 0
+    },
+    {
+      "implementation": "current",
+      "trial": "fresh",
+      "wall_seconds": 25.891147599963006,
+      "sampled_peak_tree_rss_bytes": 89616384,
+      "retained_bytes": 217104981,
+      "inventory": {
+        "nodes": 68835,
+        "edges": 69925,
+        "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+        "edge_commitment": "793dfff744c1ba683c81df204e619dbbe19d533017871a83a6e7cc05a6e3c0b2"
+      },
+      "indexed_files": 510,
+      "reused_syntax_files": 0,
+      "reused_extraction_files": 0
+    },
+    {
+      "implementation": "current",
+      "trial": "edit",
+      "wall_seconds": 7.267989400017541,
+      "sampled_peak_tree_rss_bytes": 97718272,
+      "retained_bytes": 241399575,
+      "inventory": {
+        "nodes": 68835,
+        "edges": 69925,
+        "node_commitment": "d843695056a2ebfc4590c6406c8a2d792beabce30708c68ddcf057af080b160e",
+        "edge_commitment": "793dfff744c1ba683c81df204e619dbbe19d533017871a83a6e7cc05a6e3c0b2"
+      },
+      "indexed_files": 1,
+      "reused_syntax_files": 509,
+      "reused_extraction_files": 509
+    }
+  ]
+}

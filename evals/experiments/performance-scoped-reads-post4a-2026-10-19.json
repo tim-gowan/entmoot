@@ -1,0 +1,31 @@
+{
+  "kind": "scoped_read_post4a_remeasure",
+  "baseline_evidence": "G:\\GitHub\\entmoot\\.tmp\\performance-incremental-20261019-membership",
+  "binaries": {
+    "entmoot": "981317325d1852789f9b414d433a0c4e8c20254e215d34213d2f10c6732f960c",
+    "measure_reads": "7929e8e0b41b400aeb1e71d3bb2ddcd61a6bed8ef5b0a09aa460a649c3ef2cb2"
+  },
+  "inspect_subject": {
+    "wall_seconds": 76.6650779999909,
+    "sampled_peak_tree_rss_bytes": 34701312
+  },
+  "compare_body": {
+    "wall_seconds": 23.401611100009177,
+    "sampled_peak_tree_rss_bytes": 21155840
+  },
+  "baseline_inspect_subject": {
+    "wall_seconds": 101.94758470001398,
+    "sampled_peak_tree_rss_bytes": 9319346176
+  },
+  "baseline_compare_body": {
+    "wall_seconds": 198.8531146000023,
+    "sampled_peak_tree_rss_bytes": 10181259264
+  },
+  "limitations": [
+    "read-only remount of membership-cut publications with Phase 4a binaries",
+    "one trial each",
+    "sampled RSS lower bound",
+    "OS caches uncontrolled",
+    "path-scoped overlay clears off-path parents and narrows snapshot_files"
+  ]
+}

@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-10-19: Scoped subject-context and path-prefixed overlay reads
+
+- Deferred `inspect kind=subject` builds a path-local projection (path nodes,
+  parent chain, incident structural edges, relation endpoints) without hydrating
+  repository navigation; parity matches eager reads aside from the explicit
+  `attachment_inventory_not_materialized` gap (empty findings mean unselected).
+- `assess overlay` with path prefixes pages `inventory_nodes_under_prefixes`
+  instead of loading a complete inventory on each side; empty prefixes keep the
+  prior full load. Scoped overlays narrow `snapshot_files` and clear off-path
+  parents so validation matches the page. Path-scoped overlay deltas match a
+  full-load report under the same prefix (unit control).
+- Store adds `inventory_structural_edges_for_nodes` and
+  `inventory_nodes_under_prefixes` for those scoped consumers.
+- Post-4a workstation remount on the membership-cut Go publications: inspect-
+  subject ~76.7s / 35MB RSS (was 101.9s / 9.32GB); compare-body ~23.4s / 21MB
+  (was 198.9s / 10.18GB).
+  [performance-scoped-reads-post4a-2026-10-19.json](evals/experiments/performance-scoped-reads-post4a-2026-10-19.json).
+
+## 2026-10-19: Membership-cut incremental re-measure (512 + full Go)
+
+- Workstation 512: comment-edit refresh 7.27s vs streamed baseline 21.58s; fresh
+  25.9s vs 32.5s. Node membership matched; edge `record_id` commitments diverged
+  at equal counts.
+  [performance-incremental-512-2026-10-19-membership.json](evals/experiments/performance-incremental-512-2026-10-19-membership.json).
+- Workstation full Go at `6804fc5`: fresh 1,074.6s / 0.51GB RSS; comment/body
+  ~258s; cold inspect-subject 101.9s / 9.32GB; compare-body 198.9s / 10.18GB.
+  [performance-incremental-go-2026-10-19-membership.json](evals/experiments/performance-incremental-go-2026-10-19-membership.json).
+
 ## 2026-10-19: Membership-only structural publication cut
 
 - Skip per-view snapshot site envelopes for unchanged sealed syntax; markers stay
@@ -9,8 +37,8 @@
 - Structural call scope and provenance are revision-independent; matched
   `CallSummary` inputs reuse sealed call membership in SQLite instead of rebinding.
 - Preserve damaged-projection abort, historical reads and cold/retained graph
-  parity controls. Subject-context/compare RSS and measured O(changed-files)
-  refresh remain open; re-run incremental probes before latency claims.
+  parity controls. Full-Go subject/compare RSS re-measure and measured
+  O(changed-files) refresh remain open.
 
 ## 2026-10-19: Align Windows package-api roots with sidecar spelling
 

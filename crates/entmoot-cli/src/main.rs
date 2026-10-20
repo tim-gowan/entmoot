@@ -37,10 +37,10 @@ use entmoot_workspace::query::{
 use entmoot_workspace::{
     adapter_for_manifest, build_topology_from_repo_with_options, compare_inventory_overlay,
     compare_revision_impact_with_correspondence, ingest_artifact_manifest, load_graph_json,
-    write_graph_json, ArtifactAdapter, AtomicGraphWrite, FilesystemArtifactObjectRepository,
-    KnowledgeRead, KnowledgeRepository, KnowledgeStore, KnowledgeStoreBatches, PublicationBuffer,
-    ResourceInventoryAdapter, SarifAdapter, SemanticClusterAdapter, SqliteKnowledgeRepository,
-    TopologyBuildOptions,
+    load_inventory_for_paths, write_graph_json, ArtifactAdapter, AtomicGraphWrite,
+    FilesystemArtifactObjectRepository, KnowledgeRead, KnowledgeRepository, KnowledgeStore,
+    KnowledgeStoreBatches, PublicationBuffer, ResourceInventoryAdapter, SarifAdapter,
+    SemanticClusterAdapter, SqliteKnowledgeRepository, TopologyBuildOptions,
 };
 
 #[derive(Debug, Parser)]
@@ -1637,8 +1637,8 @@ fn run() -> Result<()> {
                     out,
                 },
         } => {
-            let base = load_graph_json(&base_graph).map_err(box_err)?;
-            let head = load_graph_json(&head_graph).map_err(box_err)?;
+            let base = load_inventory_for_paths(&base_graph, &path_prefix).map_err(box_err)?;
+            let head = load_inventory_for_paths(&head_graph, &path_prefix).map_err(box_err)?;
             let request = entmoot_contracts::query::InventoryOverlayRequest {
                 base_publication: base_graph.display().to_string(),
                 head_publication: head_graph.display().to_string(),
